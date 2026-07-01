@@ -16,7 +16,7 @@
 
 .app-header {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 11px;
   min-height: 60px;
   padding: 10px 22px 10px;
