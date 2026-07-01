@@ -169,6 +169,7 @@ function App() {
   const [pdfFileName, setPdfFileName] = useState('');
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [activePage, setActivePage] = useState('home');
+  const [unitAudios, setUnitAudios] = useState([]);
   const [leftWidth, setLeftWidth] = useState(300);
   const [rightWidth, setRightWidth] = useState(300);
   const layoutRef = useRef(null);
@@ -196,6 +197,59 @@ function App() {
     setActivePage('unit');
     setSelectedUnit(unit);
   };
+
+  useEffect(() => {
+    if (activePage !== 'unit' || !selectedUnit) {
+      setUnitAudios([]);
+      return;
+    }
+
+    const loadAudioList = async () => {
+      const basePath = `/audio/unit_${selectedUnit}`;
+      const manifestUrl = `${basePath}/manifest.json`;
+      try {
+        const res = await fetch(manifestUrl);
+        if (res.ok) {
+          const list = await res.json();
+          setUnitAudios(list.map((f) => `${basePath}/${f}`));
+          return;
+        }
+      } catch (e) {
+        // ignore and try probing
+      }
+
+      // Fallback: probe common filename patterns (U_XXX.A.mp3 ...)
+      const padded = String(selectedUnit).padStart(3, '0');
+      const letters = ['A','B','C','D','E','F'];
+      const found = [];
+      for (const l of letters) {
+        const candidate = `${basePath}/U_${padded}.${l}.mp3`;
+        try {
+          const head = await fetch(candidate, { method: 'HEAD' });
+          if (head.ok) {
+            found.push(candidate);
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+      setUnitAudios(found);
+    };
+
+    loadAudioList();
+  }, [selectedUnit, activePage]);
+
+  // Simple native audio player
+  function AudioPlayer({ src, title }) {
+    return (
+      <div className="audio-player simple">
+        <div className="audio-title">{title || src.split('/').pop()}</div>
+        <audio controls src={src} preload="metadata">
+          Your browser does not support the audio element.
+        </audio>
+      </div>
+    );
+  }
 
   const handleHome = (event) => {
     event.preventDefault();
@@ -285,8 +339,25 @@ function App() {
           <div className="panel-content info-panel">
             <p className="eyebrow">Livro aberto</p>
             <h2>Conteudo Esquerdo</h2>
-            <p>Info do livro, notas, capitulos e detalhes importantes ficam aqui.</p>
-            {pdfFileName && <span className="file-pill">{pdfFileName}</span>}
+            {activePage === 'unit' && selectedUnit ? (
+              <>
+                <p>Áudios da Unit {selectedUnit}:</p>
+                {unitAudios.length === 0 ? (
+                  <p className="muted">Nenhum áudio encontrado para esta unidade.</p>
+                ) : (
+                  <div className="audio-list">
+                    {unitAudios.map((a, i) => (
+                      <AudioPlayer key={a} src={a} title={`Unit ${selectedUnit} - Track ${i + 1}`} />
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <p>Info do livro, notas, capitulos e detalhes importantes ficam aqui.</p>
+                {pdfFileName && <span className="file-pill">{pdfFileName}</span>}
+              </>
+            )}
           </div>
         </aside>
 

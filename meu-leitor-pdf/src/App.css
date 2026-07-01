@@ -602,6 +602,35 @@ body {
   pointer-events: none;
 }
 
+/* Audio player styles (simple native player) */
+.audio-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+  max-height: calc(100vh - 220px);
+  overflow: auto;
+}
+
+.audio-player.simple {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.audio-player.simple .audio-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--purple-950);
+  margin-bottom: 6px;
+}
+
+.audio-player.simple audio {
+  width: 100%;
+  outline: none;
+}
+
 .resize-handle {
   position: relative;
   cursor: col-resize;
