@@ -55,6 +55,7 @@ const IconHand = () => (
 function App() {
   const [pdfFileUrl, setPdfFileUrl] = useState('');
   const [pdfFileName, setPdfFileName] = useState('');
+  const [selectedUnit, setSelectedUnit] = useState(null);
   const [leftWidth, setLeftWidth] = useState(300);
   const [rightWidth, setRightWidth] = useState(300);
   const layoutRef = useRef(null);
@@ -75,6 +76,16 @@ function App() {
     });
     setPdfFileName(file.name);
     event.target.value = '';
+  };
+
+  const handleUnitSelect = (event, unit) => {
+    event.preventDefault();
+    setSelectedUnit(unit);
+  };
+
+  const handleHome = (event) => {
+    event.preventDefault();
+    setSelectedUnit(null);
   };
 
   const clampPanelWidths = (nextLeftWidth, nextRightWidth) => {
@@ -119,50 +130,55 @@ function App() {
           <span>Let's Learning English</span>
         </div>
         <nav className="menu" aria-label="Links principais">
-          <ol>
-            <li className="menu-item"><a href="#0">Home</a></li>
-            <li className="menu-item"><a href="#0">About</a></li>
-            <li className="menu-item has-submenu">
-              <a href="#0">
-                Vocabulary
-                <span className="dropdown-arrow" aria-hidden="true">▾</span>
-              </a>
-              <ol className="sub-menu">
-                {Array.from({ length: 10 }, (_, groupIndex) => {
-                  const start = groupIndex * 10 + 1;
-                  const end = (groupIndex + 1) * 10;
-                  return (
-                    <li key={groupIndex} className="menu-item has-submenu">
-                      <a href={`#unit-${start}`}>Unit {start}-{end}</a>
-                      <ol className="sub-menu">
+          {selectedUnit ? (
+            <ol>
+              <li className="menu-item"><a href="#0" onClick={handleHome}>Home</a></li>
+            </ol>
+          ) : (
+            <ol>
+              <li className="menu-item"><a href="#0" onClick={handleHome}>Home</a></li>
+              <li className="menu-item"><a href="#0">About</a></li>
+              <li className="menu-item has-submenu">
+                <a href="#0">
+                  Vocabulary
+                  <span className="dropdown-arrow" aria-hidden="true">▾</span>
+                </a>
+                <ol className="sub-menu">
+                  {Array.from({ length: 10 }, (_, groupIndex) => {
+                    const start = groupIndex * 10 + 1;
+                    const end = (groupIndex + 1) * 10;
+                    return (
+                      <li key={groupIndex} className="menu-column">
+                        <div className="column-title">Unit {start}-{end}</div>
                         {Array.from({ length: 10 }, (_, index) => {
                           const unit = start + index;
                           return (
-                            <li key={unit} className="menu-item">
-                              <a href={`#unit-${unit}`}>Unit {unit}</a>
-                            </li>
+                            <a key={unit} href={`#unit-${unit}`} onClick={(event) => handleUnitSelect(event, unit)}>
+                              Unit {unit}
+                            </a>
                           );
                         })}
-                      </ol>
-                    </li>
-                  );
-                })}
-              </ol>
-            </li>
-            <li className="menu-item"><a href="#link-2">LINK 2</a></li>
-            <li className="menu-item"><a href="#link-3">LINK 3</a></li>
-          </ol>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </li>
+              <li className="menu-item"><a href="#link-2">LINK 2</a></li>
+              <li className="menu-item"><a href="#link-3">LINK 3</a></li>
+            </ol>
+          )}
         </nav>
       </header>
 
-      <main
-        className="main-panels"
-        ref={layoutRef}
-        style={{
-          gridTemplateColumns: `${leftWidth}px 14px minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`,
-        }}
-      >
-        <aside className="side-panel left-panel">
+      {selectedUnit ? (
+        <main
+          className="main-panels"
+          ref={layoutRef}
+          style={{
+            gridTemplateColumns: `${leftWidth}px 14px minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`,
+          }}
+        >
+          <aside className="side-panel left-panel">
           <div className="panel-content info-panel">
             <p className="eyebrow">Livro aberto</p>
             <h2>Conteudo Esquerdo</h2>
@@ -211,7 +227,19 @@ function App() {
             <p>Linha 3: Outros arquivos</p>
           </div>
         </aside>
-      </main>
+          </main>
+      ) : (
+        <main className="landing-page">
+          <div className="landing-panel">
+            <p className="eyebrow">Hello !</p>
+            <h1>So tell me… how’s your English these days?</h1>
+            <p className="landing-meta">Is it just enough to get by, or are you ready to surprise yourself with how far you can go?</p>
+            <p className="landing-note">Because every word you learn opens a new door — to conversations, to opportunities, to the world.</p>
+            <p className="landing-note">Your English isn’t just a skill… it’s your passport to something bigger.</p>
+            <p className="landing-note">a English Learning by Yourself Project</p>
+          </div>
+        </main>
+      )}
     </div>
   );
 }

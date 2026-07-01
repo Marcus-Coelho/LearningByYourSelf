@@ -49,7 +49,8 @@
 - Total de pastas de unidade: 100 (`unit_1` a `unit_100`).
 - Total de arquivos contados em `EVIU_P_I` com todas as subpastas: **618**.
 - Arquivos MP3 em `unit_100` após correção: apenas `U_100.A.mp3`, `U_100.B.mp3`, `U_100.C.mp3` e `U_100.D.mp3`.
-- A apresentação do web app foi atualizada com um título de página de aprendizado e um menu "Vacabulary" com submenus `Unit 1` a `Unit 100`.
+- A apresentação do web app foi atualizada com um título de página de aprendizado e um menu "Vocabulary" com submenus `Unit 1` a `Unit 100`.
+- O menu Vocabulary agora abre em um painel amplo e legível, dividido em 10 colunas de `Unit 1-10` a `Unit 91-100`.
 - O menu dropdown agora abre suavemente, mantém o submenu visível sem gap ao mover o mouse, e inclui um indicador de seta para baixo.
 
 ## Observações para outra IA
