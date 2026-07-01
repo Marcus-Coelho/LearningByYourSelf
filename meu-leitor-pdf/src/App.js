@@ -114,7 +114,6 @@ const unitTable = {
   100: 'Abbreviations',
 };
 
-
 const unitItems = Array.from({ length: 100 }, (_, index) => {
   const number = index + 1;
   return {
@@ -134,7 +133,13 @@ const renderPdfUpload = (onChange, label = 'Carregar PDF') => (
   </label>
 );
 
-// Ícone de aprendizado de línguas
+const formatAudioTitle = (src, unitNumber) => {
+  const fileName = src.split('/').pop() || '';
+  const stem = fileName.replace(/\.(mp3|m4a|wav|ogg)$/i, '');
+  const letter = stem.split('.').pop()?.toUpperCase() || '';
+  return `Unit ${unitNumber} - ${letter || 'Audio'}`;
+};
+
 const IconLanguage = () => (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9z" />
@@ -144,7 +149,6 @@ const IconLanguage = () => (
   </svg>
 );
 
-// Ícone de selecao de texto
 const IconText = () => (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M4 7h16" />
@@ -154,7 +158,6 @@ const IconText = () => (
   </svg>
 );
 
-// Ícone de mão
 const IconHand = () => (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2" />
@@ -177,15 +180,22 @@ function App() {
 
   useEffect(() => {
     return () => {
-      if (pdfFileUrl) URL.revokeObjectURL(pdfFileUrl);
+      if (pdfFileUrl) {
+        URL.revokeObjectURL(pdfFileUrl);
+      }
     };
   }, [pdfFileUrl]);
 
   const handlePdfChange = (event) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      return;
+    }
+
     setPdfFileUrl((currentUrl) => {
-      if (currentUrl) URL.revokeObjectURL(currentUrl);
+      if (currentUrl) {
+        URL.revokeObjectURL(currentUrl);
+      }
       return URL.createObjectURL(file);
     });
     setPdfFileName(file.name);
@@ -211,26 +221,25 @@ function App() {
         const res = await fetch(manifestUrl);
         if (res.ok) {
           const list = await res.json();
-          setUnitAudios(list.map((f) => `${basePath}/${f}`));
+          setUnitAudios(list.map((fileName) => `${basePath}/${fileName}`));
           return;
         }
-      } catch (e) {
-        // ignore and try probing
+      } catch (error) {
+        // Ignore and fall back to the default probing pattern.
       }
 
-      // Fallback: probe common filename patterns (U_XXX.A.mp3 ...)
       const padded = String(selectedUnit).padStart(3, '0');
-      const letters = ['A','B','C','D','E','F'];
+      const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
       const found = [];
-      for (const l of letters) {
-        const candidate = `${basePath}/U_${padded}.${l}.mp3`;
+      for (const letter of letters) {
+        const candidate = `${basePath}/U_${padded}.${letter}.mp3`;
         try {
-          const head = await fetch(candidate, { method: 'HEAD' });
-          if (head.ok) {
+          const response = await fetch(candidate, { method: 'HEAD' });
+          if (response.ok) {
             found.push(candidate);
           }
-        } catch (e) {
-          // ignore
+        } catch (error) {
+          // Ignore missing files.
         }
       }
       setUnitAudios(found);
@@ -239,7 +248,6 @@ function App() {
     loadAudioList();
   }, [selectedUnit, activePage]);
 
-  // Simple native audio player
   function AudioPlayer({ src, title }) {
     return (
       <div className="audio-player simple">
@@ -288,7 +296,10 @@ function App() {
 
   const resizePanel = (event) => {
     const drag = startDragRef.current;
-    if (!drag) return;
+    if (!drag) {
+      return;
+    }
+
     const deltaX = event.clientX - drag.startX;
     const nextWidths = drag.panel === 'left'
       ? clampPanelWidths(drag.leftWidth + deltaX, drag.rightWidth)
@@ -336,72 +347,63 @@ function App() {
           }}
         >
           <aside className="side-panel left-panel">
-          <div className="panel-content info-panel">
-            <p className="eyebrow">Livro aberto</p>
-            <h2>Conteudo Esquerdo</h2>
-            {activePage === 'unit' && selectedUnit ? (
-              <>
-                <p>Áudios da Unit {selectedUnit}:</p>
-                {unitAudios.length === 0 ? (
-                  <p className="muted">Nenhum áudio encontrado para esta unidade.</p>
-                ) : (
-                  <div className="audio-list">
-                    {unitAudios.map((a, i) => (
-                      <AudioPlayer key={a} src={a} title={`Unit ${selectedUnit} - Track ${i + 1}`} />
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <>
-                <p>Info do livro, notas, capitulos e detalhes importantes ficam aqui.</p>
-                {pdfFileName && <span className="file-pill">{pdfFileName}</span>}
-              </>
-            )}
-          </div>
-        </aside>
-
-        <button
-          className="resize-handle"
-          type="button"
-          aria-label="Redimensionar coluna esquerda"
-          onPointerDown={(event) => startPanelResize('left', event)}
-        />
-
-        <section className="pdf-panel">
-          <div className="pdf-toolbar">
-            <span>{pdfFileName || 'Nenhum PDF carregado'}</span>
-            {renderPdfUpload(handlePdfChange, pdfFileName ? 'Trocar PDF' : 'Carregar PDF')}
-          </div>
-
-          {pdfFileUrl ? (
-            <PdfWorkspace fileUrl={pdfFileUrl} onPdfChange={handlePdfChange} />
-          ) : (
-            <div className="pdf-empty-state">
-              <p className="eyebrow">Leitor pronto</p>
-              <h1>Carregue seu PDF</h1>
-              <p>Selecione um arquivo do computador para abrir no painel central.</p>
-              {renderPdfUpload(handlePdfChange)}
+            <div className="panel-content info-panel">
+              <p className="eyebrow">Unit {selectedUnit}</p>
+              <p>Áudios da Unit {selectedUnit}:</p>
+              {unitAudios.length === 0 ? (
+                <p className="muted">Nenhum áudio encontrado para esta unidade.</p>
+              ) : (
+                <div className="audio-list">
+                  {unitAudios.map((audioPath) => (
+                    <AudioPlayer key={audioPath} src={audioPath} title={formatAudioTitle(audioPath, selectedUnit)} />
+                  ))}
+                </div>
+              )}
+              {pdfFileName && <span className="file-pill">{pdfFileName}</span>}
             </div>
-          )}
-        </section>
+          </aside>
 
-        <button
-          className="resize-handle"
-          type="button"
-          aria-label="Redimensionar coluna direita"
-          onPointerDown={(event) => startPanelResize('right', event)}
-        />
+          <button
+            className="resize-handle"
+            type="button"
+            aria-label="Redimensionar coluna esquerda"
+            onPointerDown={(event) => startPanelResize('left', event)}
+          />
 
-        <aside className="side-panel right-panel">
-          <div className="panel-content related-panel">
-            <p className="eyebrow">Relacionados</p>
-            <p>Linha 1: Documentos Relacionados</p>
-            <p>Linha 2: Sugestao de leitura</p>
-            <p>Linha 3: Outros arquivos</p>
-          </div>
-        </aside>
-          </main>
+          <section className="pdf-panel">
+            <div className="pdf-toolbar">
+              <span>{pdfFileName || 'Nenhum PDF carregado'}</span>
+              {renderPdfUpload(handlePdfChange, pdfFileName ? 'Trocar PDF' : 'Carregar PDF')}
+            </div>
+
+            {pdfFileUrl ? (
+              <PdfWorkspace fileUrl={pdfFileUrl} onPdfChange={handlePdfChange} />
+            ) : (
+              <div className="pdf-empty-state">
+                <p className="eyebrow">Leitor pronto</p>
+                <h1>Carregue seu PDF</h1>
+                <p>Selecione um arquivo do computador para abrir no painel central.</p>
+                {renderPdfUpload(handlePdfChange)}
+              </div>
+            )}
+          </section>
+
+          <button
+            className="resize-handle"
+            type="button"
+            aria-label="Redimensionar coluna direita"
+            onPointerDown={(event) => startPanelResize('right', event)}
+          />
+
+          <aside className="side-panel right-panel">
+            <div className="panel-content related-panel">
+              <p className="eyebrow">Relacionados</p>
+              <p>Linha 1: Documentos Relacionados</p>
+              <p>Linha 2: Sugestao de leitura</p>
+              <p>Linha 3: Outros arquivos</p>
+            </div>
+          </aside>
+        </main>
       ) : activePage === 'vocabulary' ? (
         <main className="landing-page vocabulary-mode" id="link-vocabulary">
           <div className="landing-panel vocabulary-page">
@@ -473,16 +475,19 @@ function PdfWorkspace({ fileUrl, onPdfChange }) {
             ShowSearchPopover,
           } = slots;
 
-          const sep = (
+          const separator = (
             <div style={{ width: '1px', height: '24px', background: '#ddd', margin: '0 4px' }} />
           );
 
-          const toolBtn = (mode, icon, label) => (
+          const toolButton = (mode, icon, label) => (
             <SwitchSelectionMode mode={mode}>
               {(props) => (
                 <button
                   title={label}
-                  onClick={() => { props.onClick(); setActiveTool(mode.toLowerCase()); }}
+                  onClick={() => {
+                    props.onClick();
+                    setActiveTool(mode.toLowerCase());
+                  }}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -518,13 +523,13 @@ function PdfWorkspace({ fileUrl, onPdfChange }) {
                 <NumberOfPages />
               </div>
               <GoToNextPage />
-              {sep}
+              {separator}
               <ZoomOut />
               <Zoom />
               <ZoomIn />
-              {sep}
-              {toolBtn('Text', <IconText />, 'Selecionar texto')}
-              {toolBtn('Hand', <IconHand />, 'Ferramenta mão')}
+              {separator}
+              {toolButton('Text', <IconText />, 'Selecionar texto')}
+              {toolButton('Hand', <IconHand />, 'Ferramenta mão')}
               <div style={{ flex: 1 }} />
               <EnterFullScreen />
               <Download />
