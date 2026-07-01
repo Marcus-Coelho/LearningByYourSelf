@@ -16,7 +16,7 @@
 
 .app-header {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 11px;
   min-height: 60px;
   padding: 10px 22px 10px;
@@ -37,6 +37,7 @@
   min-width: 0;
   font-size: 18px;
   font-weight: 800;
+  transform: translateY(3px);
 }
 
 .brand-mark {
@@ -54,15 +55,14 @@
 }
 
 .menu {
-  margin: 0;
-  padding: 0;
+  margin: 0 0 0 18px;
   overflow: visible;
   position: relative;
 }
 
 .menu ol {
   list-style: none;
-  margin: 0;
+  margin: -25px 0 0 0;
   padding: 0;
   display: flex;
   align-items: center;
