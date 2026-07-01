@@ -11,6 +11,72 @@ const MIN_LEFT_WIDTH = 240;
 const MIN_CENTER_WIDTH = 420;
 const MIN_RIGHT_WIDTH = 260;
 
+const unitTable = {
+  1: 'Learning vocabulary',
+  2: 'Keeping a vocabulary notebook',
+  3: 'Using a dictionary',
+  4: 'English language words',
+  5: 'Country, nationality and language',
+  6: 'The physical world',
+  7: 'Weather',
+  8: 'Animals and insects',
+  9: 'The body and movement',
+  10: 'Describing appearance',
+  11: 'Describing character',
+  12: 'Feelings',
+  13: 'Family and friends',
+  14: 'Growing up',
+  15: 'Romance, marriage and divorce',
+  16: 'Daily routines',
+  17: 'The place where you live',
+  18: 'Around the home',
+  19: 'Money',
+  20: 'Health',
+  21: 'Clothes',
+  22: 'Fashion and buying clothes',
+  23: 'Shopping',
+  24: 'Food',
+  25: 'Cooking',
+  26: 'City life',
+  27: 'Life in the country',
+  28: 'Transport',
+  29: 'On the road',
+  30: 'Notices and warnings',
+  31: 'Classroom language',
+  32: 'School education',
+  33: 'Studying English and taking exams',
+  34: 'University education',
+  35: 'Jobs',
+  36: 'Talking about your work',
+  37: 'Making a career',
+  38: 'Working in an office',
+  39: 'Running a company',
+  40: 'Business and finance',
+  41: 'Sport and leisure',
+  42: 'Competitive sport',
+  43: 'Books and films',
+  44: 'Music',
+  45: 'Special events',
+  46: 'Travel bookings',
+  47: 'Air travel',
+  48: 'Hotels and restaurants',
+  49: 'Cafés',
+  50: 'Sightseeing holidays',
+  51: 'Holidays by the sea',
+  52: 'Newspapers and television',
+  53: 'Phoning and texting',
+  54: 'Computers',
+  55: 'Email and the Internet',
+};
+
+const unitItems = Array.from({ length: 100 }, (_, index) => {
+  const number = index + 1;
+  return {
+    number,
+    label: unitTable[number] || `Unit ${number}`,
+  };
+});
+
 const renderPdfUpload = (onChange, label = 'Carregar PDF') => (
   <label className="upload-button">
     {label}
@@ -56,6 +122,7 @@ function App() {
   const [pdfFileUrl, setPdfFileUrl] = useState('');
   const [pdfFileName, setPdfFileName] = useState('');
   const [selectedUnit, setSelectedUnit] = useState(null);
+  const [activePage, setActivePage] = useState('home');
   const [leftWidth, setLeftWidth] = useState(300);
   const [rightWidth, setRightWidth] = useState(300);
   const layoutRef = useRef(null);
@@ -80,11 +147,25 @@ function App() {
 
   const handleUnitSelect = (event, unit) => {
     event.preventDefault();
+    setActivePage('unit');
     setSelectedUnit(unit);
   };
 
   const handleHome = (event) => {
     event.preventDefault();
+    setActivePage('home');
+    setSelectedUnit(null);
+  };
+
+  const handleCourses = (event) => {
+    event.preventDefault();
+    setActivePage('courses');
+    setSelectedUnit(null);
+  };
+
+  const handleVocabulary = (event) => {
+    event.preventDefault();
+    setActivePage('vocabulary');
     setSelectedUnit(null);
   };
 
@@ -137,10 +218,10 @@ function App() {
           ) : (
             <ol>
               <li className="menu-item"><a href="#0" onClick={handleHome}>Home</a></li>
-              <li className="menu-item"><a href="#0">About</a></li>
+              <li className="menu-item"><a href="#0" onClick={handleCourses}>Courses</a></li>
               <li className="menu-item has-submenu">
-                <a href="#0">
-                  Vocabulary
+                <a href="#0" onClick={handleVocabulary}>
+                  Link 1
                   <span className="dropdown-arrow" aria-hidden="true">▾</span>
                 </a>
                 <ol className="sub-menu">
@@ -170,7 +251,7 @@ function App() {
         </nav>
       </header>
 
-      {selectedUnit ? (
+      {activePage === 'unit' ? (
         <main
           className="main-panels"
           ref={layoutRef}
@@ -228,6 +309,35 @@ function App() {
           </div>
         </aside>
           </main>
+      ) : activePage === 'vocabulary' ? (
+        <main className="landing-page vocabulary-mode" id="link-vocabulary">
+          <div className="landing-panel vocabulary-page">
+            <h2 className="vocabulary-title">Vocabulary - English Pre Intermediate</h2>
+            <div className="vocabulary-list" role="list">
+              {unitItems.map((unit) => (
+                <a key={unit.number} className="vocabulary-link" href={`#unit-${unit.number}`} onClick={(event) => handleUnitSelect(event, unit.number)}>
+                  <span>Unit {unit.number}</span>
+                  <small>{unit.label}</small>
+                </a>
+              ))}
+            </div>
+          </div>
+        </main>
+      ) : activePage === 'courses' ? (
+        <main className="landing-page">
+          <div className="landing-panel course-links-panel">
+            <div className="course-links">
+              <a className="course-link" href="#link-vocabulary" onClick={handleVocabulary}>
+                <span>Vocabulary - English Pre Intermediate</span>
+                <small>Explore pre-intermediate vocabulary practice and lessons.</small>
+              </a>
+              <a className="course-link" href="#link-course-2">
+                <span>Course 2</span>
+                <small>Continue with the next course and improve your fluency.</small>
+              </a>
+            </div>
+          </div>
+        </main>
       ) : (
         <main className="landing-page">
           <div className="landing-panel">

@@ -25,8 +25,9 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.16);
   color: #fff;
   box-shadow: 0 12px 32px rgba(21, 10, 45, 0.26);
-  position: relative;
-  z-index: 10;
+  position: sticky;
+  top: 0;
+  z-index: 20;
   overflow: visible;
 }
 
@@ -274,6 +275,12 @@
 
 .main-panels { display: grid; flex-grow: 1; overflow: hidden; }
 
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
 .landing-page {
   flex: 1;
   min-height: calc(100vh - 72px);
@@ -285,6 +292,13 @@
               linear-gradient(180deg, rgba(28, 20, 56, 0.96) 0%, rgba(22, 14, 45, 0.98) 100%);
 }
 
+.landing-page.vocabulary-mode {
+  align-items: flex-start;
+  padding-top: 100px;
+  padding-bottom: 40px;
+  overflow: auto;
+}
+
 .landing-panel {
   width: 100%;
   max-width: 680px;
@@ -294,6 +308,18 @@
   border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: 0 32px 80px rgba(0, 0, 0, 0.18);
   text-align: center;
+}
+
+.landing-panel.vocabulary-page {
+  max-width: 1120px;
+  width: 100%;
+  text-align: left;
+  padding: 32px 30px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  max-height: calc(100vh - 118px);
+  overflow: hidden;
 }
 
 .landing-panel .eyebrow {
@@ -310,11 +336,104 @@
   color: #fff;
 }
 
+.vocabulary-title {
+  margin-top: 0;
+  text-align: left;
+}
+
 .landing-panel p {
   margin: 0;
   color: rgba(255, 255, 255, 0.75);
   font-size: 1rem;
   line-height: 1.7;
+}
+
+.course-links {
+  display: grid;
+  gap: 18px;
+  padding: 16px 0 4px;
+}
+
+.course-link {
+  display: block;
+  padding: 20px 24px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  text-decoration: none;
+  color: #fff;
+  transition: transform 220ms ease, background 220ms ease, border-color 220ms ease;
+}
+
+.course-link:hover,
+.course-link:focus-visible {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(139, 92, 246, 0.42);
+}
+
+.course-link span {
+  display: block;
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin-bottom: 8px;
+}
+
+.course-link small {
+  display: block;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.5;
+}
+
+.vocabulary-page {
+  padding: 24px 12px;
+}
+
+.vocabulary-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  padding-right: 4px;
+  max-height: calc(100vh - 260px);
+  overflow: auto;
+}
+
+.vocabulary-title {
+  margin: 0 0 18px;
+  color: #fff;
+  font-size: clamp(2rem, 3vw, 2.6rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.vocabulary-link {
+  display: block;
+  padding: 18px 20px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  text-decoration: none;
+  color: #fff;
+  transition: transform 220ms ease, background 220ms ease, border-color 220ms ease;
+}
+
+.vocabulary-link:hover,
+.vocabulary-link:focus-visible {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(139, 92, 246, 0.42);
+}
+
+.vocabulary-link span {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.vocabulary-link small {
+  display: block;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.4;
 }
 
 .side-panel { background: #f9f9f9; overflow-y: auto; }
