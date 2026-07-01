@@ -265,31 +265,7 @@ function App() {
             <ol>
               <li className="menu-item"><a href="#0" onClick={handleHome}>Home</a></li>
               <li className="menu-item"><a href="#0" onClick={handleCourses}>Courses</a></li>
-              <li className="menu-item has-submenu">
-                <a href="#0" onClick={handleVocabulary}>
-                  Link 1
-                  <span className="dropdown-arrow" aria-hidden="true">▾</span>
-                </a>
-                <ol className="sub-menu">
-                  {Array.from({ length: 10 }, (_, groupIndex) => {
-                    const start = groupIndex * 10 + 1;
-                    const end = (groupIndex + 1) * 10;
-                    return (
-                      <li key={groupIndex} className="menu-column">
-                        <div className="column-title">Unit {start}-{end}</div>
-                        {Array.from({ length: 10 }, (_, index) => {
-                          const unit = start + index;
-                          return (
-                            <a key={unit} href={`#unit-${unit}`} onClick={(event) => handleUnitSelect(event, unit)}>
-                              Unit {unit}
-                            </a>
-                          );
-                        })}
-                      </li>
-                    );
-                  })}
-                </ol>
-              </li>
+              <li className="menu-item"><a href="#link-1">Link 1</a></li>
               <li className="menu-item"><a href="#link-2">LINK 2</a></li>
               <li className="menu-item"><a href="#link-3">LINK 3</a></li>
             </ol>
