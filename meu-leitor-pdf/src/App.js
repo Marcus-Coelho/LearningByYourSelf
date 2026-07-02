@@ -1,15 +1,29 @@
 import { useEffect, useRef, useState } from 'react';
-import { Viewer, Worker } from '@react-pdf-viewer/core';
+import { SpecialZoomLevel, Viewer, Worker } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 import { highlightPlugin, Trigger } from '@react-pdf-viewer/highlight';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import '@react-pdf-viewer/highlight/lib/styles/index.css';
+import exerciseCoords from './exercises_coords.json';
 import './App.css';
 
 const MIN_LEFT_WIDTH = 240;
 const MIN_CENTER_WIDTH = 420;
 const MIN_RIGHT_WIDTH = 260;
+
+// Exercícios agrupados por unidade, em ordem numérica (N.1, N.2, ...).
+// Gerado a partir de exercises_coords.json (ver gerar_indice_exercicios.py).
+const exercisesByUnit = (() => {
+  const map = {};
+  Object.entries(exerciseCoords).forEach(([id, coords]) => {
+    (map[coords.unit] = map[coords.unit] || []).push(id);
+  });
+  Object.values(map).forEach((ids) =>
+    ids.sort((a, b) => Number(a.split('.')[1]) - Number(b.split('.')[1]))
+  );
+  return map;
+})();
 
 const unitTable = {
   1: 'Learning vocabulary',
@@ -171,6 +185,7 @@ function App() {
   const [pdfFileUrl, setPdfFileUrl] = useState('');
   const [pdfFileName, setPdfFileName] = useState('');
   const [selectedUnit, setSelectedUnit] = useState(null);
+  const [selectedExercise, setSelectedExercise] = useState(null);
   const [activePage, setActivePage] = useState('home');
   const [unitAudios, setUnitAudios] = useState([]);
   const [leftWidth, setLeftWidth] = useState(300);
@@ -237,6 +252,16 @@ function App() {
       return;
     }
     setSelectedUnit(selectedUnit - 1);
+  };
+
+  const handleOpenExercises = () => {
+    const ids = exercisesByUnit[selectedUnit] || [];
+    setSelectedExercise(ids[0] || null);
+    setActivePage('exercises');
+  };
+
+  const handleBackToUnit = () => {
+    setActivePage('unit');
   };
 
   useEffect(() => {
@@ -345,6 +370,40 @@ function App() {
     window.removeEventListener('pointerup', stopPanelResize);
   };
 
+  const unitExercises = selectedUnit ? exercisesByUnit[selectedUnit] || [] : [];
+  const activeExerciseId =
+    selectedExercise && unitExercises.includes(selectedExercise)
+      ? selectedExercise
+      : unitExercises[0] || null;
+  const activeCoords = activeExerciseId ? exerciseCoords[activeExerciseId] : null;
+  const exerciseFileUrl = activeCoords
+    ? `/materials/unit_${selectedUnit}/EVIU_PI-${selectedUnit}${activeCoords.suffix}.pdf`
+    : '';
+  const activeIndex = activeExerciseId ? unitExercises.indexOf(activeExerciseId) : -1;
+
+  const handlePreviousExercise = () => {
+    if (activeIndex > 0) {
+      setSelectedExercise(unitExercises[activeIndex - 1]);
+    }
+  };
+
+  const handleNextExercise = () => {
+    if (activeIndex >= 0 && activeIndex < unitExercises.length - 1) {
+      setSelectedExercise(unitExercises[activeIndex + 1]);
+    }
+  };
+
+  const isLastExercise = activeIndex >= 0 && activeIndex === unitExercises.length - 1;
+
+  // Vai para a Unit de LEITURA seguinte (não os exercícios): abre a página da
+  // unidade N+1 com o PDF _L, como na navegação normal de unidades.
+  const handleGoToNextReadingUnit = () => {
+    if (selectedUnit < 100) {
+      setSelectedUnit(selectedUnit + 1);
+      setActivePage('unit');
+    }
+  };
+
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -369,7 +428,75 @@ function App() {
         </nav>
       </header>
 
-      {activePage === 'unit' ? (
+      {activePage === 'exercises' ? (
+        <main className="study-page">
+          <div className="study-bar">
+            <div className="study-bar-left">
+              <button type="button" className="ghost-button" onClick={handleBackToUnit}>
+                ‹ Voltar à Unit
+              </button>
+              <span className="study-unit-label">
+                Unit {selectedUnit}
+                {unitTable[selectedUnit] ? <small>{unitTable[selectedUnit]}</small> : null}
+              </span>
+            </div>
+
+            <div className="exercise-tabs" role="tablist" aria-label="Exercícios da unidade">
+              {unitExercises.map((id) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  aria-selected={id === activeExerciseId}
+                  className={`exercise-tab${id === activeExerciseId ? ' is-active' : ''}`}
+                  onClick={() => setSelectedExercise(id)}
+                >
+                  {id}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="study-columns">
+            <div className="study-left">
+              <section className="study-reader">
+                {activeCoords ? (
+                  <CroppedExerciseViewer
+                    key={exerciseFileUrl}
+                    fileUrl={exerciseFileUrl}
+                    coords={activeCoords}
+                  />
+                ) : (
+                  <div className="pdf-empty-state">
+                    <p className="eyebrow">Sem exercício</p>
+                    <h1>Nenhum exercício indexado</h1>
+                    <p>Esta unidade não possui exercícios no índice.</p>
+                  </div>
+                )}
+              </section>
+
+              <section className="study-future-pdf">
+                <span>FUTURE AREA TO SHOW ANSWERS</span>
+              </section>
+            </div>
+
+            <aside className="study-answers">
+              {activeExerciseId && (
+                <AnswerArea
+                  exerciseId={activeExerciseId}
+                  onPrevious={handlePreviousExercise}
+                  onNext={handleNextExercise}
+                  hasPrevious={activeIndex > 0}
+                  hasNext={activeIndex >= 0 && activeIndex < unitExercises.length - 1}
+                  isLastExercise={isLastExercise}
+                  canGoNextUnit={selectedUnit < 100}
+                  onNextReadingUnit={handleGoToNextReadingUnit}
+                />
+              )}
+            </aside>
+          </div>
+        </main>
+      ) : activePage === 'unit' ? (
         <main
           className="main-panels"
           ref={layoutRef}
@@ -411,6 +538,11 @@ function App() {
                   {selectedUnit < 100 && (
                     <button type="button" className="upload-button" onClick={handleNextUnit}>
                       Next Unit
+                    </button>
+                  )}
+                  {(exercisesByUnit[selectedUnit] || []).length > 0 && (
+                    <button type="button" className="upload-button exercises-link" onClick={handleOpenExercises}>
+                      Exercises
                     </button>
                   )}
                 </div>
@@ -492,7 +624,7 @@ function App() {
   );
 }
 
-function PdfWorkspace({ fileUrl, onPdfChange }) {
+function PdfWorkspace({ fileUrl, onPdfChange, defaultScale }) {
   const [activeTool, setActiveTool] = useState('text');
 
   const highlightPluginInstance = highlightPlugin({
@@ -589,6 +721,7 @@ function PdfWorkspace({ fileUrl, onPdfChange }) {
       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
         <Viewer
           fileUrl={fileUrl}
+          defaultScale={defaultScale}
           plugins={[defaultLayoutPluginInstance, highlightPluginInstance]}
           renderError={(error) => (
             <div className="pdf-empty-state pdf-error-state">
@@ -600,6 +733,176 @@ function PdfWorkspace({ fileUrl, onPdfChange }) {
           )}
         />
       </Worker>
+    </div>
+  );
+}
+
+// Envolve o leitor PDF existente e o recorta (crop) para mostrar SOMENTE a faixa
+// vertical [top, bottom] do exercício. Não altera o leitor: apenas ajusta, via
+// DOM, a altura visível do scroller e a posição de rolagem, reagindo a zoom e
+// redimensionamento. O PDF original continua sendo o arquivo carregado.
+function CroppedExerciseViewer({ fileUrl, coords }) {
+  const shellRef = useRef(null);
+
+  useEffect(() => {
+    const shell = shellRef.current;
+    if (!shell || !coords) {
+      return undefined;
+    }
+
+    let cancelled = false;
+    let rafId = null;
+
+    const applyCrop = () => {
+      if (cancelled) {
+        return;
+      }
+      const scroller = shell.querySelector('.rpv-core__inner-pages');
+      const pageLayer = shell.querySelector('.rpv-core__page-layer');
+      const width = pageLayer ? pageLayer.getBoundingClientRect().width : 0;
+      if (!scroller || !width) {
+        rafId = requestAnimationFrame(applyCrop);
+        return;
+      }
+
+      const scale = width / coords.pageWidth;
+      const bandHeight = Math.max(48, (coords.bottom - coords.top) * scale);
+      const bandTop = coords.top * scale;
+
+      scroller.style.setProperty('height', `${bandHeight}px`, 'important');
+      scroller.style.setProperty('max-height', `${bandHeight}px`, 'important');
+      scroller.style.setProperty('flex', '0 0 auto', 'important');
+      scroller.style.setProperty('overflow', 'hidden', 'important');
+      scroller.scrollTop = bandTop;
+
+      // Encolhe o leitor para envolver apenas a barra + a banda do exercício,
+      // evitando uma grande área vazia abaixo (as bandas são largas e baixas).
+      const toolbar = shell.querySelector('.rpv-default-layout__toolbar');
+      const toolbarH = toolbar ? toolbar.getBoundingClientRect().height : 40;
+      const viewerRoot = shell.querySelector('.rpv-core__viewer');
+      if (viewerRoot) {
+        viewerRoot.style.setProperty('height', `${toolbarH + bandHeight + 2}px`, 'important');
+      }
+    };
+
+    // Reaplica o recorte quando o conteúdo muda (zoom troca o canvas) ou o
+    // painel é redimensionado.
+    const mo = new MutationObserver(() => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(applyCrop);
+    });
+    mo.observe(shell, { childList: true, subtree: true });
+
+    const ro = new ResizeObserver(() => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(applyCrop);
+    });
+    ro.observe(shell);
+
+    applyCrop();
+
+    return () => {
+      cancelled = true;
+      if (rafId) cancelAnimationFrame(rafId);
+      mo.disconnect();
+      ro.disconnect();
+    };
+  }, [fileUrl, coords]);
+
+  return (
+    <div className="crop-shell" ref={shellRef}>
+      <PdfWorkspace fileUrl={fileUrl} defaultScale={SpecialZoomLevel.PageWidth} />
+    </div>
+  );
+}
+
+function AutoGrowTextarea({ value, onChange, placeholder }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) {
+      return;
+    }
+    el.style.height = 'auto';
+    const min = parseFloat(window.getComputedStyle(el).minHeight) || 0;
+    el.style.height = `${Math.max(el.scrollHeight, min)}px`;
+  }, [value]);
+
+  return (
+    <textarea
+      ref={ref}
+      className="answer-box"
+      value={value}
+      placeholder={placeholder}
+      onChange={(event) => onChange(event.target.value)}
+      rows={2}
+    />
+  );
+}
+
+// Coluna direita: resposta do aluno, persistida por exercício em localStorage.
+function AnswerArea({
+  exerciseId,
+  onPrevious,
+  onNext,
+  hasPrevious,
+  hasNext,
+  isLastExercise,
+  canGoNextUnit,
+  onNextReadingUnit,
+}) {
+  const storageKey = `answers:${exerciseId}`;
+  const [answer, setAnswer] = useState('');
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      setAnswer(raw || '');
+    } catch (error) {
+      setAnswer('');
+    }
+  }, [storageKey]);
+
+  const handleChange = (value) => {
+    setAnswer(value);
+    try {
+      window.localStorage.setItem(storageKey, value);
+    } catch (error) {
+      // Armazenamento indisponível — mantém apenas em memória.
+    }
+  };
+
+  return (
+    <div className="answers-inner">
+      <div className="answers-head">
+        <h2>Exercise {exerciseId}</h2>
+        <div className="answers-nav">
+          <button type="button" className="ghost-button" onClick={onPrevious} disabled={!hasPrevious}>
+            ‹ Anterior
+          </button>
+          <button type="button" className="ghost-button" onClick={onNext} disabled={!hasNext}>
+            Próximo ›
+          </button>
+        </div>
+      </div>
+
+      <label className="answer-field">
+        <span>Your answer</span>
+        <AutoGrowTextarea value={answer} onChange={handleChange} placeholder="Digite sua resposta..." />
+      </label>
+
+      <div className="answers-actions">
+        {/* Sem funcionalidade por enquanto — apenas o link. */}
+        <button type="button" className="show-answers-btn">
+          Show answers
+        </button>
+        {isLastExercise && canGoNextUnit && (
+          <button type="button" className="show-answers-btn secondary" onClick={onNextReadingUnit}>
+            Próxima Unit (leitura) ›
+          </button>
+        )}
+      </div>
     </div>
   );
 }
