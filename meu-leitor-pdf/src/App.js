@@ -380,7 +380,6 @@ function App() {
           <aside className="side-panel left-panel">
             <div className="panel-content info-panel">
               <p className="eyebrow">Unit {selectedUnit}</p>
-              <p>Áudios da Unit {selectedUnit}:</p>
               {unitAudios.length === 0 ? (
                 <p className="muted">Nenhum áudio encontrado para esta unidade.</p>
               ) : (

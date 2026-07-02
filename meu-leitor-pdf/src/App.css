@@ -506,8 +506,8 @@ body {
   align-items: center;
   justify-content: flex-end;
   gap: 16px;
-  min-height: 56px;
-  padding: 10px 14px;
+  min-height: 38px;
+  padding: 6px 14px;
   border-bottom: 1px solid var(--line);
   background: linear-gradient(90deg, #fff 0%, #f1ebff 100%);
   color: var(--purple-950);
@@ -520,6 +520,12 @@ body {
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
+}
+
+.pdf-toolbar-nav .upload-button {
+  min-height: 28px;
+  padding: 0 14px;
+  font-size: 13px;
 }
 
 .pdf-panel .rpv-core__viewer {
