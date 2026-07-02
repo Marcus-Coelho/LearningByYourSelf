@@ -6,7 +6,11 @@ import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import '@react-pdf-viewer/highlight/lib/styles/index.css';
 import exerciseCoords from './exercises_coords.json';
+import answersCoords from './answers_coords.json';
 import './App.css';
+
+// URL do gabarito único (multipágina), servido por src/setupProxy.js.
+const ANSWERS_KEY_URL = '/answers-key.pdf';
 
 const MIN_LEFT_WIDTH = 240;
 const MIN_CENTER_WIDTH = 420;
@@ -136,7 +140,7 @@ const unitItems = Array.from({ length: 100 }, (_, index) => {
   };
 });
 
-const renderPdfUpload = (onChange, label = 'Carregar PDF') => (
+const renderPdfUpload = (onChange, label = 'Load PDF') => (
   <label className="upload-button">
     {label}
     <input
@@ -186,6 +190,7 @@ function App() {
   const [pdfFileName, setPdfFileName] = useState('');
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [selectedExercise, setSelectedExercise] = useState(null);
+  const [showAnswers, setShowAnswers] = useState(false);
   const [activePage, setActivePage] = useState('home');
   const [unitAudios, setUnitAudios] = useState([]);
   const [leftWidth, setLeftWidth] = useState(300);
@@ -380,6 +385,13 @@ function App() {
     ? `/materials/unit_${selectedUnit}/EVIU_PI-${selectedUnit}${activeCoords.suffix}.pdf`
     : '';
   const activeIndex = activeExerciseId ? unitExercises.indexOf(activeExerciseId) : -1;
+  const answerCoords = activeExerciseId ? answersCoords[activeExerciseId] : null;
+
+  // As respostas ficam ocultas por padrão; só aparecem ao clicar em "Show
+  // answers". Ao trocar de exercício ou de unidade, esconde de novo.
+  useEffect(() => {
+    setShowAnswers(false);
+  }, [activeExerciseId, selectedUnit]);
 
   const handlePreviousExercise = () => {
     if (activeIndex > 0) {
@@ -409,9 +421,9 @@ function App() {
       <header className="app-header">
         <div className="brand">
           <span className="brand-mark"><IconLanguage /></span>
-          <span>Let's Learning English</span>
+          <span>Let's Learn English</span>
         </div>
-        <nav className="menu" aria-label="Links principais">
+        <nav className="menu" aria-label="Main links">
           {selectedUnit ? (
             <ol>
               <li className="menu-item"><a href="#0" onClick={handleHome}>Home</a></li>
@@ -433,7 +445,7 @@ function App() {
           <div className="study-bar">
             <div className="study-bar-left">
               <button type="button" className="ghost-button" onClick={handleBackToUnit}>
-                ‹ Voltar à Unit
+                ‹ Back to Unit
               </button>
               <span className="study-unit-label">
                 Unit {selectedUnit}
@@ -441,7 +453,7 @@ function App() {
               </span>
             </div>
 
-            <div className="exercise-tabs" role="tablist" aria-label="Exercícios da unidade">
+            <div className="exercise-tabs" role="tablist" aria-label="Unit exercises">
               {unitExercises.map((id) => (
                 <button
                   key={id}
@@ -468,15 +480,23 @@ function App() {
                   />
                 ) : (
                   <div className="pdf-empty-state">
-                    <p className="eyebrow">Sem exercício</p>
-                    <h1>Nenhum exercício indexado</h1>
-                    <p>Esta unidade não possui exercícios no índice.</p>
+                    <p className="eyebrow">No exercise</p>
+                    <h1>No exercise indexed</h1>
+                    <p>This unit has no exercises in the index.</p>
                   </div>
                 )}
               </section>
 
-              <section className="study-future-pdf">
-                <span>FUTURE AREA TO SHOW ANSWERS</span>
+              <section className={`study-future-pdf${showAnswers && answerCoords ? ' has-pdf' : ''}`}>
+                {showAnswers && answerCoords ? (
+                  <CroppedExerciseViewer
+                    key={`answers-${activeExerciseId}`}
+                    fileUrl={ANSWERS_KEY_URL}
+                    coords={answerCoords}
+                  />
+                ) : (
+                  <span>FUTURE AREA TO SHOW ANSWERS</span>
+                )}
               </section>
             </div>
 
@@ -491,6 +511,9 @@ function App() {
                   isLastExercise={isLastExercise}
                   canGoNextUnit={selectedUnit < 100}
                   onNextReadingUnit={handleGoToNextReadingUnit}
+                  showAnswers={showAnswers}
+                  hasAnswer={Boolean(answerCoords)}
+                  onToggleAnswers={() => setShowAnswers((value) => !value)}
                 />
               )}
             </aside>
@@ -508,7 +531,7 @@ function App() {
             <div className="panel-content info-panel">
               <p className="eyebrow">Unit {selectedUnit}</p>
               {unitAudios.length === 0 ? (
-                <p className="muted">Nenhum áudio encontrado para esta unidade.</p>
+                <p className="muted">No audio found for this unit.</p>
               ) : (
                 <div className="audio-list">
                   {unitAudios.map((audioPath) => (
@@ -522,7 +545,7 @@ function App() {
           <button
             className="resize-handle"
             type="button"
-            aria-label="Redimensionar coluna esquerda"
+            aria-label="Resize left column"
             onPointerDown={(event) => startPanelResize('left', event)}
           />
 
@@ -547,7 +570,7 @@ function App() {
                   )}
                 </div>
               ) : (
-                renderPdfUpload(handlePdfChange, 'Carregar PDF')
+                renderPdfUpload(handlePdfChange, 'Load PDF')
               )}
             </div>
 
@@ -555,9 +578,9 @@ function App() {
               <PdfWorkspace fileUrl={pdfFileUrl} onPdfChange={handlePdfChange} />
             ) : (
               <div className="pdf-empty-state">
-                <p className="eyebrow">Leitor pronto</p>
-                <h1>Carregue seu PDF</h1>
-                <p>Selecione um arquivo do computador para abrir no painel central.</p>
+                <p className="eyebrow">Reader ready</p>
+                <h1>Load your PDF</h1>
+                <p>Select a file from your computer to open it in the center panel.</p>
                 {renderPdfUpload(handlePdfChange)}
               </div>
             )}
@@ -566,16 +589,16 @@ function App() {
           <button
             className="resize-handle"
             type="button"
-            aria-label="Redimensionar coluna direita"
+            aria-label="Resize right column"
             onPointerDown={(event) => startPanelResize('right', event)}
           />
 
           <aside className="side-panel right-panel">
             <div className="panel-content related-panel">
-              <p className="eyebrow">Relacionados</p>
-              <p>Linha 1: Documentos Relacionados</p>
-              <p>Linha 2: Sugestao de leitura</p>
-              <p>Linha 3: Outros arquivos</p>
+              <p className="eyebrow">Related</p>
+              <p>Line 1: Related documents</p>
+              <p>Line 2: Reading suggestion</p>
+              <p>Line 3: Other files</p>
             </div>
           </aside>
         </main>
@@ -616,7 +639,7 @@ function App() {
             <p className="landing-meta">Is it just enough to get by, or are you ready to surprise yourself with how far you can go?</p>
             <p className="landing-note">Because every word you learn opens a new door — to conversations, to opportunities, to the world.</p>
             <p className="landing-note">Your English isn’t just a skill… it’s your passport to something bigger.</p>
-            <p className="landing-note">a English Learning by Yourself Project</p>
+            <p className="landing-note">An English Learning by Yourself Project</p>
           </div>
         </main>
       )}
@@ -624,7 +647,7 @@ function App() {
   );
 }
 
-function PdfWorkspace({ fileUrl, onPdfChange, defaultScale }) {
+function PdfWorkspace({ fileUrl, onPdfChange, defaultScale, initialPage }) {
   const [activeTool, setActiveTool] = useState('text');
 
   const highlightPluginInstance = highlightPlugin({
@@ -703,8 +726,8 @@ function PdfWorkspace({ fileUrl, onPdfChange, defaultScale }) {
               <Zoom />
               <ZoomIn />
               {separator}
-              {toolButton('Text', <IconText />, 'Selecionar texto')}
-              {toolButton('Hand', <IconHand />, 'Ferramenta mão')}
+              {toolButton('Text', <IconText />, 'Select text')}
+              {toolButton('Hand', <IconHand />, 'Hand tool')}
               <div style={{ flex: 1 }} />
               <EnterFullScreen />
               <Download />
@@ -722,13 +745,14 @@ function PdfWorkspace({ fileUrl, onPdfChange, defaultScale }) {
         <Viewer
           fileUrl={fileUrl}
           defaultScale={defaultScale}
+          initialPage={initialPage}
           plugins={[defaultLayoutPluginInstance, highlightPluginInstance]}
           renderError={(error) => (
             <div className="pdf-empty-state pdf-error-state">
-              <p className="eyebrow">PDF invalido</p>
+              <p className="eyebrow">Invalid PDF</p>
               <h2>{error.message || 'Invalid PDF structure.'}</h2>
-              <p>Escolha outro arquivo PDF para continuar a leitura.</p>
-              {renderPdfUpload(onPdfChange, 'Carregar outro PDF')}
+              <p>Choose another PDF file to continue reading.</p>
+              {renderPdfUpload(onPdfChange, 'Load another PDF')}
             </div>
           )}
         />
@@ -753,12 +777,18 @@ function CroppedExerciseViewer({ fileUrl, coords }) {
     let cancelled = false;
     let rafId = null;
 
+    const targetPage = coords.page || 0;
+
     const applyCrop = () => {
       if (cancelled) {
         return;
       }
       const scroller = shell.querySelector('.rpv-core__inner-pages');
-      const pageLayer = shell.querySelector('.rpv-core__page-layer');
+      // Página-alvo pelo data-testid (funciona mesmo com PDF multipágina e
+      // virtualização, desde que initialPage a tenha renderizado).
+      const pageLayer = shell.querySelector(
+        `[data-testid="core__page-layer-${targetPage}"]`
+      );
       const width = pageLayer ? pageLayer.getBoundingClientRect().width : 0;
       if (!scroller || !width) {
         rafId = requestAnimationFrame(applyCrop);
@@ -767,7 +797,12 @@ function CroppedExerciseViewer({ fileUrl, coords }) {
 
       const scale = width / coords.pageWidth;
       const bandHeight = Math.max(48, (coords.bottom - coords.top) * scale);
-      const bandTop = coords.top * scale;
+      // Deslocamento real do topo da página-alvo dentro do scroller.
+      const pageTopInScroller =
+        pageLayer.getBoundingClientRect().top -
+        scroller.getBoundingClientRect().top +
+        scroller.scrollTop;
+      const bandTop = pageTopInScroller + coords.top * scale;
 
       scroller.style.setProperty('height', `${bandHeight}px`, 'important');
       scroller.style.setProperty('max-height', `${bandHeight}px`, 'important');
@@ -811,33 +846,12 @@ function CroppedExerciseViewer({ fileUrl, coords }) {
 
   return (
     <div className="crop-shell" ref={shellRef}>
-      <PdfWorkspace fileUrl={fileUrl} defaultScale={SpecialZoomLevel.PageWidth} />
+      <PdfWorkspace
+        fileUrl={fileUrl}
+        defaultScale={SpecialZoomLevel.PageWidth}
+        initialPage={coords.page || 0}
+      />
     </div>
-  );
-}
-
-function AutoGrowTextarea({ value, onChange, placeholder }) {
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) {
-      return;
-    }
-    el.style.height = 'auto';
-    const min = parseFloat(window.getComputedStyle(el).minHeight) || 0;
-    el.style.height = `${Math.max(el.scrollHeight, min)}px`;
-  }, [value]);
-
-  return (
-    <textarea
-      ref={ref}
-      className="answer-box"
-      value={value}
-      placeholder={placeholder}
-      onChange={(event) => onChange(event.target.value)}
-      rows={2}
-    />
   );
 }
 
@@ -851,6 +865,9 @@ function AnswerArea({
   isLastExercise,
   canGoNextUnit,
   onNextReadingUnit,
+  showAnswers,
+  hasAnswer,
+  onToggleAnswers,
 }) {
   const storageKey = `answers:${exerciseId}`;
   const [answer, setAnswer] = useState('');
@@ -879,27 +896,37 @@ function AnswerArea({
         <h2>Exercise {exerciseId}</h2>
         <div className="answers-nav">
           <button type="button" className="ghost-button" onClick={onPrevious} disabled={!hasPrevious}>
-            ‹ Anterior
+            ‹ Previous
           </button>
           <button type="button" className="ghost-button" onClick={onNext} disabled={!hasNext}>
-            Próximo ›
+            Next ›
           </button>
         </div>
       </div>
 
       <label className="answer-field">
         <span>Your answer</span>
-        <AutoGrowTextarea value={answer} onChange={handleChange} placeholder="Digite sua resposta..." />
+        <textarea
+          className="answer-box"
+          value={answer}
+          placeholder="Type your answer..."
+          onChange={(event) => handleChange(event.target.value)}
+        />
       </label>
 
       <div className="answers-actions">
-        {/* Sem funcionalidade por enquanto — apenas o link. */}
-        <button type="button" className="show-answers-btn">
-          Show answers
+        <button
+          type="button"
+          className={`show-answers-btn${showAnswers ? ' is-active' : ''}`}
+          onClick={onToggleAnswers}
+          disabled={!hasAnswer}
+          title={hasAnswer ? '' : 'No answer key for this exercise'}
+        >
+          {showAnswers ? 'Hide answers' : 'Show answers'}
         </button>
         {isLastExercise && canGoNextUnit && (
           <button type="button" className="show-answers-btn secondary" onClick={onNextReadingUnit}>
-            Próxima Unit (leitura) ›
+            Next Unit
           </button>
         )}
       </div>

@@ -32,6 +32,13 @@ MATERIALS = os.path.join(ROOT, "Pre Intermediate and Intermediate", "EVIU_P_I")
 LISTA_TXT = os.path.join(ROOT, "Pre Intermediate and Intermediate", "exercises list.txt")
 SAIDA_JSON = os.path.join(ROOT, "meu-leitor-pdf", "src", "exercises_coords.json")
 
+# Gabarito único (multipágina) com as respostas de todas as units.
+ANSWERS_PDF = os.path.join(
+    ROOT, "Pre Intermediate and Intermediate",
+    "English_Vocabulary_Pre_Intermediate_Answers_Key.pdf",
+)
+ANSWERS_JSON = os.path.join(ROOT, "meu-leitor-pdf", "src", "answers_coords.json")
+
 # Arquivos escaneados por unidade, em ordem de leitura (esquerda -> direita do
 # spread original). _L vem antes de _E porque os primeiros exercícios de algumas
 # units ficaram na página da esquerda.
@@ -140,10 +147,71 @@ def calcular_bandas(marcadores):
     return saida
 
 
+def gerar_respostas(ids_validos):
+    """
+    Índice do gabarito (PDF único multipágina): para cada exercício N.x localiza
+    o marcador na camada de texto e calcula a faixa [top, bottom] DENTRO da sua
+    página. bottom = próximo marcador na mesma página, senão fim do conteúdo.
+
+    Só considera marcadores cujo id é um exercício REAL (ids_validos). Isso evita
+    falsos positivos como horários no texto ("9.30", "6.00") que também casam com
+    \\d+.\\d+ e, se contados, encurtariam a banda da resposta anterior.
+
+    Salva {id: {page, top, bottom, pageWidth, pageHeight}} em answers_coords.json.
+    """
+    if not os.path.exists(ANSWERS_PDF):
+        print(f"[aviso] gabarito não encontrado: {ANSWERS_PDF}")
+        return
+    padrao = re.compile(r"^\d+\.\d+$")
+    doc = fitz.open(ANSWERS_PDF)
+    indice = {}
+    for pno in range(doc.page_count):
+        page = doc[pno]
+        cb = content_bottom(page)
+        pw = round(page.rect.width, 1)
+        ph = round(page.rect.height, 1)
+        # marcadores válidos desta página (menor y por id), ordenados por y
+        achados = {}
+        for w in page.get_text("words"):
+            _id = w[4]
+            if not padrao.match(_id) or _id not in ids_validos:
+                continue
+            if _id not in achados or w[1] < achados[_id]:
+                achados[_id] = w[1]
+        ordenados = sorted(achados.items(), key=lambda kv: kv[1])
+        for i, (_id, y0) in enumerate(ordenados):
+            if _id in indice:
+                continue  # mantém a primeira ocorrência (a resposta de fato)
+            top = max(0.0, y0 - PAD_TOP)
+            if i + 1 < len(ordenados):
+                bottom = ordenados[i + 1][1]
+            else:
+                bottom = min(ph, cb + PAD_BOTTOM)
+            indice[_id] = {
+                "page": pno,
+                "top": round(top, 1),
+                "bottom": round(bottom, 1),
+                "pageWidth": pw,
+                "pageHeight": ph,
+            }
+    doc.close()
+
+    faltando = sorted(
+        ids_validos - set(indice),
+        key=lambda s: (int(s.split(".")[0]), int(s.split(".")[1])),
+    )
+    os.makedirs(os.path.dirname(ANSWERS_JSON), exist_ok=True)
+    with open(ANSWERS_JSON, "w", encoding="utf-8") as fh:
+        json.dump(indice, fh, ensure_ascii=False, indent=2)
+    print(f"[ok] {len(indice)} respostas escritas em {ANSWERS_JSON}")
+    if faltando:
+        print(f"[aviso] exercícios sem resposta no gabarito: {faltando}")
+
+
 def main():
     force = "--force" in sys.argv
-    if os.path.exists(SAIDA_JSON) and not force:
-        print(f"[skip] {SAIDA_JSON} já existe. Use --force para regenerar.")
+    if os.path.exists(SAIDA_JSON) and os.path.exists(ANSWERS_JSON) and not force:
+        print("[skip] índices já existem. Use --force para regenerar.")
         return
 
     esperado = ler_lista_esperada(LISTA_TXT)
@@ -171,6 +239,10 @@ def main():
         json.dump(indice, fh, ensure_ascii=False, indent=2)
 
     print(f"[ok] {len(indice)} exercícios escritos em {SAIDA_JSON}")
+
+    # Gabarito: usa os ids de exercícios reais para descartar falsos positivos.
+    gerar_respostas(set(indice))
+
     if avisos:
         print("\nAvisos (divergências tratadas automaticamente):")
         for a in avisos:

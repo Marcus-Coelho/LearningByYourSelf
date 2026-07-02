@@ -2,7 +2,7 @@
 
 ## Visão geral
 
-Aplicação web para estudo de inglês ("Let's Learning English") que combina um leitor de PDF customizado com uma biblioteca de áudios organizada por unidades de vocabulário (livro Pre-Intermediate/Intermediate, 100 unidades).
+Aplicação web para estudo de inglês ("Let's Learn English") que combina um leitor de PDF customizado com uma biblioteca de áudios organizada por unidades de vocabulário (livro Pre-Intermediate/Intermediate, 100 unidades).
 
 ## Estrutura do projeto
 
