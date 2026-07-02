@@ -504,7 +504,7 @@ body {
 .pdf-toolbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 16px;
   min-height: 56px;
   padding: 10px 14px;
@@ -515,11 +515,11 @@ body {
   font-weight: 800;
 }
 
-.pdf-toolbar span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.pdf-toolbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 .pdf-panel .rpv-core__viewer {

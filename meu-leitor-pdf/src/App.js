@@ -180,11 +180,26 @@ function App() {
 
   useEffect(() => {
     return () => {
-      if (pdfFileUrl) {
+      if (pdfFileUrl?.startsWith('blob:')) {
         URL.revokeObjectURL(pdfFileUrl);
       }
     };
   }, [pdfFileUrl]);
+
+  useEffect(() => {
+    if (activePage !== 'unit' || !selectedUnit) {
+      return;
+    }
+
+    const fileName = `EVIU_PI-${selectedUnit}_L.pdf`;
+    setPdfFileUrl((currentUrl) => {
+      if (currentUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(currentUrl);
+      }
+      return `/materials/unit_${selectedUnit}/${fileName}`;
+    });
+    setPdfFileName(fileName);
+  }, [selectedUnit, activePage]);
 
   const handlePdfChange = (event) => {
     const file = event.target.files?.[0];
@@ -193,7 +208,7 @@ function App() {
     }
 
     setPdfFileUrl((currentUrl) => {
-      if (currentUrl) {
+      if (currentUrl?.startsWith('blob:')) {
         URL.revokeObjectURL(currentUrl);
       }
       return URL.createObjectURL(file);
@@ -206,6 +221,22 @@ function App() {
     event.preventDefault();
     setActivePage('unit');
     setSelectedUnit(unit);
+  };
+
+  const handleNextUnit = (event) => {
+    event.preventDefault();
+    if (!selectedUnit || selectedUnit >= 100) {
+      return;
+    }
+    setSelectedUnit(selectedUnit + 1);
+  };
+
+  const handlePreviousUnit = (event) => {
+    event.preventDefault();
+    if (!selectedUnit || selectedUnit <= 1) {
+      return;
+    }
+    setSelectedUnit(selectedUnit - 1);
   };
 
   useEffect(() => {
@@ -359,7 +390,6 @@ function App() {
                   ))}
                 </div>
               )}
-              {pdfFileName && <span className="file-pill">{pdfFileName}</span>}
             </div>
           </aside>
 
@@ -372,8 +402,22 @@ function App() {
 
           <section className="pdf-panel">
             <div className="pdf-toolbar">
-              <span>{pdfFileName || 'Nenhum PDF carregado'}</span>
-              {renderPdfUpload(handlePdfChange, pdfFileName ? 'Trocar PDF' : 'Carregar PDF')}
+              {pdfFileName ? (
+                <div className="pdf-toolbar-nav">
+                  {selectedUnit > 1 && (
+                    <button type="button" className="upload-button" onClick={handlePreviousUnit}>
+                      Previous Unit
+                    </button>
+                  )}
+                  {selectedUnit < 100 && (
+                    <button type="button" className="upload-button" onClick={handleNextUnit}>
+                      Next Unit
+                    </button>
+                  )}
+                </div>
+              ) : (
+                renderPdfUpload(handlePdfChange, 'Carregar PDF')
+              )}
             </div>
 
             {pdfFileUrl ? (

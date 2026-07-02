@@ -11,6 +11,10 @@
 # production
 /build
 
+# audio is served directly from ../Pre Intermediate and Intermediate (see src/setupProxy.js)
+# never duplicate it into public/
+/public/audio
+
 # misc
 .DS_Store
 .env.local
