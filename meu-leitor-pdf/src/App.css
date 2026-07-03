@@ -1048,6 +1048,75 @@ body {
   background: var(--soft);
 }
 
+/* Bloco de anotações do aluno (painel direito da tela de unit). Segue o
+   mesmo estilo visual da caixa de respostas (answers-inner/answer-box/
+   show-answers-btn) para manter a página coerente. */
+.notes-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+  /* Não estica para preencher o painel inteiro — o tamanho segue o
+     conteúdo, então o botão Save fica logo abaixo da caixa em vez de colado
+     no fundo do painel. */
+}
+
+.notes-toolbar {
+  display: flex;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.notes-toolbar-btn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--purple-300);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--purple-900);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.notes-toolbar-btn:hover {
+  background: var(--soft);
+}
+
+.notes-toolbar-btn.is-highlight {
+  background: #ffe066;
+  border-color: #e0a800;
+  color: #3a2a00;
+  font-weight: 700;
+}
+
+.notes-editor {
+  flex: 0 0 auto;
+  /* Responsivo à altura da tela, com limites para não ficar minúsculo nem
+     gigante. */
+  height: clamp(160px, 32vh, 340px);
+  overflow-y: auto;
+  padding: 12px 14px;
+  border: 1px solid var(--purple-300);
+  border-radius: 10px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--soft);
+}
+
+.notes-editor:focus {
+  outline: none;
+  border-color: var(--purple-500);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+.notes-editor:empty::before {
+  content: attr(data-placeholder);
+  color: var(--muted);
+}
+
 @media (max-width: 900px) {
   .study-columns {
     grid-template-columns: 1fr;

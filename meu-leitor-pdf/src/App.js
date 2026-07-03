@@ -546,10 +546,7 @@ function App() {
 
           <aside className="side-panel right-panel">
             <div className="panel-content related-panel">
-              <p className="eyebrow">Related</p>
-              <p>Line 1: Related documents</p>
-              <p>Line 2: Reading suggestion</p>
-              <p>Line 3: Other files</p>
+              <UnitNotes key={selectedUnit} />
             </div>
           </aside>
         </main>
@@ -606,6 +603,7 @@ function PdfWorkspace({ fileUrl, onPdfChange, defaultScale, initialPage }) {
   });
 
   const defaultLayoutPluginInstance = defaultLayoutPlugin({
+    sidebarTabs: () => [],
     renderToolbar: (Toolbar) => (
       <Toolbar>
         {(slots) => {
@@ -803,7 +801,7 @@ function UnitAudioReader({ fileUrl, onPdfChange, anchors, unit }) {
 
   return (
     <div className="unit-reader-shell" ref={shellRef}>
-      <PdfWorkspace fileUrl={fileUrl} onPdfChange={onPdfChange} defaultScale={1.3} />
+      <PdfWorkspace fileUrl={fileUrl} onPdfChange={onPdfChange} defaultScale={1.5} />
       {overlayHost && anchors && anchors.length > 0
         ? createPortal(
             <div className={`audio-anchor-layer${revealed ? ' is-visible' : ''}`}>
@@ -1094,6 +1092,129 @@ function AnswerArea({
             Next Unit
           </button>
         )}
+      </div>
+    </div>
+  );
+}
+
+// Painel direito da tela de unit: bloco de anotações livres do aluno, com
+// formatação simples (negrito, marca-texto, tamanho de letra). O botão
+// "Save" ainda não persiste nada — é só o lugar reservado para, no futuro,
+// gravar as anotações num banco de dados por unidade.
+const NOTES_HIGHLIGHT_COLOR = '#ffe066';
+const NOTES_HIGHLIGHT_RGB = 'rgb(255, 224, 102)';
+
+function UnitNotes() {
+  const editorRef = useRef(null);
+
+  // Garante que exista uma seleção dentro do editor antes de aplicar um
+  // comando — se o usuário clicou num botão sem ter focado o texto antes, o
+  // cursor vai para o fim do que já foi escrito, em vez de o comando falhar
+  // ou afetar outra parte da página.
+  const focusEditorSelection = () => {
+    const el = editorRef.current;
+    if (!el) return null;
+    el.focus();
+    const selection = window.getSelection();
+    if (selection && el.contains(selection.anchorNode)) {
+      return selection;
+    }
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    return selection;
+  };
+
+  const exec = (command, value) => {
+    focusEditorSelection();
+    document.execCommand(command, false, value);
+  };
+
+  // Alterna o marca-texto do trecho selecionado (como negrito): se já está
+  // destacado, remove; senão, aplica. Só age se houver texto selecionado —
+  // aplicar com o cursor "piscando" (sem seleção) faz o navegador ligar um
+  // modo "marca-texto permanente" que passa a valer pra tudo que for digitado
+  // depois, e não tem como desligar depois (era essa a causa do travamento).
+  //
+  // Detecta se já está destacado olhando o estilo computado do início da
+  // seleção, em vez de document.queryCommandValue('hiliteColor') — esse
+  // comando é pouco confiável entre navegadores e não refletia o estado real
+  // (por isso clicar em cima de um trecho já marcado não removia).
+  const toggleHighlight = () => {
+    const selection = focusEditorSelection();
+    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+      return;
+    }
+    const range = selection.getRangeAt(0);
+    const node = range.startContainer.nodeType === 3 ? range.startContainer.parentElement : range.startContainer;
+    const currentBg = node ? window.getComputedStyle(node).backgroundColor : '';
+    const isHighlighted = currentBg === NOTES_HIGHLIGHT_RGB;
+    document.execCommand('hiliteColor', false, isHighlighted ? 'transparent' : NOTES_HIGHLIGHT_COLOR);
+  };
+
+  // Aumenta/diminui o tamanho só do trecho selecionado, como no Word — não
+  // mexe no resto do texto. Usa o truque de marcar a seleção com
+  // execCommand('fontSize', '7') e depois trocar o <font size="7"> resultante
+  // por um <span> com o tamanho em px que a gente quer.
+  const changeFontSize = (delta) => {
+    const el = editorRef.current;
+    const selection = focusEditorSelection();
+    if (!el || !selection || selection.rangeCount === 0 || selection.isCollapsed) {
+      return;
+    }
+
+    const container = selection.getRangeAt(0).startContainer;
+    const startEl = container.nodeType === 3 ? container.parentElement : container;
+    const currentPx = parseInt(window.getComputedStyle(startEl).fontSize, 10) || 15;
+    const nextPx = Math.min(28, Math.max(10, currentPx + delta * 2));
+
+    document.execCommand('fontSize', false, '7');
+    el.querySelectorAll('font[size="7"]').forEach((fontEl) => {
+      fontEl.removeAttribute('size');
+      fontEl.style.fontSize = `${nextPx}px`;
+    });
+  };
+
+  return (
+    <div className="notes-inner">
+      <div className="answers-head">
+        <h2>My Notes</h2>
+      </div>
+
+      <div className="notes-toolbar">
+        <button type="button" className="notes-toolbar-btn" title="Smaller text" onClick={() => changeFontSize(-1)}>
+          A-
+        </button>
+        <button type="button" className="notes-toolbar-btn" title="Bigger text" onClick={() => changeFontSize(1)}>
+          A+
+        </button>
+        <button type="button" className="notes-toolbar-btn" title="Bold" onClick={() => exec('bold')}>
+          <strong>B</strong>
+        </button>
+        <button
+          type="button"
+          className="notes-toolbar-btn is-highlight"
+          title="Highlight (click again to remove)"
+          onClick={toggleHighlight}
+        >
+          H
+        </button>
+      </div>
+
+      <div
+        ref={editorRef}
+        className="notes-editor"
+        contentEditable
+        suppressContentEditableWarning
+        data-placeholder="Write anything you want to remember about this unit..."
+      />
+
+      <div className="answers-actions">
+        <button type="button" className="show-answers-btn" onClick={() => {}}>
+          Save
+        </button>
       </div>
     </div>
   );
