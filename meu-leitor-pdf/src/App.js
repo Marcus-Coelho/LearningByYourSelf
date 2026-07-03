@@ -722,7 +722,7 @@ function PdfWorkspace({ fileUrl, onPdfChange, defaultScale, initialPage }) {
 // players (fade-in), porque o overlay costumava "piscar" pronto antes do
 // canvas do PDF terminar de desenhar — dava impressão de que o áudio carrega
 // antes do PDF. O valor foi calibrado a olho (~0.5s de diferença percebida).
-const AUDIO_REVEAL_DELAY_MS = 300;
+const AUDIO_REVEAL_DELAY_MS = 200;
 
 function UnitAudioReader({ fileUrl, onPdfChange, anchors, unit }) {
   const shellRef = useRef(null);
