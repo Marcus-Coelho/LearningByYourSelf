@@ -60,6 +60,55 @@
   position: relative;
 }
 
+/* Nome do curso atual, centralizado no espaço livre do cabeçalho entre o
+   menu e a barra de progresso (só aparece dentro de uma unit). */
+.header-course-info {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 16px;
+}
+
+/* Progresso do aluno na trilha de 100 units (posição atual, não conclusão —
+   ainda não existe um controle de "unit concluída"). */
+.header-progress {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  min-width: 260px;
+}
+
+.header-progress-label {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+}
+
+.header-progress-track {
+  width: 260px;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+}
+
+.header-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--purple-300), var(--purple-500));
+  transition: width 200ms ease;
+}
+
 .menu ol {
   list-style: none;
   margin: -25px 0 0 0;

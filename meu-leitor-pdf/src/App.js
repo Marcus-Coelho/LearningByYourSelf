@@ -144,6 +144,22 @@ const unitItems = Array.from({ length: 100 }, (_, index) => {
   };
 });
 
+// Cursos listados na página "Courses". headerLabel é o texto exibido no topo
+// enquanto o usuário está dentro do curso (unit, exercícios, página de
+// teste...).
+const courses = {
+  vocabulary: {
+    title: 'Vocabulary - English Pre Intermediate',
+    description: 'Explore pre-intermediate vocabulary practice and lessons.',
+    headerLabel: 'You are in the English Vocabulary Pre Intermediate Course',
+  },
+  course2: {
+    title: 'Course 2',
+    description: 'Continue with the next course and improve your fluency.',
+    headerLabel: 'You are in the Course 2',
+  },
+};
+
 const renderPdfUpload = (onChange, label = 'Load PDF') => (
   <label className="upload-button">
     {label}
@@ -209,6 +225,7 @@ function App() {
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [showAnswers, setShowAnswers] = useState(false);
   const [activePage, setActivePage] = useState('home');
+  const [activeCourseId, setActiveCourseId] = useState(null);
   const [rightWidth, setRightWidth] = useState(650);
   const layoutRef = useRef(null);
   const startDragRef = useRef(null);
@@ -288,18 +305,28 @@ function App() {
     event.preventDefault();
     setActivePage('home');
     setSelectedUnit(null);
+    setActiveCourseId(null);
   };
 
   const handleCourses = (event) => {
     event.preventDefault();
     setActivePage('courses');
     setSelectedUnit(null);
+    setActiveCourseId(null);
   };
 
   const handleVocabulary = (event) => {
     event.preventDefault();
     setActivePage('vocabulary');
     setSelectedUnit(null);
+    setActiveCourseId('vocabulary');
+  };
+
+  const handleCourse2 = (event) => {
+    event.preventDefault();
+    setActivePage('course2');
+    setSelectedUnit(null);
+    setActiveCourseId('course2');
   };
 
   const clampPanelWidths = (nextRightWidth) => {
@@ -383,6 +410,11 @@ function App() {
       ? audioAnchorsCoords[String(selectedUnit)] || []
       : [];
 
+  // Verdadeiro em qualquer tela "dentro" de um curso (unit, exercícios,
+  // página de teste do Course 2...), não só nas telas de unit/exercícios.
+  const insideCourse = Boolean(selectedUnit) || activePage === 'course2';
+  const activeCourse = activeCourseId ? courses[activeCourseId] : null;
+
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -391,9 +423,9 @@ function App() {
           <span>Let's Learn English</span>
         </div>
         <nav className="menu" aria-label="Main links">
-          {selectedUnit ? (
+          {insideCourse ? (
             <ol>
-              <li className="menu-item"><a href="#0" onClick={handleHome}>Home</a></li>
+              <li className="menu-item"><a href="#0" onClick={handleCourses}>Courses</a></li>
             </ol>
           ) : (
             <ol>
@@ -405,6 +437,21 @@ function App() {
             </ol>
           )}
         </nav>
+
+        {insideCourse && activeCourse && (
+          <div className="header-course-info">
+            <span>{activeCourse.headerLabel}</span>
+          </div>
+        )}
+
+        {selectedUnit && (
+          <div className="header-progress">
+            <span className="header-progress-label">Your progress: Unit {selectedUnit} of 100</span>
+            <div className="header-progress-track">
+              <div className="header-progress-fill" style={{ width: `${selectedUnit}%` }} />
+            </div>
+          </div>
+        )}
       </header>
 
       {activePage === 'exercises' ? (
@@ -546,7 +593,7 @@ function App() {
 
           <aside className="side-panel right-panel">
             <div className="panel-content related-panel">
-              <UnitNotes key={selectedUnit} />
+              <UnitNotes key={selectedUnit} unit={selectedUnit} />
             </div>
           </aside>
         </main>
@@ -569,14 +616,28 @@ function App() {
           <div className="landing-panel course-links-panel">
             <div className="course-links">
               <a className="course-link" href="#link-vocabulary" onClick={handleVocabulary}>
-                <span>Vocabulary - English Pre Intermediate</span>
-                <small>Explore pre-intermediate vocabulary practice and lessons.</small>
+                <span>{courses.vocabulary.title}</span>
+                <small>{courses.vocabulary.description}</small>
               </a>
-              <a className="course-link" href="#link-course-2">
-                <span>Course 2</span>
-                <small>Continue with the next course and improve your fluency.</small>
+              <a className="course-link" href="#link-course-2" onClick={handleCourse2}>
+                <span>{courses.course2.title}</span>
+                <small>{courses.course2.description}</small>
               </a>
             </div>
+          </div>
+        </main>
+      ) : activePage === 'course2' ? (
+        <main className="landing-page">
+          <div className="landing-panel">
+            <p className="eyebrow">Course 2</p>
+            <h1>This course is coming soon</h1>
+            <p className="landing-meta">
+              This is just a placeholder page — Course 2 doesn't have any content yet.
+            </p>
+            <p className="landing-note">
+              Once it's ready, it'll follow the same structure as the Vocabulary course:
+              units, exercises, audio and notes.
+            </p>
           </div>
         </main>
       ) : (
@@ -1099,13 +1160,40 @@ function AnswerArea({
 
 // Painel direito da tela de unit: bloco de anotações livres do aluno, com
 // formatação simples (negrito, marca-texto, tamanho de letra). O botão
-// "Save" ainda não persiste nada — é só o lugar reservado para, no futuro,
-// gravar as anotações num banco de dados por unidade.
+// "Save" persiste no localStorage do navegador, por unit (`notes:<unit>`) —
+// mesmo padrão já usado nas respostas dos exercícios. Ainda não é um banco de
+// dados de verdade (não sincroniza entre dispositivos), mas sobrevive a
+// fechar a aba/navegador.
 const NOTES_HIGHLIGHT_COLOR = '#ffe066';
 const NOTES_HIGHLIGHT_RGB = 'rgb(255, 224, 102)';
 
-function UnitNotes() {
+function UnitNotes({ unit }) {
   const editorRef = useRef(null);
+  const [justSaved, setJustSaved] = useState(false);
+  const storageKey = `notes:${unit}`;
+
+  // Carrega a anotação salva desta unit (se houver) ao entrar na tela.
+  useEffect(() => {
+    const el = editorRef.current;
+    if (!el) return;
+    try {
+      el.innerHTML = window.localStorage.getItem(storageKey) || '';
+    } catch (error) {
+      el.innerHTML = '';
+    }
+  }, [storageKey]);
+
+  const handleSave = () => {
+    const el = editorRef.current;
+    if (!el) return;
+    try {
+      window.localStorage.setItem(storageKey, el.innerHTML);
+    } catch (error) {
+      // Armazenamento indisponível — a nota fica só na tela até recarregar.
+    }
+    setJustSaved(true);
+    setTimeout(() => setJustSaved(false), 1500);
+  };
 
   // Garante que exista uma seleção dentro do editor antes de aplicar um
   // comando — se o usuário clicou num botão sem ter focado o texto antes, o
@@ -1212,8 +1300,12 @@ function UnitNotes() {
       />
 
       <div className="answers-actions">
-        <button type="button" className="show-answers-btn" onClick={() => {}}>
-          Save
+        <button
+          type="button"
+          className={`show-answers-btn${justSaved ? ' is-active' : ''}`}
+          onClick={handleSave}
+        >
+          {justSaved ? 'Saved' : 'Save'}
         </button>
       </div>
     </div>
