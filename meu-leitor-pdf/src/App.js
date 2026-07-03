@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { SpecialZoomLevel, Viewer, Worker } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 import { highlightPlugin, Trigger } from '@react-pdf-viewer/highlight';
@@ -7,14 +8,17 @@ import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import '@react-pdf-viewer/highlight/lib/styles/index.css';
 import exerciseCoords from './exercises_coords.json';
 import answersCoords from './answers_coords.json';
+import audioAnchorsCoords from './audio_anchors_coords.json';
 import './App.css';
 
 // URL do gabarito único (multipágina), servido por src/setupProxy.js.
 const ANSWERS_KEY_URL = '/answers-key.pdf';
 
-const MIN_LEFT_WIDTH = 240;
 const MIN_CENTER_WIDTH = 420;
 const MIN_RIGHT_WIDTH = 260;
+
+// Velocidades disponíveis no player de áudio ancorado.
+const AUDIO_SPEEDS = [0.75, 1, 1.25, 1.5, 2];
 
 // Exercícios agrupados por unidade, em ordem numérica (N.1, N.2, ...).
 // Gerado a partir de exercises_coords.json (ver gerar_indice_exercicios.py).
@@ -151,13 +155,6 @@ const renderPdfUpload = (onChange, label = 'Load PDF') => (
   </label>
 );
 
-const formatAudioTitle = (src, unitNumber) => {
-  const fileName = src.split('/').pop() || '';
-  const stem = fileName.replace(/\.(mp3|m4a|wav|ogg)$/i, '');
-  const letter = stem.split('.').pop()?.toUpperCase() || '';
-  return `Unit ${unitNumber} - ${letter || 'Audio'}`;
-};
-
 const IconLanguage = () => (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9z" />
@@ -185,6 +182,26 @@ const IconHand = () => (
   </svg>
 );
 
+const IconPlay = () => (
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+);
+
+const IconPause = () => (
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z" /></svg>
+);
+
+const IconStop = () => (
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M6 6h12v12H6z" /></svg>
+);
+
+const IconDots = () => (
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
+    <circle cx="12" cy="5" r="2" />
+    <circle cx="12" cy="12" r="2" />
+    <circle cx="12" cy="19" r="2" />
+  </svg>
+);
+
 function App() {
   const [pdfFileUrl, setPdfFileUrl] = useState('');
   const [pdfFileName, setPdfFileName] = useState('');
@@ -192,8 +209,6 @@ function App() {
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [showAnswers, setShowAnswers] = useState(false);
   const [activePage, setActivePage] = useState('home');
-  const [unitAudios, setUnitAudios] = useState([]);
-  const [leftWidth, setLeftWidth] = useState(300);
   const [rightWidth, setRightWidth] = useState(300);
   const layoutRef = useRef(null);
   const startDragRef = useRef(null);
@@ -269,57 +284,6 @@ function App() {
     setActivePage('unit');
   };
 
-  useEffect(() => {
-    if (activePage !== 'unit' || !selectedUnit) {
-      setUnitAudios([]);
-      return;
-    }
-
-    const loadAudioList = async () => {
-      const basePath = `/audio/unit_${selectedUnit}`;
-      const manifestUrl = `${basePath}/manifest.json`;
-      try {
-        const res = await fetch(manifestUrl);
-        if (res.ok) {
-          const list = await res.json();
-          setUnitAudios(list.map((fileName) => `${basePath}/${fileName}`));
-          return;
-        }
-      } catch (error) {
-        // Ignore and fall back to the default probing pattern.
-      }
-
-      const padded = String(selectedUnit).padStart(3, '0');
-      const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
-      const found = [];
-      for (const letter of letters) {
-        const candidate = `${basePath}/U_${padded}.${letter}.mp3`;
-        try {
-          const response = await fetch(candidate, { method: 'HEAD' });
-          if (response.ok) {
-            found.push(candidate);
-          }
-        } catch (error) {
-          // Ignore missing files.
-        }
-      }
-      setUnitAudios(found);
-    };
-
-    loadAudioList();
-  }, [selectedUnit, activePage]);
-
-  function AudioPlayer({ src, title }) {
-    return (
-      <div className="audio-player simple">
-        <div className="audio-title">{title || src.split('/').pop()}</div>
-        <audio controls src={src} preload="metadata">
-          Your browser does not support the audio element.
-        </audio>
-      </div>
-    );
-  }
-
   const handleHome = (event) => {
     event.preventDefault();
     setActivePage('home');
@@ -338,19 +302,16 @@ function App() {
     setSelectedUnit(null);
   };
 
-  const clampPanelWidths = (nextLeftWidth, nextRightWidth) => {
+  const clampPanelWidths = (nextRightWidth) => {
     const layoutWidth = layoutRef.current?.getBoundingClientRect().width || 0;
-    const availableWidth = layoutWidth - 28;
-    const maxLeftWidth = Math.max(MIN_LEFT_WIDTH, availableWidth - nextRightWidth - MIN_CENTER_WIDTH);
-    const left = Math.min(Math.max(nextLeftWidth, MIN_LEFT_WIDTH), maxLeftWidth);
-    const maxRightWidth = Math.max(MIN_RIGHT_WIDTH, availableWidth - left - MIN_CENTER_WIDTH);
-    const right = Math.min(Math.max(nextRightWidth, MIN_RIGHT_WIDTH), maxRightWidth);
-    return { left, right };
+    const availableWidth = layoutWidth - 14;
+    const maxRightWidth = Math.max(MIN_RIGHT_WIDTH, availableWidth - MIN_CENTER_WIDTH);
+    return Math.min(Math.max(nextRightWidth, MIN_RIGHT_WIDTH), maxRightWidth);
   };
 
-  const startPanelResize = (panel, event) => {
+  const startPanelResize = (event) => {
     event.preventDefault();
-    startDragRef.current = { panel, startX: event.clientX, leftWidth, rightWidth };
+    startDragRef.current = { startX: event.clientX, rightWidth };
     window.addEventListener('pointermove', resizePanel);
     window.addEventListener('pointerup', stopPanelResize);
   };
@@ -362,11 +323,7 @@ function App() {
     }
 
     const deltaX = event.clientX - drag.startX;
-    const nextWidths = drag.panel === 'left'
-      ? clampPanelWidths(drag.leftWidth + deltaX, drag.rightWidth)
-      : clampPanelWidths(drag.leftWidth, drag.rightWidth - deltaX);
-    setLeftWidth(nextWidths.left);
-    setRightWidth(nextWidths.right);
+    setRightWidth(clampPanelWidths(drag.rightWidth - deltaX));
   };
 
   const stopPanelResize = () => {
@@ -415,6 +372,16 @@ function App() {
       setActivePage('unit');
     }
   };
+
+  // Player ancorado só aparece sobre o PDF _L carregado automaticamente pela
+  // unit — some se o usuário substituir por um upload próprio.
+  const unitMaterialPdfUrl = selectedUnit
+    ? `/materials/unit_${selectedUnit}/EVIU_PI-${selectedUnit}_L.pdf`
+    : null;
+  const unitAudioAnchors =
+    selectedUnit && pdfFileUrl === unitMaterialPdfUrl
+      ? audioAnchorsCoords[String(selectedUnit)] || []
+      : [];
 
   return (
     <div className="app-shell">
@@ -524,31 +491,9 @@ function App() {
           className="main-panels"
           ref={layoutRef}
           style={{
-            gridTemplateColumns: `${leftWidth}px 14px minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`,
+            gridTemplateColumns: `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`,
           }}
         >
-          <aside className="side-panel left-panel">
-            <div className="panel-content info-panel">
-              <p className="eyebrow">Unit {selectedUnit}</p>
-              {unitAudios.length === 0 ? (
-                <p className="muted">No audio found for this unit.</p>
-              ) : (
-                <div className="audio-list">
-                  {unitAudios.map((audioPath) => (
-                    <AudioPlayer key={audioPath} src={audioPath} title={formatAudioTitle(audioPath, selectedUnit)} />
-                  ))}
-                </div>
-              )}
-            </div>
-          </aside>
-
-          <button
-            className="resize-handle"
-            type="button"
-            aria-label="Resize left column"
-            onPointerDown={(event) => startPanelResize('left', event)}
-          />
-
           <section className="pdf-panel">
             <div className="pdf-toolbar">
               {pdfFileName ? (
@@ -575,7 +520,13 @@ function App() {
             </div>
 
             {pdfFileUrl ? (
-              <PdfWorkspace fileUrl={pdfFileUrl} onPdfChange={handlePdfChange} />
+              <UnitAudioReader
+                key={pdfFileUrl}
+                fileUrl={pdfFileUrl}
+                onPdfChange={handlePdfChange}
+                anchors={unitAudioAnchors}
+                unit={selectedUnit}
+              />
             ) : (
               <div className="pdf-empty-state">
                 <p className="eyebrow">Reader ready</p>
@@ -590,7 +541,7 @@ function App() {
             className="resize-handle"
             type="button"
             aria-label="Resize right column"
-            onPointerDown={(event) => startPanelResize('right', event)}
+            onPointerDown={startPanelResize}
           />
 
           <aside className="side-panel right-panel">
@@ -757,6 +708,220 @@ function PdfWorkspace({ fileUrl, onPdfChange, defaultScale, initialPage }) {
           )}
         />
       </Worker>
+    </div>
+  );
+}
+
+// Envolve o PdfWorkspace da tela de unit e sobrepõe um player compacto na
+// margem esquerda da página, alinhado com cada letra de seção (A, B, C...),
+// ancorado na página do próprio leitor via portal — não recorta nem substitui
+// o leitor, só adiciona uma camada por cima. As coordenadas vêm de
+// audio_anchors_coords.json (ver gerar_indice_audio.py). Reposiciona no
+// zoom/resize através de um ResizeObserver na página renderizada.
+// Espera um pouco depois da página do PDF aparecer no DOM antes de revelar os
+// players (fade-in), porque o overlay costumava "piscar" pronto antes do
+// canvas do PDF terminar de desenhar — dava impressão de que o áudio carrega
+// antes do PDF. O valor foi calibrado a olho (~0.5s de diferença percebida).
+const AUDIO_REVEAL_DELAY_MS = 300;
+
+function UnitAudioReader({ fileUrl, onPdfChange, anchors, unit }) {
+  const shellRef = useRef(null);
+  const [overlayHost, setOverlayHost] = useState(null);
+  const [scale, setScale] = useState(1);
+  const [revealed, setRevealed] = useState(false);
+
+  useEffect(() => {
+    setOverlayHost(null);
+    setScale(1);
+    setRevealed(false);
+
+    const shell = shellRef.current;
+    if (!shell || !anchors || anchors.length === 0) {
+      return undefined;
+    }
+
+    const targetPage = anchors[0].page || 0;
+    const pageWidth = anchors[0].pageWidth;
+
+    let rafId = null;
+    let resizeObserver = null;
+    let revealTimeoutId = null;
+    let lastPageLayer = null;
+
+    const attach = () => {
+      const pageLayer = shell.querySelector(`[data-testid="core__page-layer-${targetPage}"]`);
+      if (!pageLayer) {
+        rafId = requestAnimationFrame(attach);
+        return;
+      }
+
+      if (pageLayer !== lastPageLayer) {
+        lastPageLayer = pageLayer;
+        if (resizeObserver) {
+          resizeObserver.disconnect();
+        }
+
+        let host = Array.from(pageLayer.children).find((el) =>
+          el.classList.contains('audio-anchor-host')
+        );
+        if (!host) {
+          host = document.createElement('div');
+          host.className = 'audio-anchor-host';
+          pageLayer.appendChild(host);
+        }
+        setOverlayHost(host);
+
+        const updateScale = () => {
+          const width = pageLayer.getBoundingClientRect().width;
+          if (width) {
+            setScale(width / pageWidth);
+          }
+        };
+        updateScale();
+
+        resizeObserver = new ResizeObserver(updateScale);
+        resizeObserver.observe(pageLayer);
+
+        revealTimeoutId = setTimeout(() => setRevealed(true), AUDIO_REVEAL_DELAY_MS);
+      }
+    };
+
+    const mutationObserver = new MutationObserver(() => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(attach);
+    });
+    mutationObserver.observe(shell, { childList: true, subtree: true });
+    attach();
+
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      if (revealTimeoutId) clearTimeout(revealTimeoutId);
+      mutationObserver.disconnect();
+      if (resizeObserver) resizeObserver.disconnect();
+    };
+  }, [fileUrl, anchors]);
+
+  return (
+    <div className="unit-reader-shell" ref={shellRef}>
+      <PdfWorkspace fileUrl={fileUrl} onPdfChange={onPdfChange} defaultScale={1.3} />
+      {overlayHost && anchors && anchors.length > 0
+        ? createPortal(
+            <div className={`audio-anchor-layer${revealed ? ' is-visible' : ''}`}>
+              {anchors.map((anchor) => (
+                <AudioAnchorPlayer key={anchor.letter} anchor={anchor} scale={scale} unit={unit} />
+              ))}
+            </div>,
+            overlayHost
+          )
+        : null}
+    </div>
+  );
+}
+
+// Player compacto (play/pause, stop, velocidade) ancorado a um ponto (x, y)
+// da página do PDF, em pontos, escalado para o tamanho renderizado atual.
+function AudioAnchorPlayer({ anchor, scale, unit }) {
+  const audioRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [rate, setRate] = useState(1);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!menuOpen) {
+      return undefined;
+    }
+    const closeMenu = () => setMenuOpen(false);
+    document.addEventListener('click', closeMenu);
+    return () => document.removeEventListener('click', closeMenu);
+  }, [menuOpen]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    return () => {
+      audio?.pause();
+    };
+  }, []);
+
+  const togglePlay = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (audio.paused) {
+      audio.play();
+    } else {
+      audio.pause();
+    }
+  };
+
+  const stop = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+  };
+
+  const changeRate = (speed) => {
+    setRate(speed);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = speed;
+    }
+    setMenuOpen(false);
+  };
+
+  // Ancorado na margem esquerda da página (sempre vazia), com a borda direita
+  // encostando pouco antes da letra e centralizado na sua altura — a faixa
+  // colorida da própria letra é estreita demais para caber o player, e
+  // colocá-lo abaixo cobriria o título/corpo do texto.
+  const anchorMidY = (anchor.yTop + anchor.yBottom) / 2;
+  return (
+    <div
+      className="audio-anchor"
+      style={{
+        left: `${(anchor.x0 - 4) * scale}px`,
+        top: `${anchorMidY * scale}px`,
+        transform: 'translate(-100%, -50%)',
+      }}
+    >
+      <audio
+        ref={audioRef}
+        src={`/audio/unit_${unit}/${anchor.audio}`}
+        preload="none"
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onEnded={() => setIsPlaying(false)}
+      />
+      <button type="button" className="ap-btn" title="Play/Pause" onClick={togglePlay}>
+        {isPlaying ? <IconPause /> : <IconPlay />}
+      </button>
+      <button type="button" className="ap-btn" title="Stop" onClick={stop}>
+        <IconStop />
+      </button>
+      <div className="ap-wrap">
+        <button
+          type="button"
+          className="ap-btn"
+          title="Speed"
+          onClick={(event) => {
+            event.stopPropagation();
+            setMenuOpen((open) => !open);
+          }}
+        >
+          <IconDots />
+        </button>
+        {menuOpen && (
+          <div className="ap-menu open">
+            {AUDIO_SPEEDS.map((speed) => (
+              <button
+                key={speed}
+                type="button"
+                className={speed === rate ? 'active' : ''}
+                onClick={() => changeRate(speed)}
+              >
+                {speed}x
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

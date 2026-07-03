@@ -437,10 +437,6 @@ body {
 
 .side-panel { background: #f9f9f9; overflow-y: auto; }
 
-.left-panel {
-  border-radius: 14px 0 0 14px;
-}
-
 .right-panel {
   border-radius: 0 14px 14px 0;
 }
@@ -449,12 +445,6 @@ body {
   height: 100%;
   padding: 24px;
   overflow: auto;
-}
-
-.info-panel {
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(245, 241, 255, 0.9)),
-    radial-gradient(circle at 85% 12%, rgba(139, 92, 246, 0.22), transparent 24%);
 }
 
 .related-panel {
@@ -608,33 +598,102 @@ body {
   pointer-events: none;
 }
 
-/* Audio player styles (simple native player) */
-.audio-list {
+/* Player de áudio ancorado (sobreposto ao PDF de leitura, na margem esquerda,
+   alinhado com a letra de cada seção). Ver UnitAudioReader/AudioAnchorPlayer
+   em App.js. */
+.unit-reader-shell {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 8px;
-  max-height: calc(100vh - 220px);
-  overflow: auto;
 }
 
-.audio-player.simple {
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.06);
-  padding: 10px;
+.audio-anchor-host {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* Some junto com o PDF em vez de "piscar" pronto antes dele (ver
+   AUDIO_REVEAL_DELAY_MS em App.js). */
+.audio-anchor-layer {
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.audio-anchor-layer.is-visible {
+  opacity: 1;
+}
+
+.audio-anchor {
+  position: absolute;
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: rgba(255, 214, 0, 0.92);
+  border: 1px solid #e0a800;
   border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
-.audio-player.simple .audio-title {
-  font-weight: 700;
-  font-size: 0.95rem;
+.ap-btn {
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #3a2a00;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.ap-btn:hover {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.ap-wrap {
+  position: relative;
+}
+
+.ap-menu {
+  position: absolute;
+  top: 30px;
+  left: 0;
+  background: #fff;
   color: var(--purple-950);
-  margin-bottom: 6px;
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+  padding: 4px;
+  z-index: 5;
+  min-width: 74px;
 }
 
-.audio-player.simple audio {
+.ap-menu button {
+  display: block;
   width: 100%;
-  outline: none;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ap-menu button:hover {
+  background: #f0eaff;
+}
+
+.ap-menu button.active {
+  font-weight: 800;
+  color: var(--purple-700);
 }
 
 .resize-handle {

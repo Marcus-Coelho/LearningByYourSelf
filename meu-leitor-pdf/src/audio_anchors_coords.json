@@ -1,0 +1,3352 @@
+{
+  "1": [
+    {
+      "letter": "A",
+      "audio": "U_001.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 103.8,
+      "yBottom": 124.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_001.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 403.0,
+      "yBottom": 423.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_001.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 805.0,
+      "yBottom": 825.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "2": [
+    {
+      "letter": "A",
+      "audio": "U_002.A.mp3",
+      "page": 0,
+      "x0": 89.2,
+      "yTop": 108.3,
+      "yBottom": 129.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_002.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 618.3,
+      "yBottom": 639.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "3": [
+    {
+      "letter": "A",
+      "audio": "U_003.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_003.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 222.3,
+      "yBottom": 243.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_003.C.mp3",
+      "page": 0,
+      "x0": 89.2,
+      "yTop": 788.5,
+      "yBottom": 809.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "4": [
+    {
+      "letter": "A",
+      "audio": "U_004.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 103.0,
+      "yBottom": 123.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_004.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 403.0,
+      "yBottom": 423.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_004.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 574.0,
+      "yBottom": 594.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_004.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 661.8,
+      "yBottom": 682.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "E",
+      "audio": "U_004.E.mp3",
+      "page": 0,
+      "x0": 89.2,
+      "yTop": 817.0,
+      "yBottom": 837.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "5": [
+    {
+      "letter": "A",
+      "audio": "U_005.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_005.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 708.3,
+      "yBottom": 729.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_005.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 835.8,
+      "yBottom": 856.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "6": [
+    {
+      "letter": "A",
+      "audio": "U_006.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_006.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 624.3,
+      "yBottom": 645.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "7": [
+    {
+      "letter": "A",
+      "audio": "U_007.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_007.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 427.0,
+      "yBottom": 447.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_007.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 604.0,
+      "yBottom": 624.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "8": [
+    {
+      "letter": "A",
+      "audio": "U_008.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_008.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 387.3,
+      "yBottom": 408.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_008.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 691.0,
+      "yBottom": 711.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_008.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 814.8,
+      "yBottom": 835.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "9": [
+    {
+      "letter": "A",
+      "audio": "U_009.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_009.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 502.8,
+      "yBottom": 523.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_009.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 673.0,
+      "yBottom": 693.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "10": [
+    {
+      "letter": "A",
+      "audio": "U_010.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_010.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 356.5,
+      "yBottom": 377.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_010.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 500.5,
+      "yBottom": 521.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_010.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 750.3,
+      "yBottom": 771.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "11": [
+    {
+      "letter": "A",
+      "audio": "U_011.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_011.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 560.5,
+      "yBottom": 581.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_011.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 815.5,
+      "yBottom": 836.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "12": [
+    {
+      "letter": "A",
+      "audio": "U_012.A.mp3",
+      "page": 0,
+      "x0": 89.2,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_012.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 595.8,
+      "yBottom": 616.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_012.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 712.8,
+      "yBottom": 733.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "13": [
+    {
+      "letter": "A",
+      "audio": "U_013.A.mp3",
+      "page": 0,
+      "x0": 89.2,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_013.B.mp3",
+      "page": 0,
+      "x0": 89.2,
+      "yTop": 644.5,
+      "yBottom": 665.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "14": [
+    {
+      "letter": "A",
+      "audio": "U_014.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_014.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 401.5,
+      "yBottom": 422.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_014.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 532.0,
+      "yBottom": 552.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "15": [
+    {
+      "letter": "A",
+      "audio": "U_015.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_015.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 328.0,
+      "yBottom": 348.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_015.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 589.0,
+      "yBottom": 609.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_015.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 819.3,
+      "yBottom": 840.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "16": [
+    {
+      "letter": "A",
+      "audio": "U_016.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_016.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 244.8,
+      "yBottom": 265.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_016.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 422.5,
+      "yBottom": 443.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_016.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 616.0,
+      "yBottom": 636.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "E",
+      "audio": "U_016.E.mp3",
+      "page": 0,
+      "x0": 89.2,
+      "yTop": 821.5,
+      "yBottom": 842.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "17": [
+    {
+      "letter": "A",
+      "audio": "U_017.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_017.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 228.3,
+      "yBottom": 249.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_017.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 715.0,
+      "yBottom": 735.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "18": [
+    {
+      "letter": "A",
+      "audio": "U_018.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_018.B.mp3",
+      "page": 0,
+      "x0": 92.2,
+      "yTop": 524.5,
+      "yBottom": 545.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "19": [
+    {
+      "letter": "A",
+      "audio": "U_019.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_019.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 215.5,
+      "yBottom": 236.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_019.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 446.5,
+      "yBottom": 467.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_019.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 650.5,
+      "yBottom": 671.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "20": [
+    {
+      "letter": "A",
+      "audio": "U_020.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_020.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 442.0,
+      "yBottom": 462.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_020.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 679.8,
+      "yBottom": 700.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "21": [
+    {
+      "letter": "A",
+      "audio": "U_021.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_021.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 617.5,
+      "yBottom": 638.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "22": [
+    {
+      "letter": "A",
+      "audio": "U_022.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 76.0,
+      "yBottom": 96.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_022.B.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 608.5,
+      "yBottom": 629.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "23": [
+    {
+      "letter": "A",
+      "audio": "U_023.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_023.B.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 653.5,
+      "yBottom": 674.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "24": [
+    {
+      "letter": "A",
+      "audio": "U_024.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_024.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 301.8,
+      "yBottom": 322.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_024.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 535.0,
+      "yBottom": 555.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_024.D.mp3",
+      "page": 0,
+      "x0": 86.9,
+      "yTop": 766.8,
+      "yBottom": 787.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "25": [
+    {
+      "letter": "A",
+      "audio": "U_025.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 93.3,
+      "yBottom": 114.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_025.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 286.8,
+      "yBottom": 307.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_025.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 391.8,
+      "yBottom": 412.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_025.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 704.5,
+      "yBottom": 725.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "26": [
+    {
+      "letter": "A",
+      "audio": "U_026.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_026.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 335.5,
+      "yBottom": 356.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_026.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 685.0,
+      "yBottom": 705.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "27": [
+    {
+      "letter": "A",
+      "audio": "U_027.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_027.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 385.0,
+      "yBottom": 405.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_027.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 844.0,
+      "yBottom": 864.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "28": [
+    {
+      "letter": "A",
+      "audio": "U_028.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 89.5,
+      "yBottom": 110.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_028.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 238.0,
+      "yBottom": 258.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_028.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 615.3,
+      "yBottom": 636.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "29": [
+    {
+      "letter": "A",
+      "audio": "U_029.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 95.5,
+      "yBottom": 116.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_029.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 430.8,
+      "yBottom": 451.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_029.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 673.0,
+      "yBottom": 693.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "30": [
+    {
+      "letter": "A",
+      "audio": "U_030.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 109.8,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_030.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 270.3,
+      "yBottom": 292.0,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_030.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 454.0,
+      "yBottom": 475.8,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_030.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 786.3,
+      "yBottom": 808.0,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "31": [
+    {
+      "letter": "A",
+      "audio": "U_031.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 106.0,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_031.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 336.3,
+      "yBottom": 357.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_031.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 678.3,
+      "yBottom": 699.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "32": [
+    {
+      "letter": "A",
+      "audio": "U_032.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_032.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 383.5,
+      "yBottom": 404.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_032.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 634.0,
+      "yBottom": 654.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "33": [
+    {
+      "letter": "A",
+      "audio": "U_033.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_033.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 610.0,
+      "yBottom": 631.8,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "34": [
+    {
+      "letter": "A",
+      "audio": "U_034.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_034.B.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 255.3,
+      "yBottom": 276.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_034.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 830.5,
+      "yBottom": 851.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "35": [
+    {
+      "letter": "A",
+      "audio": "U_035.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 106.0,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_035.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 423.3,
+      "yBottom": 444.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_035.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 646.8,
+      "yBottom": 667.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_035.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 774.3,
+      "yBottom": 795.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "36": [
+    {
+      "letter": "A",
+      "audio": "U_036.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_036.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 323.5,
+      "yBottom": 344.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_036.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 626.5,
+      "yBottom": 647.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_036.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 852.3,
+      "yBottom": 873.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "37": [
+    {
+      "letter": "A",
+      "audio": "U_037.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_037.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 370.0,
+      "yBottom": 390.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_037.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 475.0,
+      "yBottom": 495.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_037.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 586.0,
+      "yBottom": 606.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "E",
+      "audio": "U_037.E.mp3",
+      "page": 0,
+      "x0": 89.2,
+      "yTop": 779.5,
+      "yBottom": 800.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "38": [
+    {
+      "letter": "A",
+      "audio": "U_038.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 106.0,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_038.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 423.3,
+      "yBottom": 444.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_038.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 793.0,
+      "yBottom": 813.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "39": [
+    {
+      "letter": "A",
+      "audio": "U_039.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_039.B.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 528.3,
+      "yBottom": 550.0,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "40": [
+    {
+      "letter": "A",
+      "audio": "U_040.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_040.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 457.8,
+      "yBottom": 479.5,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "41": [
+    {
+      "letter": "A",
+      "audio": "U_041.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 109.8,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_041.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 712.0,
+      "yBottom": 732.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "42": [
+    {
+      "letter": "A",
+      "audio": "U_042.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_042.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 303.3,
+      "yBottom": 324.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_042.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 483.3,
+      "yBottom": 504.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "43": [
+    {
+      "letter": "A",
+      "audio": "U_043.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_043.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 304.8,
+      "yBottom": 325.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "44": [
+    {
+      "letter": "A",
+      "audio": "U_044.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 90.3,
+      "yBottom": 111.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_044.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 290.5,
+      "yBottom": 311.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_044.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 700.0,
+      "yBottom": 720.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_044.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 871.0,
+      "yBottom": 891.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "45": [
+    {
+      "letter": "A",
+      "audio": "U_045.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_045.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 444.3,
+      "yBottom": 465.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_045.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 622.0,
+      "yBottom": 642.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "46": [
+    {
+      "letter": "A",
+      "audio": "U_046.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 106.0,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_046.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 302.5,
+      "yBottom": 323.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_046.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 518.5,
+      "yBottom": 539.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "47": [
+    {
+      "letter": "A",
+      "audio": "U_047.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_047.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 791.5,
+      "yBottom": 812.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "48": [
+    {
+      "letter": "A",
+      "audio": "U_048.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 109.8,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_048.B.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 478.8,
+      "yBottom": 499.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_048.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 638.5,
+      "yBottom": 659.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_048.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 760.0,
+      "yBottom": 780.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "49": [
+    {
+      "letter": "A",
+      "audio": "U_049.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 106.0,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_049.B.mp3",
+      "page": 0,
+      "x0": 86.9,
+      "yTop": 252.3,
+      "yBottom": 274.0,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_049.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 608.5,
+      "yBottom": 629.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "50": [
+    {
+      "letter": "A",
+      "audio": "U_050.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 109.0,
+      "yBottom": 130.8,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_050.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 347.5,
+      "yBottom": 368.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_050.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 682.0,
+      "yBottom": 702.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "51": [
+    {
+      "letter": "A",
+      "audio": "U_051.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 109.8,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_051.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 513.3,
+      "yBottom": 535.0,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "52": [
+    {
+      "letter": "A",
+      "audio": "U_052.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_052.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 222.3,
+      "yBottom": 243.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_052.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 433.0,
+      "yBottom": 453.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_052.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 787.0,
+      "yBottom": 807.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "53": [
+    {
+      "letter": "A",
+      "audio": "U_053.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_053.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 367.0,
+      "yBottom": 388.8,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_053.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 655.0,
+      "yBottom": 675.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_053.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 760.0,
+      "yBottom": 780.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "54": [
+    {
+      "letter": "A",
+      "audio": "U_054.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 100.0,
+      "yBottom": 121.8,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_054.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 292.0,
+      "yBottom": 312.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_054.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 668.5,
+      "yBottom": 689.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "55": [
+    {
+      "letter": "A",
+      "audio": "U_055.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_055.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 445.8,
+      "yBottom": 466.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_055.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 583.8,
+      "yBottom": 604.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "56": [
+    {
+      "letter": "A",
+      "audio": "U_056.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_056.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 367.8,
+      "yBottom": 388.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_056.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 676.8,
+      "yBottom": 697.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "57": [
+    {
+      "letter": "A",
+      "audio": "U_057.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_057.B.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 352.0,
+      "yBottom": 372.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "58": [
+    {
+      "letter": "A",
+      "audio": "U_058.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 109.8,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_058.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 581.5,
+      "yBottom": 602.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "59": [
+    {
+      "letter": "A",
+      "audio": "U_059.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 109.8,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_059.B.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 424.0,
+      "yBottom": 444.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "60": [
+    {
+      "letter": "A",
+      "audio": "U_060.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_060.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 239.5,
+      "yBottom": 260.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_060.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 445.0,
+      "yBottom": 465.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_060.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 676.8,
+      "yBottom": 697.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "E",
+      "audio": "U_060.E.mp3",
+      "page": 0,
+      "x0": 89.2,
+      "yTop": 748.8,
+      "yBottom": 769.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "61": [
+    {
+      "letter": "A",
+      "audio": "U_061.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_061.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 257.5,
+      "yBottom": 278.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_061.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 412.0,
+      "yBottom": 432.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_061.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 500.5,
+      "yBottom": 521.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "E",
+      "audio": "U_061.E.mp3",
+      "page": 0,
+      "x0": 89.2,
+      "yTop": 605.5,
+      "yBottom": 626.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "F",
+      "audio": "U_061.F.mp3",
+      "page": 0,
+      "x0": 89.2,
+      "yTop": 798.3,
+      "yBottom": 819.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "62": [
+    {
+      "letter": "A",
+      "audio": "U_062.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_062.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 412.0,
+      "yBottom": 434.7,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_062.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 859.0,
+      "yBottom": 879.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "63": [
+    {
+      "letter": "A",
+      "audio": "U_063.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_063.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 687.3,
+      "yBottom": 708.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "64": [
+    {
+      "letter": "A",
+      "audio": "U_064.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 109.8,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_064.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 566.5,
+      "yBottom": 587.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "65": [
+    {
+      "letter": "A",
+      "audio": "U_065.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_065.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 617.5,
+      "yBottom": 638.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_065.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 827.5,
+      "yBottom": 848.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "66": [
+    {
+      "letter": "A",
+      "audio": "U_066.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 109.8,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_066.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 409.0,
+      "yBottom": 430.8,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_066.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 610.8,
+      "yBottom": 631.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "67": [
+    {
+      "letter": "A",
+      "audio": "U_067.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_067.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 169.8,
+      "yBottom": 190.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_067.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 376.0,
+      "yBottom": 396.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_067.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 441.3,
+      "yBottom": 462.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "E",
+      "audio": "U_067.E.mp3",
+      "page": 0,
+      "x0": 89.2,
+      "yTop": 717.3,
+      "yBottom": 739.0,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "68": [
+    {
+      "letter": "A",
+      "audio": "U_068.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_068.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 443.5,
+      "yBottom": 464.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_068.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 760.0,
+      "yBottom": 781.8,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "69": [
+    {
+      "letter": "A",
+      "audio": "U_069.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_069.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 283.0,
+      "yBottom": 303.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_069.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 449.5,
+      "yBottom": 470.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "70": [
+    {
+      "letter": "A",
+      "audio": "U_070.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_070.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 294.3,
+      "yBottom": 315.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_070.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 637.0,
+      "yBottom": 657.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "71": [
+    {
+      "letter": "A",
+      "audio": "U_071.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_071.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 393.3,
+      "yBottom": 414.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_071.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 664.0,
+      "yBottom": 684.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "72": [
+    {
+      "letter": "A",
+      "audio": "U_072.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 137.5,
+      "yBottom": 158.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_072.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 545.5,
+      "yBottom": 566.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_072.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 772.0,
+      "yBottom": 792.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "73": [
+    {
+      "letter": "A",
+      "audio": "U_073.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_073.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 717.3,
+      "yBottom": 738.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_073.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 805.8,
+      "yBottom": 826.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_073.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 877.8,
+      "yBottom": 898.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "74": [
+    {
+      "letter": "A",
+      "audio": "U_074.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 89.5,
+      "yBottom": 110.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_074.B.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 316.8,
+      "yBottom": 337.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_074.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 623.5,
+      "yBottom": 644.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_074.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 833.5,
+      "yBottom": 854.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "75": [
+    {
+      "letter": "A",
+      "audio": "U_075.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 89.5,
+      "yBottom": 110.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_075.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 411.3,
+      "yBottom": 432.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_075.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 566.5,
+      "yBottom": 587.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_075.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 743.5,
+      "yBottom": 764.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "76": [
+    {
+      "letter": "A",
+      "audio": "U_076.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 90.3,
+      "yBottom": 111.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_076.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 464.5,
+      "yBottom": 485.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "77": [
+    {
+      "letter": "A",
+      "audio": "U_077.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_077.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 455.5,
+      "yBottom": 476.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_077.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 784.0,
+      "yBottom": 804.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "78": [
+    {
+      "letter": "A",
+      "audio": "U_078.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_078.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 673.8,
+      "yBottom": 694.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "79": [
+    {
+      "letter": "A",
+      "audio": "U_079.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_079.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 244.8,
+      "yBottom": 265.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_079.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 527.5,
+      "yBottom": 548.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "80": [
+    {
+      "letter": "A",
+      "audio": "U_080.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_080.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 243.3,
+      "yBottom": 264.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_080.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 481.8,
+      "yBottom": 502.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_080.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 827.5,
+      "yBottom": 848.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "81": [
+    {
+      "letter": "A",
+      "audio": "U_081.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 85.8,
+      "yBottom": 106.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_081.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 343.0,
+      "yBottom": 363.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_081.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 551.5,
+      "yBottom": 572.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_081.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 722.5,
+      "yBottom": 743.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "82": [
+    {
+      "letter": "A",
+      "audio": "U_082.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_082.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 535.0,
+      "yBottom": 555.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_082.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 802.8,
+      "yBottom": 823.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "83": [
+    {
+      "letter": "A",
+      "audio": "U_083.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_083.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 607.8,
+      "yBottom": 628.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_083.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 763.8,
+      "yBottom": 784.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "84": [
+    {
+      "letter": "A",
+      "audio": "U_084.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_084.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 457.8,
+      "yBottom": 478.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "85": [
+    {
+      "letter": "A",
+      "audio": "U_085.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 85.8,
+      "yBottom": 106.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_085.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 238.0,
+      "yBottom": 258.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_085.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 400.0,
+      "yBottom": 420.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_085.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 805.0,
+      "yBottom": 825.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "86": [
+    {
+      "letter": "A",
+      "audio": "U_086.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_086.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 623.5,
+      "yBottom": 644.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_086.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 857.5,
+      "yBottom": 878.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "87": [
+    {
+      "letter": "A",
+      "audio": "U_087.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_087.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 596.5,
+      "yBottom": 617.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_087.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 752.5,
+      "yBottom": 773.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "88": [
+    {
+      "letter": "A",
+      "audio": "U_088.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_088.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 587.5,
+      "yBottom": 608.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "89": [
+    {
+      "letter": "A",
+      "audio": "U_089.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_089.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 599.5,
+      "yBottom": 620.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "90": [
+    {
+      "letter": "A",
+      "audio": "U_090.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_090.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 249.3,
+      "yBottom": 270.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_090.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 612.3,
+      "yBottom": 633.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "91": [
+    {
+      "letter": "A",
+      "audio": "U_091.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_091.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 349.0,
+      "yBottom": 369.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_091.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 700.0,
+      "yBottom": 720.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "92": [
+    {
+      "letter": "A",
+      "audio": "U_092.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_092.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 287.5,
+      "yBottom": 308.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_092.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 410.5,
+      "yBottom": 431.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_092.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 582.3,
+      "yBottom": 603.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "E",
+      "audio": "U_092.E.mp3",
+      "page": 0,
+      "x0": 89.2,
+      "yTop": 692.5,
+      "yBottom": 713.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "F",
+      "audio": "U_092.F.mp3",
+      "page": 0,
+      "x0": 89.2,
+      "yTop": 820.0,
+      "yBottom": 840.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "93": [
+    {
+      "letter": "A",
+      "audio": "U_093.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 85.8,
+      "yBottom": 106.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_093.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 295.0,
+      "yBottom": 315.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_093.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 572.5,
+      "yBottom": 593.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_093.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 790.0,
+      "yBottom": 810.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "94": [
+    {
+      "letter": "A",
+      "audio": "U_094.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_094.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 427.0,
+      "yBottom": 447.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_094.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 587.5,
+      "yBottom": 608.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_094.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 727.0,
+      "yBottom": 747.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "95": [
+    {
+      "letter": "A",
+      "audio": "U_095.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 84.3,
+      "yBottom": 105.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_095.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 442.0,
+      "yBottom": 462.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "96": [
+    {
+      "letter": "A",
+      "audio": "U_096.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_096.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 232.8,
+      "yBottom": 253.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_096.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 451.8,
+      "yBottom": 472.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_096.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 742.8,
+      "yBottom": 763.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "97": [
+    {
+      "letter": "A",
+      "audio": "U_097.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 88.0,
+      "yBottom": 108.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_097.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 215.5,
+      "yBottom": 236.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_097.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 352.0,
+      "yBottom": 372.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_097.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 480.3,
+      "yBottom": 501.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "E",
+      "audio": "U_097.E.mp3",
+      "page": 0,
+      "x0": 89.2,
+      "yTop": 620.5,
+      "yBottom": 641.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "F",
+      "audio": "U_097.F.mp3",
+      "page": 0,
+      "x0": 89.2,
+      "yTop": 740.5,
+      "yBottom": 761.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "98": [
+    {
+      "letter": "A",
+      "audio": "U_098.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 85.8,
+      "yBottom": 106.6,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_098.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 715.0,
+      "yBottom": 735.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "99": [
+    {
+      "letter": "A",
+      "audio": "U_099.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 87.3,
+      "yBottom": 108.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_099.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 436.0,
+      "yBottom": 456.9,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ],
+  "100": [
+    {
+      "letter": "A",
+      "audio": "U_100.A.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 87.3,
+      "yBottom": 108.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "B",
+      "audio": "U_100.B.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 449.5,
+      "yBottom": 470.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "C",
+      "audio": "U_100.C.mp3",
+      "page": 0,
+      "x0": 88.4,
+      "yTop": 554.5,
+      "yBottom": 575.4,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    },
+    {
+      "letter": "D",
+      "audio": "U_100.D.mp3",
+      "page": 0,
+      "x0": 87.7,
+      "yTop": 702.3,
+      "yBottom": 723.1,
+      "pageWidth": 768.0,
+      "pageHeight": 1033.5
+    }
+  ]
+}
