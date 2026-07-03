@@ -209,7 +209,7 @@ function App() {
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [showAnswers, setShowAnswers] = useState(false);
   const [activePage, setActivePage] = useState('home');
-  const [rightWidth, setRightWidth] = useState(300);
+  const [rightWidth, setRightWidth] = useState(650);
   const layoutRef = useRef(null);
   const startDragRef = useRef(null);
 
