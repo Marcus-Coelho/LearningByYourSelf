@@ -1,0 +1,482 @@
+[
+  {
+    "unit": 1,
+    "section": "A",
+    "title": "My name's Hannah, not Anna",
+    "grammar": "verb be, subject pronouns: I, you, etc.",
+    "vocabulary": "days of the week, numbers 0-20, greetings",
+    "pronunciation": "vowel sounds, word stress",
+    "pageStart": 4,
+    "pageEnd": 5
+  },
+  {
+    "unit": 1,
+    "section": "B",
+    "title": "All over the world",
+    "grammar": "verb be (?) and (-)",
+    "vocabulary": "the world, numbers 21-100",
+    "pronunciation": "/ɑː/, /tʃ/, /ʃ/, /dʒ/; sentence stress",
+    "pageStart": 6,
+    "pageEnd": 7
+  },
+  {
+    "unit": 1,
+    "section": "C",
+    "title": "Open your books, please",
+    "grammar": "possessive adjectives: my, your, etc.",
+    "vocabulary": "classroom language",
+    "pronunciation": "/oʊ/, /uː/, /ɑːr/; the alphabet",
+    "pageStart": 8,
+    "pageEnd": 9
+  },
+  {
+    "unit": 1,
+    "section": "Practical English",
+    "title": "Practical English Episode 1",
+    "grammar": "",
+    "vocabulary": "",
+    "pronunciation": "",
+    "pageStart": 10,
+    "pageEnd": 11
+  },
+  {
+    "unit": 2,
+    "section": "A",
+    "title": "A writer's room",
+    "grammar": "a/an, plurals; this/that/these/those",
+    "vocabulary": "things",
+    "pronunciation": "final -s and -es; th",
+    "pageStart": 12,
+    "pageEnd": 13
+  },
+  {
+    "unit": 2,
+    "section": "B",
+    "title": "Stars and Stripes",
+    "grammar": "adjectives",
+    "vocabulary": "colors, adjectives, modifiers: very/really",
+    "pronunciation": "long and short vowel sounds",
+    "pageStart": 14,
+    "pageEnd": 15
+  },
+  {
+    "unit": 2,
+    "section": "C",
+    "title": "After 300 metres, turn right",
+    "grammar": "imperatives, let's",
+    "vocabulary": "feelings",
+    "pronunciation": "understanding connected speech",
+    "pageStart": 16,
+    "pageEnd": 17
+  },
+  {
+    "unit": 2,
+    "section": "Revise",
+    "title": "Revise and Check 1&2",
+    "grammar": "",
+    "vocabulary": "",
+    "pronunciation": "",
+    "pageStart": 18,
+    "pageEnd": 19
+  },
+  {
+    "unit": 3,
+    "section": "A",
+    "title": "Things I love about the US",
+    "grammar": "simple present (+) and (-)",
+    "vocabulary": "verb phrases",
+    "pronunciation": "third person -s",
+    "pageStart": 20,
+    "pageEnd": 21
+  },
+  {
+    "unit": 3,
+    "section": "B",
+    "title": "Work and play",
+    "grammar": "simple present (?)",
+    "vocabulary": "jobs",
+    "pronunciation": "/ɑːr/",
+    "pageStart": 22,
+    "pageEnd": 23
+  },
+  {
+    "unit": 3,
+    "section": "C",
+    "title": "Meeting online",
+    "grammar": "word order in questions",
+    "vocabulary": "question words",
+    "pronunciation": "sentence stress",
+    "pageStart": 24,
+    "pageEnd": 25
+  },
+  {
+    "unit": 3,
+    "section": "Practical English",
+    "title": "Practical English Episode 2",
+    "grammar": "",
+    "vocabulary": "",
+    "pronunciation": "",
+    "pageStart": 26,
+    "pageEnd": 27
+  },
+  {
+    "unit": 4,
+    "section": "A",
+    "title": "Is she his wife or his sister?",
+    "grammar": "Whose...?, possessive 's",
+    "vocabulary": "family",
+    "pronunciation": "/ʌ/, the letter o",
+    "pageStart": 28,
+    "pageEnd": 29
+  },
+  {
+    "unit": 4,
+    "section": "B",
+    "title": "What a life!",
+    "grammar": "prepositions of time/place (at, in, on, to)",
+    "vocabulary": "everyday activities",
+    "pronunciation": "linking and sentence stress",
+    "pageStart": 30,
+    "pageEnd": 31
+  },
+  {
+    "unit": 4,
+    "section": "C",
+    "title": "Short life, long life?",
+    "grammar": "position of adverbs and expressions of frequency",
+    "vocabulary": "adverbs and expressions of frequency",
+    "pronunciation": "the letter h",
+    "pageStart": 32,
+    "pageEnd": 33
+  },
+  {
+    "unit": 4,
+    "section": "Revise",
+    "title": "Revise and Check 3&4",
+    "grammar": "",
+    "vocabulary": "",
+    "pronunciation": "",
+    "pageStart": 34,
+    "pageEnd": 35
+  },
+  {
+    "unit": 5,
+    "section": "A",
+    "title": "Are you the next American Idol?",
+    "grammar": "can/can't",
+    "vocabulary": "verb phrases",
+    "pronunciation": "sentence stress",
+    "pageStart": 36,
+    "pageEnd": 37
+  },
+  {
+    "unit": 5,
+    "section": "B",
+    "title": "Love your neighbours",
+    "grammar": "present continuous",
+    "vocabulary": "verb phrases",
+    "pronunciation": "sentence stress",
+    "pageStart": 38,
+    "pageEnd": 39
+  },
+  {
+    "unit": 5,
+    "section": "C",
+    "title": "Sun and the City",
+    "grammar": "simple present or present continuous?",
+    "vocabulary": "the weather and seasons, places in New York City",
+    "pronunciation": "/ɜː/, /ə/, /aɪ/",
+    "pageStart": 40,
+    "pageEnd": 41
+  },
+  {
+    "unit": 5,
+    "section": "Practical English",
+    "title": "Practical English Episode 3",
+    "grammar": "",
+    "vocabulary": "",
+    "pronunciation": "",
+    "pageStart": 42,
+    "pageEnd": 43
+  },
+  {
+    "unit": 6,
+    "section": "A",
+    "title": "Reading in English",
+    "grammar": "object pronouns: me, you, him, etc.",
+    "vocabulary": "phone language",
+    "pronunciation": "/æ/, /ə/, /ɪ/",
+    "pageStart": 44,
+    "pageEnd": 45
+  },
+  {
+    "unit": 6,
+    "section": "B",
+    "title": "Times we love",
+    "grammar": "like + (verb+-ing)",
+    "vocabulary": "the date; ordinal numbers",
+    "pronunciation": "consonant clusters; saying the date",
+    "pageStart": 46,
+    "pageEnd": 47
+  },
+  {
+    "unit": 6,
+    "section": "C",
+    "title": "Music is changing their lives",
+    "grammar": "review: be or do?",
+    "vocabulary": "music",
+    "pronunciation": "/ŋ/",
+    "pageStart": 48,
+    "pageEnd": 49
+  },
+  {
+    "unit": 6,
+    "section": "Revise",
+    "title": "Revise and Check 5&6",
+    "grammar": "",
+    "vocabulary": "",
+    "pronunciation": "",
+    "pageStart": 50,
+    "pageEnd": 51
+  },
+  {
+    "unit": 7,
+    "section": "A",
+    "title": "At the National Portrait Gallery",
+    "grammar": "simple past of be: was/were",
+    "vocabulary": "word formation: paint > painter",
+    "pronunciation": "sentence stress",
+    "pageStart": 52,
+    "pageEnd": 53
+  },
+  {
+    "unit": 7,
+    "section": "B",
+    "title": "Chelsea girls",
+    "grammar": "simple past: regular verbs",
+    "vocabulary": "past time expressions",
+    "pronunciation": "-ed endings",
+    "pageStart": 54,
+    "pageEnd": 55
+  },
+  {
+    "unit": 7,
+    "section": "C",
+    "title": "A night to remember",
+    "grammar": "simple past: irregular verbs",
+    "vocabulary": "go, have, get",
+    "pronunciation": "sentence stress",
+    "pageStart": 56,
+    "pageEnd": 57
+  },
+  {
+    "unit": 7,
+    "section": "Practical English",
+    "title": "Practical English Episode 4",
+    "grammar": "",
+    "vocabulary": "",
+    "pronunciation": "",
+    "pageStart": 58,
+    "pageEnd": 59
+  },
+  {
+    "unit": 8,
+    "section": "A",
+    "title": "A murder story",
+    "grammar": "simple past: regular and irregular",
+    "vocabulary": "irregular verbs",
+    "pronunciation": "simple past verbs",
+    "pageStart": 60,
+    "pageEnd": 61
+  },
+  {
+    "unit": 8,
+    "section": "B",
+    "title": "A house with a history",
+    "grammar": "there is/there are, some/any + plural nouns",
+    "vocabulary": "the house",
+    "pronunciation": "/r/, /ɜː/, sentence stress",
+    "pageStart": 62,
+    "pageEnd": 63
+  },
+  {
+    "unit": 8,
+    "section": "C",
+    "title": "A night in a haunted hotel",
+    "grammar": "prepositions: place and movement",
+    "vocabulary": "there was/there were",
+    "pronunciation": "silent letters",
+    "pageStart": 64,
+    "pageEnd": 65
+  },
+  {
+    "unit": 8,
+    "section": "Revise",
+    "title": "Revise and Check 7&8",
+    "grammar": "",
+    "vocabulary": "",
+    "pronunciation": "",
+    "pageStart": 66,
+    "pageEnd": 67
+  },
+  {
+    "unit": 9,
+    "section": "A",
+    "title": "What I ate yesterday",
+    "grammar": "countable/uncountable nouns; a/an, some/any",
+    "vocabulary": "food",
+    "pronunciation": "the letters ea",
+    "pageStart": 68,
+    "pageEnd": 69
+  },
+  {
+    "unit": 9,
+    "section": "B",
+    "title": "White gold",
+    "grammar": "quantifiers: how much/how many, a lot of, etc.",
+    "vocabulary": "food containers",
+    "pronunciation": "/ʃ/, /s/",
+    "pageStart": 70,
+    "pageEnd": 71
+  },
+  {
+    "unit": 9,
+    "section": "C",
+    "title": "Quiz night",
+    "grammar": "comparative adjectives",
+    "vocabulary": "high numbers",
+    "pronunciation": "/ə/, sentence stress",
+    "pageStart": 72,
+    "pageEnd": 73
+  },
+  {
+    "unit": 9,
+    "section": "Practical English",
+    "title": "Practical English Episode 5",
+    "grammar": "",
+    "vocabulary": "",
+    "pronunciation": "",
+    "pageStart": 74,
+    "pageEnd": 75
+  },
+  {
+    "unit": 10,
+    "section": "A",
+    "title": "The most dangerous road...",
+    "grammar": "superlative adjectives",
+    "vocabulary": "places and buildings",
+    "pronunciation": "consonant groups",
+    "pageStart": 76,
+    "pageEnd": 77
+  },
+  {
+    "unit": 10,
+    "section": "B",
+    "title": "CouchSurf round the world!",
+    "grammar": "be going to (plans), future time expressions",
+    "vocabulary": "vacations",
+    "pronunciation": "sentence stress",
+    "pageStart": 78,
+    "pageEnd": 79
+  },
+  {
+    "unit": 10,
+    "section": "C",
+    "title": "What's going to happen?",
+    "grammar": "be going to (predictions)",
+    "vocabulary": "verb phrases",
+    "pronunciation": "the letters oo",
+    "pageStart": 80,
+    "pageEnd": 81
+  },
+  {
+    "unit": 10,
+    "section": "Revise",
+    "title": "Revise and Check 9&10",
+    "grammar": "",
+    "vocabulary": "",
+    "pronunciation": "",
+    "pageStart": 82,
+    "pageEnd": 83
+  },
+  {
+    "unit": 11,
+    "section": "A",
+    "title": "First impressions",
+    "grammar": "adverbs (manner and modifiers)",
+    "vocabulary": "common adverbs",
+    "pronunciation": "word stress",
+    "pageStart": 84,
+    "pageEnd": 85
+  },
+  {
+    "unit": 11,
+    "section": "B",
+    "title": "What do you want to do?",
+    "grammar": "verbs + infinitive",
+    "vocabulary": "verbs that take the infinitive",
+    "pronunciation": "sentence stress",
+    "pageStart": 86,
+    "pageEnd": 87
+  },
+  {
+    "unit": 11,
+    "section": "C",
+    "title": "Men, women, and the Internet",
+    "grammar": "articles",
+    "vocabulary": "the Internet",
+    "pronunciation": "word stress",
+    "pageStart": 88,
+    "pageEnd": 89
+  },
+  {
+    "unit": 11,
+    "section": "Practical English",
+    "title": "Practical English Episode 6",
+    "grammar": "",
+    "vocabulary": "",
+    "pronunciation": "",
+    "pageStart": 90,
+    "pageEnd": 91
+  },
+  {
+    "unit": 12,
+    "section": "A",
+    "title": "Books and movies",
+    "grammar": "present perfect",
+    "vocabulary": "irregular past participles",
+    "pronunciation": "sentence stress",
+    "pageStart": 92,
+    "pageEnd": 93
+  },
+  {
+    "unit": 12,
+    "section": "B",
+    "title": "I've never been there!",
+    "grammar": "present perfect or simple past?",
+    "vocabulary": "more irregular past participles",
+    "pronunciation": "irregular past participles",
+    "pageStart": 94,
+    "pageEnd": 95
+  },
+  {
+    "unit": 12,
+    "section": "C",
+    "title": "The American English File questionnaire",
+    "grammar": "review: question formation",
+    "vocabulary": "review: word groups",
+    "pronunciation": "review: sounds",
+    "pageStart": 96,
+    "pageEnd": 97
+  },
+  {
+    "unit": 12,
+    "section": "Revise",
+    "title": "Revise and Check 11&12",
+    "grammar": "",
+    "vocabulary": "",
+    "pronunciation": "",
+    "pageStart": 98,
+    "pageEnd": 99
+  }
+]

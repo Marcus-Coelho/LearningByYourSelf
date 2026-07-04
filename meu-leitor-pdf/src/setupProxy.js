@@ -1,5 +1,7 @@
+const fs = require('fs');
 const path = require('path');
 const express = require('express');
+const { PDFDocument } = require('pdf-lib');
 
 // Serves audio and PDFs straight from the source material folder, so they
 // never need to be copied into public/ (and therefore never end up in git).
@@ -26,4 +28,52 @@ module.exports = function (app) {
   // as /audio — no copies, no duplication).
   app.use('/materials', express.static(materialsRoot, { fallthrough: false }));
   app.use('/materials', notFoundOn404);
+
+  // Curso "American English Level 1": cada seção do livro (A/B/C/-) ocupa
+  // 2 páginas, mas o material bruto tem um PDF de UMA página por arquivo
+  // (ver American_English_File_Book1_Index_Ordenado.csv). Em vez de expor
+  // os arquivos soltos e montar 2 leitores lado a lado no front, mescla as
+  // 2 páginas em um único PDF de 2 páginas sob demanda (pdf-lib), para o
+  // leitor mostrar a seção como um "spread" contínuo, com um só toolbar.
+  const american1SectionsRoot = path.join(
+    __dirname, '..', '..', 'American English Level 1', 'pdfs', 'Secoes'
+  );
+  const AMERICAN1_FILE_PREFIX = 'American English File Book 1 2nd edition Student Book';
+
+  app.get('/american1-pages/section/:start/:end', async (req, res) => {
+    const start = Number(req.params.start);
+    const end = Number(req.params.end);
+    if (!Number.isInteger(start) || !Number.isInteger(end) || start < 1 || end < start) {
+      res.status(400).end();
+      return;
+    }
+    try {
+      const merged = await PDFDocument.create();
+      for (const pageNumber of [start, end]) {
+        const filePath = path.join(american1SectionsRoot, `${AMERICAN1_FILE_PREFIX}-${pageNumber}.pdf`);
+        const bytes = fs.readFileSync(filePath);
+        const source = await PDFDocument.load(bytes);
+        const [copiedPage] = await merged.copyPages(source, [0]);
+        merged.addPage(copiedPage);
+      }
+      const mergedBytes = await merged.save();
+      res.type('application/pdf').send(Buffer.from(mergedBytes));
+    } catch (error) {
+      res.status(404).end();
+    }
+  });
+
+  // Áudio ancorado do American English Level 1: o "Class Audio" desse livro é
+  // dividido em vários CDs (o selo impresso no livro tem o número do CD antes
+  // da faixa, ex.: "1)2" = CD1 faixa 2; "2)3" = CD2 faixa 3) — cada CD com seu
+  // próprio nome de arquivo. Os limites de CD não coincidem com limites de unit:
+  // CD1 = units 1-2, CD2 = units 3-4 + unit 5 seção A, CD3 = unit 5 seção B até
+  // unit 7 Practical English. Unit 8 em diante ainda não tem áudio fornecido.
+  const american1AudioRoot = path.join(__dirname, '..', '..', 'American English Level 1');
+  app.use('/american1-audio/cd1', express.static(path.join(american1AudioRoot, 'audio_files_1'), { fallthrough: false }));
+  app.use('/american1-audio/cd1', notFoundOn404);
+  app.use('/american1-audio/cd2', express.static(path.join(american1AudioRoot, 'audio_files_2'), { fallthrough: false }));
+  app.use('/american1-audio/cd2', notFoundOn404);
+  app.use('/american1-audio/cd3', express.static(path.join(american1AudioRoot, 'audio_files_3'), { fallthrough: false }));
+  app.use('/american1-audio/cd3', notFoundOn404);
 };

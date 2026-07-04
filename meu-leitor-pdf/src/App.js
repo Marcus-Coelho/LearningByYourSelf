@@ -9,6 +9,8 @@ import '@react-pdf-viewer/highlight/lib/styles/index.css';
 import exerciseCoords from './exercises_coords.json';
 import answersCoords from './answers_coords.json';
 import audioAnchorsCoords from './audio_anchors_coords.json';
+import american1Index from './american1_index.json';
+import american1AudioAnchors from './american1_audio_anchors.json';
 import './App.css';
 
 // URL do gabarito único (multipágina), servido por src/setupProxy.js.
@@ -19,6 +21,60 @@ const MIN_RIGHT_WIDTH = 260;
 
 // Velocidades disponíveis no player de áudio ancorado.
 const AUDIO_SPEEDS = [0.75, 1, 1.25, 1.5, 2];
+
+// Cadastro é só-nome, sem senha (ver PROJECT_SUMMARY.md): "users" guarda a
+// lista de nomes já cadastrados neste navegador e "activeUser" aponta quem
+// está "logado" agora. Todo progresso (respostas, notas, autoavaliação,
+// units visitadas) é namespaced por nome via userKey(), para que duas
+// pessoas no mesmo navegador não misturem dados.
+const USERS_KEY = 'users';
+const ACTIVE_USER_KEY = 'activeUser';
+
+const loadUsers = () => {
+  try {
+    const raw = window.localStorage.getItem(USERS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (error) {
+    return [];
+  }
+};
+
+const saveUsers = (users) => {
+  try {
+    window.localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  } catch (error) {
+    // Armazenamento indisponível — lista de usuários fica só nesta sessão.
+  }
+};
+
+const userKey = (name, base) => `u:${encodeURIComponent(name)}:${base}`;
+
+// Chaves de progresso usadas antes de existir cadastro de usuário. Migradas
+// uma única vez para o primeiro nome cadastrado neste navegador, para não
+// "perder" progresso acumulado antes dessa feature existir.
+const LEGACY_PROGRESS_PREFIXES = ['rating:', 'notes:', 'answers:'];
+
+const migrateLegacyDataToUser = (name) => {
+  try {
+    const keysToMigrate = [];
+    for (let i = 0; i < window.localStorage.length; i += 1) {
+      const key = window.localStorage.key(i);
+      if (!key) continue;
+      if (key === 'visitedUnits' || LEGACY_PROGRESS_PREFIXES.some((prefix) => key.startsWith(prefix))) {
+        keysToMigrate.push(key);
+      }
+    }
+    keysToMigrate.forEach((key) => {
+      const value = window.localStorage.getItem(key);
+      if (value !== null) {
+        window.localStorage.setItem(userKey(name, key), value);
+      }
+      window.localStorage.removeItem(key);
+    });
+  } catch (error) {
+    // Armazenamento indisponível — segue sem migrar dados antigos.
+  }
+};
 
 // Exercícios agrupados por unidade, em ordem numérica (N.1, N.2, ...).
 // Gerado a partir de exercises_coords.json (ver gerar_indice_exercicios.py).
@@ -144,6 +200,22 @@ const unitItems = Array.from({ length: 100 }, (_, index) => {
   };
 });
 
+// Curso "American English Level 1": american1_index.json é a leitura direta
+// de American_English_File_Book1_Index_Ordenado.csv (unit, seção A/B/C/-,
+// título, foco de grammar/vocabulary/pronunciation e a dupla de páginas do
+// livro). Agrupado por unit, na mesma ordem em que aparece no CSV.
+const american1SectionsByUnit = (() => {
+  const map = {};
+  american1Index.forEach((entry) => {
+    (map[entry.unit] = map[entry.unit] || []).push(entry);
+  });
+  return map;
+})();
+
+const american1UnitNumbers = Object.keys(american1SectionsByUnit)
+  .map(Number)
+  .sort((a, b) => a - b);
+
 // Cursos listados na página "Courses". headerLabel é o texto exibido no topo
 // enquanto o usuário está dentro do curso (unit, exercícios, página de
 // teste...).
@@ -153,10 +225,10 @@ const courses = {
     description: 'Explore pre-intermediate vocabulary practice and lessons.',
     headerLabel: 'You are in the English Vocabulary Pre Intermediate Course',
   },
-  course2: {
-    title: 'Course 2',
-    description: 'Continue with the next course and improve your fluency.',
-    headerLabel: 'You are in the Course 2',
+  american1: {
+    title: 'American English Level 1',
+    description: 'Read through American English File Book 1, unit by unit, section by section.',
+    headerLabel: 'You are in the American English Level 1 Course',
   },
 };
 
@@ -223,6 +295,8 @@ function App() {
   const [pdfFileName, setPdfFileName] = useState('');
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [selectedExercise, setSelectedExercise] = useState(null);
+  const [selectedAmerican1Unit, setSelectedAmerican1Unit] = useState(null);
+  const [selectedAmerican1Section, setSelectedAmerican1Section] = useState(null);
   const [showAnswers, setShowAnswers] = useState(false);
   const [activePage, setActivePage] = useState('home');
   const [activeCourseId, setActiveCourseId] = useState(null);
@@ -232,35 +306,60 @@ function App() {
   const layoutRef = useRef(null);
   const startDragRef = useRef(null);
 
-  // Carrega, uma vez, todas as autoavaliações de exercícios já salvas
-  // (chaves "rating:<exerciseId>" no localStorage) para calcular o score
-  // geral do aluno assim que o app abre.
-  useEffect(() => {
+  // Identidade do "usuário" (só nome, sem senha — ver comentário acima de
+  // userKey). Lido de forma síncrona do localStorage no useState para não
+  // piscar a home/courses antes de sabermos se já há alguém logado.
+  const [userName, setUserName] = useState(() => {
     try {
+      return window.localStorage.getItem(ACTIVE_USER_KEY) || '';
+    } catch (error) {
+      return '';
+    }
+  });
+  const [registeredUsers, setRegisteredUsers] = useState(() => loadUsers());
+  const [registerNameInput, setRegisterNameInput] = useState('');
+  const [registerError, setRegisterError] = useState('');
+
+  // Carrega as autoavaliações de exercícios do usuário ativo (chaves
+  // "u:<nome>:rating:<exerciseId>") para calcular o score geral — recarrega
+  // sempre que o usuário ativo muda (troca de usuário no mesmo navegador).
+  useEffect(() => {
+    if (!userName) {
+      setExerciseRatings({});
+      return;
+    }
+    try {
+      const prefix = userKey(userName, 'rating:');
       const loaded = {};
       for (let i = 0; i < window.localStorage.length; i += 1) {
         const key = window.localStorage.key(i);
-        if (key && key.startsWith('rating:')) {
+        if (key && key.startsWith(prefix)) {
           const value = Number(window.localStorage.getItem(key));
           if (value >= 1 && value <= 5) {
-            loaded[key.slice('rating:'.length)] = value;
+            loaded[key.slice(prefix.length)] = value;
           }
         }
       }
       setExerciseRatings(loaded);
     } catch (error) {
       // Armazenamento indisponível — o score fica vazio nesta sessão.
+      setExerciseRatings({});
     }
-  }, []);
+  }, [userName]);
 
-  // Carrega, uma vez, as units já visitadas em qualquer sessão anterior.
-  // "Your Progress" conta essas units (não a posição da unit atual) — assim,
-  // se o aluno pular direto pra Unit 70 sem ter visto as anteriores, o
-  // progresso não aparece como 70% indevidamente. Prepara também o terreno
-  // para uma futura "Unit aleatória", que pode ser aberta fora de ordem.
+  // Carrega as units já visitadas pelo usuário ativo em qualquer sessão
+  // anterior. "Your Progress" conta essas units (não a posição da unit
+  // atual) — assim, se o aluno pular direto pra Unit 70 sem ter visto as
+  // anteriores, o progresso não aparece como 70% indevidamente. Prepara
+  // também o terreno para uma futura "Unit aleatória", que pode ser aberta
+  // fora de ordem.
   useEffect(() => {
+    if (!userName) {
+      setVisitedUnits({});
+      return;
+    }
     try {
-      const raw = window.localStorage.getItem('visitedUnits');
+      const raw = window.localStorage.getItem(userKey(userName, 'visitedUnits'));
       if (raw) {
         const list = JSON.parse(raw);
         const loaded = {};
@@ -268,19 +367,22 @@ function App() {
           loaded[unit] = true;
         });
         setVisitedUnits(loaded);
+      } else {
+        setVisitedUnits({});
       }
     } catch (error) {
       // Armazenamento indisponível — progresso conta só a partir de agora.
+      setVisitedUnits({});
     }
-  }, []);
+  }, [userName]);
 
   // Autoavaliação é voluntária: só entra na média o exercício em que o
   // usuário realmente clicou numa estrela.
   const handleRateExercise = (exerciseId, value) => {
-    if (!exerciseId) return;
+    if (!exerciseId || !userName) return;
     setExerciseRatings((prev) => ({ ...prev, [exerciseId]: value }));
     try {
-      window.localStorage.setItem(`rating:${exerciseId}`, String(value));
+      window.localStorage.setItem(userKey(userName, `rating:${exerciseId}`), String(value));
     } catch (error) {
       // Armazenamento indisponível — a nota fica só nesta sessão.
     }
@@ -317,7 +419,7 @@ function App() {
   // Marca a unit como visitada assim que a tela de leitura dela é aberta —
   // é isso que conta pro "Your Progress" no cabeçalho, não o número da unit.
   useEffect(() => {
-    if (activePage !== 'unit' || !selectedUnit) {
+    if (activePage !== 'unit' || !selectedUnit || !userName) {
       return;
     }
     setVisitedUnits((prev) => {
@@ -326,13 +428,13 @@ function App() {
       }
       const next = { ...prev, [selectedUnit]: true };
       try {
-        window.localStorage.setItem('visitedUnits', JSON.stringify(Object.keys(next).map(Number)));
+        window.localStorage.setItem(userKey(userName, 'visitedUnits'), JSON.stringify(Object.keys(next).map(Number)));
       } catch (error) {
         // Armazenamento indisponível — progresso não sobrevive a recarregar.
       }
       return next;
     });
-  }, [selectedUnit, activePage]);
+  }, [selectedUnit, activePage, userName]);
 
   const handlePdfChange = (event) => {
     const file = event.target.files?.[0];
@@ -386,13 +488,24 @@ function App() {
     event.preventDefault();
     setActivePage('home');
     setSelectedUnit(null);
+    setSelectedAmerican1Unit(null);
+    setSelectedAmerican1Section(null);
     setActiveCourseId(null);
   };
 
+  // Trava de acesso: só entra em "Courses" (e, por consequência, em
+  // vocabulary/american1/unit/exercises, só alcançáveis a partir daqui) quem
+  // já tem um nome cadastrado/ativo neste navegador.
   const handleCourses = (event) => {
     event.preventDefault();
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
     setActivePage('courses');
     setSelectedUnit(null);
+    setSelectedAmerican1Unit(null);
+    setSelectedAmerican1Section(null);
     setActiveCourseId(null);
   };
 
@@ -403,28 +516,121 @@ function App() {
     setActiveCourseId('vocabulary');
   };
 
-  const handleCourse2 = (event) => {
+  const handleAmerican1 = (event) => {
     event.preventDefault();
-    setActivePage('course2');
-    setSelectedUnit(null);
-    setActiveCourseId('course2');
+    setActivePage('american1');
+    setSelectedAmerican1Unit(null);
+    setSelectedAmerican1Section(null);
+    setActiveCourseId('american1');
+  };
+
+  const handleAmerican1UnitSelect = (event, unit) => {
+    event.preventDefault();
+    const sections = american1SectionsByUnit[unit] || [];
+    setActivePage('american1-unit');
+    setSelectedAmerican1Unit(unit);
+    setSelectedAmerican1Section(sections[0]?.section ?? null);
+  };
+
+  const handlePreviousAmerican1Unit = () => {
+    const index = american1UnitNumbers.indexOf(selectedAmerican1Unit);
+    if (index <= 0) return;
+    const previousUnit = american1UnitNumbers[index - 1];
+    setSelectedAmerican1Unit(previousUnit);
+    setSelectedAmerican1Section(american1SectionsByUnit[previousUnit]?.[0]?.section ?? null);
+  };
+
+  const handleNextAmerican1Unit = () => {
+    const index = american1UnitNumbers.indexOf(selectedAmerican1Unit);
+    if (index === -1 || index >= american1UnitNumbers.length - 1) return;
+    const nextUnit = american1UnitNumbers[index + 1];
+    setSelectedAmerican1Unit(nextUnit);
+    setSelectedAmerican1Section(american1SectionsByUnit[nextUnit]?.[0]?.section ?? null);
   };
 
   const handleOpenProfile = (event) => {
     event.preventDefault();
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
     setActivePage('profile');
     setSelectedUnit(null);
     setActiveCourseId(null);
   };
 
-  // Remove do localStorage todas as chaves que começam com um prefixo (ex.:
-  // "answers:", "rating:", "notes:") — usado pelos botões de reset do perfil.
-  const removeLocalStorageKeysWithPrefix = (prefix) => {
+  // Cadastro é só-nome, sem senha: se o nome digitado já existe na lista
+  // (case-insensitive), reaproveita o cadastro existente (== "login") em vez
+  // de criar um duplicado — é assim que dá pra "trocar" para um usuário já
+  // conhecido neste navegador sem precisar de uma tela de login separada.
+  const handleRegisterSubmit = (event) => {
+    event.preventDefault();
+    const trimmed = registerNameInput.trim();
+    if (!trimmed) {
+      setRegisterError('Please enter your name.');
+      return;
+    }
+
+    const existing = registeredUsers.find((name) => name.toLowerCase() === trimmed.toLowerCase());
+    const canonicalName = existing || trimmed;
+
+    if (!existing) {
+      const isFirstEverUser = registeredUsers.length === 0;
+      const nextUsers = [...registeredUsers, canonicalName];
+      setRegisteredUsers(nextUsers);
+      saveUsers(nextUsers);
+      if (isFirstEverUser) {
+        migrateLegacyDataToUser(canonicalName);
+      }
+    }
+
+    setUserName(canonicalName);
     try {
+      window.localStorage.setItem(ACTIVE_USER_KEY, canonicalName);
+    } catch (error) {
+      // Armazenamento indisponível — sessão fica só nesta aba.
+    }
+    setRegisterNameInput('');
+    setRegisterError('');
+    setActivePage('courses');
+  };
+
+  const handleContinueAs = (name) => {
+    setUserName(name);
+    try {
+      window.localStorage.setItem(ACTIVE_USER_KEY, name);
+    } catch (error) {
+      // Armazenamento indisponível — sessão fica só nesta aba.
+    }
+    setActivePage('courses');
+  };
+
+  // "Log out": limpa só o ponteiro de usuário ativo — a lista de usuários e
+  // o progresso de cada um continuam intactos no localStorage.
+  const handleSwitchUser = () => {
+    setUserName('');
+    try {
+      window.localStorage.removeItem(ACTIVE_USER_KEY);
+    } catch (error) {
+      // Armazenamento indisponível.
+    }
+    setActivePage('register');
+    setSelectedUnit(null);
+    setActiveCourseId(null);
+  };
+
+  // Remove do localStorage todas as chaves do usuário ativo que começam com
+  // um prefixo (ex.: "answers:", "rating:", "notes:") — usado pelos botões
+  // de reset do perfil. Escopado por usuário para não apagar o progresso de
+  // outra pessoa que também usa este navegador.
+  const removeLocalStorageKeysWithPrefix = (prefix) => {
+    if (!userName) return;
+    try {
+      const scopedPrefix = userKey(userName, prefix);
       const keysToRemove = [];
       for (let i = 0; i < window.localStorage.length; i += 1) {
         const key = window.localStorage.key(i);
-        if (key && key.startsWith(prefix)) {
+        if (key && key.startsWith(scopedPrefix)) {
           keysToRemove.push(key);
         }
       }
@@ -438,14 +644,35 @@ function App() {
   // dispara o download. As notas são salvas como HTML (negrito/marca-texto),
   // então convertemos para texto puro antes de exportar.
   const handleExportNotes = () => {
+    if (!userName) return;
     try {
       const entries = [];
+      const prefix = userKey(userName, 'notes:');
       for (let i = 0; i < window.localStorage.length; i += 1) {
         const key = window.localStorage.key(i);
-        if (key && key.startsWith('notes:')) {
+        if (!key || !key.startsWith(prefix)) continue;
+
+        // Duas notações possíveis depois do prefixo: "<unit>" (curso
+        // Vocabulary) ou "american1:<unit>" (ver storageKeyBase em
+        // UnitNotes) — cada uma vira um título diferente no export.
+        const remainder = key.slice(prefix.length);
+        const american1Match = remainder.match(/^american1:(\d+)$/);
+        const html = window.localStorage.getItem(key) || '';
+
+        if (american1Match) {
           entries.push({
-            unit: Number(key.slice('notes:'.length)),
-            html: window.localStorage.getItem(key) || '',
+            course: 'american1',
+            unit: Number(american1Match[1]),
+            title: `American English Level 1 - Unit ${american1Match[1]}`,
+            html,
+          });
+        } else {
+          const unit = Number(remainder);
+          entries.push({
+            course: 'vocabulary',
+            unit,
+            title: `Unit ${unit}${unitTable[unit] ? ` - ${unitTable[unit]}` : ''}`,
+            html,
           });
         }
       }
@@ -455,7 +682,7 @@ function App() {
         return;
       }
 
-      entries.sort((a, b) => a.unit - b.unit);
+      entries.sort((a, b) => a.course.localeCompare(b.course) || a.unit - b.unit);
 
       // O editor de notas quebra cada linha em uma <div> própria (e Shift+Enter
       // vira <br>) — textContent ignora essas fronteiras de bloco e junta tudo
@@ -472,8 +699,7 @@ function App() {
       };
 
       const content = entries
-        .map(({ unit, html }) => {
-          const title = `Unit ${unit}${unitTable[unit] ? ` - ${unitTable[unit]}` : ''}`;
+        .map(({ title, html }) => {
           const text = htmlToText(html) || '(empty)';
           return `${title}\n${'-'.repeat(title.length)}\n${text}\n`;
         })
@@ -499,7 +725,7 @@ function App() {
     }
     setVisitedUnits({});
     try {
-      window.localStorage.removeItem('visitedUnits');
+      window.localStorage.removeItem(userKey(userName, 'visitedUnits'));
     } catch (error) {
       // Armazenamento indisponível.
     }
@@ -534,7 +760,7 @@ function App() {
     setVisitedUnits({});
     setExerciseRatings({});
     try {
-      window.localStorage.removeItem('visitedUnits');
+      window.localStorage.removeItem(userKey(userName, 'visitedUnits'));
     } catch (error) {
       // Armazenamento indisponível.
     }
@@ -626,7 +852,7 @@ function App() {
 
   // Verdadeiro em qualquer tela "dentro" de um curso (unit, exercícios,
   // página de teste do Course 2...), não só nas telas de unit/exercícios.
-  const insideCourse = Boolean(selectedUnit) || activePage === 'course2';
+  const insideCourse = Boolean(selectedUnit) || Boolean(selectedAmerican1Unit);
   const activeCourse = activeCourseId ? courses[activeCourseId] : null;
   const visitedUnitsCount = Object.keys(visitedUnits).length;
 
@@ -762,6 +988,7 @@ function App() {
                   onToggleAnswers={() => setShowAnswers((value) => !value)}
                   rating={exerciseRatings[activeExerciseId] || 0}
                   onRate={(value) => handleRateExercise(activeExerciseId, value)}
+                  userName={userName}
                 />
               )}
             </aside>
@@ -827,7 +1054,7 @@ function App() {
 
           <aside className="side-panel right-panel">
             <div className="panel-content related-panel">
-              <UnitNotes key={selectedUnit} unit={selectedUnit} />
+              <UnitNotes key={selectedUnit} unit={selectedUnit} userName={userName} />
             </div>
           </aside>
         </main>
@@ -853,38 +1080,153 @@ function App() {
                 <span>{courses.vocabulary.title}</span>
                 <small>{courses.vocabulary.description}</small>
               </a>
-              <a className="course-link" href="#link-course-2" onClick={handleCourse2}>
-                <span>{courses.course2.title}</span>
-                <small>{courses.course2.description}</small>
+              <a className="course-link" href="#link-american1" onClick={handleAmerican1}>
+                <span>{courses.american1.title}</span>
+                <small>{courses.american1.description}</small>
               </a>
             </div>
           </div>
         </main>
-      ) : activePage === 'course2' ? (
-        <main className="landing-page">
-          <div className="landing-panel">
-            <p className="eyebrow">Course 2</p>
-            <h1>This course is coming soon</h1>
-            <p className="landing-meta">
-              This is just a placeholder page — Course 2 doesn't have any content yet.
-            </p>
-            <p className="landing-note">
-              Once it's ready, it'll follow the same structure as the Vocabulary course:
-              units, exercises, audio and notes.
-            </p>
+      ) : activePage === 'american1' ? (
+        <main className="landing-page vocabulary-mode" id="link-american1">
+          <div className="landing-panel vocabulary-page">
+            <h2 className="vocabulary-title">American English Level 1</h2>
+            <div className="vocabulary-list" role="list">
+              {american1UnitNumbers.map((unit) => {
+                const sections = american1SectionsByUnit[unit] || [];
+                const theme = sections.find((section) => section.section === 'A')?.title || sections[0]?.title || '';
+                return (
+                  <a
+                    key={unit}
+                    className="vocabulary-link"
+                    href={`#american1-unit-${unit}`}
+                    onClick={(event) => handleAmerican1UnitSelect(event, unit)}
+                  >
+                    <span>Unit {unit}</span>
+                    <small>{theme}</small>
+                  </a>
+                );
+              })}
+            </div>
           </div>
         </main>
-      ) : activePage === 'profile' ? (
+      ) : activePage === 'american1-unit' ? (() => {
+        const sections = american1SectionsByUnit[selectedAmerican1Unit] || [];
+        const activeSection = sections.find((section) => section.section === selectedAmerican1Section) || sections[0];
+        const fileUrl = activeSection
+          ? `/american1-pages/section/${activeSection.pageStart}/${activeSection.pageEnd}`
+          : '';
+        const unitIndex = american1UnitNumbers.indexOf(selectedAmerican1Unit);
+        const sectionAudioAnchors = (american1AudioAnchors[String(selectedAmerican1Unit)] || [])
+          .filter((anchor) => anchor.section === activeSection?.section);
+
+        return (
+          <main
+            className="main-panels"
+            ref={layoutRef}
+            style={{
+              gridTemplateColumns: `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`,
+            }}
+          >
+            <section className="pdf-panel">
+              <div className="pdf-toolbar">
+                <div className="pdf-toolbar-nav">
+                  <button
+                    type="button"
+                    className="upload-button"
+                    onClick={handlePreviousAmerican1Unit}
+                    disabled={unitIndex <= 0}
+                  >
+                    Previous Unit
+                  </button>
+                  <button
+                    type="button"
+                    className="upload-button"
+                    onClick={handleNextAmerican1Unit}
+                    disabled={unitIndex === -1 || unitIndex >= american1UnitNumbers.length - 1}
+                  >
+                    Next Unit
+                  </button>
+                </div>
+                <div className="exercise-tabs" role="tablist" aria-label="Unit sections">
+                  {sections.map((section) => (
+                    <button
+                      key={section.section}
+                      type="button"
+                      role="tab"
+                      aria-selected={section.section === activeSection?.section}
+                      className={`exercise-tab${section.section.length > 1 ? ' exercise-tab-wide' : ''}${section.section === activeSection?.section ? ' is-active' : ''}`}
+                      title={section.title}
+                      onClick={() => setSelectedAmerican1Section(section.section)}
+                    >
+                      {section.section}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {activeSection && (
+                <div className="section-info">
+                  <strong>{activeSection.title}</strong>
+                  {(activeSection.grammar || activeSection.vocabulary || activeSection.pronunciation) && (
+                    <span className="section-info-tags">
+                      {activeSection.grammar && <span>Grammar: {activeSection.grammar}</span>}
+                      {activeSection.vocabulary && <span>Vocabulary: {activeSection.vocabulary}</span>}
+                      {activeSection.pronunciation && <span>Pronunciation: {activeSection.pronunciation}</span>}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {fileUrl ? (
+                <American1AudioReader key={fileUrl} fileUrl={fileUrl} anchors={sectionAudioAnchors} />
+              ) : (
+                <div className="pdf-empty-state">
+                  <p className="eyebrow">No section</p>
+                  <h1>No section indexed</h1>
+                  <p>This unit has no sections in the index.</p>
+                </div>
+              )}
+            </section>
+
+            <button
+              className="resize-handle"
+              type="button"
+              aria-label="Resize right column"
+              onPointerDown={startPanelResize}
+            />
+
+            <aside className="side-panel right-panel">
+              <div className="panel-content related-panel">
+                <UnitNotes
+                  key={selectedAmerican1Unit}
+                  unit={selectedAmerican1Unit}
+                  userName={userName}
+                  storageKeyBase={`notes:american1:${selectedAmerican1Unit}`}
+                />
+              </div>
+            </aside>
+          </main>
+        );
+      })() : activePage === 'profile' ? (
         <main className="landing-page">
           <div className="landing-panel profile-panel">
             <p className="eyebrow">My Profile</p>
-            <h1>Harry Kane</h1>
+            <h1>{userName}</h1>
+            <p className="landing-meta">
+              Your Score: <strong>{overallScorePercent !== null ? `${overallScorePercent}%` : '—'}</strong>
+              {' '}({ratingValues.length} exercise{ratingValues.length === 1 ? '' : 's'} self-rated)
+            </p>
             <p className="landing-meta">
               Everything below is stored only in this browser (no account, no server) — these
               buttons erase it for good.
             </p>
 
             <div className="profile-reset-list">
+              <button type="button" className="profile-reset-btn" onClick={handleSwitchUser}>
+                <span>Switch user</span>
+                <small>Log out of "{userName}" and register or continue as someone else on this browser.</small>
+              </button>
               <button type="button" className="profile-reset-btn primary" onClick={handleExportNotes}>
                 <span>Export lesson notes (.txt)</span>
                 <small>Downloads "My Notes" from every unit as a single plain-text file.</small>
@@ -912,15 +1254,65 @@ function App() {
             </div>
           </div>
         </main>
+      ) : activePage === 'register' ? (
+        <main className="landing-page">
+          <div className="landing-panel register-panel">
+            <p className="eyebrow">Welcome</p>
+            <h1>Let's set up your profile</h1>
+            <p className="landing-meta">
+              Just your name for now — it keeps your progress and score separate from anyone
+              else who studies on this browser.
+            </p>
+
+            {registeredUsers.length > 0 && (
+              <div className="register-existing">
+                <span className="register-existing-label">Continue as</span>
+                <div className="register-existing-list">
+                  {registeredUsers.map((name) => (
+                    <button
+                      key={name}
+                      type="button"
+                      className="register-existing-btn"
+                      onClick={() => handleContinueAs(name)}
+                    >
+                      {name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <form className="register-form" onSubmit={handleRegisterSubmit}>
+              <label className="register-field">
+                <span>{registeredUsers.length > 0 ? 'Or register a new name' : 'Your name'}</span>
+                <input
+                  type="text"
+                  className="register-input"
+                  value={registerNameInput}
+                  onChange={(event) => setRegisterNameInput(event.target.value)}
+                  placeholder="e.g. Alex Smith"
+                  autoFocus
+                />
+              </label>
+              {registerError && <p className="register-error">{registerError}</p>}
+              <button type="submit" className="show-answers-btn">Start learning</button>
+            </form>
+          </div>
+        </main>
       ) : (
         <main className="landing-page">
-          <div className="landing-panel">
-            <p className="eyebrow">Hello !</p>
-            <h1>So tell me… how’s your English these days?</h1>
-            <p className="landing-meta">Is it just enough to get by, or are you ready to surprise yourself with how far you can go?</p>
-            <p className="landing-note">Because every word you learn opens a new door — to conversations, to opportunities, to the world.</p>
-            <p className="landing-note">Your English isn’t just a skill… it’s your passport to something bigger.</p>
-            <p className="landing-note">An English Learning by Yourself Project</p>
+          <div className="landing-hero">
+            <div className="landing-panel">
+              <p className="eyebrow">Hello !</p>
+              <h1>So tell me… how’s your English these days?</h1>
+              <p className="landing-meta">Is it just enough to get by, or are you ready to surprise yourself with how far you can go?</p>
+              <p className="landing-note">Because every word you learn opens a new door — to conversations, to opportunities, to the world.</p>
+              <p className="landing-note">Your English isn’t just a skill… it’s your passport to something bigger.</p>
+              <p className="landing-note">An English Learning by Yourself Project</p>
+            </div>
+            <button type="button" className="landing-cta" onClick={handleCourses}>
+              Start Learning
+            </button>
           </div>
         </main>
       )}
@@ -1253,6 +1645,219 @@ function AudioAnchorPlayer({ anchor, scale, unit }) {
   );
 }
 
+// Curso "American English Level 1": ancora um player compacto sobre cada selo
+// de áudio impresso no PDF (ver american1_audio_anchors.json — gerado por
+// casamento de template + inferência de faixa, já que esse PDF não tem
+// nenhuma camada de texto, é tudo imagem escaneada; detalhes no
+// PROJECT_SUMMARY.md). Diferente do UnitAudioReader (que só ancora na margem
+// de UMA página), aqui os anchors de uma seção podem cair em qualquer uma das
+// 2 páginas do PDF mesclado — por isso observa e injeta um host em cada
+// page-layer que tiver pelo menos um anchor, não só o primeiro.
+function American1AudioReader({ fileUrl, anchors }) {
+  const shellRef = useRef(null);
+  const [pageHosts, setPageHosts] = useState({});
+  const [scales, setScales] = useState({});
+  const [revealed, setRevealed] = useState(false);
+
+  const anchorsByPage = {};
+  (anchors || []).forEach((anchor) => {
+    (anchorsByPage[anchor.page] = anchorsByPage[anchor.page] || []).push(anchor);
+  });
+  const pagesNeeded = Object.keys(anchorsByPage).map(Number);
+
+  useEffect(() => {
+    setPageHosts({});
+    setScales({});
+    setRevealed(false);
+
+    const shell = shellRef.current;
+    if (!shell || pagesNeeded.length === 0) {
+      return undefined;
+    }
+
+    let rafId = null;
+    let revealTimeoutId = null;
+    const resizeObservers = [];
+    const attachedPages = new Set();
+
+    const attach = () => {
+      let missing = false;
+      pagesNeeded.forEach((pageIndex) => {
+        if (attachedPages.has(pageIndex)) return;
+        const pageLayer = shell.querySelector(`[data-testid="core__page-layer-${pageIndex}"]`);
+        if (!pageLayer) {
+          missing = true;
+          return;
+        }
+        attachedPages.add(pageIndex);
+
+        let host = Array.from(pageLayer.children).find((el) => el.classList.contains('audio-anchor-host'));
+        if (!host) {
+          host = document.createElement('div');
+          host.className = 'audio-anchor-host';
+          pageLayer.appendChild(host);
+        }
+        setPageHosts((prev) => ({ ...prev, [pageIndex]: host }));
+
+        const pageWidth = anchorsByPage[pageIndex][0].pageWidth;
+        const updateScale = () => {
+          const width = pageLayer.getBoundingClientRect().width;
+          if (width) {
+            setScales((prev) => ({ ...prev, [pageIndex]: width / pageWidth }));
+          }
+        };
+        updateScale();
+        const resizeObserver = new ResizeObserver(updateScale);
+        resizeObserver.observe(pageLayer);
+        resizeObservers.push(resizeObserver);
+      });
+
+      if (missing) {
+        rafId = requestAnimationFrame(attach);
+      } else {
+        revealTimeoutId = setTimeout(() => setRevealed(true), AUDIO_REVEAL_DELAY_MS);
+      }
+    };
+
+    const mutationObserver = new MutationObserver(() => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(attach);
+    });
+    mutationObserver.observe(shell, { childList: true, subtree: true });
+    attach();
+
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      if (revealTimeoutId) clearTimeout(revealTimeoutId);
+      mutationObserver.disconnect();
+      resizeObservers.forEach((ro) => ro.disconnect());
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fileUrl]);
+
+  return (
+    <div className="unit-reader-shell" ref={shellRef}>
+      <PdfWorkspace fileUrl={fileUrl} defaultScale={1.5} />
+      {Object.entries(pageHosts).map(([pageIndex, host]) => createPortal(
+        <div key={pageIndex} className={`audio-anchor-layer${revealed ? ' is-visible' : ''}`}>
+          {(anchorsByPage[pageIndex] || []).map((anchor) => (
+            <American1AudioAnchorPlayer
+              key={`${anchor.cd}-${anchor.track}`}
+              anchor={anchor}
+              scale={scales[pageIndex] || 1}
+            />
+          ))}
+        </div>,
+        host
+      ))}
+    </div>
+  );
+}
+
+// Mesmo player do curso Vocabulary (play/pause, stop, menu de velocidade —
+// ver AudioAnchorPlayer), só que centralizado exatamente em cima do selo
+// impresso (não ancorado numa margem) e um pouco menor/translúcido (ver
+// .american1-audio-anchor no CSS), já que aqui ele fica sobre texto corrido.
+function American1AudioAnchorPlayer({ anchor, scale }) {
+  const audioRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [rate, setRate] = useState(1);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!menuOpen) {
+      return undefined;
+    }
+    const closeMenu = () => setMenuOpen(false);
+    document.addEventListener('click', closeMenu);
+    return () => document.removeEventListener('click', closeMenu);
+  }, [menuOpen]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    return () => {
+      audio?.pause();
+    };
+  }, []);
+
+  const togglePlay = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (audio.paused) {
+      audio.play();
+    } else {
+      audio.pause();
+    }
+  };
+
+  const stop = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+  };
+
+  const changeRate = (speed) => {
+    setRate(speed);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = speed;
+    }
+    setMenuOpen(false);
+  };
+
+  return (
+    <div
+      className="american1-audio-anchor"
+      style={{
+        left: `${anchor.x * scale}px`,
+        top: `${anchor.y * scale}px`,
+      }}
+    >
+      <audio
+        ref={audioRef}
+        src={anchor.audio}
+        preload="none"
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onEnded={() => setIsPlaying(false)}
+      />
+      <button type="button" className="ap-btn" title="Play/Pause" onClick={togglePlay}>
+        {isPlaying ? <IconPause /> : <IconPlay />}
+      </button>
+      <button type="button" className="ap-btn" title="Stop" onClick={stop}>
+        <IconStop />
+      </button>
+      <div className="ap-wrap">
+        <button
+          type="button"
+          className="ap-btn"
+          title="Speed"
+          onClick={(event) => {
+            event.stopPropagation();
+            setMenuOpen((open) => !open);
+          }}
+        >
+          <IconDots />
+        </button>
+        {menuOpen && (
+          <div className="ap-menu open">
+            {AUDIO_SPEEDS.map((speed) => (
+              <button
+                key={speed}
+                type="button"
+                className={speed === rate ? 'active' : ''}
+                onClick={() => changeRate(speed)}
+              >
+                {speed}x
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Envolve o leitor PDF existente e o recorta (crop) para mostrar SOMENTE a faixa
 // vertical [top, bottom] do exercício. Não altera o leitor: apenas ajusta, via
 // DOM, a altura visível do scroller e a posição de rolagem, reagindo a zoom e
@@ -1362,8 +1967,9 @@ function AnswerArea({
   onToggleAnswers,
   rating,
   onRate,
+  userName,
 }) {
-  const storageKey = `answers:${exerciseId}`;
+  const storageKey = userKey(userName, `answers:${exerciseId}`);
   const [answer, setAnswer] = useState('');
 
   useEffect(() => {
@@ -1459,10 +2065,10 @@ function AnswerArea({
 const NOTES_HIGHLIGHT_COLOR = '#ffe066';
 const NOTES_HIGHLIGHT_RGB = 'rgb(255, 224, 102)';
 
-function UnitNotes({ unit }) {
+function UnitNotes({ unit, userName, storageKeyBase }) {
   const editorRef = useRef(null);
   const [justSaved, setJustSaved] = useState(false);
-  const storageKey = `notes:${unit}`;
+  const storageKey = userKey(userName, storageKeyBase || `notes:${unit}`);
 
   // Carrega a anotação salva desta unit (se houver) ao entrar na tela.
   useEffect(() => {

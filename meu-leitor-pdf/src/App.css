@@ -380,6 +380,15 @@ body {
   overflow: auto;
 }
 
+.landing-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 28px;
+  max-width: 680px;
+  width: 100%;
+}
+
 .landing-panel {
   width: 100%;
   max-width: 680px;
@@ -389,6 +398,25 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: 0 32px 80px rgba(0, 0, 0, 0.18);
   text-align: center;
+}
+
+.landing-cta {
+  padding: 14px 32px;
+  border: none;
+  border-radius: 10px;
+  background: var(--purple-500);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 140ms, transform 140ms;
+}
+
+.landing-cta:hover {
+  background: var(--purple-700);
+  transform: translateY(-1px);
 }
 
 .landing-panel.vocabulary-page {
@@ -401,6 +429,7 @@ body {
   gap: 22px;
   max-height: calc(100vh - 118px);
   overflow: hidden;
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .landing-panel .eyebrow {
@@ -539,6 +568,98 @@ body {
   border-color: rgba(139, 92, 246, 0.8);
 }
 
+/* Página de cadastro/login (só nome) — trava de acesso aos cursos. */
+.register-panel {
+  max-width: 520px;
+}
+
+.register-existing {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.register-existing-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.register-existing-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.register-existing-btn {
+  padding: 10px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+}
+
+.register-existing-btn:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(139, 92, 246, 0.42);
+}
+
+.register-form {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.register-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.register-field > span {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.register-input {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+}
+
+.register-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.register-input:focus {
+  outline: none;
+  border-color: rgba(139, 92, 246, 0.7);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.register-error {
+  margin: 0;
+  color: #ffb4b4;
+  font-size: 13px;
+}
+
+.register-form .show-answers-btn {
+  width: fit-content;
+}
+
 .vocabulary-page {
   padding: 24px 12px;
 }
@@ -556,8 +677,8 @@ body {
   margin: 0 0 18px;
   color: #fff;
   font-size: clamp(2rem, 3vw, 2.6rem);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.01em;
 }
 
 .vocabulary-link {
@@ -673,6 +794,31 @@ body {
   font-size: 13px;
 }
 
+/* Faixa de metadados da seção ativa (American English Level 1): título +
+   foco de grammar/vocabulary/pronunciation, entre o toolbar e o PDF. */
+.section-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.section-info strong {
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.section-info-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+
 .pdf-panel .rpv-core__viewer {
   flex: 1;
   min-height: 0;
@@ -743,6 +889,22 @@ body {
   transform: translateY(-1px);
   filter: saturate(1.08);
   box-shadow: 0 18px 36px rgba(109, 66, 216, 0.4);
+}
+
+/* Previous/Next Unit (American English Level 1) ficam sempre montados —
+   só desabilitados na primeira/última unit — para o botão nunca sumir e
+   deslocar o resto do toolbar (tabs de seção) de lugar. */
+.upload-button:disabled {
+  cursor: default;
+  opacity: 0.4;
+  filter: grayscale(0.4);
+  box-shadow: none;
+}
+
+.upload-button:disabled:hover {
+  transform: none;
+  filter: grayscale(0.4);
+  box-shadow: none;
 }
 
 .upload-button input {
@@ -849,6 +1011,32 @@ body {
 .ap-menu button.active {
   font-weight: 800;
   color: var(--purple-700);
+}
+
+/* Player de áudio ancorado do American English Level 1 — mesmo player do
+   curso Vocabulary (play/pause, stop, menu de velocidade — reaproveita
+   .ap-btn/.ap-wrap/.ap-menu), só que centralizado exatamente em cima do
+   selo impresso (não ancorado numa margem vazia, já que aqui o selo fica
+   em cima de texto corrido) e um pouco menor e translúcido (60%), pra
+   incomodar menos a leitura do texto embaixo. */
+.american1-audio-anchor {
+  position: absolute;
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  padding: 2px;
+  height: 22px;
+  background: rgba(255, 214, 0, 0.6);
+  border: 1px solid rgba(224, 168, 0, 0.6);
+  border-radius: 7px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transform: translate(-20px, -7px);
+}
+
+.american1-audio-anchor .ap-btn {
+  width: 22px;
+  height: 18px;
 }
 
 .resize-handle {
@@ -977,6 +1165,14 @@ body {
 .exercise-tab:hover {
   border-color: var(--purple-500);
   color: var(--purple-700);
+}
+
+/* Aba da seção especial (American English Level 1): o texto alterna entre
+   "Practical English" e "Revise" de unit pra unit — largura mínima fixa
+   pro texto mais longo, pra essa aba (e tudo à esquerda dela, incluindo os
+   botões Previous/Next Unit) não deslocar de posição ao trocar de unit. */
+.exercise-tab-wide {
+  min-width: 168px;
 }
 
 .exercise-tab.is-active {
