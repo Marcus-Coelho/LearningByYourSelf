@@ -60,6 +60,33 @@
   position: relative;
 }
 
+/* Link "My Profile", sempre encostado na ponta direita do cabeçalho —
+   funciona tanto no menu completo (fora de um curso) quanto dentro de uma
+   unit, já que sempre sobra (ou é empurrado) espaço à sua esquerda. */
+.header-profile-link {
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+.header-profile-link a {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 140ms, border-color 140ms;
+}
+
+.header-profile-link a:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
 /* Nome do curso atual, centralizado no espaço livre do cabeçalho entre o
    menu e a barra de progresso (só aparece dentro de uma unit). */
 .header-course-info {
@@ -75,38 +102,44 @@
   padding: 0 16px;
 }
 
-/* Progresso do aluno na trilha de 100 units (posição atual, não conclusão —
-   ainda não existe um controle de "unit concluída"). */
-.header-progress {
-  flex: 0 0 auto;
+/* Cartão "Your Progress" / "Your Score" no cabeçalho: duas células lado a
+   lado, com o rótulo separado do valor por uma linha pontilhada — mesma
+   ideia de referência que o usuário mandou por imagem. */
+.header-stats-card {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  min-width: 260px;
-}
-
-.header-progress-label {
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: rgba(255, 255, 255, 0.9);
-  white-space: nowrap;
-}
-
-.header-progress-track {
-  width: 260px;
-  height: 12px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.18);
+  flex: 0 0 auto;
+  background: #fdf3ea;
+  border: 1px solid #e8c9a8;
+  border-radius: 10px;
   overflow: hidden;
 }
 
-.header-progress-fill {
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--purple-300), var(--purple-500));
-  transition: width 200ms ease;
+.header-stat-cell {
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+  padding: 7px 20px 9px;
+}
+
+.header-stat-cell + .header-stat-cell {
+  border-left: 1px solid #e8c9a8;
+}
+
+.header-stat-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #7a5230;
+  white-space: nowrap;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+  border-bottom: 1px dotted #c99a63;
+}
+
+.header-stat-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: #4a2f14;
+  line-height: 1;
 }
 
 .menu ol {
@@ -431,6 +464,79 @@ body {
   display: block;
   color: rgba(255, 255, 255, 0.72);
   line-height: 1.5;
+}
+
+/* Página "My Profile" — lista de botões de reset (dados locais, sem conta
+   nem servidor: cada um só apaga um pedaço específico do localStorage). */
+.profile-panel {
+  text-align: left;
+  max-width: 640px;
+}
+
+.profile-reset-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.profile-reset-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+}
+
+.profile-reset-btn:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(139, 92, 246, 0.42);
+}
+
+.profile-reset-btn span {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.profile-reset-btn small {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.profile-reset-btn.danger {
+  background: rgba(248, 113, 113, 0.14);
+  border-color: rgba(248, 113, 113, 0.4);
+}
+
+.profile-reset-btn.danger span {
+  color: #ffb4b4;
+}
+
+.profile-reset-btn.danger:hover {
+  background: rgba(248, 113, 113, 0.22);
+  border-color: rgba(248, 113, 113, 0.65);
+}
+
+.profile-reset-btn.primary {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.55);
+}
+
+.profile-reset-btn.primary span {
+  color: #e4d9ff;
+}
+
+.profile-reset-btn.primary:hover {
+  background: rgba(139, 92, 246, 0.3);
+  border-color: rgba(139, 92, 246, 0.8);
 }
 
 .vocabulary-page {
@@ -839,23 +945,20 @@ body {
 
 .study-unit-label {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  font-size: 22px;
   font-weight: 800;
   color: var(--ink);
-  line-height: 1.1;
-}
-
-.study-unit-label small {
-  font-weight: 500;
-  font-size: 12px;
-  color: var(--muted);
+  line-height: 1.15;
+  white-space: nowrap;
 }
 
 .exercise-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
+  margin-left: 24px;
 }
 
 .exercise-tab {
@@ -1024,7 +1127,7 @@ body {
 
 .answer-field > span {
   font-weight: 700;
-  font-size: 13px;
+  font-size: 17px;
   color: var(--muted);
   flex: 0 0 auto;
 }
@@ -1053,6 +1156,45 @@ body {
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
 }
 
+/* Autoavaliação do exercício (1 a 5 estrelas), voluntária — alimenta o
+   "Your Score" geral mostrado na study-bar. */
+.rating-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.rating-field > span {
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--muted);
+}
+
+.rating-stars {
+  display: flex;
+  gap: 4px;
+}
+
+.rating-star {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--line);
+  cursor: pointer;
+  transition: color 120ms ease, transform 120ms ease;
+}
+
+.rating-star:hover {
+  transform: scale(1.12);
+}
+
+.rating-star.is-filled {
+  color: #ffc531;
+}
+
 .answers-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1061,6 +1203,12 @@ body {
 }
 
 .show-answers-btn {
+  width: 150px;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 10px 16px;
   border: none;
   border-radius: 8px;

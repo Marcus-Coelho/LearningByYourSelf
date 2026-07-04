@@ -227,8 +227,69 @@ function App() {
   const [activePage, setActivePage] = useState('home');
   const [activeCourseId, setActiveCourseId] = useState(null);
   const [rightWidth, setRightWidth] = useState(650);
+  const [exerciseRatings, setExerciseRatings] = useState({});
+  const [visitedUnits, setVisitedUnits] = useState({});
   const layoutRef = useRef(null);
   const startDragRef = useRef(null);
+
+  // Carrega, uma vez, todas as autoavaliações de exercícios já salvas
+  // (chaves "rating:<exerciseId>" no localStorage) para calcular o score
+  // geral do aluno assim que o app abre.
+  useEffect(() => {
+    try {
+      const loaded = {};
+      for (let i = 0; i < window.localStorage.length; i += 1) {
+        const key = window.localStorage.key(i);
+        if (key && key.startsWith('rating:')) {
+          const value = Number(window.localStorage.getItem(key));
+          if (value >= 1 && value <= 5) {
+            loaded[key.slice('rating:'.length)] = value;
+          }
+        }
+      }
+      setExerciseRatings(loaded);
+    } catch (error) {
+      // Armazenamento indisponível — o score fica vazio nesta sessão.
+    }
+  }, []);
+
+  // Carrega, uma vez, as units já visitadas em qualquer sessão anterior.
+  // "Your Progress" conta essas units (não a posição da unit atual) — assim,
+  // se o aluno pular direto pra Unit 70 sem ter visto as anteriores, o
+  // progresso não aparece como 70% indevidamente. Prepara também o terreno
+  // para uma futura "Unit aleatória", que pode ser aberta fora de ordem.
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem('visitedUnits');
+      if (raw) {
+        const list = JSON.parse(raw);
+        const loaded = {};
+        list.forEach((unit) => {
+          loaded[unit] = true;
+        });
+        setVisitedUnits(loaded);
+      }
+    } catch (error) {
+      // Armazenamento indisponível — progresso conta só a partir de agora.
+    }
+  }, []);
+
+  // Autoavaliação é voluntária: só entra na média o exercício em que o
+  // usuário realmente clicou numa estrela.
+  const handleRateExercise = (exerciseId, value) => {
+    if (!exerciseId) return;
+    setExerciseRatings((prev) => ({ ...prev, [exerciseId]: value }));
+    try {
+      window.localStorage.setItem(`rating:${exerciseId}`, String(value));
+    } catch (error) {
+      // Armazenamento indisponível — a nota fica só nesta sessão.
+    }
+  };
+
+  const ratingValues = Object.values(exerciseRatings);
+  const overallScorePercent = ratingValues.length > 0
+    ? Math.round((ratingValues.reduce((sum, value) => sum + value, 0) / ratingValues.length / 5) * 100)
+    : null;
 
   useEffect(() => {
     return () => {
@@ -251,6 +312,26 @@ function App() {
       return `/materials/unit_${selectedUnit}/${fileName}`;
     });
     setPdfFileName(fileName);
+  }, [selectedUnit, activePage]);
+
+  // Marca a unit como visitada assim que a tela de leitura dela é aberta —
+  // é isso que conta pro "Your Progress" no cabeçalho, não o número da unit.
+  useEffect(() => {
+    if (activePage !== 'unit' || !selectedUnit) {
+      return;
+    }
+    setVisitedUnits((prev) => {
+      if (prev[selectedUnit]) {
+        return prev;
+      }
+      const next = { ...prev, [selectedUnit]: true };
+      try {
+        window.localStorage.setItem('visitedUnits', JSON.stringify(Object.keys(next).map(Number)));
+      } catch (error) {
+        // Armazenamento indisponível — progresso não sobrevive a recarregar.
+      }
+      return next;
+    });
   }, [selectedUnit, activePage]);
 
   const handlePdfChange = (event) => {
@@ -327,6 +408,139 @@ function App() {
     setActivePage('course2');
     setSelectedUnit(null);
     setActiveCourseId('course2');
+  };
+
+  const handleOpenProfile = (event) => {
+    event.preventDefault();
+    setActivePage('profile');
+    setSelectedUnit(null);
+    setActiveCourseId(null);
+  };
+
+  // Remove do localStorage todas as chaves que começam com um prefixo (ex.:
+  // "answers:", "rating:", "notes:") — usado pelos botões de reset do perfil.
+  const removeLocalStorageKeysWithPrefix = (prefix) => {
+    try {
+      const keysToRemove = [];
+      for (let i = 0; i < window.localStorage.length; i += 1) {
+        const key = window.localStorage.key(i);
+        if (key && key.startsWith(prefix)) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((key) => window.localStorage.removeItem(key));
+    } catch (error) {
+      // Armazenamento indisponível — nada para limpar.
+    }
+  };
+
+  // Junta as anotações ("My Notes") de todas as units num único .txt e
+  // dispara o download. As notas são salvas como HTML (negrito/marca-texto),
+  // então convertemos para texto puro antes de exportar.
+  const handleExportNotes = () => {
+    try {
+      const entries = [];
+      for (let i = 0; i < window.localStorage.length; i += 1) {
+        const key = window.localStorage.key(i);
+        if (key && key.startsWith('notes:')) {
+          entries.push({
+            unit: Number(key.slice('notes:'.length)),
+            html: window.localStorage.getItem(key) || '',
+          });
+        }
+      }
+
+      if (entries.length === 0) {
+        window.alert('No lesson notes saved yet.');
+        return;
+      }
+
+      entries.sort((a, b) => a.unit - b.unit);
+
+      // O editor de notas quebra cada linha em uma <div> própria (e Shift+Enter
+      // vira <br>) — textContent ignora essas fronteiras de bloco e junta tudo
+      // sem espaço nenhum, então precisamos inserir "\n" nós mesmos antes de
+      // extrair o texto.
+      const htmlToText = (html) => {
+        const container = document.createElement('div');
+        container.innerHTML = html;
+        container.querySelectorAll('br').forEach((br) => br.replaceWith('\n'));
+        container.querySelectorAll('div, p').forEach((el) => el.append('\n'));
+        return (container.textContent || '')
+          .replace(/\n{3,}/g, '\n\n')
+          .trim();
+      };
+
+      const content = entries
+        .map(({ unit, html }) => {
+          const title = `Unit ${unit}${unitTable[unit] ? ` - ${unitTable[unit]}` : ''}`;
+          const text = htmlToText(html) || '(empty)';
+          return `${title}\n${'-'.repeat(title.length)}\n${text}\n`;
+        })
+        .join('\n');
+
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'my-notes.txt';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      window.alert('Could not export your notes.');
+    }
+  };
+
+  const handleResetProgress = () => {
+    if (!window.confirm('Reset your unit progress? This cannot be undone.')) {
+      return;
+    }
+    setVisitedUnits({});
+    try {
+      window.localStorage.removeItem('visitedUnits');
+    } catch (error) {
+      // Armazenamento indisponível.
+    }
+  };
+
+  const handleResetSelfEvaluation = () => {
+    if (!window.confirm('Reset your self-evaluation score and every star rating you gave? This cannot be undone.')) {
+      return;
+    }
+    setExerciseRatings({});
+    removeLocalStorageKeysWithPrefix('rating:');
+  };
+
+  const handleResetLessonNotes = () => {
+    if (!window.confirm('Reset your "My Notes" for every unit? This cannot be undone.')) {
+      return;
+    }
+    removeLocalStorageKeysWithPrefix('notes:');
+  };
+
+  const handleResetExerciseAnswers = () => {
+    if (!window.confirm('Reset your written answers for every exercise? This cannot be undone.')) {
+      return;
+    }
+    removeLocalStorageKeysWithPrefix('answers:');
+  };
+
+  const handleResetAll = () => {
+    if (!window.confirm('Reset EVERYTHING — progress, self-evaluation, lesson notes and exercise answers? This cannot be undone.')) {
+      return;
+    }
+    setVisitedUnits({});
+    setExerciseRatings({});
+    try {
+      window.localStorage.removeItem('visitedUnits');
+    } catch (error) {
+      // Armazenamento indisponível.
+    }
+    removeLocalStorageKeysWithPrefix('rating:');
+    removeLocalStorageKeysWithPrefix('notes:');
+    removeLocalStorageKeysWithPrefix('answers:');
   };
 
   const clampPanelWidths = (nextRightWidth) => {
@@ -414,6 +628,7 @@ function App() {
   // página de teste do Course 2...), não só nas telas de unit/exercícios.
   const insideCourse = Boolean(selectedUnit) || activePage === 'course2';
   const activeCourse = activeCourseId ? courses[activeCourseId] : null;
+  const visitedUnitsCount = Object.keys(visitedUnits).length;
 
   return (
     <div className="app-shell">
@@ -445,13 +660,30 @@ function App() {
         )}
 
         {selectedUnit && (
-          <div className="header-progress">
-            <span className="header-progress-label">Your progress: Unit {selectedUnit} of 100</span>
-            <div className="header-progress-track">
-              <div className="header-progress-fill" style={{ width: `${selectedUnit}%` }} />
+          <div className="header-stats-card">
+            <div className="header-stat-cell" title={`${visitedUnitsCount} of 100 units visited`}>
+              <span className="header-stat-label">Your Progress</span>
+              <span className="header-stat-value">{visitedUnitsCount}%</span>
+            </div>
+            <div
+              className="header-stat-cell"
+              title={
+                overallScorePercent !== null
+                  ? `Average of ${ratingValues.length} self-rated exercise${ratingValues.length > 1 ? 's' : ''}`
+                  : 'No exercise self-rated yet'
+              }
+            >
+              <span className="header-stat-label">Your Score</span>
+              <span className="header-stat-value">
+                {overallScorePercent !== null ? `${overallScorePercent}%` : '—'}
+              </span>
             </div>
           </div>
         )}
+
+        <div className="header-profile-link">
+          <a href="#0" onClick={handleOpenProfile}>My Profile</a>
+        </div>
       </header>
 
       {activePage === 'exercises' ? (
@@ -463,7 +695,7 @@ function App() {
               </button>
               <span className="study-unit-label">
                 Unit {selectedUnit}
-                {unitTable[selectedUnit] ? <small>{unitTable[selectedUnit]}</small> : null}
+                {unitTable[selectedUnit] ? ` - ${unitTable[selectedUnit]}` : null}
               </span>
             </div>
 
@@ -528,6 +760,8 @@ function App() {
                   showAnswers={showAnswers}
                   hasAnswer={Boolean(answerCoords)}
                   onToggleAnswers={() => setShowAnswers((value) => !value)}
+                  rating={exerciseRatings[activeExerciseId] || 0}
+                  onRate={(value) => handleRateExercise(activeExerciseId, value)}
                 />
               )}
             </aside>
@@ -640,6 +874,44 @@ function App() {
             </p>
           </div>
         </main>
+      ) : activePage === 'profile' ? (
+        <main className="landing-page">
+          <div className="landing-panel profile-panel">
+            <p className="eyebrow">My Profile</p>
+            <h1>Harry Kane</h1>
+            <p className="landing-meta">
+              Everything below is stored only in this browser (no account, no server) — these
+              buttons erase it for good.
+            </p>
+
+            <div className="profile-reset-list">
+              <button type="button" className="profile-reset-btn primary" onClick={handleExportNotes}>
+                <span>Export lesson notes (.txt)</span>
+                <small>Downloads "My Notes" from every unit as a single plain-text file.</small>
+              </button>
+              <button type="button" className="profile-reset-btn" onClick={handleResetProgress}>
+                <span>Reset unit progress</span>
+                <small>Clears which units count toward "Your Progress".</small>
+              </button>
+              <button type="button" className="profile-reset-btn" onClick={handleResetSelfEvaluation}>
+                <span>Reset self-evaluation</span>
+                <small>Clears "Your Score" and every star rating given per exercise.</small>
+              </button>
+              <button type="button" className="profile-reset-btn" onClick={handleResetLessonNotes}>
+                <span>Reset lesson notes</span>
+                <small>Clears "My Notes" for every unit.</small>
+              </button>
+              <button type="button" className="profile-reset-btn" onClick={handleResetExerciseAnswers}>
+                <span>Reset exercise answers</span>
+                <small>Clears the written answer saved for every exercise.</small>
+              </button>
+              <button type="button" className="profile-reset-btn danger" onClick={handleResetAll}>
+                <span>Reset All</span>
+                <small>Everything above, all at once.</small>
+              </button>
+            </div>
+          </div>
+        </main>
       ) : (
         <main className="landing-page">
           <div className="landing-panel">
@@ -677,8 +949,6 @@ function PdfWorkspace({ fileUrl, onPdfChange, defaultScale, initialPage }) {
             ZoomIn,
             ZoomOut,
             SwitchSelectionMode,
-            Download,
-            Print,
             EnterFullScreen,
             ShowSearchPopover,
           } = slots;
@@ -740,8 +1010,6 @@ function PdfWorkspace({ fileUrl, onPdfChange, defaultScale, initialPage }) {
               {toolButton('Hand', <IconHand />, 'Hand tool')}
               <div style={{ flex: 1 }} />
               <EnterFullScreen />
-              <Download />
-              <Print />
             </div>
           );
         }}
@@ -1092,6 +1360,8 @@ function AnswerArea({
   showAnswers,
   hasAnswer,
   onToggleAnswers,
+  rating,
+  onRate,
 }) {
   const storageKey = `answers:${exerciseId}`;
   const [answer, setAnswer] = useState('');
@@ -1138,6 +1408,25 @@ function AnswerArea({
         />
       </label>
 
+      <div className="rating-field">
+        <span>Self-evaluation</span>
+        <div className="rating-stars" role="radiogroup" aria-label="Rate your own performance on this exercise, from 1 to 5 stars">
+          {[1, 2, 3, 4, 5].map((value) => (
+            <button
+              key={value}
+              type="button"
+              role="radio"
+              aria-checked={rating === value}
+              aria-label={`${value} star${value > 1 ? 's' : ''}`}
+              className={`rating-star${rating >= value ? ' is-filled' : ''}`}
+              onClick={() => onRate(value)}
+            >
+              ★
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="answers-actions">
         <button
           type="button"
@@ -1147,6 +1436,9 @@ function AnswerArea({
           title={hasAnswer ? '' : 'No answer key for this exercise'}
         >
           {showAnswers ? 'Hide answers' : 'Show answers'}
+        </button>
+        <button type="button" className="show-answers-btn secondary" onClick={onNext} disabled={!hasNext}>
+          Next ›
         </button>
         {isLastExercise && canGoNextUnit && (
           <button type="button" className="show-answers-btn secondary" onClick={onNextReadingUnit}>
