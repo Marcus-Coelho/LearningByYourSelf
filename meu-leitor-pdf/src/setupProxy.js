@@ -68,7 +68,8 @@ module.exports = function (app) {
   // da faixa, ex.: "1)2" = CD1 faixa 2; "2)3" = CD2 faixa 3) — cada CD com seu
   // próprio nome de arquivo. Os limites de CD não coincidem com limites de unit:
   // CD1 = units 1-2, CD2 = units 3-4 + unit 5 seção A, CD3 = unit 5 seção B até
-  // unit 7 Practical English. Unit 8 em diante ainda não tem áudio fornecido.
+  // unit 7 Practical English, CD4 = unit 8 completa até unit 9 Practical
+  // English, CD5 = unit 10 completa até unit 12 Revise (fim do índice atual).
   const american1AudioRoot = path.join(__dirname, '..', '..', 'American English Level 1');
   app.use('/american1-audio/cd1', express.static(path.join(american1AudioRoot, 'audio_files_1'), { fallthrough: false }));
   app.use('/american1-audio/cd1', notFoundOn404);
@@ -76,4 +77,8 @@ module.exports = function (app) {
   app.use('/american1-audio/cd2', notFoundOn404);
   app.use('/american1-audio/cd3', express.static(path.join(american1AudioRoot, 'audio_files_3'), { fallthrough: false }));
   app.use('/american1-audio/cd3', notFoundOn404);
+  app.use('/american1-audio/cd4', express.static(path.join(american1AudioRoot, 'audio_files_4'), { fallthrough: false }));
+  app.use('/american1-audio/cd4', notFoundOn404);
+  app.use('/american1-audio/cd5', express.static(path.join(american1AudioRoot, 'audio_files_5'), { fallthrough: false }));
+  app.use('/american1-audio/cd5', notFoundOn404);
 };
