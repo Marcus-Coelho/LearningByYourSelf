@@ -465,6 +465,28 @@
       "audio": "/american1-audio/cd4/43 Track 43.mp3"
     }
   ],
+  "vocabulary:149": [
+    {
+      "page": 0,
+      "x": 91.3,
+      "y": 270,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd1",
+      "track": 15,
+      "audio": "/american1-audio/cd1/SB1_cd01track15.mp3"
+    },
+    {
+      "page": 0,
+      "x": 91.3,
+      "y": 363.3,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd1",
+      "track": 16,
+      "audio": "/american1-audio/cd1/SB1_cd01track16.mp3"
+    }
+  ],
   "vocabulary:150": [
     {
       "page": 0,
@@ -519,6 +541,16 @@
       "cd": "cd1",
       "track": 61,
       "audio": "/american1-audio/cd1/SB1_cd01track61.mp3"
+    },
+    {
+      "page": 0,
+      "x": 110.6,
+      "y": 749.3,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd1",
+      "track": 67,
+      "audio": "/american1-audio/cd1/SB1_cd01track67.mp3"
     }
   ],
   "vocabulary:153": [
@@ -603,12 +635,22 @@
     {
       "page": 0,
       "x": 418.2,
-      "y": 604.1,
+      "y": 721.3,
       "pageWidth": 737.280029296875,
       "pageHeight": 929.280029296875,
       "cd": "cd2",
       "track": 47,
       "audio": "/american1-audio/cd2/47 Track 47.mp3"
+    },
+    {
+      "page": 0,
+      "x": 418.2,
+      "y": 840,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd2",
+      "track": 48,
+      "audio": "/american1-audio/cd2/48 Track 48.mp3"
     }
   ],
   "vocabulary:158": [
@@ -680,8 +722,8 @@
   "vocabulary:161": [
     {
       "page": 0,
-      "x": 325.3,
-      "y": 883.9,
+      "x": 349.3,
+      "y": 808.7,
       "pageWidth": 737.280029296875,
       "pageHeight": 929.280029296875,
       "cd": "cd4",
@@ -703,7 +745,7 @@
     {
       "page": 0,
       "x": 110.6,
-      "y": 712.4,
+      "y": 734,
       "pageWidth": 737.280029296875,
       "pageHeight": 929.280029296875,
       "cd": "cd4",
