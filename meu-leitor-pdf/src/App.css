@@ -1201,6 +1201,7 @@ body {
 }
 
 .reference-link-btn {
+  display: inline-block;
   padding: 5px 10px;
   border: 1.5px solid var(--ref-accent, var(--line));
   border-radius: 6px;
@@ -1209,6 +1210,7 @@ body {
   font-weight: 700;
   font-size: 12px;
   white-space: nowrap;
+  text-decoration: none;
   cursor: pointer;
   transition: background 120ms, color 120ms;
 }
@@ -1223,6 +1225,7 @@ body {
 .reference-link-btn--sound { --ref-accent: #c2410c; }
 .reference-link-btn--communication { --ref-accent: #a16207; }
 .reference-link-btn--writing { --ref-accent: #be185d; }
+.reference-link-btn--video { --ref-accent: #7c3aed; }
 
 .reference-page-label {
   margin-left: auto;

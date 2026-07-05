@@ -13,6 +13,7 @@ import american1Index from './american1_index.json';
 import american1AudioAnchors from './american1_audio_anchors.json';
 import american1ReferenceAudioAnchors from './american1_reference_audio_anchors.json';
 import american1References from './american1_references.json';
+import american1Videos from './american1_videos.json';
 import './App.css';
 
 // URL do gabarito único (multipágina), servido por src/setupProxy.js.
@@ -226,6 +227,16 @@ const american1ReferencesBySection = (() => {
   const map = {};
   american1References.forEach((entry) => {
     map[`${entry.unit}|${entry.section}`] = entry.refs;
+  });
+  return map;
+})();
+
+// Vídeos do Practical English (ep1, ep2...) por unit/section — arquivos .mp4
+// servidos por src/setupProxy.js e abertos numa nova aba ao clicar no link.
+const american1VideosBySection = (() => {
+  const map = {};
+  american1Videos.forEach((entry) => {
+    map[`${entry.unit}|${entry.section}`] = entry;
   });
   return map;
 })();
@@ -1174,6 +1185,9 @@ function App() {
         const sectionReferences = activeSection
           ? american1ReferencesBySection[`${selectedAmerican1Unit}|${activeSection.section}`] || []
           : [];
+        const sectionVideos = activeSection
+          ? american1VideosBySection[`${selectedAmerican1Unit}|${activeSection.section}`] || null
+          : null;
 
         return (
           <main
@@ -1218,7 +1232,7 @@ function App() {
                     </button>
                   ))}
                 </div>
-                {sectionReferences.length > 0 && (
+                {(sectionReferences.length > 0 || sectionVideos) && (
                   <div className="reference-links" role="group" aria-label="Section reference pages">
                     {sectionReferences.map((ref, index) => (
                       <button
@@ -1233,6 +1247,17 @@ function App() {
                       >
                         {AMERICAN1_REFERENCE_LABELS[ref.type]} p.{ref.pages[0]}
                       </button>
+                    ))}
+                    {sectionVideos?.videos.map((video) => (
+                      <a
+                        key={video.file}
+                        className="reference-link-btn reference-link-btn--video"
+                        href={`/american1-video/${sectionVideos.folder}/${encodeURIComponent(video.file)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {video.label}
+                      </a>
                     ))}
                   </div>
                 )}

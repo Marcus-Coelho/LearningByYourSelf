@@ -1,0 +1,14 @@
+[
+  {
+    "unit": 1,
+    "section": "Practical English",
+    "folder": "ep1",
+    "videos": [
+      { "label": "A Introduction", "file": "A Introduction.mp4" },
+      { "label": "B Checking in", "file": "B Checking in.mp4" },
+      { "label": "C Listen and repeat", "file": "C Listen and repeat.mp4" },
+      { "label": "D Jenny talks to Rob", "file": "D Jenny talks to Rob.mp4" },
+      { "label": "E Social English", "file": "E Social English.mp4" }
+    ]
+  }
+]

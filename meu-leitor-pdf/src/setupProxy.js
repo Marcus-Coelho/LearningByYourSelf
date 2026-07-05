@@ -125,4 +125,15 @@ module.exports = function (app) {
   app.use('/american1-audio/cd4', notFoundOn404);
   app.use('/american1-audio/cd5', express.static(path.join(american1AudioRoot, 'audio_files_5'), { fallthrough: false }));
   app.use('/american1-audio/cd5', notFoundOn404);
+
+  // Vídeos do Practical English: cada episódio tem sua própria pasta com
+  // arquivos .mp4 (A/B/C/D/E), servidos estaticamente e abertos numa nova
+  // aba do navegador pelo link (ver american1_videos.json, campo "folder").
+  const AMERICAN1_VIDEO_FOLDERS = {
+    ep1: 'aef2e_level01_ep1_arriving_in_london',
+  };
+  Object.entries(AMERICAN1_VIDEO_FOLDERS).forEach(([slug, folder]) => {
+    app.use(`/american1-video/${slug}`, express.static(path.join(american1PdfsRoot, folder), { fallthrough: false }));
+    app.use(`/american1-video/${slug}`, notFoundOn404);
+  });
 };
