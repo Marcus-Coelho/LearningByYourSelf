@@ -131,6 +131,12 @@ module.exports = function (app) {
   // aba do navegador pelo link (ver american1_videos.json, campo "folder").
   const AMERICAN1_VIDEO_FOLDERS = {
     ep1: 'aef2e_level01_ep1_arriving_in_london',
+    'onthestreet1-2': 'aef2e_level01_onthestreet_1-2',
+    'onthestreet3-4': 'aef2e_level01_onthestreet_3-4',
+    'onthestreet5-6': 'aef2e_level01_onthestreet_5-6',
+    'onthestreet7-8': 'aef2e_level01_onthestreet_7-8',
+    'onthestreet9-10': 'aef2e_level01_onthestreet_9-10',
+    'onthestreet11-12': 'aef2e_level01_onthestreet_11-12',
   };
   Object.entries(AMERICAN1_VIDEO_FOLDERS).forEach(([slug, folder]) => {
     app.use(`/american1-video/${slug}`, express.static(path.join(american1PdfsRoot, folder), { fallthrough: false }));
