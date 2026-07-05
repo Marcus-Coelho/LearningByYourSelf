@@ -336,6 +336,7 @@ function App() {
   const [selectedAmerican1Section, setSelectedAmerican1Section] = useState(null);
   const [selectedAmerican1Reference, setSelectedAmerican1Reference] = useState(null);
   const [showAnswers, setShowAnswers] = useState(false);
+  const [showAmerican1Answers, setShowAmerican1Answers] = useState(false);
   const [activePage, setActivePage] = useState('home');
   const [activeCourseId, setActiveCourseId] = useState(null);
   const [rightWidth, setRightWidth] = useState(650);
@@ -568,6 +569,7 @@ function App() {
     setActivePage('american1-unit');
     setSelectedAmerican1Unit(unit);
     setSelectedAmerican1Section(sections[0]?.section ?? null);
+    setShowAmerican1Answers(false);
   };
 
   const handlePreviousAmerican1Unit = () => {
@@ -576,6 +578,7 @@ function App() {
     const previousUnit = american1UnitNumbers[index - 1];
     setSelectedAmerican1Unit(previousUnit);
     setSelectedAmerican1Section(american1SectionsByUnit[previousUnit]?.[0]?.section ?? null);
+    setShowAmerican1Answers(false);
   };
 
   const handleNextAmerican1Unit = () => {
@@ -584,6 +587,7 @@ function App() {
     const nextUnit = american1UnitNumbers[index + 1];
     setSelectedAmerican1Unit(nextUnit);
     setSelectedAmerican1Section(american1SectionsByUnit[nextUnit]?.[0]?.section ?? null);
+    setShowAmerican1Answers(false);
   };
 
   const handleOpenAmerican1Reference = (ref) => {
@@ -932,7 +936,7 @@ function App() {
     <div className="app-shell">
       <header className="app-header">
         <div className="brand">
-          <span className="brand-mark"><IconLanguage /></span>
+          <span className="brand-mark"><img src="/logo192.png" alt="" className="brand-mark-icon" /></span>
           <span>Let's Learn English</span>
         </div>
         <nav className="menu" aria-label="Main links">
@@ -1197,6 +1201,15 @@ function App() {
         const sectionVideos = activeSection
           ? american1VideosBySection[`${selectedAmerican1Unit}|${activeSection.section}`] || null
           : null;
+        const answersUrl = activeSection
+          ? /^[A-C]$/.test(activeSection.section)
+            ? `/american1-pages/answers/${selectedAmerican1Unit}/${activeSection.section}`
+            : activeSection.section === 'Practical English'
+              ? `/american1-pages/answers-pe/${selectedAmerican1Unit}`
+              : activeSection.section === 'Revise'
+                ? `/american1-pages/answers-revise/${selectedAmerican1Unit}`
+                : ''
+          : '';
 
         return (
           <main
@@ -1235,7 +1248,10 @@ function App() {
                       aria-selected={section.section === activeSection?.section}
                       className={`exercise-tab${section.section.length > 1 ? ' exercise-tab-wide' : ''}${section.section === activeSection?.section ? ' is-active' : ''}`}
                       title={section.title}
-                      onClick={() => setSelectedAmerican1Section(section.section)}
+                      onClick={() => {
+                        setSelectedAmerican1Section(section.section);
+                        setShowAmerican1Answers(false);
+                      }}
                     >
                       {section.section}
                     </button>
@@ -1301,6 +1317,28 @@ function App() {
                   <p>This unit has no sections in the index.</p>
                 </div>
               )}
+
+              {showAmerican1Answers && answersUrl && (
+                <div className="section-answers-strip">
+                  <div className="section-answers-strip-head">
+                    <span>Teacher's Book answers</span>
+                    <button
+                      type="button"
+                      className="section-answers-strip-close"
+                      onClick={() => setShowAmerican1Answers(false)}
+                      aria-label="Close answers"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <iframe
+                    key={answersUrl}
+                    src={answersUrl}
+                    title="Teacher's Book answers"
+                    className="section-answers-strip-frame"
+                  />
+                </div>
+              )}
             </section>
 
             <button
@@ -1317,6 +1355,9 @@ function App() {
                   unit={selectedAmerican1Unit}
                   userName={userName}
                   storageKeyBase={`notes:american1:${selectedAmerican1Unit}`}
+                  hasAnswers={Boolean(answersUrl)}
+                  showAnswers={showAmerican1Answers}
+                  onToggleAnswers={() => setShowAmerican1Answers((prev) => !prev)}
                 />
               </div>
             </aside>
@@ -2310,7 +2351,7 @@ function AnswerArea({
 const NOTES_HIGHLIGHT_COLOR = '#ffe066';
 const NOTES_HIGHLIGHT_RGB = 'rgb(255, 224, 102)';
 
-function UnitNotes({ unit, userName, storageKeyBase }) {
+function UnitNotes({ unit, userName, storageKeyBase, hasAnswers, showAnswers, onToggleAnswers }) {
   const editorRef = useRef(null);
   const [justSaved, setJustSaved] = useState(false);
   const storageKey = userKey(userName, storageKeyBase || `notes:${unit}`);
@@ -2450,6 +2491,15 @@ function UnitNotes({ unit, userName, storageKeyBase }) {
         >
           {justSaved ? 'Saved' : 'Save'}
         </button>
+        {hasAnswers && (
+          <button
+            type="button"
+            className={`show-answers-btn secondary${showAnswers ? ' is-active' : ''}`}
+            onClick={onToggleAnswers}
+          >
+            {showAnswers ? 'Hide Answers' : 'Show Answers'}
+          </button>
+        )}
       </div>
     </div>
   );

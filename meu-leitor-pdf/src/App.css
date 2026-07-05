@@ -54,6 +54,13 @@
   box-shadow: 0 12px 28px rgba(139, 92, 246, 0.36);
 }
 
+.brand-mark-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
+}
+
 .menu {
   margin: 0 0 0 18px;
   overflow: visible;
@@ -932,6 +939,52 @@ body {
   min-height: 0;
   display: flex;
   flex-direction: column;
+}
+
+/* Faixa de respostas do Teacher's Book ("Show Answers"), aberta pelo link ao
+   lado do Save (ver UnitNotes) — fica na parte de baixo do leitor da seção,
+   ocupando cerca de 1/4 da altura do painel principal, sem substituir o
+   leitor da seção acima (que fica com flex:1 e encolhe pra abrir espaço). */
+.section-answers-strip {
+  flex: 0 0 25%;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  border-top: 2px solid var(--purple-300);
+  background: #fff;
+}
+
+.section-answers-strip-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: var(--soft);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--purple-900);
+  flex: 0 0 auto;
+}
+
+.section-answers-strip-close {
+  border: none;
+  background: transparent;
+  color: var(--purple-700);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 4px;
+}
+
+.section-answers-strip-close:hover {
+  color: var(--purple-900);
+}
+
+.section-answers-strip-frame {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  border: none;
 }
 
 .audio-anchor-host {

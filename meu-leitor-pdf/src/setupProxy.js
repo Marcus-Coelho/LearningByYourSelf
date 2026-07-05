@@ -134,6 +134,97 @@ module.exports = function (app) {
     res.type('application/pdf').sendFile(path.join(american1PdfsRoot, 'listening', 'Listening.pdf'));
   });
 
+  // Respostas do Teacher's Book ("Show Answers", faixa inferior do leitor de
+  // seção): as páginas soltas do teacher's book já foram organizadas em
+  // pastas por seção (ver American English Level 1/pdfs/teacher_book) —
+  // aqui só mescla os PDFs de uma pasta (ordenados pelo número de página no
+  // nome do arquivo, ex. "5B_p70.pdf") num único PDF de resposta.
+  const teacherBookRoot = path.join(american1PdfsRoot, 'teacher_book');
+
+  const pageNumberFromFilename = (filename) => {
+    const match = filename.match(/_p(\d+)\.pdf$/i);
+    return match ? Number(match[1]) : 0;
+  };
+
+  const mergeFolderToPdf = async (dir, res) => {
+    const files = fs.readdirSync(dir)
+      .filter((name) => name.toLowerCase().endsWith('.pdf'))
+      .sort((a, b) => pageNumberFromFilename(a) - pageNumberFromFilename(b));
+    if (files.length === 0) {
+      res.status(404).end();
+      return;
+    }
+    const merged = await PDFDocument.create();
+    for (const file of files) {
+      const bytes = fs.readFileSync(path.join(dir, file));
+      const source = await PDFDocument.load(bytes);
+      const copiedPages = await merged.copyPages(source, source.getPageIndices());
+      copiedPages.forEach((p) => merged.addPage(p));
+    }
+    const mergedBytes = await merged.save();
+    res.type('application/pdf').send(Buffer.from(mergedBytes));
+  };
+
+  // Seções A/B/C: teacher_book/Units/<unit><section>/*.pdf
+  app.get('/american1-pages/answers/:unit/:section', async (req, res) => {
+    const unit = Number(req.params.unit);
+    const section = req.params.section;
+    if (!Number.isInteger(unit) || unit < 1 || !/^[A-C]$/.test(section)) {
+      res.status(400).end();
+      return;
+    }
+    const dir = path.join(teacherBookRoot, 'Units', `${unit}${section}`);
+    try {
+      await mergeFolderToPdf(dir, res);
+    } catch (error) {
+      res.status(404).end();
+    }
+  });
+
+  // Practical English (units 1, 3, 5, 7, 9, 11): teacher_book/practical_english/ep<N>/*.pdf
+  const AMERICAN1_PRACTICAL_ENGLISH_UNIT_TO_EP = {
+    1: 'ep1', 3: 'ep2', 5: 'ep3', 7: 'ep4', 9: 'ep5', 11: 'ep6',
+  };
+  app.get('/american1-pages/answers-pe/:unit', async (req, res) => {
+    const unit = Number(req.params.unit);
+    const ep = AMERICAN1_PRACTICAL_ENGLISH_UNIT_TO_EP[unit];
+    if (!ep) {
+      res.status(400).end();
+      return;
+    }
+    const dir = path.join(teacherBookRoot, 'practical_english', ep);
+    try {
+      await mergeFolderToPdf(dir, res);
+    } catch (error) {
+      res.status(404).end();
+    }
+  });
+
+  // Review and Check (units 2, 4, 6, 8, 10, 12): teacher_book/review_and_check_revisions,
+  // um PDF único por par de units (ex. "1&2 Review and Check.pdf").
+  const AMERICAN1_REVIEW_UNIT_TO_FILE = {
+    2: '1&2 Review and Check.pdf',
+    4: '3&4 Review and Check.pdf',
+    6: '5&6 Review and Check.pdf',
+    8: '7&8 Review and Check.pdf',
+    10: '9&10 Review and Check.pdf',
+    12: '11&12 Review and Check.pdf',
+  };
+  app.get('/american1-pages/answers-revise/:unit', (req, res) => {
+    const unit = Number(req.params.unit);
+    const filename = AMERICAN1_REVIEW_UNIT_TO_FILE[unit];
+    if (!filename) {
+      res.status(400).end();
+      return;
+    }
+    const filePath = path.join(teacherBookRoot, 'review_and_check_revisions', filename);
+    res.type('application/pdf').sendFile(filePath, (error) => {
+      if (error && !res.headersSent) {
+        res.status(404).end();
+      }
+    });
+  });
+
   // Vídeos do Practical English: cada episódio tem sua própria pasta com
   // arquivos .mp4 (A/B/C/D/E), servidos estaticamente e abertos numa nova
   // aba do navegador pelo link (ver american1_videos.json, campo "folder").
