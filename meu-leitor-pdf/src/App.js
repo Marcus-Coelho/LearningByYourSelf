@@ -11,6 +11,7 @@ import answersCoords from './answers_coords.json';
 import audioAnchorsCoords from './audio_anchors_coords.json';
 import american1Index from './american1_index.json';
 import american1AudioAnchors from './american1_audio_anchors.json';
+import american1ReferenceAudioAnchors from './american1_reference_audio_anchors.json';
 import american1References from './american1_references.json';
 import './App.css';
 
@@ -1284,6 +1285,9 @@ function App() {
         const ref = selectedAmerican1Reference;
         const fileUrl = ref ? `/american1-pages/ref/${ref.type}/${ref.pages[0]}` : '';
         const label = ref ? `${AMERICAN1_REFERENCE_LABELS[ref.type]} p.${ref.pages[0]}` : '';
+        const referenceAudioAnchors = ref
+          ? american1ReferenceAudioAnchors[`${ref.type}:${ref.pages[0]}`] || []
+          : [];
 
         return (
           <main
@@ -1308,7 +1312,7 @@ function App() {
               </div>
 
               {fileUrl ? (
-                <PdfWorkspace key={fileUrl} fileUrl={fileUrl} defaultScale={1.5} />
+                <American1AudioReader key={fileUrl} fileUrl={fileUrl} anchors={referenceAudioAnchors} />
               ) : (
                 <div className="pdf-empty-state">
                   <p className="eyebrow">No reference</p>

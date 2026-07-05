@@ -1,0 +1,738 @@
+{
+  "grammar:124": [
+    {
+      "page": 0,
+      "x": 275.5,
+      "y": 132.4,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd1",
+      "track": 5,
+      "audio": "/american1-audio/cd1/SB1_cd01track05.mp3"
+    },
+    {
+      "page": 0,
+      "x": 179.8,
+      "y": 365.7,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd1",
+      "track": 23,
+      "audio": "/american1-audio/cd1/SB1_cd01track23.mp3"
+    },
+    {
+      "page": 0,
+      "x": 426.5,
+      "y": 598.9,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd1",
+      "track": 41,
+      "audio": "/american1-audio/cd1/SB1_cd01track41.mp3"
+    }
+  ],
+  "grammar:126": [
+    {
+      "page": 0,
+      "x": 185.9,
+      "y": 151,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd1",
+      "track": 52,
+      "audio": "/american1-audio/cd1/SB1_cd01track52.mp3"
+    },
+    {
+      "page": 0,
+      "x": 573.4,
+      "y": 319.2,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd1",
+      "track": 57,
+      "audio": "/american1-audio/cd1/SB1_cd01track57.mp3"
+    },
+    {
+      "page": 0,
+      "x": 287.1,
+      "y": 556.2,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd1",
+      "track": 63,
+      "audio": "/american1-audio/cd1/SB1_cd01track63.mp3"
+    },
+    {
+      "page": 0,
+      "x": 287.1,
+      "y": 659,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd1",
+      "track": 71,
+      "audio": "/american1-audio/cd1/SB1_cd01track71.mp3"
+    }
+  ],
+  "grammar:128": [
+    {
+      "page": 0,
+      "x": 268.6,
+      "y": 134.8,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd2",
+      "track": 4,
+      "audio": "/american1-audio/cd2/04 Track 4.mp3"
+    },
+    {
+      "page": 0,
+      "x": 268.6,
+      "y": 399.6,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd2",
+      "track": 14,
+      "audio": "/american1-audio/cd2/14 Track 14.mp3"
+    },
+    {
+      "page": 0,
+      "x": 441.5,
+      "y": 637.5,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd2",
+      "track": 20,
+      "audio": "/american1-audio/cd2/20 Track 20.mp3"
+    }
+  ],
+  "grammar:130": [
+    {
+      "page": 0,
+      "x": 341.5,
+      "y": 134.3,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd2",
+      "track": 31,
+      "audio": "/american1-audio/cd2/31 Track 31.mp3"
+    },
+    {
+      "page": 0,
+      "x": 325.3,
+      "y": 395,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd2",
+      "track": 42,
+      "audio": "/american1-audio/cd2/42 Track 42.mp3"
+    },
+    {
+      "page": 0,
+      "x": 576.2,
+      "y": 397.3,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd2",
+      "track": 43,
+      "audio": "/american1-audio/cd2/43 Track 43.mp3"
+    },
+    {
+      "page": 0,
+      "x": 283.5,
+      "y": 625,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd2",
+      "track": 49,
+      "audio": "/american1-audio/cd2/49 Track 49.mp3"
+    }
+  ],
+  "grammar:132": [
+    {
+      "page": 0,
+      "x": 285.8,
+      "y": 134.3,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd2",
+      "track": 58,
+      "audio": "/american1-audio/cd2/58 Track 58.mp3"
+    },
+    {
+      "page": 0,
+      "x": 292.8,
+      "y": 395,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd3",
+      "track": 4,
+      "audio": "/american1-audio/cd3/04 Track 4.mp3"
+    },
+    {
+      "page": 0,
+      "x": 385.7,
+      "y": 625,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd3",
+      "track": 12,
+      "audio": "/american1-audio/cd3/12 Track 12.mp3"
+    }
+  ],
+  "grammar:134": [
+    {
+      "page": 0,
+      "x": 283.5,
+      "y": 134.3,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd3",
+      "track": 21,
+      "audio": "/american1-audio/cd3/21 Track 21.mp3"
+    },
+    {
+      "page": 0,
+      "x": 285.8,
+      "y": 389.4,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd3",
+      "track": 34,
+      "audio": "/american1-audio/cd3/34 Track 34.mp3"
+    },
+    {
+      "page": 0,
+      "x": 206.8,
+      "y": 573.9,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd3",
+      "track": 36,
+      "audio": "/american1-audio/cd3/36 Track 36.mp3"
+    },
+    {
+      "page": 0,
+      "x": 446.1,
+      "y": 573.9,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd3",
+      "track": 37,
+      "audio": "/american1-audio/cd3/37 Track 37.mp3"
+    }
+  ],
+  "grammar:136": [
+    {
+      "page": 0,
+      "x": 330.9,
+      "y": 134.3,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd3",
+      "track": 44,
+      "audio": "/american1-audio/cd3/44 Track 44.mp3"
+    },
+    {
+      "page": 0,
+      "x": 304.4,
+      "y": 323,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd3",
+      "track": 53,
+      "audio": "/american1-audio/cd3/53 Track 53.mp3"
+    },
+    {
+      "page": 0,
+      "x": 223.1,
+      "y": 611.1,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd3",
+      "track": 59,
+      "audio": "/american1-audio/cd3/59 Track 59.mp3"
+    }
+  ],
+  "grammar:138": [
+    {
+      "page": 0,
+      "x": 385.7,
+      "y": 134.3,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd4",
+      "track": 11,
+      "audio": "/american1-audio/cd4/11 Track 11.mp3"
+    },
+    {
+      "page": 0,
+      "x": 446.1,
+      "y": 487.9,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd4",
+      "track": 16,
+      "audio": "/american1-audio/cd4/16 Track 16.mp3"
+    },
+    {
+      "page": 0,
+      "x": 446.1,
+      "y": 771.4,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd4",
+      "track": 27,
+      "audio": "/american1-audio/cd4/27 Track 27.mp3"
+    }
+  ],
+  "grammar:140": [
+    {
+      "page": 0,
+      "x": 618.1,
+      "y": 121.8,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd4",
+      "track": 30,
+      "audio": "/american1-audio/cd4/30 Track 30.mp3"
+    },
+    {
+      "page": 0,
+      "x": 364.8,
+      "y": 447.1,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd4",
+      "track": 37,
+      "audio": "/american1-audio/cd4/37 Track 37.mp3"
+    },
+    {
+      "page": 0,
+      "x": 285.8,
+      "y": 683.1,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd4",
+      "track": 47,
+      "audio": "/american1-audio/cd4/47 Track 47.mp3"
+    }
+  ],
+  "grammar:142": [
+    {
+      "page": 0,
+      "x": 285.8,
+      "y": 135.7,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd5",
+      "track": 5,
+      "audio": "/american1-audio/cd5/05 Track 5.mp3"
+    },
+    {
+      "page": 0,
+      "x": 281.2,
+      "y": 340.6,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd5",
+      "track": 11,
+      "audio": "/american1-audio/cd5/11 Track 11.mp3"
+    },
+    {
+      "page": 0,
+      "x": 206.8,
+      "y": 673.8,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd5",
+      "track": 19,
+      "audio": "/american1-audio/cd5/19 Track 19.mp3"
+    }
+  ],
+  "grammar:144": [
+    {
+      "page": 0,
+      "x": 231,
+      "y": 145.5,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd5",
+      "track": 25,
+      "audio": "/american1-audio/cd5/25 Track 25.mp3"
+    },
+    {
+      "page": 0,
+      "x": 666.9,
+      "y": 145.5,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd5",
+      "track": 26,
+      "audio": "/american1-audio/cd5/26 Track 26.mp3"
+    },
+    {
+      "page": 0,
+      "x": 244,
+      "y": 425.7,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd5",
+      "track": 31,
+      "audio": "/american1-audio/cd5/31 Track 31.mp3"
+    },
+    {
+      "page": 0,
+      "x": 344.8,
+      "y": 636.6,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd5",
+      "track": 37,
+      "audio": "/american1-audio/cd5/37 Track 37.mp3"
+    }
+  ],
+  "grammar:146": [
+    {
+      "page": 0,
+      "x": 330.9,
+      "y": 134.3,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd5",
+      "track": 45,
+      "audio": "/american1-audio/cd5/45 Track 45.mp3"
+    },
+    {
+      "page": 0,
+      "x": 326.7,
+      "y": 578.6,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd5",
+      "track": 52,
+      "audio": "/american1-audio/cd5/52 Track 52.mp3"
+    },
+    {
+      "page": 0,
+      "x": 618.1,
+      "y": 599.5,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd5",
+      "track": 53,
+      "audio": "/american1-audio/cd5/53 Track 53.mp3"
+    }
+  ],
+  "vocabulary:148": [
+    {
+      "page": 0,
+      "x": 110.6,
+      "y": 255.6,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd1",
+      "track": 10,
+      "audio": "/american1-audio/cd1/SB1_cd01track10.mp3"
+    },
+    {
+      "page": 0,
+      "x": 110.6,
+      "y": 769.1,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd1",
+      "track": 11,
+      "audio": "/american1-audio/cd1/SB1_cd01track11.mp3"
+    },
+    {
+      "page": 0,
+      "x": 416,
+      "y": 436.8,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd1",
+      "track": 26,
+      "audio": "/american1-audio/cd1/SB1_cd01track26.mp3"
+    },
+    {
+      "page": 0,
+      "x": 416,
+      "y": 843.4,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd4",
+      "track": 43,
+      "audio": "/american1-audio/cd4/43 Track 43.mp3"
+    }
+  ],
+  "vocabulary:150": [
+    {
+      "page": 0,
+      "x": 110.6,
+      "y": 383.9,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd1",
+      "track": 32,
+      "audio": "/american1-audio/cd1/SB1_cd01track32.mp3"
+    },
+    {
+      "page": 0,
+      "x": 110.6,
+      "y": 648.3,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd1",
+      "track": 33,
+      "audio": "/american1-audio/cd1/SB1_cd01track33.mp3"
+    }
+  ],
+  "vocabulary:151": [
+    {
+      "page": 0,
+      "x": 111.5,
+      "y": 650.6,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd1",
+      "track": 51,
+      "audio": "/american1-audio/cd1/SB1_cd01track51.mp3"
+    }
+  ],
+  "vocabulary:152": [
+    {
+      "page": 0,
+      "x": 110.6,
+      "y": 434.5,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd1",
+      "track": 60,
+      "audio": "/american1-audio/cd1/SB1_cd01track60.mp3"
+    },
+    {
+      "page": 0,
+      "x": 110.6,
+      "y": 576.2,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd1",
+      "track": 61,
+      "audio": "/american1-audio/cd1/SB1_cd01track61.mp3"
+    }
+  ],
+  "vocabulary:153": [
+    {
+      "page": 0,
+      "x": 110.6,
+      "y": 484.2,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd2",
+      "track": 2,
+      "audio": "/american1-audio/cd2/02 Track 2.mp3"
+    }
+  ],
+  "vocabulary:154": [
+    {
+      "page": 0,
+      "x": 110.6,
+      "y": 712.4,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd2",
+      "track": 8,
+      "audio": "/american1-audio/cd2/08 Track 8.mp3"
+    },
+    {
+      "page": 0,
+      "x": 325.3,
+      "y": 768.2,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd2",
+      "track": 9,
+      "audio": "/american1-audio/cd2/09 Track 9.mp3"
+    }
+  ],
+  "vocabulary:155": [
+    {
+      "page": 0,
+      "x": 110.6,
+      "y": 584.6,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd2",
+      "track": 32,
+      "audio": "/american1-audio/cd2/32 Track 32.mp3"
+    }
+  ],
+  "vocabulary:156": [
+    {
+      "page": 0,
+      "x": 110.6,
+      "y": 647.4,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd2",
+      "track": 37,
+      "audio": "/american1-audio/cd2/37 Track 37.mp3"
+    }
+  ],
+  "vocabulary:157": [
+    {
+      "page": 0,
+      "x": 110.6,
+      "y": 644.6,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd2",
+      "track": 24,
+      "audio": "/american1-audio/cd2/24 Track 24.mp3"
+    },
+    {
+      "page": 0,
+      "x": 418.2,
+      "y": 382.5,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd2",
+      "track": 46,
+      "audio": "/american1-audio/cd2/46 Track 46.mp3"
+    },
+    {
+      "page": 0,
+      "x": 418.2,
+      "y": 604.1,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd2",
+      "track": 47,
+      "audio": "/american1-audio/cd2/47 Track 47.mp3"
+    }
+  ],
+  "vocabulary:158": [
+    {
+      "page": 0,
+      "x": 110.6,
+      "y": 580.9,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd2",
+      "track": 54,
+      "audio": "/american1-audio/cd2/54 Track 54.mp3"
+    }
+  ],
+  "vocabulary:159": [
+    {
+      "page": 0,
+      "x": 110.6,
+      "y": 441.5,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd3",
+      "track": 8,
+      "audio": "/american1-audio/cd3/08 Track 8.mp3"
+    },
+    {
+      "page": 0,
+      "x": 110.6,
+      "y": 608.8,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd3",
+      "track": 9,
+      "audio": "/american1-audio/cd3/09 Track 9.mp3"
+    },
+    {
+      "page": 0,
+      "x": 418.2,
+      "y": 224.5,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd3",
+      "track": 29,
+      "audio": "/american1-audio/cd3/29 Track 29.mp3"
+    },
+    {
+      "page": 0,
+      "x": 418.2,
+      "y": 608.8,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd3",
+      "track": 30,
+      "audio": "/american1-audio/cd3/30 Track 30.mp3"
+    }
+  ],
+  "vocabulary:160": [
+    {
+      "page": 0,
+      "x": 110.6,
+      "y": 712.4,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd3",
+      "track": 61,
+      "audio": "/american1-audio/cd3/61 Track 61.mp3"
+    }
+  ],
+  "vocabulary:161": [
+    {
+      "page": 0,
+      "x": 325.3,
+      "y": 883.9,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd4",
+      "track": 12,
+      "audio": "/american1-audio/cd4/12 Track 12.mp3"
+    }
+  ],
+  "vocabulary:162": [
+    {
+      "page": 0,
+      "x": 110.6,
+      "y": 358.8,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd4",
+      "track": 21,
+      "audio": "/american1-audio/cd4/21 Track 21.mp3"
+    },
+    {
+      "page": 0,
+      "x": 110.6,
+      "y": 712.4,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd4",
+      "track": 22,
+      "audio": "/american1-audio/cd4/22 Track 22.mp3"
+    }
+  ],
+  "vocabulary:163": [
+    {
+      "page": 0,
+      "x": 110.6,
+      "y": 833.2,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd4",
+      "track": 29,
+      "audio": "/american1-audio/cd4/29 Track 29.mp3"
+    }
+  ],
+  "vocabulary:164": [
+    {
+      "page": 0,
+      "x": 110.6,
+      "y": 593.9,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd5",
+      "track": 3,
+      "audio": "/american1-audio/cd5/03 Track 3.mp3"
+    }
+  ]
+}
