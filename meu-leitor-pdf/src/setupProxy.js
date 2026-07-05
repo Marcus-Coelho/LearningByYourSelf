@@ -126,6 +126,14 @@ module.exports = function (app) {
   app.use('/american1-audio/cd5', express.static(path.join(american1AudioRoot, 'audio_files_5'), { fallthrough: false }));
   app.use('/american1-audio/cd5', notFoundOn404);
 
+  // Transcriptions: PDF único (8 páginas, já mesclado previamente com
+  // pdf-lib a partir das páginas soltas 116-123) com as transcrições dos
+  // áudios do livro. Ancorado com src/american1_transcriptions_audio_anchors.json
+  // (índice de página 0-7 == páginas 116-123 do livro).
+  app.get('/american1-pages/transcriptions', (req, res) => {
+    res.type('application/pdf').sendFile(path.join(american1PdfsRoot, 'listening', 'Listening.pdf'));
+  });
+
   // Vídeos do Practical English: cada episódio tem sua própria pasta com
   // arquivos .mp4 (A/B/C/D/E), servidos estaticamente e abertos numa nova
   // aba do navegador pelo link (ver american1_videos.json, campo "folder").

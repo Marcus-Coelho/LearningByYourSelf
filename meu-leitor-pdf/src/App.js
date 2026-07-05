@@ -12,6 +12,7 @@ import audioAnchorsCoords from './audio_anchors_coords.json';
 import american1Index from './american1_index.json';
 import american1AudioAnchors from './american1_audio_anchors.json';
 import american1ReferenceAudioAnchors from './american1_reference_audio_anchors.json';
+import american1TranscriptionsAudioAnchors from './american1_transcriptions_audio_anchors.json';
 import american1References from './american1_references.json';
 import american1Videos from './american1_videos.json';
 import './App.css';
@@ -592,6 +593,14 @@ function App() {
 
   const handleCloseAmerican1Reference = () => {
     setSelectedAmerican1Reference(null);
+    setActivePage('american1-unit');
+  };
+
+  const handleOpenAmerican1Transcriptions = () => {
+    setActivePage('american1-transcriptions');
+  };
+
+  const handleCloseAmerican1Transcriptions = () => {
     setActivePage('american1-unit');
   };
 
@@ -1231,6 +1240,13 @@ function App() {
                       {section.section}
                     </button>
                   ))}
+                  <button
+                    type="button"
+                    className="exercise-tab exercise-tab-wide reference-link-btn reference-link-btn--transcriptions"
+                    onClick={handleOpenAmerican1Transcriptions}
+                  >
+                    Transcriptions
+                  </button>
                 </div>
                 {(sectionReferences.length > 0 || sectionVideos) && (
                   <div className="reference-links" role="group" aria-label="Section reference pages">
@@ -1365,7 +1381,54 @@ function App() {
             </aside>
           </main>
         );
-      })() : activePage === 'profile' ? (
+      })() : activePage === 'american1-transcriptions' ? (
+        <main
+          className="main-panels"
+          ref={layoutRef}
+          style={{
+            gridTemplateColumns: `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`,
+          }}
+        >
+          <section className="pdf-panel">
+            <div className="pdf-toolbar">
+              <div className="pdf-toolbar-nav">
+                <button
+                  type="button"
+                  className="upload-button"
+                  onClick={handleCloseAmerican1Transcriptions}
+                >
+                  ‹ Back to Unit {selectedAmerican1Unit} {selectedAmerican1Section}
+                </button>
+              </div>
+              <span className="reference-page-label">Transcriptions</span>
+            </div>
+
+            <American1AudioReader
+              key="/american1-pages/transcriptions"
+              fileUrl="/american1-pages/transcriptions"
+              anchors={american1TranscriptionsAudioAnchors}
+            />
+          </section>
+
+          <button
+            className="resize-handle"
+            type="button"
+            aria-label="Resize right column"
+            onPointerDown={startPanelResize}
+          />
+
+          <aside className="side-panel right-panel">
+            <div className="panel-content related-panel">
+              <UnitNotes
+                key="transcriptions"
+                unit="transcriptions"
+                userName={userName}
+                storageKeyBase="notes:american1-transcriptions"
+              />
+            </div>
+          </aside>
+        </main>
+      ) : activePage === 'profile' ? (
         <main className="landing-page">
           <div className="landing-panel profile-panel">
             <p className="eyebrow">My Profile</p>
@@ -1814,18 +1877,19 @@ function American1AudioReader({ fileUrl, anchors }) {
   const shellRef = useRef(null);
   const [pageHosts, setPageHosts] = useState({});
   const [scales, setScales] = useState({});
-  const [revealed, setRevealed] = useState(false);
+  const [revealedPages, setRevealedPages] = useState({});
 
   const anchorsByPage = {};
   (anchors || []).forEach((anchor) => {
     (anchorsByPage[anchor.page] = anchorsByPage[anchor.page] || []).push(anchor);
   });
   const pagesNeeded = Object.keys(anchorsByPage).map(Number);
+  const anyPageRevealed = Object.keys(revealedPages).length > 0;
 
   useEffect(() => {
     setPageHosts({});
     setScales({});
-    setRevealed(false);
+    setRevealedPages({});
 
     const shell = shellRef.current;
     if (!shell || pagesNeeded.length === 0) {
@@ -1833,46 +1897,65 @@ function American1AudioReader({ fileUrl, anchors }) {
     }
 
     let rafId = null;
-    let revealTimeoutId = null;
+    const revealTimeouts = {};
     const resizeObservers = [];
-    const attachedPages = new Set();
 
+    // Não usa um Set de "página já anexada" para pular checagens futuras:
+    // com muitas páginas (ex.: Transcriptions, 8 páginas), o visualizador
+    // pode desmontar/remontar o node de uma página distante ao rolar
+    // (virtualização), trocando o elemento por um novo sem o host de áudio —
+    // se a página já tivesse sido marcada como "anexada" permanentemente,
+    // ela ficaria sem player pra sempre. Por isso toda passada de attach()
+    // reavalia o pageLayer atual de cada página e recria o host se preciso;
+    // só evita recriar o ResizeObserver quando o MESMO node (marcado via
+    // dataset) já está sendo observado.
+    //
+    // A revelação (fade-in) também é por página, não um único gate global:
+    // com muitas páginas, o visualizador só monta as próximas conforme o
+    // usuário rola (virtualização) — esperar TODAS as páginas do documento
+    // ficarem prontas antes de mostrar qualquer player faria os players da
+    // página 1 nunca aparecerem até o usuário rolar até o fim do documento.
     const attach = () => {
       let missing = false;
       pagesNeeded.forEach((pageIndex) => {
-        if (attachedPages.has(pageIndex)) return;
         const pageLayer = shell.querySelector(`[data-testid="core__page-layer-${pageIndex}"]`);
         if (!pageLayer) {
           missing = true;
           return;
         }
-        attachedPages.add(pageIndex);
 
         let host = Array.from(pageLayer.children).find((el) => el.classList.contains('audio-anchor-host'));
         if (!host) {
           host = document.createElement('div');
           host.className = 'audio-anchor-host';
           pageLayer.appendChild(host);
+          setPageHosts((prev) => ({ ...prev, [pageIndex]: host }));
         }
-        setPageHosts((prev) => ({ ...prev, [pageIndex]: host }));
 
-        const pageWidth = anchorsByPage[pageIndex][0].pageWidth;
-        const updateScale = () => {
-          const width = pageLayer.getBoundingClientRect().width;
-          if (width) {
-            setScales((prev) => ({ ...prev, [pageIndex]: width / pageWidth }));
-          }
-        };
-        updateScale();
-        const resizeObserver = new ResizeObserver(updateScale);
-        resizeObserver.observe(pageLayer);
-        resizeObservers.push(resizeObserver);
+        if (!pageLayer.dataset.audioAnchorObserved) {
+          pageLayer.dataset.audioAnchorObserved = 'true';
+          const pageWidth = anchorsByPage[pageIndex][0].pageWidth;
+          const updateScale = () => {
+            const width = pageLayer.getBoundingClientRect().width;
+            if (width) {
+              setScales((prev) => ({ ...prev, [pageIndex]: width / pageWidth }));
+            }
+          };
+          updateScale();
+          const resizeObserver = new ResizeObserver(updateScale);
+          resizeObserver.observe(pageLayer);
+          resizeObservers.push(resizeObserver);
+        }
+
+        if (!revealTimeouts[pageIndex]) {
+          revealTimeouts[pageIndex] = setTimeout(() => {
+            setRevealedPages((prev) => ({ ...prev, [pageIndex]: true }));
+          }, AUDIO_REVEAL_DELAY_MS);
+        }
       });
 
       if (missing) {
         rafId = requestAnimationFrame(attach);
-      } else {
-        revealTimeoutId = setTimeout(() => setRevealed(true), AUDIO_REVEAL_DELAY_MS);
       }
     };
 
@@ -1885,7 +1968,7 @@ function American1AudioReader({ fileUrl, anchors }) {
 
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
-      if (revealTimeoutId) clearTimeout(revealTimeoutId);
+      Object.values(revealTimeouts).forEach((id) => clearTimeout(id));
       mutationObserver.disconnect();
       resizeObservers.forEach((ro) => ro.disconnect());
     };
@@ -1894,9 +1977,14 @@ function American1AudioReader({ fileUrl, anchors }) {
 
   return (
     <div className="unit-reader-shell" ref={shellRef}>
+      {!anyPageRevealed && (
+        <div className="audio-anchors-loading" role="status" aria-label="Loading audio players">
+          <div className="audio-anchors-loading-bar" />
+        </div>
+      )}
       <PdfWorkspace fileUrl={fileUrl} defaultScale={1.5} />
       {Object.entries(pageHosts).map(([pageIndex, host]) => createPortal(
-        <div key={pageIndex} className={`audio-anchor-layer${revealed ? ' is-visible' : ''}`}>
+        <div key={pageIndex} className={`audio-anchor-layer${revealedPages[pageIndex] ? ' is-visible' : ''}`}>
           {(anchorsByPage[pageIndex] || []).map((anchor) => (
             <American1AudioAnchorPlayer
               key={`${anchor.cd}-${anchor.track}`}
