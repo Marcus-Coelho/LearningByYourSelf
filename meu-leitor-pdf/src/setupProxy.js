@@ -131,6 +131,11 @@ module.exports = function (app) {
   // aba do navegador pelo link (ver american1_videos.json, campo "folder").
   const AMERICAN1_VIDEO_FOLDERS = {
     ep1: 'aef2e_level01_ep1_arriving_in_london',
+    ep2: 'aef2e_level01_ep2_at_a_coffee_shop',
+    ep3: 'aef2e_level01_ep3_in_a_clothing_store',
+    ep4: 'aef2e_level01_ep4_getting_lost',
+    ep5: 'aef2e_level01_ep5_at_a_restaurant',
+    ep6: 'aef2e_level01_ep6_going_home',
     'onthestreet1-2': 'aef2e_level01_onthestreet_1-2',
     'onthestreet3-4': 'aef2e_level01_onthestreet_3-4',
     'onthestreet5-6': 'aef2e_level01_onthestreet_5-6',

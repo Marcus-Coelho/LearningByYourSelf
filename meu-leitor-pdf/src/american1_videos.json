@@ -12,6 +12,66 @@
     ]
   },
   {
+    "unit": 3,
+    "section": "Practical English",
+    "folder": "ep2",
+    "videos": [
+      { "label": "First day in the office", "file": "First day in the office.mp4" },
+      { "label": "Buying a coffee", "file": "Buying a coffee.mp4" },
+      { "label": "Listen and repeat", "file": "Listen and repeat.mp4" },
+      { "label": "Rob and Jenny meet", "file": "Rob and Jenny meet.mp4" },
+      { "label": "Social English", "file": "Social English.mp4" }
+    ]
+  },
+  {
+    "unit": 5,
+    "section": "Practical English",
+    "folder": "ep3",
+    "videos": [
+      { "label": "Meeting on the street", "file": "Meeting on the street.mp4" },
+      { "label": "Buying clothes", "file": "Buying clothes.mp4" },
+      { "label": "Listen and repeat", "file": "Listen and repeat.mp4" },
+      { "label": "Jenny's on the phone", "file": "Jenny's on the phone.mp4" },
+      { "label": "Social English", "file": "Social English.mp4" }
+    ]
+  },
+  {
+    "unit": 7,
+    "section": "Practical English",
+    "folder": "ep4",
+    "videos": [
+      { "label": "A free morning", "file": "A free morning.mp4" },
+      { "label": "Asking the way", "file": "Asking the way.mp4" },
+      { "label": "Listen and repeat", "file": "Listen and repeat.mp4" },
+      { "label": "Jenny and Rob go sightseeing", "file": "Jenny and Rob go sightseeing.mp4" },
+      { "label": "Social English", "file": "Social English.mp4" }
+    ]
+  },
+  {
+    "unit": 9,
+    "section": "Practical English",
+    "folder": "ep5",
+    "videos": [
+      { "label": "An invitation to dinner", "file": "An invitation to dinner.mp4" },
+      { "label": "Ordering a meal", "file": "Ordering a meal.mp4" },
+      { "label": "Listen and repeat", "file": "Listen and repeat.mp4" },
+      { "label": "The end of the meal", "file": "The end of the meal.mp4" },
+      { "label": "Social English", "file": "Social English.mp4" }
+    ]
+  },
+  {
+    "unit": 11,
+    "section": "Practical English",
+    "folder": "ep6",
+    "videos": [
+      { "label": "Jenny's last morning", "file": "Jenny's last morning.mp4" },
+      { "label": "Getting to the airport", "file": "Getting to the airport.mp4" },
+      { "label": "Listen and repeat", "file": "Listen and repeat.mp4" },
+      { "label": "Saying goodbye", "file": "Saying goodbye.mp4" },
+      { "label": "Social English", "file": "Social English.mp4" }
+    ]
+  },
+  {
     "unit": 2,
     "section": "Revise",
     "folder": "onthestreet1-2",
