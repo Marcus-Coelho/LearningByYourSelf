@@ -69,17 +69,7 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
 
-## Sync audio assets from local material folder
+## Audio, PDFs and video source material
 
-This project expects audio files to be available under `public/audio/unit_X/` (e.g. `public/audio/unit_1/U_001.A.mp3`).
-
-To copy your local EVIU audio material into the app's `public` folder and generate a `manifest.json` per unit, run the included helper script.
-
-Usage (from inside `meu-leitor-pdf`):
-
-```bash
-npm run sync-audios -- "C:\\Users\\marcu\\OneDrive\\Documentos\\Projeto_pagina_pdf\\Pre Intermediate and Intermediate\\EVIU_P_I"
-```
-
-The script will copy audio files from every `unit_X` folder it finds in the source path into `public/audio/unit_X/` and create a `manifest.json` listing the audio filenames for that unit. The React app will then be able to load players for the files listed in each `manifest.json`.
+Audio, PDF and video files are served live from the sibling material folders (`../Pre Intermediate and Intermediate/` and `../American English Level 1/`) via `src/setupProxy.js` — nothing is copied into `public/`. See `PROJECT_SUMMARY.md` at the repo root for the full architecture.
 
