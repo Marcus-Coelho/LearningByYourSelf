@@ -1,0 +1,182 @@
+[
+  { "unit": 1, "section": "A", "refs": [
+    { "type": "grammar", "pages": [124, 125] },
+    { "type": "vocabulary", "pages": [148] },
+    { "type": "sound", "pages": [166, 167] }
+  ] },
+  { "unit": 1, "section": "B", "refs": [
+    { "type": "grammar", "pages": [124, 125] },
+    { "type": "vocabulary", "pages": [148] },
+    { "type": "vocabulary", "pages": [149] },
+    { "type": "sound", "pages": [166, 167] },
+    { "type": "communication", "pages": [100] },
+    { "type": "communication", "pages": [103] }
+  ] },
+  { "unit": 1, "section": "C", "refs": [
+    { "type": "grammar", "pages": [124, 125] },
+    { "type": "vocabulary", "pages": [150] },
+    { "type": "communication", "pages": [100] },
+    { "type": "communication", "pages": [103] },
+    { "type": "writing", "pages": [111] }
+  ] },
+
+  { "unit": 2, "section": "A", "refs": [
+    { "type": "grammar", "pages": [126, 127] },
+    { "type": "vocabulary", "pages": [151] },
+    { "type": "communication", "pages": [100] }
+  ] },
+  { "unit": 2, "section": "B", "refs": [
+    { "type": "grammar", "pages": [126, 127] },
+    { "type": "vocabulary", "pages": [152] },
+    { "type": "sound", "pages": [166, 167] }
+  ] },
+  { "unit": 2, "section": "C", "refs": [
+    { "type": "grammar", "pages": [126, 127] },
+    { "type": "communication", "pages": [101] },
+    { "type": "communication", "pages": [106] }
+  ] },
+
+  { "unit": 3, "section": "A", "refs": [
+    { "type": "grammar", "pages": [128, 129] },
+    { "type": "vocabulary", "pages": [153] }
+  ] },
+  { "unit": 3, "section": "B", "refs": [
+    { "type": "grammar", "pages": [128, 129] },
+    { "type": "vocabulary", "pages": [154] }
+  ] },
+  { "unit": 3, "section": "C", "refs": [
+    { "type": "grammar", "pages": [128, 129] },
+    { "type": "writing", "pages": [111] }
+  ] },
+
+  { "unit": 4, "section": "A", "refs": [
+    { "type": "grammar", "pages": [130, 131] },
+    { "type": "vocabulary", "pages": [155] },
+    { "type": "sound", "pages": [166, 167] }
+  ] },
+  { "unit": 4, "section": "B", "refs": [
+    { "type": "grammar", "pages": [130, 131] },
+    { "type": "vocabulary", "pages": [156] },
+    { "type": "communication", "pages": [101] },
+    { "type": "communication", "pages": [106] },
+    { "type": "writing", "pages": [112] }
+  ] },
+  { "unit": 4, "section": "C", "refs": [
+    { "type": "grammar", "pages": [130, 131] },
+    { "type": "vocabulary", "pages": [157] },
+    { "type": "sound", "pages": [166, 167] },
+    { "type": "communication", "pages": [101] }
+  ] },
+
+  { "unit": 5, "section": "A", "refs": [
+    { "type": "grammar", "pages": [132, 133] },
+    { "type": "vocabulary", "pages": [158] },
+    { "type": "communication", "pages": [102] }
+  ] },
+  { "unit": 5, "section": "B", "refs": [
+    { "type": "grammar", "pages": [132, 133] },
+    { "type": "communication", "pages": [102] },
+    { "type": "communication", "pages": [107] }
+  ] },
+  { "unit": 5, "section": "C", "refs": [
+    { "type": "grammar", "pages": [132, 133] },
+    { "type": "vocabulary", "pages": [159] },
+    { "type": "communication", "pages": [103] },
+    { "type": "communication", "pages": [107] },
+    { "type": "writing", "pages": [113] }
+  ] },
+
+  { "unit": 6, "section": "A", "refs": [
+    { "type": "grammar", "pages": [134, 135] },
+    { "type": "communication", "pages": [103] }
+  ] },
+  { "unit": 6, "section": "B", "refs": [
+    { "type": "grammar", "pages": [134, 135] },
+    { "type": "vocabulary", "pages": [159] }
+  ] },
+  { "unit": 6, "section": "C", "refs": [
+    { "type": "grammar", "pages": [134, 135] },
+    { "type": "writing", "pages": [113] }
+  ] },
+
+  { "unit": 7, "section": "A", "refs": [
+    { "type": "grammar", "pages": [136, 137] },
+    { "type": "communication", "pages": [103] },
+    { "type": "communication", "pages": [108] }
+  ] },
+  { "unit": 7, "section": "B", "refs": [
+    { "type": "grammar", "pages": [136, 137] },
+    { "type": "communication", "pages": [103] }
+  ] },
+  { "unit": 7, "section": "C", "refs": [
+    { "type": "grammar", "pages": [136, 137] },
+    { "type": "vocabulary", "pages": [160] },
+    { "type": "communication", "pages": [103] },
+    { "type": "communication", "pages": [108] }
+  ] },
+
+  { "unit": 8, "section": "A", "refs": [
+    { "type": "grammar", "pages": [138, 139] },
+    { "type": "communication", "pages": [104] },
+    { "type": "communication", "pages": [108] }
+  ] },
+  { "unit": 8, "section": "B", "refs": [
+    { "type": "grammar", "pages": [138, 139] },
+    { "type": "vocabulary", "pages": [161] },
+    { "type": "writing", "pages": [114] }
+  ] },
+  { "unit": 8, "section": "C", "refs": [
+    { "type": "grammar", "pages": [138, 139] },
+    { "type": "vocabulary", "pages": [162] },
+    { "type": "communication", "pages": [104] },
+    { "type": "communication", "pages": [109] }
+  ] },
+
+  { "unit": 9, "section": "A", "refs": [
+    { "type": "grammar", "pages": [140, 141] },
+    { "type": "vocabulary", "pages": [163] }
+  ] },
+  { "unit": 9, "section": "B", "refs": [
+    { "type": "grammar", "pages": [140, 141] },
+    { "type": "communication", "pages": [109] }
+  ] },
+  { "unit": 9, "section": "C", "refs": [
+    { "type": "grammar", "pages": [140, 141] },
+    { "type": "vocabulary", "pages": [148] },
+    { "type": "communication", "pages": [105] },
+    { "type": "communication", "pages": [110] }
+  ] },
+
+  { "unit": 10, "section": "A", "refs": [
+    { "type": "grammar", "pages": [142, 143] },
+    { "type": "vocabulary", "pages": [164] },
+    { "type": "communication", "pages": [105] },
+    { "type": "communication", "pages": [110] }
+  ] },
+  { "unit": 10, "section": "B", "refs": [
+    { "type": "grammar", "pages": [142, 143] },
+    { "type": "communication", "pages": [105] },
+    { "type": "communication", "pages": [110] },
+    { "type": "writing", "pages": [115] }
+  ] },
+  { "unit": 10, "section": "C", "refs": [
+    { "type": "grammar", "pages": [142, 143] }
+  ] },
+
+  { "unit": 11, "section": "A", "refs": [
+    { "type": "grammar", "pages": [144, 145] }
+  ] },
+  { "unit": 11, "section": "B", "refs": [
+    { "type": "grammar", "pages": [144, 145] }
+  ] },
+  { "unit": 11, "section": "C", "refs": [
+    { "type": "grammar", "pages": [144, 145] }
+  ] },
+
+  { "unit": 12, "section": "A", "refs": [
+    { "type": "grammar", "pages": [146, 147] }
+  ] },
+  { "unit": 12, "section": "B", "refs": [
+    { "type": "grammar", "pages": [146, 147] }
+  ] }
+]

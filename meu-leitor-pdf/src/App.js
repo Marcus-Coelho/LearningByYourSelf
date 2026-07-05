@@ -11,6 +11,7 @@ import answersCoords from './answers_coords.json';
 import audioAnchorsCoords from './audio_anchors_coords.json';
 import american1Index from './american1_index.json';
 import american1AudioAnchors from './american1_audio_anchors.json';
+import american1References from './american1_references.json';
 import './App.css';
 
 // URL do gabarito único (multipágina), servido por src/setupProxy.js.
@@ -216,6 +217,29 @@ const american1UnitNumbers = Object.keys(american1SectionsByUnit)
   .map(Number)
   .sort((a, b) => a - b);
 
+// Links de referência (Grammar/Vocabulary/Sound Bank/Communication/Writing)
+// de cada seção A/B/C — ver american1_references.json, derivado de
+// pages_others.txt cruzado com american1_index.json. Indexado por
+// "<unit>|<section>" para lookup direto na tela de unit.
+const american1ReferencesBySection = (() => {
+  const map = {};
+  american1References.forEach((entry) => {
+    map[`${entry.unit}|${entry.section}`] = entry.refs;
+  });
+  return map;
+})();
+
+// Rótulo e pasta/rota de cada tipo de referência. Grammar e Sound Bank
+// mescladas como par de páginas (a referência impressa aponta pra primeira
+// do par); Vocabulary/Communication/Writing são página única.
+const AMERICAN1_REFERENCE_LABELS = {
+  grammar: 'grammar',
+  vocabulary: 'vocabulary',
+  sound: 'sound bank',
+  communication: 'communication',
+  writing: 'writing',
+};
+
 // Cursos listados na página "Courses". headerLabel é o texto exibido no topo
 // enquanto o usuário está dentro do curso (unit, exercícios, página de
 // teste...).
@@ -297,6 +321,7 @@ function App() {
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [selectedAmerican1Unit, setSelectedAmerican1Unit] = useState(null);
   const [selectedAmerican1Section, setSelectedAmerican1Section] = useState(null);
+  const [selectedAmerican1Reference, setSelectedAmerican1Reference] = useState(null);
   const [showAnswers, setShowAnswers] = useState(false);
   const [activePage, setActivePage] = useState('home');
   const [activeCourseId, setActiveCourseId] = useState(null);
@@ -548,6 +573,16 @@ function App() {
     setSelectedAmerican1Section(american1SectionsByUnit[nextUnit]?.[0]?.section ?? null);
   };
 
+  const handleOpenAmerican1Reference = (ref) => {
+    setSelectedAmerican1Reference(ref);
+    setActivePage('american1-reference');
+  };
+
+  const handleCloseAmerican1Reference = () => {
+    setSelectedAmerican1Reference(null);
+    setActivePage('american1-unit');
+  };
+
   const handleOpenProfile = (event) => {
     event.preventDefault();
     if (!userName) {
@@ -652,14 +687,26 @@ function App() {
         const key = window.localStorage.key(i);
         if (!key || !key.startsWith(prefix)) continue;
 
-        // Duas notações possíveis depois do prefixo: "<unit>" (curso
-        // Vocabulary) ou "american1:<unit>" (ver storageKeyBase em
-        // UnitNotes) — cada uma vira um título diferente no export.
+        // Três notações possíveis depois do prefixo: "<unit>" (curso
+        // Vocabulary), "american1:<unit>" (UnitNotes da seção) ou
+        // "american1-ref:<type>:<page>" (UnitNotes de uma página de
+        // referência — Grammar/Vocabulary/Sound Bank/Communication/Writing,
+        // cada uma com sua própria anotação, independente da seção) — cada
+        // uma vira um título diferente no export.
         const remainder = key.slice(prefix.length);
         const american1Match = remainder.match(/^american1:(\d+)$/);
+        const american1RefMatch = remainder.match(/^american1-ref:([a-z]+):(\d+)$/);
         const html = window.localStorage.getItem(key) || '';
 
-        if (american1Match) {
+        if (american1RefMatch) {
+          const [, refType, refPage] = american1RefMatch;
+          entries.push({
+            course: 'american1',
+            unit: `ref-${refType}-${refPage}`,
+            title: `American English Level 1 - ${AMERICAN1_REFERENCE_LABELS[refType] || refType} p.${refPage}`,
+            html,
+          });
+        } else if (american1Match) {
           entries.push({
             course: 'american1',
             unit: Number(american1Match[1]),
@@ -682,7 +729,11 @@ function App() {
         return;
       }
 
-      entries.sort((a, b) => a.course.localeCompare(b.course) || a.unit - b.unit);
+      entries.sort((a, b) => (
+        a.course.localeCompare(b.course)
+        || (typeof a.unit === 'number' && typeof b.unit === 'number' ? a.unit - b.unit : 0)
+        || String(a.unit).localeCompare(String(b.unit))
+      ));
 
       // O editor de notas quebra cada linha em uma <div> própria (e Shift+Enter
       // vira <br>) — textContent ignora essas fronteiras de bloco e junta tudo
@@ -1119,6 +1170,9 @@ function App() {
         const unitIndex = american1UnitNumbers.indexOf(selectedAmerican1Unit);
         const sectionAudioAnchors = (american1AudioAnchors[String(selectedAmerican1Unit)] || [])
           .filter((anchor) => anchor.section === activeSection?.section);
+        const sectionReferences = activeSection
+          ? american1ReferencesBySection[`${selectedAmerican1Unit}|${activeSection.section}`] || []
+          : [];
 
         return (
           <main
@@ -1129,7 +1183,7 @@ function App() {
             }}
           >
             <section className="pdf-panel">
-              <div className="pdf-toolbar">
+              <div className="pdf-toolbar pdf-toolbar-left">
                 <div className="pdf-toolbar-nav">
                   <button
                     type="button"
@@ -1163,6 +1217,24 @@ function App() {
                     </button>
                   ))}
                 </div>
+                {sectionReferences.length > 0 && (
+                  <div className="reference-links" role="group" aria-label="Section reference pages">
+                    {sectionReferences.map((ref, index) => (
+                      <button
+                        key={`${ref.type}-${ref.pages[0]}-${index}`}
+                        type="button"
+                        className={`reference-link-btn reference-link-btn--${ref.type}`}
+                        onClick={() => handleOpenAmerican1Reference({
+                          ...ref,
+                          unit: selectedAmerican1Unit,
+                          section: activeSection.section,
+                        })}
+                      >
+                        {AMERICAN1_REFERENCE_LABELS[ref.type]} p.{ref.pages[0]}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {activeSection && (
@@ -1203,6 +1275,62 @@ function App() {
                   unit={selectedAmerican1Unit}
                   userName={userName}
                   storageKeyBase={`notes:american1:${selectedAmerican1Unit}`}
+                />
+              </div>
+            </aside>
+          </main>
+        );
+      })() : activePage === 'american1-reference' ? (() => {
+        const ref = selectedAmerican1Reference;
+        const fileUrl = ref ? `/american1-pages/ref/${ref.type}/${ref.pages[0]}` : '';
+        const label = ref ? `${AMERICAN1_REFERENCE_LABELS[ref.type]} p.${ref.pages[0]}` : '';
+
+        return (
+          <main
+            className="main-panels"
+            ref={layoutRef}
+            style={{
+              gridTemplateColumns: `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`,
+            }}
+          >
+            <section className="pdf-panel">
+              <div className="pdf-toolbar">
+                <div className="pdf-toolbar-nav">
+                  <button
+                    type="button"
+                    className="upload-button"
+                    onClick={handleCloseAmerican1Reference}
+                  >
+                    ‹ Back to Unit {ref?.unit} {ref?.section}
+                  </button>
+                </div>
+                <span className="reference-page-label">{label}</span>
+              </div>
+
+              {fileUrl ? (
+                <PdfWorkspace key={fileUrl} fileUrl={fileUrl} defaultScale={1.5} />
+              ) : (
+                <div className="pdf-empty-state">
+                  <p className="eyebrow">No reference</p>
+                  <h1>Nothing to show</h1>
+                </div>
+              )}
+            </section>
+
+            <button
+              className="resize-handle"
+              type="button"
+              aria-label="Resize right column"
+              onPointerDown={startPanelResize}
+            />
+
+            <aside className="side-panel right-panel">
+              <div className="panel-content related-panel">
+                <UnitNotes
+                  key={`${ref?.type}-${ref?.pages?.[0]}`}
+                  unit={ref?.pages?.[0]}
+                  userName={userName}
+                  storageKeyBase={`notes:american1-ref:${ref?.type}:${ref?.pages?.[0]}`}
                 />
               </div>
             </aside>

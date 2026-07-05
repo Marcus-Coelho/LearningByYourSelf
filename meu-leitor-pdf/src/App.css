@@ -781,6 +781,14 @@ body {
   font-weight: 800;
 }
 
+/* Usado na tela de unit do American English Level 1: Previous/Next Unit e as
+   abas A/B/C/Revise ficam encostadas à esquerda (em vez de flex-end) — os
+   links de referência (.reference-links, com margin-left: auto) ocupam o
+   espaço restante e ficam à direita. */
+.pdf-toolbar-left {
+  justify-content: flex-start;
+}
+
 .pdf-toolbar-nav {
   display: flex;
   align-items: center;
@@ -1179,6 +1187,49 @@ body {
   background: var(--purple-700);
   border-color: var(--purple-700);
   color: #fff;
+}
+
+/* Links de referência (Grammar/Vocabulary/Sound Bank/Communication/Writing)
+   de cada seção A/B/C do curso American English Level 1 — pequenas caixas à
+   direita das abas de seção, uma por página do apêndice referenciada. */
+.reference-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: auto;
+  flex: 0 1 auto;
+}
+
+.reference-link-btn {
+  padding: 5px 10px;
+  border: 1.5px solid var(--ref-accent, var(--line));
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ref-accent, var(--muted));
+  font-weight: 700;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 120ms, color 120ms;
+}
+
+.reference-link-btn:hover {
+  background: var(--ref-accent, var(--purple-500));
+  color: #fff;
+}
+
+.reference-link-btn--grammar { --ref-accent: #2563eb; }
+.reference-link-btn--vocabulary { --ref-accent: #15803d; }
+.reference-link-btn--sound { --ref-accent: #c2410c; }
+.reference-link-btn--communication { --ref-accent: #a16207; }
+.reference-link-btn--writing { --ref-accent: #be185d; }
+
+.reference-page-label {
+  margin-left: auto;
+  padding: 4px 10px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--purple-950);
 }
 
 .ghost-button {

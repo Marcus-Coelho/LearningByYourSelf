@@ -63,6 +63,50 @@ module.exports = function (app) {
     }
   });
 
+  // Links de referência (Grammar/Vocabulary/Sound Bank/Communication/Writing)
+  // dentro de cada seção A/B/C: mesma ideia do merge acima, mas para as
+  // páginas do apêndice do livro (ver american1_references.json). Grammar
+  // Bank e Sound Bank sempre ocupam um par de páginas (a referência impressa
+  // aponta pra primeira; a segunda é a próxima); Vocabulary/Communication/
+  // Writing são página única.
+  const american1PdfsRoot = path.join(__dirname, '..', '..', 'American English Level 1', 'pdfs');
+  const AMERICAN1_REFERENCE_FOLDERS = {
+    grammar: { dir: 'grammar_bank', pair: true },
+    vocabulary: { dir: 'Vocabulary_bank', pair: false },
+    sound: { dir: 'sound_bank', pair: true },
+    communication: { dir: 'comunication', pair: false },
+    writing: { dir: 'writing', pair: false },
+  };
+
+  app.get('/american1-pages/ref/:type/:page', async (req, res) => {
+    const config = AMERICAN1_REFERENCE_FOLDERS[req.params.type];
+    const page = Number(req.params.page);
+    if (!config || !Number.isInteger(page) || page < 1) {
+      res.status(400).end();
+      return;
+    }
+    const dir = path.join(american1PdfsRoot, config.dir);
+    try {
+      if (config.pair) {
+        const merged = await PDFDocument.create();
+        for (const pageNumber of [page, page + 1]) {
+          const filePath = path.join(dir, `${AMERICAN1_FILE_PREFIX}-${pageNumber}.pdf`);
+          const bytes = fs.readFileSync(filePath);
+          const source = await PDFDocument.load(bytes);
+          const [copiedPage] = await merged.copyPages(source, [0]);
+          merged.addPage(copiedPage);
+        }
+        const mergedBytes = await merged.save();
+        res.type('application/pdf').send(Buffer.from(mergedBytes));
+      } else {
+        const filePath = path.join(dir, `${AMERICAN1_FILE_PREFIX}-${page}.pdf`);
+        res.type('application/pdf').sendFile(filePath);
+      }
+    } catch (error) {
+      res.status(404).end();
+    }
+  });
+
   // Áudio ancorado do American English Level 1: o "Class Audio" desse livro é
   // dividido em vários CDs (o selo impresso no livro tem o número do CD antes
   // da faixa, ex.: "1)2" = CD1 faixa 2; "2)3" = CD2 faixa 3) — cada CD com seu
