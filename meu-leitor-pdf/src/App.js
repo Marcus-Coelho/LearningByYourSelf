@@ -15,6 +15,7 @@ import american1ReferenceAudioAnchors from './american1_reference_audio_anchors.
 import american1TranscriptionsAudioAnchors from './american1_transcriptions_audio_anchors.json';
 import american1References from './american1_references.json';
 import american1Videos from './american1_videos.json';
+import grammarElemAudio from './grammar_elem_audio.json';
 import './App.css';
 
 // URL do gabarito único (multipágina), servido por src/setupProxy.js.
@@ -267,7 +268,20 @@ const courses = {
     description: 'Read through American English File Book 1, unit by unit, section by section.',
     headerLabel: 'You are in the American English Level 1 Course',
   },
+  grammarElem: {
+    title: 'Grammar English Elementary',
+    description: 'Essential Grammar in Use, unit by unit — reading, exercises and audio.',
+    headerLabel: 'You are in the Grammar English Elementary Course',
+  },
 };
+
+// Curso "Grammar English Elementary": 115 units, cada uma com um par de PDFs
+// de página única (Unit-<n>L.pdf de leitura, Unit-<n>E.pdf de exercícios,
+// ver src/setupProxy.js) e um punhado de áudios curtos por unit (ver
+// grammar_elem_audio.json, gerado a partir dos nomes de arquivo em
+// Grammar Elemetary/audio_files).
+const GRAMMAR_ELEM_UNIT_COUNT = 115;
+const grammarElemUnitNumbers = Array.from({ length: GRAMMAR_ELEM_UNIT_COUNT }, (_, i) => i + 1);
 
 const renderPdfUpload = (onChange, label = 'Load PDF') => (
   <label className="upload-button">
@@ -335,8 +349,14 @@ function App() {
   const [selectedAmerican1Unit, setSelectedAmerican1Unit] = useState(null);
   const [selectedAmerican1Section, setSelectedAmerican1Section] = useState(null);
   const [selectedAmerican1Reference, setSelectedAmerican1Reference] = useState(null);
+  const [selectedGrammarElemUnit, setSelectedGrammarElemUnit] = useState(null);
   const [showAnswers, setShowAnswers] = useState(false);
   const [showAmerican1Answers, setShowAmerican1Answers] = useState(false);
+  // Cada curso do Profile abre/fecha independente (chave = id do curso em
+  // `courses`) — fechado por padrão, deixando só o título e a linha de
+  // score/progresso visíveis. Objeto (não dois booleans soltos) porque mais
+  // cursos serão adicionados depois.
+  const [expandedProfileCourses, setExpandedProfileCourses] = useState({});
   const [activePage, setActivePage] = useState('home');
   const [activeCourseId, setActiveCourseId] = useState(null);
   const [rightWidth, setRightWidth] = useState(650);
@@ -344,6 +364,8 @@ function App() {
   const [visitedUnits, setVisitedUnits] = useState({});
   const [american1UnitRatings, setAmerican1UnitRatings] = useState({});
   const [american1VisitedUnits, setAmerican1VisitedUnits] = useState({});
+  const [grammarElemUnitRatings, setGrammarElemUnitRatings] = useState({});
+  const [grammarElemVisitedUnits, setGrammarElemVisitedUnits] = useState({});
   const layoutRef = useRef(null);
   const startDragRef = useRef(null);
 
@@ -504,6 +526,73 @@ function App() {
     ? Math.round((american1VisitedUnitsCount / american1UnitNumbers.length) * 100)
     : 0;
 
+  // Mesmo mecanismo, agora para o Grammar English Elementary — chaves
+  // "grammarElem-rating:"/"grammarElem-visitedUnits", independentes dos
+  // outros dois cursos.
+  useEffect(() => {
+    if (!userName) {
+      setGrammarElemUnitRatings({});
+      return;
+    }
+    try {
+      const prefix = userKey(userName, 'grammarElem-rating:');
+      const loaded = {};
+      for (let i = 0; i < window.localStorage.length; i += 1) {
+        const key = window.localStorage.key(i);
+        if (key && key.startsWith(prefix)) {
+          const value = Number(window.localStorage.getItem(key));
+          if (value >= 1 && value <= 5) {
+            loaded[key.slice(prefix.length)] = value;
+          }
+        }
+      }
+      setGrammarElemUnitRatings(loaded);
+    } catch (error) {
+      setGrammarElemUnitRatings({});
+    }
+  }, [userName]);
+
+  useEffect(() => {
+    if (!userName) {
+      setGrammarElemVisitedUnits({});
+      return;
+    }
+    try {
+      const raw = window.localStorage.getItem(userKey(userName, 'grammarElem-visitedUnits'));
+      if (raw) {
+        const list = JSON.parse(raw);
+        const loaded = {};
+        list.forEach((unit) => {
+          loaded[unit] = true;
+        });
+        setGrammarElemVisitedUnits(loaded);
+      } else {
+        setGrammarElemVisitedUnits({});
+      }
+    } catch (error) {
+      setGrammarElemVisitedUnits({});
+    }
+  }, [userName]);
+
+  const handleRateGrammarElemUnit = (unit, value) => {
+    if (!unit || !userName) return;
+    setGrammarElemUnitRatings((prev) => ({ ...prev, [unit]: value }));
+    try {
+      window.localStorage.setItem(userKey(userName, `grammarElem-rating:${unit}`), String(value));
+    } catch (error) {
+      // Armazenamento indisponível — a nota fica só nesta sessão.
+    }
+  };
+
+  const grammarElemRatingValues = Object.values(grammarElemUnitRatings);
+  const grammarElemScorePercent = grammarElemRatingValues.length > 0
+    ? Math.round((grammarElemRatingValues.reduce((sum, value) => sum + value, 0) / grammarElemRatingValues.length / 5) * 100)
+    : null;
+  const grammarElemVisitedUnitsCount = Object.keys(grammarElemVisitedUnits).length;
+  const grammarElemProgressPercent = grammarElemUnitNumbers.length > 0
+    ? Math.round((grammarElemVisitedUnitsCount / grammarElemUnitNumbers.length) * 100)
+    : 0;
+
   useEffect(() => {
     return () => {
       if (pdfFileUrl?.startsWith('blob:')) {
@@ -570,6 +659,28 @@ function App() {
     });
   }, [selectedAmerican1Unit, activePage, userName]);
 
+  // Mesma ideia, para o Grammar English Elementary.
+  useEffect(() => {
+    if (activePage !== 'grammarElem-unit' || !selectedGrammarElemUnit || !userName) {
+      return;
+    }
+    setGrammarElemVisitedUnits((prev) => {
+      if (prev[selectedGrammarElemUnit]) {
+        return prev;
+      }
+      const next = { ...prev, [selectedGrammarElemUnit]: true };
+      try {
+        window.localStorage.setItem(
+          userKey(userName, 'grammarElem-visitedUnits'),
+          JSON.stringify(Object.keys(next).map(Number)),
+        );
+      } catch (error) {
+        // Armazenamento indisponível — progresso não sobrevive a recarregar.
+      }
+      return next;
+    });
+  }, [selectedGrammarElemUnit, activePage, userName]);
+
   const handlePdfChange = (event) => {
     const file = event.target.files?.[0];
     if (!file) {
@@ -624,6 +735,7 @@ function App() {
     setSelectedUnit(null);
     setSelectedAmerican1Unit(null);
     setSelectedAmerican1Section(null);
+    setSelectedGrammarElemUnit(null);
     setActiveCourseId(null);
   };
 
@@ -640,6 +752,7 @@ function App() {
     setSelectedUnit(null);
     setSelectedAmerican1Unit(null);
     setSelectedAmerican1Section(null);
+    setSelectedGrammarElemUnit(null);
     setActiveCourseId(null);
   };
 
@@ -690,6 +803,37 @@ function App() {
     setActivePage('american1-reference');
   };
 
+  const handleGrammarElem = (event) => {
+    event.preventDefault();
+    setActivePage('grammarElem');
+    setSelectedGrammarElemUnit(null);
+    setActiveCourseId('grammarElem');
+  };
+
+  const handleGrammarElemUnitSelect = (event, unit) => {
+    event.preventDefault();
+    setActivePage('grammarElem-unit');
+    setSelectedGrammarElemUnit(unit);
+  };
+
+  const handlePreviousGrammarElemUnit = () => {
+    if (!selectedGrammarElemUnit || selectedGrammarElemUnit <= 1) return;
+    setSelectedGrammarElemUnit(selectedGrammarElemUnit - 1);
+  };
+
+  const handleNextGrammarElemUnit = () => {
+    if (!selectedGrammarElemUnit || selectedGrammarElemUnit >= GRAMMAR_ELEM_UNIT_COUNT) return;
+    setSelectedGrammarElemUnit(selectedGrammarElemUnit + 1);
+  };
+
+  const handleOpenGrammarElemExercise = () => {
+    setActivePage('grammarElem-exercise');
+  };
+
+  const handleBackToGrammarElemUnit = () => {
+    setActivePage('grammarElem-unit');
+  };
+
   const handleCloseAmerican1Reference = () => {
     setSelectedAmerican1Reference(null);
     setActivePage('american1-unit');
@@ -713,6 +857,7 @@ function App() {
     setSelectedUnit(null);
     setSelectedAmerican1Unit(null);
     setSelectedAmerican1Section(null);
+    setSelectedGrammarElemUnit(null);
     setActiveCourseId(null);
   };
 
@@ -775,6 +920,7 @@ function App() {
     setSelectedUnit(null);
     setSelectedAmerican1Unit(null);
     setSelectedAmerican1Section(null);
+    setSelectedGrammarElemUnit(null);
     setActiveCourseId(null);
   };
 
@@ -788,13 +934,15 @@ function App() {
   // "notes:" (ver handleExportNotes).
   const removeLocalStorageKeysWithPrefix = (prefix, exclude) => {
     if (!userName) return;
+    const excludeList = Array.isArray(exclude) ? exclude : exclude ? [exclude] : [];
     try {
       const scopedPrefix = userKey(userName, prefix);
       const keysToRemove = [];
       for (let i = 0; i < window.localStorage.length; i += 1) {
         const key = window.localStorage.key(i);
         if (!key || !key.startsWith(scopedPrefix)) continue;
-        if (exclude && key.slice(scopedPrefix.length).startsWith(exclude)) continue;
+        const remainder = key.slice(scopedPrefix.length);
+        if (excludeList.some((ex) => remainder.startsWith(ex))) continue;
         keysToRemove.push(key);
       }
       keysToRemove.forEach((key) => window.localStorage.removeItem(key));
@@ -941,7 +1089,7 @@ function App() {
     }
     // exclude 'american1' — essas notas têm seu próprio botão de reset, ver
     // handleResetAmerican1Notes.
-    removeLocalStorageKeysWithPrefix('notes:', 'american1');
+    removeLocalStorageKeysWithPrefix('notes:', ['american1', 'grammarElem']);
   };
 
   const handleResetExerciseAnswers = () => {
@@ -963,7 +1111,7 @@ function App() {
       // Armazenamento indisponível.
     }
     removeLocalStorageKeysWithPrefix('rating:');
-    removeLocalStorageKeysWithPrefix('notes:', 'american1');
+    removeLocalStorageKeysWithPrefix('notes:', ['american1', 'grammarElem']);
     removeLocalStorageKeysWithPrefix('answers:');
   };
 
@@ -1011,6 +1159,60 @@ function App() {
     }
     removeLocalStorageKeysWithPrefix('american1-rating:');
     removeLocalStorageKeysWithPrefix('notes:american1');
+  };
+
+  const handleResetGrammarElemProgress = () => {
+    if (!window.confirm('Reset your Grammar English Elementary unit progress? This cannot be undone.')) {
+      return;
+    }
+    setGrammarElemVisitedUnits({});
+    try {
+      window.localStorage.removeItem(userKey(userName, 'grammarElem-visitedUnits'));
+    } catch (error) {
+      // Armazenamento indisponível.
+    }
+  };
+
+  const handleResetGrammarElemSelfEvaluation = () => {
+    if (!window.confirm('Reset your Grammar English Elementary self-evaluation score and every star rating you gave? This cannot be undone.')) {
+      return;
+    }
+    setGrammarElemUnitRatings({});
+    removeLocalStorageKeysWithPrefix('grammarElem-rating:');
+  };
+
+  const handleResetGrammarElemNotes = () => {
+    if (!window.confirm('Reset your Grammar English Elementary "My Notes" for every unit? This cannot be undone.')) {
+      return;
+    }
+    removeLocalStorageKeysWithPrefix('notes:grammarElem');
+  };
+
+  const handleResetGrammarElemAnswers = () => {
+    if (!window.confirm('Reset your Grammar English Elementary written answers for every unit? This cannot be undone.')) {
+      return;
+    }
+    removeLocalStorageKeysWithPrefix('answers:grammarElem');
+  };
+
+  const handleResetGrammarElemAll = () => {
+    if (!window.confirm('Reset EVERYTHING for Grammar English Elementary — progress, self-evaluation, lesson notes and answers? This cannot be undone.')) {
+      return;
+    }
+    setGrammarElemVisitedUnits({});
+    setGrammarElemUnitRatings({});
+    try {
+      window.localStorage.removeItem(userKey(userName, 'grammarElem-visitedUnits'));
+    } catch (error) {
+      // Armazenamento indisponível.
+    }
+    removeLocalStorageKeysWithPrefix('grammarElem-rating:');
+    removeLocalStorageKeysWithPrefix('notes:grammarElem');
+    removeLocalStorageKeysWithPrefix('answers:grammarElem');
+  };
+
+  const toggleProfileCourse = (courseId) => {
+    setExpandedProfileCourses((prev) => ({ ...prev, [courseId]: !prev[courseId] }));
   };
 
   const clampPanelWidths = (nextRightWidth) => {
@@ -1096,7 +1298,7 @@ function App() {
 
   // Verdadeiro em qualquer tela "dentro" de um curso (unit, exercícios,
   // página de teste do Course 2...), não só nas telas de unit/exercícios.
-  const insideCourse = Boolean(selectedUnit) || Boolean(selectedAmerican1Unit);
+  const insideCourse = Boolean(selectedUnit) || Boolean(selectedAmerican1Unit) || Boolean(selectedGrammarElemUnit);
   const activeCourse = activeCourseId ? courses[activeCourseId] : null;
   const visitedUnitsCount = Object.keys(visitedUnits).length;
 
@@ -1171,6 +1373,31 @@ function App() {
               <span className="header-stat-label">Your Score</span>
               <span className="header-stat-value">
                 {american1ScorePercent !== null ? `${american1ScorePercent}%` : '—'}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {selectedGrammarElemUnit && (
+          <div className="header-stats-card">
+            <div
+              className="header-stat-cell"
+              title={`${grammarElemVisitedUnitsCount} of ${grammarElemUnitNumbers.length} units visited`}
+            >
+              <span className="header-stat-label">Your Progress</span>
+              <span className="header-stat-value">{grammarElemProgressPercent}%</span>
+            </div>
+            <div
+              className="header-stat-cell"
+              title={
+                grammarElemScorePercent !== null
+                  ? `Average of ${grammarElemRatingValues.length} self-rated unit${grammarElemRatingValues.length > 1 ? 's' : ''}`
+                  : 'No unit self-rated yet'
+              }
+            >
+              <span className="header-stat-label">Your Score</span>
+              <span className="header-stat-value">
+                {grammarElemScorePercent !== null ? `${grammarElemScorePercent}%` : '—'}
               </span>
             </div>
           </div>
@@ -1353,6 +1580,10 @@ function App() {
                 <span>{courses.american1.title}</span>
                 <small>{courses.american1.description}</small>
               </a>
+              <a className="course-link" href="#link-grammarElem" onClick={handleGrammarElem}>
+                <span>{courses.grammarElem.title}</span>
+                <small>{courses.grammarElem.description}</small>
+              </a>
             </div>
           </div>
         </main>
@@ -1379,7 +1610,170 @@ function App() {
             </div>
           </div>
         </main>
-      ) : activePage === 'american1-unit' ? (() => {
+      ) : activePage === 'grammarElem' ? (
+        <main className="landing-page vocabulary-mode" id="link-grammarElem">
+          <div className="landing-panel vocabulary-page">
+            <h2 className="vocabulary-title">{courses.grammarElem.title}</h2>
+            <div className="vocabulary-list" role="list">
+              {grammarElemUnitNumbers.map((unit) => (
+                <a
+                  key={unit}
+                  className="vocabulary-link"
+                  href={`#grammarElem-unit-${unit}`}
+                  onClick={(event) => handleGrammarElemUnitSelect(event, unit)}
+                >
+                  <span>Unit {unit}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        </main>
+      ) : activePage === 'grammarElem-unit' ? (() => {
+        const unit = selectedGrammarElemUnit;
+        const fileUrl = unit ? `/grammar-elem-pages/Unit-${unit}L.pdf` : '';
+        const audioLetters = unit ? grammarElemAudio[String(unit)] || [] : [];
+
+        return (
+          <main
+            className="main-panels"
+            ref={layoutRef}
+            style={{
+              gridTemplateColumns: `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`,
+            }}
+          >
+            <section className="pdf-panel">
+              <div className="pdf-toolbar pdf-toolbar-left">
+                <div className="pdf-toolbar-nav">
+                  <button
+                    type="button"
+                    className="upload-button"
+                    onClick={handlePreviousGrammarElemUnit}
+                    disabled={!unit || unit <= 1}
+                  >
+                    Previous Unit
+                  </button>
+                  <button
+                    type="button"
+                    className="upload-button"
+                    onClick={handleNextGrammarElemUnit}
+                    disabled={!unit || unit >= GRAMMAR_ELEM_UNIT_COUNT}
+                  >
+                    Next Unit
+                  </button>
+                  <button type="button" className="upload-button exercises-link" onClick={handleOpenGrammarElemExercise}>
+                    Exercises
+                  </button>
+                </div>
+                {audioLetters.length > 0 && (
+                  <div className="reference-links" role="group" aria-label="Unit audio">
+                    {audioLetters.map((letter) => (
+                      <SimpleAudioPlayer
+                        key={letter}
+                        label={letter}
+                        src={`/grammar-elem-audio/${unit}${letter}-elem_murph_merged.mp3`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {fileUrl ? (
+                <PdfWorkspace key={fileUrl} fileUrl={fileUrl} defaultScale={1.5} />
+              ) : (
+                <div className="pdf-empty-state">
+                  <p className="eyebrow">No unit</p>
+                  <h1>No unit selected</h1>
+                </div>
+              )}
+            </section>
+
+            <button
+              className="resize-handle"
+              type="button"
+              aria-label="Resize right column"
+              onPointerDown={startPanelResize}
+            />
+
+            <aside className="side-panel right-panel">
+              <div className="panel-content related-panel">
+                <UnitNotes
+                  key={unit}
+                  unit={unit}
+                  userName={userName}
+                  storageKeyBase={`notes:grammarElem:${unit}`}
+                  rating={grammarElemUnitRatings[unit] || 0}
+                  onRate={(value) => handleRateGrammarElemUnit(unit, value)}
+                />
+              </div>
+            </aside>
+          </main>
+        );
+      })() : activePage === 'grammarElem-exercise' ? (() => {
+        const unit = selectedGrammarElemUnit;
+        const fileUrl = unit ? `/grammar-elem-pages/Unit-${unit}E.pdf` : '';
+
+        return (
+          <main
+            className="main-panels"
+            ref={layoutRef}
+            style={{
+              gridTemplateColumns: `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`,
+            }}
+          >
+            <section className="pdf-panel">
+              <div className="pdf-toolbar pdf-toolbar-left">
+                <div className="pdf-toolbar-nav">
+                  <button type="button" className="upload-button" onClick={handleBackToGrammarElemUnit}>
+                    ‹ Back to Unit
+                  </button>
+                  <span className="study-unit-label">Unit {unit}</span>
+                </div>
+              </div>
+
+              {fileUrl ? (
+                <PdfWorkspace key={fileUrl} fileUrl={fileUrl} defaultScale={1.5} />
+              ) : (
+                <div className="pdf-empty-state">
+                  <p className="eyebrow">No unit</p>
+                  <h1>No unit selected</h1>
+                </div>
+              )}
+            </section>
+
+            <button
+              className="resize-handle"
+              type="button"
+              aria-label="Resize right column"
+              onPointerDown={startPanelResize}
+            />
+
+            <aside className="side-panel right-panel">
+              {unit && (
+                <AnswerArea
+                  exerciseId={`grammarElem-${unit}`}
+                  heading={`Unit ${unit} Exercises`}
+                  onPrevious={() => {}}
+                  onNext={() => {}}
+                  hasPrevious={false}
+                  hasNext={false}
+                  isLastExercise
+                  canGoNextUnit={unit < GRAMMAR_ELEM_UNIT_COUNT}
+                  onNextReadingUnit={() => {
+                    handleNextGrammarElemUnit();
+                    setActivePage('grammarElem-unit');
+                  }}
+                  showAnswers={false}
+                  hasAnswer={false}
+                  onToggleAnswers={() => {}}
+                  rating={grammarElemUnitRatings[unit] || 0}
+                  onRate={(value) => handleRateGrammarElemUnit(unit, value)}
+                  userName={userName}
+                />
+              )}
+            </aside>
+          </main>
+        );
+      })() : activePage === 'american1-unit' ? (() => {
         const sections = american1SectionsByUnit[selectedAmerican1Unit] || [];
         const activeSection = sections.find((section) => section.section === selectedAmerican1Section) || sections[0];
         const fileUrl = activeSection
@@ -1681,67 +2075,139 @@ function App() {
               </button>
             </div>
 
-            <h2 className="profile-course-heading">{courses.vocabulary.title}</h2>
+            <div className="profile-course-head">
+              <h2 className="profile-course-heading">{courses.vocabulary.title}</h2>
+              <button
+                type="button"
+                className="profile-course-toggle"
+                onClick={() => toggleProfileCourse('vocabulary')}
+                aria-expanded={Boolean(expandedProfileCourses.vocabulary)}
+                aria-label={expandedProfileCourses.vocabulary ? 'Collapse' : 'Expand'}
+              >
+                {expandedProfileCourses.vocabulary ? '−' : '+'}
+              </button>
+            </div>
             <p className="landing-meta">
               Your Score: <strong>{overallScorePercent !== null ? `${overallScorePercent}%` : '—'}</strong>
               {' '}({ratingValues.length} exercise{ratingValues.length === 1 ? '' : 's'} self-rated)
               {' '}· Progress: <strong>{visitedUnitsCount}%</strong>
             </p>
-            <div className="profile-reset-list">
-              <button type="button" className="profile-reset-btn primary" onClick={() => handleExportNotes('vocabulary')}>
-                <span>Export lesson notes (.txt)</span>
-                <small>Downloads "My Notes" from every unit as a single plain-text file.</small>
-              </button>
-              <button type="button" className="profile-reset-btn" onClick={handleResetProgress}>
-                <span>Reset unit progress</span>
-                <small>Clears which units count toward "Your Progress".</small>
-              </button>
-              <button type="button" className="profile-reset-btn" onClick={handleResetSelfEvaluation}>
-                <span>Reset self-evaluation</span>
-                <small>Clears "Your Score" and every star rating given per exercise.</small>
-              </button>
-              <button type="button" className="profile-reset-btn" onClick={handleResetLessonNotes}>
-                <span>Reset lesson notes</span>
-                <small>Clears "My Notes" for every unit.</small>
-              </button>
-              <button type="button" className="profile-reset-btn" onClick={handleResetExerciseAnswers}>
-                <span>Reset exercise answers</span>
-                <small>Clears the written answer saved for every exercise.</small>
-              </button>
-              <button type="button" className="profile-reset-btn danger" onClick={handleResetAll}>
-                <span>Reset All</span>
-                <small>Everything above, all at once.</small>
+            {expandedProfileCourses.vocabulary && (
+              <div className="profile-reset-list">
+                <button type="button" className="profile-reset-btn primary" onClick={() => handleExportNotes('vocabulary')}>
+                  <span>Export lesson notes (.txt)</span>
+                  <small>Downloads "My Notes" from every unit as a single plain-text file.</small>
+                </button>
+                <button type="button" className="profile-reset-btn" onClick={handleResetProgress}>
+                  <span>Reset unit progress</span>
+                  <small>Clears which units count toward "Your Progress".</small>
+                </button>
+                <button type="button" className="profile-reset-btn" onClick={handleResetSelfEvaluation}>
+                  <span>Reset self-evaluation</span>
+                  <small>Clears "Your Score" and every star rating given per exercise.</small>
+                </button>
+                <button type="button" className="profile-reset-btn" onClick={handleResetLessonNotes}>
+                  <span>Reset lesson notes</span>
+                  <small>Clears "My Notes" for every unit.</small>
+                </button>
+                <button type="button" className="profile-reset-btn" onClick={handleResetExerciseAnswers}>
+                  <span>Reset exercise answers</span>
+                  <small>Clears the written answer saved for every exercise.</small>
+                </button>
+                <button type="button" className="profile-reset-btn danger" onClick={handleResetAll}>
+                  <span>Reset All</span>
+                  <small>Everything above, all at once.</small>
+                </button>
+              </div>
+            )}
+
+            <div className="profile-course-head">
+              <h2 className="profile-course-heading">{courses.american1.title}</h2>
+              <button
+                type="button"
+                className="profile-course-toggle"
+                onClick={() => toggleProfileCourse('american1')}
+                aria-expanded={Boolean(expandedProfileCourses.american1)}
+                aria-label={expandedProfileCourses.american1 ? 'Collapse' : 'Expand'}
+              >
+                {expandedProfileCourses.american1 ? '−' : '+'}
               </button>
             </div>
-
-            <h2 className="profile-course-heading">{courses.american1.title}</h2>
             <p className="landing-meta">
               Your Score: <strong>{american1ScorePercent !== null ? `${american1ScorePercent}%` : '—'}</strong>
               {' '}({american1RatingValues.length} unit{american1RatingValues.length === 1 ? '' : 's'} self-rated)
               {' '}· Progress: <strong>{american1ProgressPercent}%</strong>
             </p>
-            <div className="profile-reset-list">
-              <button type="button" className="profile-reset-btn primary" onClick={() => handleExportNotes('american1')}>
-                <span>Export lesson notes (.txt)</span>
-                <small>Downloads "My Notes" from every unit and reference page as a single plain-text file.</small>
-              </button>
-              <button type="button" className="profile-reset-btn" onClick={handleResetAmerican1Progress}>
-                <span>Reset unit progress</span>
-                <small>Clears which units count toward "Your Progress".</small>
-              </button>
-              <button type="button" className="profile-reset-btn" onClick={handleResetAmerican1SelfEvaluation}>
-                <span>Reset self-evaluation</span>
-                <small>Clears "Your Score" and every star rating given per unit.</small>
-              </button>
-              <button type="button" className="profile-reset-btn" onClick={handleResetAmerican1Notes}>
-                <span>Reset lesson notes</span>
-                <small>Clears "My Notes" for every unit and reference page.</small>
-              </button>
-              <button type="button" className="profile-reset-btn danger" onClick={handleResetAmerican1All}>
-                <span>Reset All</span>
-                <small>Everything above, all at once.</small>
+            {expandedProfileCourses.american1 && (
+              <div className="profile-reset-list">
+                <button type="button" className="profile-reset-btn primary" onClick={() => handleExportNotes('american1')}>
+                  <span>Export lesson notes (.txt)</span>
+                  <small>Downloads "My Notes" from every unit and reference page as a single plain-text file.</small>
+                </button>
+                <button type="button" className="profile-reset-btn" onClick={handleResetAmerican1Progress}>
+                  <span>Reset unit progress</span>
+                  <small>Clears which units count toward "Your Progress".</small>
+                </button>
+                <button type="button" className="profile-reset-btn" onClick={handleResetAmerican1SelfEvaluation}>
+                  <span>Reset self-evaluation</span>
+                  <small>Clears "Your Score" and every star rating given per unit.</small>
+                </button>
+                <button type="button" className="profile-reset-btn" onClick={handleResetAmerican1Notes}>
+                  <span>Reset lesson notes</span>
+                  <small>Clears "My Notes" for every unit and reference page.</small>
+                </button>
+                <button type="button" className="profile-reset-btn danger" onClick={handleResetAmerican1All}>
+                  <span>Reset All</span>
+                  <small>Everything above, all at once.</small>
+                </button>
+              </div>
+            )}
+
+            <div className="profile-course-head">
+              <h2 className="profile-course-heading">{courses.grammarElem.title}</h2>
+              <button
+                type="button"
+                className="profile-course-toggle"
+                onClick={() => toggleProfileCourse('grammarElem')}
+                aria-expanded={Boolean(expandedProfileCourses.grammarElem)}
+                aria-label={expandedProfileCourses.grammarElem ? 'Collapse' : 'Expand'}
+              >
+                {expandedProfileCourses.grammarElem ? '−' : '+'}
               </button>
             </div>
+            <p className="landing-meta">
+              Your Score: <strong>{grammarElemScorePercent !== null ? `${grammarElemScorePercent}%` : '—'}</strong>
+              {' '}({grammarElemRatingValues.length} unit{grammarElemRatingValues.length === 1 ? '' : 's'} self-rated)
+              {' '}· Progress: <strong>{grammarElemProgressPercent}%</strong>
+            </p>
+            {expandedProfileCourses.grammarElem && (
+              <div className="profile-reset-list">
+                <button type="button" className="profile-reset-btn primary" onClick={() => handleExportNotes('grammarElem')}>
+                  <span>Export lesson notes (.txt)</span>
+                  <small>Downloads "My Notes" from every unit as a single plain-text file.</small>
+                </button>
+                <button type="button" className="profile-reset-btn" onClick={handleResetGrammarElemProgress}>
+                  <span>Reset unit progress</span>
+                  <small>Clears which units count toward "Your Progress".</small>
+                </button>
+                <button type="button" className="profile-reset-btn" onClick={handleResetGrammarElemSelfEvaluation}>
+                  <span>Reset self-evaluation</span>
+                  <small>Clears "Your Score" and every star rating given per unit.</small>
+                </button>
+                <button type="button" className="profile-reset-btn" onClick={handleResetGrammarElemNotes}>
+                  <span>Reset lesson notes</span>
+                  <small>Clears "My Notes" for every unit.</small>
+                </button>
+                <button type="button" className="profile-reset-btn" onClick={handleResetGrammarElemAnswers}>
+                  <span>Reset exercise answers</span>
+                  <small>Clears the written answer saved for every unit's exercises.</small>
+                </button>
+                <button type="button" className="profile-reset-btn danger" onClick={handleResetGrammarElemAll}>
+                  <span>Reset All</span>
+                  <small>Everything above, all at once.</small>
+                </button>
+              </div>
+            )}
           </div>
         </main>
       ) : activePage === 'register' ? (
@@ -2135,6 +2601,106 @@ function AudioAnchorPlayer({ anchor, scale, unit }) {
   );
 }
 
+// Mesmo player do curso Vocabulary (play/pause, stop, menu de velocidade —
+// ver AudioAnchorPlayer), mas sem ancoragem num ponto (x, y) da página: fica
+// no fluxo normal da toolbar, ao lado da letra (A, B, C...) do Grammar
+// English Elementary — não tem PDF pra ancorar em cima, é só um link de
+// áudio simples.
+function SimpleAudioPlayer({ src, label }) {
+  const audioRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [rate, setRate] = useState(1);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!menuOpen) {
+      return undefined;
+    }
+    const closeMenu = () => setMenuOpen(false);
+    document.addEventListener('click', closeMenu);
+    return () => document.removeEventListener('click', closeMenu);
+  }, [menuOpen]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    return () => {
+      audio?.pause();
+    };
+  }, []);
+
+  const togglePlay = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (audio.paused) {
+      audio.play();
+    } else {
+      audio.pause();
+    }
+  };
+
+  const stop = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+  };
+
+  const changeRate = (speed) => {
+    setRate(speed);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = speed;
+    }
+    setMenuOpen(false);
+  };
+
+  return (
+    <div className="audio-anchor audio-anchor-inline">
+      <span className="audio-anchor-inline-label">{label}</span>
+      <audio
+        ref={audioRef}
+        src={src}
+        preload="none"
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onEnded={() => setIsPlaying(false)}
+      />
+      <button type="button" className="ap-btn" title="Play/Pause" onClick={togglePlay}>
+        {isPlaying ? <IconPause /> : <IconPlay />}
+      </button>
+      <button type="button" className="ap-btn" title="Stop" onClick={stop}>
+        <IconStop />
+      </button>
+      <div className="ap-wrap">
+        <button
+          type="button"
+          className="ap-btn"
+          title="Speed"
+          onClick={(event) => {
+            event.stopPropagation();
+            setMenuOpen((open) => !open);
+          }}
+        >
+          <IconDots />
+        </button>
+        {menuOpen && (
+          <div className="ap-menu open">
+            {AUDIO_SPEEDS.map((speed) => (
+              <button
+                key={speed}
+                type="button"
+                className={speed === rate ? 'active' : ''}
+                onClick={() => changeRate(speed)}
+              >
+                {speed}x
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Curso "American English Level 1": ancora um player compacto sobre cada selo
 // de áudio impresso no PDF (ver american1_audio_anchors.json — gerado por
 // casamento de template + inferência de faixa, já que esse PDF não tem
@@ -2470,6 +3036,7 @@ function CroppedExerciseViewer({ fileUrl, coords }) {
 // Coluna direita: resposta do aluno, persistida por exercício em localStorage.
 function AnswerArea({
   exerciseId,
+  heading,
   onPrevious,
   onNext,
   hasPrevious,
@@ -2508,7 +3075,7 @@ function AnswerArea({
   return (
     <div className="answers-inner">
       <div className="answers-head">
-        <h2>Exercise {exerciseId}</h2>
+        <h2>{heading || `Exercise ${exerciseId}`}</h2>
         <div className="answers-nav">
           <button type="button" className="ghost-button" onClick={onPrevious} disabled={!hasPrevious}>
             ‹ Previous

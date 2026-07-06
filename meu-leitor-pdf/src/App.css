@@ -519,12 +519,45 @@ body {
 /* Separa os resets/exports de cada curso no Profile — cada curso tem seu
    próprio progresso/score/notas, então cada um ganha sua própria seção com
    cabeçalho, em vez de uma lista única de botões misturando os dois. */
-.profile-course-heading {
-  margin: 32px 0 0;
+.profile-course-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 32px;
   padding-top: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.profile-course-heading {
+  margin: 0;
   font-size: 18px;
   color: #fff;
+}
+
+/* Botão +/- que abre/fecha os resets de cada curso — fechado por padrão,
+   deixando só o título e a linha de score/progresso à vista (ver
+   expandedProfileCourses em App.js). Pensado para escalar quando mais
+   cursos forem adicionados, sem a página de Profile virar uma lista enorme
+   de botões por padrão. */
+.profile-course-toggle {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.profile-course-toggle:hover {
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .profile-reset-btn {
@@ -1059,6 +1092,21 @@ body {
   border: 1px solid #e0a800;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* Mesmo visual do .audio-anchor (ancorado sobre o PDF), mas no fluxo normal
+   da toolbar — usado pelos links de áudio A/B/C... do Grammar English
+   Elementary, que não têm PDF pra ancorar em cima (ver SimpleAudioPlayer). */
+.audio-anchor-inline {
+  position: static;
+  flex: 0 0 auto;
+}
+
+.audio-anchor-inline-label {
+  font-weight: 700;
+  font-size: 13px;
+  color: #3a2a00;
+  padding: 0 2px 0 4px;
 }
 
 .ap-btn {

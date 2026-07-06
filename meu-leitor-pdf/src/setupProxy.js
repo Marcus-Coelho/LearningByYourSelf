@@ -246,4 +246,17 @@ module.exports = function (app) {
     app.use(`/american1-video/${slug}`, express.static(path.join(american1PdfsRoot, folder), { fallthrough: false }));
     app.use(`/american1-video/${slug}`, notFoundOn404);
   });
+
+  // Curso "Grammar English Elementary": cada unit tem um par de PDFs de UMA
+  // página cada — Unit-<n>L.pdf (leitura/explicação) e Unit-<n>E.pdf
+  // (exercícios) — e um punhado de áudios curtos por unit, nomeados
+  // "<n><letra>-elem_murph_merged.mp3" (letra A, B, C... conforme o
+  // conteúdo daquela unit, ver src/grammar_elem_audio.json). Ao contrário do
+  // American1, o áudio aqui não fica ancorado sobre o PDF — é só um link
+  // simples com a letra ao lado do botão "Exercises" (ver App.js).
+  const grammarElemRoot = path.join(__dirname, '..', '..', 'Grammar Elemetary');
+  app.use('/grammar-elem-pages', express.static(path.join(grammarElemRoot, 'pdf'), { fallthrough: false }));
+  app.use('/grammar-elem-pages', notFoundOn404);
+  app.use('/grammar-elem-audio', express.static(path.join(grammarElemRoot, 'audio_files'), { fallthrough: false }));
+  app.use('/grammar-elem-audio', notFoundOn404);
 };
