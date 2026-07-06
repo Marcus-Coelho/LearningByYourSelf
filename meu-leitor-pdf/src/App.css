@@ -637,7 +637,28 @@ body {
 }
 
 /* Página "My Profile" — lista de botões de reset (dados locais, sem conta
-   nem servidor: cada um só apaga um pedaço específico do localStorage). */
+   nem servidor: cada um só apaga um pedaço específico do localStorage).
+   Fica sobre o fundo claro (.landing-page.vocabulary-mode), então ganha as
+   mesmas cores claras de .vocabulary-page/.course-links-panel — o texto
+   branco original (herdado de .landing-panel) ficava ilegível. Layout e
+   estrutura continuam os mesmos. */
+.landing-panel.profile-panel {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(27, 58, 94, 0.1);
+}
+
+.landing-panel.profile-panel .eyebrow {
+  color: var(--purple-700);
+}
+
+.landing-panel.profile-panel h1 {
+  color: #1b3a5e;
+}
+
+.landing-panel.profile-panel p {
+  color: rgba(27, 58, 94, 0.75);
+}
+
 .profile-panel {
   text-align: left;
   max-width: 640px;
@@ -751,6 +772,69 @@ body {
 .profile-reset-btn.primary:hover {
   background: rgba(139, 92, 246, 0.3);
   border-color: rgba(139, 92, 246, 0.8);
+}
+
+/* Cores claras do Profile (ver comentário em .landing-panel.profile-panel
+   acima) — mesmo layout, só troca as cores brancas/translúcidas pensadas
+   pro fundo roxo escuro por versões escuras legíveis no fundo claro. */
+.profile-panel .profile-course-head {
+  border-top-color: rgba(27, 58, 94, 0.15);
+}
+
+.profile-panel .profile-course-heading {
+  color: #1b3a5e;
+}
+
+.profile-panel .profile-course-toggle {
+  border-color: rgba(27, 58, 94, 0.25);
+  background: rgba(27, 58, 94, 0.05);
+  color: #1b3a5e;
+}
+
+.profile-panel .profile-course-toggle:hover {
+  background: rgba(27, 58, 94, 0.12);
+}
+
+.profile-panel .profile-reset-btn {
+  background: rgba(27, 58, 94, 0.05);
+  border-color: rgba(27, 58, 94, 0.12);
+  color: #1b3a5e;
+}
+
+.profile-panel .profile-reset-btn:hover {
+  background: rgba(27, 58, 94, 0.1);
+}
+
+.profile-panel .profile-reset-btn small {
+  color: rgba(27, 58, 94, 0.65);
+}
+
+.profile-panel .profile-reset-btn.danger {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(220, 38, 38, 0.35);
+}
+
+.profile-panel .profile-reset-btn.danger span {
+  color: #b91c1c;
+}
+
+.profile-panel .profile-reset-btn.danger:hover {
+  background: rgba(248, 113, 113, 0.2);
+  border-color: rgba(220, 38, 38, 0.6);
+}
+
+.profile-panel .profile-reset-btn.primary {
+  background: rgba(139, 92, 246, 0.14);
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
+.profile-panel .profile-reset-btn.primary span {
+  color: var(--purple-700);
+}
+
+.profile-panel .profile-reset-btn.primary:hover {
+  background: rgba(139, 92, 246, 0.22);
+  border-color: rgba(139, 92, 246, 0.6);
 }
 
 /* Página de cadastro/login (só nome) — trava de acesso aos cursos. */
