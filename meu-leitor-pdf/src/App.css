@@ -516,6 +516,17 @@ body {
   margin-top: 24px;
 }
 
+/* Separa os resets/exports de cada curso no Profile — cada curso tem seu
+   próprio progresso/score/notas, então cada um ganha sua própria seção com
+   cabeçalho, em vez de uma lista única de botões misturando os dois. */
+.profile-course-heading {
+  margin: 32px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  font-size: 18px;
+  color: #fff;
+}
+
 .profile-reset-btn {
   display: flex;
   flex-direction: column;

@@ -342,6 +342,8 @@ function App() {
   const [rightWidth, setRightWidth] = useState(650);
   const [exerciseRatings, setExerciseRatings] = useState({});
   const [visitedUnits, setVisitedUnits] = useState({});
+  const [american1UnitRatings, setAmerican1UnitRatings] = useState({});
+  const [american1VisitedUnits, setAmerican1VisitedUnits] = useState({});
   const layoutRef = useRef(null);
   const startDragRef = useRef(null);
 
@@ -432,6 +434,76 @@ function App() {
     ? Math.round((ratingValues.reduce((sum, value) => sum + value, 0) / ratingValues.length / 5) * 100)
     : null;
 
+  // Mesmo mecanismo de autoavaliação/progresso do curso Vocabulary, só que
+  // por unit (não por exercício — o American English Level 1 não tem
+  // exercícios numerados soltos) e com chaves totalmente separadas
+  // ("american1-rating:"/"american1-visitedUnits", em vez de "rating:"/
+  // "visitedUnits") para que os resets de cada curso, no Profile, não se
+  // misturem.
+  useEffect(() => {
+    if (!userName) {
+      setAmerican1UnitRatings({});
+      return;
+    }
+    try {
+      const prefix = userKey(userName, 'american1-rating:');
+      const loaded = {};
+      for (let i = 0; i < window.localStorage.length; i += 1) {
+        const key = window.localStorage.key(i);
+        if (key && key.startsWith(prefix)) {
+          const value = Number(window.localStorage.getItem(key));
+          if (value >= 1 && value <= 5) {
+            loaded[key.slice(prefix.length)] = value;
+          }
+        }
+      }
+      setAmerican1UnitRatings(loaded);
+    } catch (error) {
+      setAmerican1UnitRatings({});
+    }
+  }, [userName]);
+
+  useEffect(() => {
+    if (!userName) {
+      setAmerican1VisitedUnits({});
+      return;
+    }
+    try {
+      const raw = window.localStorage.getItem(userKey(userName, 'american1-visitedUnits'));
+      if (raw) {
+        const list = JSON.parse(raw);
+        const loaded = {};
+        list.forEach((unit) => {
+          loaded[unit] = true;
+        });
+        setAmerican1VisitedUnits(loaded);
+      } else {
+        setAmerican1VisitedUnits({});
+      }
+    } catch (error) {
+      setAmerican1VisitedUnits({});
+    }
+  }, [userName]);
+
+  const handleRateAmerican1Unit = (unit, value) => {
+    if (!unit || !userName) return;
+    setAmerican1UnitRatings((prev) => ({ ...prev, [unit]: value }));
+    try {
+      window.localStorage.setItem(userKey(userName, `american1-rating:${unit}`), String(value));
+    } catch (error) {
+      // Armazenamento indisponível — a nota fica só nesta sessão.
+    }
+  };
+
+  const american1RatingValues = Object.values(american1UnitRatings);
+  const american1ScorePercent = american1RatingValues.length > 0
+    ? Math.round((american1RatingValues.reduce((sum, value) => sum + value, 0) / american1RatingValues.length / 5) * 100)
+    : null;
+  const american1VisitedUnitsCount = Object.keys(american1VisitedUnits).length;
+  const american1ProgressPercent = american1UnitNumbers.length > 0
+    ? Math.round((american1VisitedUnitsCount / american1UnitNumbers.length) * 100)
+    : 0;
+
   useEffect(() => {
     return () => {
       if (pdfFileUrl?.startsWith('blob:')) {
@@ -474,6 +546,29 @@ function App() {
       return next;
     });
   }, [selectedUnit, activePage, userName]);
+
+  // Mesma ideia, para o American English Level 1: conta como visitada assim
+  // que a tela de unit (leitor de seção) é aberta.
+  useEffect(() => {
+    if (activePage !== 'american1-unit' || !selectedAmerican1Unit || !userName) {
+      return;
+    }
+    setAmerican1VisitedUnits((prev) => {
+      if (prev[selectedAmerican1Unit]) {
+        return prev;
+      }
+      const next = { ...prev, [selectedAmerican1Unit]: true };
+      try {
+        window.localStorage.setItem(
+          userKey(userName, 'american1-visitedUnits'),
+          JSON.stringify(Object.keys(next).map(Number)),
+        );
+      } catch (error) {
+        // Armazenamento indisponível — progresso não sobrevive a recarregar.
+      }
+      return next;
+    });
+  }, [selectedAmerican1Unit, activePage, userName]);
 
   const handlePdfChange = (event) => {
     const file = event.target.files?.[0];
@@ -616,6 +711,8 @@ function App() {
     }
     setActivePage('profile');
     setSelectedUnit(null);
+    setSelectedAmerican1Unit(null);
+    setSelectedAmerican1Section(null);
     setActiveCourseId(null);
   };
 
@@ -676,6 +773,8 @@ function App() {
     }
     setActivePage('register');
     setSelectedUnit(null);
+    setSelectedAmerican1Unit(null);
+    setSelectedAmerican1Section(null);
     setActiveCourseId(null);
   };
 
@@ -683,16 +782,20 @@ function App() {
   // um prefixo (ex.: "answers:", "rating:", "notes:") — usado pelos botões
   // de reset do perfil. Escopado por usuário para não apagar o progresso de
   // outra pessoa que também usa este navegador.
-  const removeLocalStorageKeysWithPrefix = (prefix) => {
+  // `exclude`: pula chaves cujo restante (depois do prefixo) comece com esse
+  // valor — usado só para separar o reset de notas do curso Vocabulary do
+  // American English Level 1, já que as duas compartilham o mesmo prefixo
+  // "notes:" (ver handleExportNotes).
+  const removeLocalStorageKeysWithPrefix = (prefix, exclude) => {
     if (!userName) return;
     try {
       const scopedPrefix = userKey(userName, prefix);
       const keysToRemove = [];
       for (let i = 0; i < window.localStorage.length; i += 1) {
         const key = window.localStorage.key(i);
-        if (key && key.startsWith(scopedPrefix)) {
-          keysToRemove.push(key);
-        }
+        if (!key || !key.startsWith(scopedPrefix)) continue;
+        if (exclude && key.slice(scopedPrefix.length).startsWith(exclude)) continue;
+        keysToRemove.push(key);
       }
       keysToRemove.forEach((key) => window.localStorage.removeItem(key));
     } catch (error) {
@@ -702,8 +805,10 @@ function App() {
 
   // Junta as anotações ("My Notes") de todas as units num único .txt e
   // dispara o download. As notas são salvas como HTML (negrito/marca-texto),
-  // então convertemos para texto puro antes de exportar.
-  const handleExportNotes = () => {
+  // então convertemos para texto puro antes de exportar. `courseFilter`
+  // ('vocabulary' | 'american1' | undefined) limita o export a um curso —
+  // usado pelos botões de export separados por curso no Profile.
+  const handleExportNotes = (courseFilter) => {
     if (!userName) return;
     try {
       const entries = [];
@@ -738,6 +843,13 @@ function App() {
             title: `American English Level 1 - Unit ${american1Match[1]}`,
             html,
           });
+        } else if (remainder === 'american1-transcriptions') {
+          entries.push({
+            course: 'american1',
+            unit: 'transcriptions',
+            title: 'American English Level 1 - Transcriptions',
+            html,
+          });
         } else {
           const unit = Number(remainder);
           entries.push({
@@ -749,12 +861,16 @@ function App() {
         }
       }
 
-      if (entries.length === 0) {
+      const filteredEntries = courseFilter
+        ? entries.filter((entry) => entry.course === courseFilter)
+        : entries;
+
+      if (filteredEntries.length === 0) {
         window.alert('No lesson notes saved yet.');
         return;
       }
 
-      entries.sort((a, b) => (
+      filteredEntries.sort((a, b) => (
         a.course.localeCompare(b.course)
         || (typeof a.unit === 'number' && typeof b.unit === 'number' ? a.unit - b.unit : 0)
         || String(a.unit).localeCompare(String(b.unit))
@@ -774,7 +890,7 @@ function App() {
           .trim();
       };
 
-      const content = entries
+      const content = filteredEntries
         .map(({ title, html }) => {
           const text = htmlToText(html) || '(empty)';
           return `${title}\n${'-'.repeat(title.length)}\n${text}\n`;
@@ -785,7 +901,11 @@ function App() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'my-notes.txt';
+      link.download = courseFilter === 'american1'
+        ? 'my-notes-american-english-level-1.txt'
+        : courseFilter === 'vocabulary'
+          ? 'my-notes-vocabulary-pre-intermediate.txt'
+          : 'my-notes.txt';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -819,7 +939,9 @@ function App() {
     if (!window.confirm('Reset your "My Notes" for every unit? This cannot be undone.')) {
       return;
     }
-    removeLocalStorageKeysWithPrefix('notes:');
+    // exclude 'american1' — essas notas têm seu próprio botão de reset, ver
+    // handleResetAmerican1Notes.
+    removeLocalStorageKeysWithPrefix('notes:', 'american1');
   };
 
   const handleResetExerciseAnswers = () => {
@@ -830,7 +952,7 @@ function App() {
   };
 
   const handleResetAll = () => {
-    if (!window.confirm('Reset EVERYTHING — progress, self-evaluation, lesson notes and exercise answers? This cannot be undone.')) {
+    if (!window.confirm('Reset EVERYTHING for Vocabulary - English Pre Intermediate — progress, self-evaluation, lesson notes and exercise answers? This cannot be undone.')) {
       return;
     }
     setVisitedUnits({});
@@ -841,8 +963,54 @@ function App() {
       // Armazenamento indisponível.
     }
     removeLocalStorageKeysWithPrefix('rating:');
-    removeLocalStorageKeysWithPrefix('notes:');
+    removeLocalStorageKeysWithPrefix('notes:', 'american1');
     removeLocalStorageKeysWithPrefix('answers:');
+  };
+
+  // Equivalentes dos resets acima, só que para o American English Level 1 —
+  // chaves totalmente separadas (ver american1UnitRatings/american1VisitedUnits
+  // e o comentário em removeLocalStorageKeysWithPrefix), então resetar um
+  // curso nunca afeta o progresso do outro.
+  const handleResetAmerican1Progress = () => {
+    if (!window.confirm('Reset your American English Level 1 unit progress? This cannot be undone.')) {
+      return;
+    }
+    setAmerican1VisitedUnits({});
+    try {
+      window.localStorage.removeItem(userKey(userName, 'american1-visitedUnits'));
+    } catch (error) {
+      // Armazenamento indisponível.
+    }
+  };
+
+  const handleResetAmerican1SelfEvaluation = () => {
+    if (!window.confirm('Reset your American English Level 1 self-evaluation score and every star rating you gave? This cannot be undone.')) {
+      return;
+    }
+    setAmerican1UnitRatings({});
+    removeLocalStorageKeysWithPrefix('american1-rating:');
+  };
+
+  const handleResetAmerican1Notes = () => {
+    if (!window.confirm('Reset your American English Level 1 "My Notes" for every unit and reference page? This cannot be undone.')) {
+      return;
+    }
+    removeLocalStorageKeysWithPrefix('notes:american1');
+  };
+
+  const handleResetAmerican1All = () => {
+    if (!window.confirm('Reset EVERYTHING for American English Level 1 — progress, self-evaluation and lesson notes? This cannot be undone.')) {
+      return;
+    }
+    setAmerican1VisitedUnits({});
+    setAmerican1UnitRatings({});
+    try {
+      window.localStorage.removeItem(userKey(userName, 'american1-visitedUnits'));
+    } catch (error) {
+      // Armazenamento indisponível.
+    }
+    removeLocalStorageKeysWithPrefix('american1-rating:');
+    removeLocalStorageKeysWithPrefix('notes:american1');
   };
 
   const clampPanelWidths = (nextRightWidth) => {
@@ -978,6 +1146,31 @@ function App() {
               <span className="header-stat-label">Your Score</span>
               <span className="header-stat-value">
                 {overallScorePercent !== null ? `${overallScorePercent}%` : '—'}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {selectedAmerican1Unit && (
+          <div className="header-stats-card">
+            <div
+              className="header-stat-cell"
+              title={`${american1VisitedUnitsCount} of ${american1UnitNumbers.length} units visited`}
+            >
+              <span className="header-stat-label">Your Progress</span>
+              <span className="header-stat-value">{american1ProgressPercent}%</span>
+            </div>
+            <div
+              className="header-stat-cell"
+              title={
+                american1ScorePercent !== null
+                  ? `Average of ${american1RatingValues.length} self-rated unit${american1RatingValues.length > 1 ? 's' : ''}`
+                  : 'No unit self-rated yet'
+              }
+            >
+              <span className="header-stat-label">Your Score</span>
+              <span className="header-stat-value">
+                {american1ScorePercent !== null ? `${american1ScorePercent}%` : '—'}
               </span>
             </div>
           </div>
@@ -1358,6 +1551,8 @@ function App() {
                   hasAnswers={Boolean(answersUrl)}
                   showAnswers={showAmerican1Answers}
                   onToggleAnswers={() => setShowAmerican1Answers((prev) => !prev)}
+                  rating={american1UnitRatings[selectedAmerican1Unit] || 0}
+                  onRate={(value) => handleRateAmerican1Unit(selectedAmerican1Unit, value)}
                 />
               </div>
             </aside>
@@ -1470,14 +1665,10 @@ function App() {
           </aside>
         </main>
       ) : activePage === 'profile' ? (
-        <main className="landing-page">
+        <main className="landing-page vocabulary-mode">
           <div className="landing-panel profile-panel">
             <p className="eyebrow">My Profile</p>
             <h1>{userName}</h1>
-            <p className="landing-meta">
-              Your Score: <strong>{overallScorePercent !== null ? `${overallScorePercent}%` : '—'}</strong>
-              {' '}({ratingValues.length} exercise{ratingValues.length === 1 ? '' : 's'} self-rated)
-            </p>
             <p className="landing-meta">
               Everything below is stored only in this browser (no account, no server) — these
               buttons erase it for good.
@@ -1488,7 +1679,16 @@ function App() {
                 <span>Switch user</span>
                 <small>Log out of "{userName}" and register or continue as someone else on this browser.</small>
               </button>
-              <button type="button" className="profile-reset-btn primary" onClick={handleExportNotes}>
+            </div>
+
+            <h2 className="profile-course-heading">{courses.vocabulary.title}</h2>
+            <p className="landing-meta">
+              Your Score: <strong>{overallScorePercent !== null ? `${overallScorePercent}%` : '—'}</strong>
+              {' '}({ratingValues.length} exercise{ratingValues.length === 1 ? '' : 's'} self-rated)
+              {' '}· Progress: <strong>{visitedUnitsCount}%</strong>
+            </p>
+            <div className="profile-reset-list">
+              <button type="button" className="profile-reset-btn primary" onClick={() => handleExportNotes('vocabulary')}>
                 <span>Export lesson notes (.txt)</span>
                 <small>Downloads "My Notes" from every unit as a single plain-text file.</small>
               </button>
@@ -1509,6 +1709,35 @@ function App() {
                 <small>Clears the written answer saved for every exercise.</small>
               </button>
               <button type="button" className="profile-reset-btn danger" onClick={handleResetAll}>
+                <span>Reset All</span>
+                <small>Everything above, all at once.</small>
+              </button>
+            </div>
+
+            <h2 className="profile-course-heading">{courses.american1.title}</h2>
+            <p className="landing-meta">
+              Your Score: <strong>{american1ScorePercent !== null ? `${american1ScorePercent}%` : '—'}</strong>
+              {' '}({american1RatingValues.length} unit{american1RatingValues.length === 1 ? '' : 's'} self-rated)
+              {' '}· Progress: <strong>{american1ProgressPercent}%</strong>
+            </p>
+            <div className="profile-reset-list">
+              <button type="button" className="profile-reset-btn primary" onClick={() => handleExportNotes('american1')}>
+                <span>Export lesson notes (.txt)</span>
+                <small>Downloads "My Notes" from every unit and reference page as a single plain-text file.</small>
+              </button>
+              <button type="button" className="profile-reset-btn" onClick={handleResetAmerican1Progress}>
+                <span>Reset unit progress</span>
+                <small>Clears which units count toward "Your Progress".</small>
+              </button>
+              <button type="button" className="profile-reset-btn" onClick={handleResetAmerican1SelfEvaluation}>
+                <span>Reset self-evaluation</span>
+                <small>Clears "Your Score" and every star rating given per unit.</small>
+              </button>
+              <button type="button" className="profile-reset-btn" onClick={handleResetAmerican1Notes}>
+                <span>Reset lesson notes</span>
+                <small>Clears "My Notes" for every unit and reference page.</small>
+              </button>
+              <button type="button" className="profile-reset-btn danger" onClick={handleResetAmerican1All}>
                 <span>Reset All</span>
                 <small>Everything above, all at once.</small>
               </button>
@@ -2351,7 +2580,16 @@ function AnswerArea({
 const NOTES_HIGHLIGHT_COLOR = '#ffe066';
 const NOTES_HIGHLIGHT_RGB = 'rgb(255, 224, 102)';
 
-function UnitNotes({ unit, userName, storageKeyBase, hasAnswers, showAnswers, onToggleAnswers }) {
+function UnitNotes({
+  unit,
+  userName,
+  storageKeyBase,
+  hasAnswers,
+  showAnswers,
+  onToggleAnswers,
+  rating,
+  onRate,
+}) {
   const editorRef = useRef(null);
   const [justSaved, setJustSaved] = useState(false);
   const storageKey = userKey(userName, storageKeyBase || `notes:${unit}`);
@@ -2482,6 +2720,27 @@ function UnitNotes({ unit, userName, storageKeyBase, hasAnswers, showAnswers, on
         suppressContentEditableWarning
         data-placeholder="Write anything you want to remember about this unit..."
       />
+
+      {onRate && (
+        <div className="rating-field">
+          <span>Self-evaluation for this unit</span>
+          <div className="rating-stars" role="radiogroup" aria-label="Rate your own performance on this unit, from 1 to 5 stars">
+            {[1, 2, 3, 4, 5].map((value) => (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={rating === value}
+                aria-label={`${value} star${value > 1 ? 's' : ''}`}
+                className={`rating-star${rating >= value ? ' is-filled' : ''}`}
+                onClick={() => onRate(value)}
+              >
+                ★
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="answers-actions">
         <button
