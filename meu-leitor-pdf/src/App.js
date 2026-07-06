@@ -221,6 +221,11 @@ const american1UnitNumbers = Object.keys(american1SectionsByUnit)
   .map(Number)
   .sort((a, b) => a - b);
 
+// Progresso é contado por seção (1A, 1B, ... Practical English/Revise de
+// cada unit), não por unit — as units são longas, então marcar a unit
+// inteira como "vista" ao abrir a primeira seção inflava o progresso.
+const american1SectionsTotal = american1Index.length;
+
 // Links de referência (Grammar/Vocabulary/Sound Bank/Communication/Writing)
 // de cada seção A/B/C — ver american1_references.json, derivado de
 // pages_others.txt cruzado com american1_index.json. Indexado por
@@ -282,6 +287,12 @@ const courses = {
 // Grammar Elemetary/audio_files).
 const GRAMMAR_ELEM_UNIT_COUNT = 115;
 const grammarElemUnitNumbers = Array.from({ length: GRAMMAR_ELEM_UNIT_COUNT }, (_, i) => i + 1);
+
+// Appendixes do Grammar English Elementary: ficam depois da última unit,
+// mas não contam pra "Your Progress" (ver src/setupProxy.js para como as
+// páginas de cada appendix são resolvidas a partir de Appendixes/*.pdf).
+const GRAMMAR_ELEM_APPENDIX_COUNT = 7;
+const grammarElemAppendixNumbers = Array.from({ length: GRAMMAR_ELEM_APPENDIX_COUNT }, (_, i) => i + 1);
 
 const renderPdfUpload = (onChange, label = 'Load PDF') => (
   <label className="upload-button">
@@ -350,8 +361,10 @@ function App() {
   const [selectedAmerican1Section, setSelectedAmerican1Section] = useState(null);
   const [selectedAmerican1Reference, setSelectedAmerican1Reference] = useState(null);
   const [selectedGrammarElemUnit, setSelectedGrammarElemUnit] = useState(null);
+  const [selectedGrammarElemAppendix, setSelectedGrammarElemAppendix] = useState(null);
   const [showAnswers, setShowAnswers] = useState(false);
   const [showAmerican1Answers, setShowAmerican1Answers] = useState(false);
+  const [showGrammarElemAnswers, setShowGrammarElemAnswers] = useState(false);
   // Cada curso do Profile abre/fecha independente (chave = id do curso em
   // `courses`) — fechado por padrão, deixando só o título e a linha de
   // score/progresso visíveis. Objeto (não dois booleans soltos) porque mais
@@ -363,7 +376,7 @@ function App() {
   const [exerciseRatings, setExerciseRatings] = useState({});
   const [visitedUnits, setVisitedUnits] = useState({});
   const [american1UnitRatings, setAmerican1UnitRatings] = useState({});
-  const [american1VisitedUnits, setAmerican1VisitedUnits] = useState({});
+  const [american1VisitedSections, setAmerican1VisitedSections] = useState({});
   const [grammarElemUnitRatings, setGrammarElemUnitRatings] = useState({});
   const [grammarElemVisitedUnits, setGrammarElemVisitedUnits] = useState({});
   const layoutRef = useRef(null);
@@ -487,7 +500,7 @@ function App() {
 
   useEffect(() => {
     if (!userName) {
-      setAmerican1VisitedUnits({});
+      setAmerican1VisitedSections({});
       return;
     }
     try {
@@ -495,15 +508,15 @@ function App() {
       if (raw) {
         const list = JSON.parse(raw);
         const loaded = {};
-        list.forEach((unit) => {
-          loaded[unit] = true;
+        list.forEach((sectionKey) => {
+          loaded[sectionKey] = true;
         });
-        setAmerican1VisitedUnits(loaded);
+        setAmerican1VisitedSections(loaded);
       } else {
-        setAmerican1VisitedUnits({});
+        setAmerican1VisitedSections({});
       }
     } catch (error) {
-      setAmerican1VisitedUnits({});
+      setAmerican1VisitedSections({});
     }
   }, [userName]);
 
@@ -521,9 +534,9 @@ function App() {
   const american1ScorePercent = american1RatingValues.length > 0
     ? Math.round((american1RatingValues.reduce((sum, value) => sum + value, 0) / american1RatingValues.length / 5) * 100)
     : null;
-  const american1VisitedUnitsCount = Object.keys(american1VisitedUnits).length;
-  const american1ProgressPercent = american1UnitNumbers.length > 0
-    ? Math.round((american1VisitedUnitsCount / american1UnitNumbers.length) * 100)
+  const american1VisitedSectionsCount = Object.keys(american1VisitedSections).length;
+  const american1ProgressPercent = american1SectionsTotal > 0
+    ? Math.round((american1VisitedSectionsCount / american1SectionsTotal) * 100)
     : 0;
 
   // Mesmo mecanismo, agora para o Grammar English Elementary — chaves
@@ -637,27 +650,30 @@ function App() {
   }, [selectedUnit, activePage, userName]);
 
   // Mesma ideia, para o American English Level 1: conta como visitada assim
-  // que a tela de unit (leitor de seção) é aberta.
+  // que a tela de leitura de uma seção (1A, 1B, Practical English/Revise...)
+  // é aberta — cada seção conta um acesso, não a unit inteira, já que as
+  // units são longas (3-4 seções cada).
   useEffect(() => {
-    if (activePage !== 'american1-unit' || !selectedAmerican1Unit || !userName) {
+    if (activePage !== 'american1-unit' || !selectedAmerican1Unit || !selectedAmerican1Section || !userName) {
       return;
     }
-    setAmerican1VisitedUnits((prev) => {
-      if (prev[selectedAmerican1Unit]) {
+    const sectionKey = `${selectedAmerican1Unit}|${selectedAmerican1Section}`;
+    setAmerican1VisitedSections((prev) => {
+      if (prev[sectionKey]) {
         return prev;
       }
-      const next = { ...prev, [selectedAmerican1Unit]: true };
+      const next = { ...prev, [sectionKey]: true };
       try {
         window.localStorage.setItem(
           userKey(userName, 'american1-visitedUnits'),
-          JSON.stringify(Object.keys(next).map(Number)),
+          JSON.stringify(Object.keys(next)),
         );
       } catch (error) {
         // Armazenamento indisponível — progresso não sobrevive a recarregar.
       }
       return next;
     });
-  }, [selectedAmerican1Unit, activePage, userName]);
+  }, [selectedAmerican1Unit, selectedAmerican1Section, activePage, userName]);
 
   // Mesma ideia, para o Grammar English Elementary.
   useEffect(() => {
@@ -736,6 +752,7 @@ function App() {
     setSelectedAmerican1Unit(null);
     setSelectedAmerican1Section(null);
     setSelectedGrammarElemUnit(null);
+    setSelectedGrammarElemAppendix(null);
     setActiveCourseId(null);
   };
 
@@ -753,6 +770,7 @@ function App() {
     setSelectedAmerican1Unit(null);
     setSelectedAmerican1Section(null);
     setSelectedGrammarElemUnit(null);
+    setSelectedGrammarElemAppendix(null);
     setActiveCourseId(null);
   };
 
@@ -807,23 +825,40 @@ function App() {
     event.preventDefault();
     setActivePage('grammarElem');
     setSelectedGrammarElemUnit(null);
+    setSelectedGrammarElemAppendix(null);
     setActiveCourseId('grammarElem');
+  };
+
+  // Link "All Units" no header: some direto pra tela de escolha de unit do
+  // curso em que o usuário já está, em vez de mandar pra "Courses" de novo.
+  const handleAllUnits = (event) => {
+    event.preventDefault();
+    if (activeCourseId === 'vocabulary') {
+      handleVocabulary(event);
+    } else if (activeCourseId === 'american1') {
+      handleAmerican1(event);
+    } else if (activeCourseId === 'grammarElem') {
+      handleGrammarElem(event);
+    }
   };
 
   const handleGrammarElemUnitSelect = (event, unit) => {
     event.preventDefault();
     setActivePage('grammarElem-unit');
     setSelectedGrammarElemUnit(unit);
+    setShowGrammarElemAnswers(false);
   };
 
   const handlePreviousGrammarElemUnit = () => {
     if (!selectedGrammarElemUnit || selectedGrammarElemUnit <= 1) return;
     setSelectedGrammarElemUnit(selectedGrammarElemUnit - 1);
+    setShowGrammarElemAnswers(false);
   };
 
   const handleNextGrammarElemUnit = () => {
     if (!selectedGrammarElemUnit || selectedGrammarElemUnit >= GRAMMAR_ELEM_UNIT_COUNT) return;
     setSelectedGrammarElemUnit(selectedGrammarElemUnit + 1);
+    setShowGrammarElemAnswers(false);
   };
 
   const handleOpenGrammarElemExercise = () => {
@@ -832,6 +867,28 @@ function App() {
 
   const handleBackToGrammarElemUnit = () => {
     setActivePage('grammarElem-unit');
+  };
+
+  // Appendixes: ficam depois da última unit na lista, mas são uma trilha à
+  // parte — sem áudio, sem exercícios, e (de propósito) sem marcar
+  // "visited" em nenhum lugar, então nunca entram na contabilidade de
+  // "Your Progress" da unit.
+  const handleGrammarElemAppendixSelect = (event, appendixNumber) => {
+    event.preventDefault();
+    setActivePage('grammarElem-appendix');
+    setSelectedGrammarElemAppendix(appendixNumber);
+    setSelectedGrammarElemUnit(null);
+    setActiveCourseId('grammarElem');
+  };
+
+  const handlePreviousGrammarElemAppendix = () => {
+    if (!selectedGrammarElemAppendix || selectedGrammarElemAppendix <= 1) return;
+    setSelectedGrammarElemAppendix(selectedGrammarElemAppendix - 1);
+  };
+
+  const handleNextGrammarElemAppendix = () => {
+    if (!selectedGrammarElemAppendix || selectedGrammarElemAppendix >= GRAMMAR_ELEM_APPENDIX_COUNT) return;
+    setSelectedGrammarElemAppendix(selectedGrammarElemAppendix + 1);
   };
 
   const handleCloseAmerican1Reference = () => {
@@ -858,6 +915,7 @@ function App() {
     setSelectedAmerican1Unit(null);
     setSelectedAmerican1Section(null);
     setSelectedGrammarElemUnit(null);
+    setSelectedGrammarElemAppendix(null);
     setActiveCourseId(null);
   };
 
@@ -921,6 +979,7 @@ function App() {
     setSelectedAmerican1Unit(null);
     setSelectedAmerican1Section(null);
     setSelectedGrammarElemUnit(null);
+    setSelectedGrammarElemAppendix(null);
     setActiveCourseId(null);
   };
 
@@ -1116,14 +1175,14 @@ function App() {
   };
 
   // Equivalentes dos resets acima, só que para o American English Level 1 —
-  // chaves totalmente separadas (ver american1UnitRatings/american1VisitedUnits
+  // chaves totalmente separadas (ver american1UnitRatings/american1VisitedSections
   // e o comentário em removeLocalStorageKeysWithPrefix), então resetar um
   // curso nunca afeta o progresso do outro.
   const handleResetAmerican1Progress = () => {
-    if (!window.confirm('Reset your American English Level 1 unit progress? This cannot be undone.')) {
+    if (!window.confirm('Reset your American English Level 1 section progress? This cannot be undone.')) {
       return;
     }
-    setAmerican1VisitedUnits({});
+    setAmerican1VisitedSections({});
     try {
       window.localStorage.removeItem(userKey(userName, 'american1-visitedUnits'));
     } catch (error) {
@@ -1150,7 +1209,7 @@ function App() {
     if (!window.confirm('Reset EVERYTHING for American English Level 1 — progress, self-evaluation and lesson notes? This cannot be undone.')) {
       return;
     }
-    setAmerican1VisitedUnits({});
+    setAmerican1VisitedSections({});
     setAmerican1UnitRatings({});
     try {
       window.localStorage.removeItem(userKey(userName, 'american1-visitedUnits'));
@@ -1298,7 +1357,8 @@ function App() {
 
   // Verdadeiro em qualquer tela "dentro" de um curso (unit, exercícios,
   // página de teste do Course 2...), não só nas telas de unit/exercícios.
-  const insideCourse = Boolean(selectedUnit) || Boolean(selectedAmerican1Unit) || Boolean(selectedGrammarElemUnit);
+  const insideCourse = Boolean(selectedUnit) || Boolean(selectedAmerican1Unit)
+    || Boolean(selectedGrammarElemUnit) || Boolean(selectedGrammarElemAppendix);
   const activeCourse = activeCourseId ? courses[activeCourseId] : null;
   const visitedUnitsCount = Object.keys(visitedUnits).length;
 
@@ -1313,6 +1373,7 @@ function App() {
           {insideCourse ? (
             <ol>
               <li className="menu-item"><a href="#0" onClick={handleCourses}>Courses</a></li>
+              <li className="menu-item"><a href="#0" onClick={handleAllUnits}>All Units</a></li>
             </ol>
           ) : (
             <ol>
@@ -1357,7 +1418,7 @@ function App() {
           <div className="header-stats-card">
             <div
               className="header-stat-cell"
-              title={`${american1VisitedUnitsCount} of ${american1UnitNumbers.length} units visited`}
+              title={`${american1VisitedSectionsCount} of ${american1SectionsTotal} sections visited`}
             >
               <span className="header-stat-label">Your Progress</span>
               <span className="header-stat-value">{american1ProgressPercent}%</span>
@@ -1626,6 +1687,19 @@ function App() {
                 </a>
               ))}
             </div>
+            <h2 className="vocabulary-title">Appendixes</h2>
+            <div className="vocabulary-list grammar-elem-appendix-list" role="list">
+              {grammarElemAppendixNumbers.map((appendixNumber) => (
+                <a
+                  key={appendixNumber}
+                  className="vocabulary-link"
+                  href={`#grammarElem-appendix-${appendixNumber}`}
+                  onClick={(event) => handleGrammarElemAppendixSelect(event, appendixNumber)}
+                >
+                  <span>Appendix {appendixNumber}</span>
+                </a>
+              ))}
+            </div>
           </div>
         </main>
       ) : activePage === 'grammarElem-unit' ? (() => {
@@ -1678,7 +1752,7 @@ function App() {
               </div>
 
               {fileUrl ? (
-                <PdfWorkspace key={fileUrl} fileUrl={fileUrl} defaultScale={1.5} />
+                <PdfWorkspace key={fileUrl} fileUrl={fileUrl} defaultScale={1.3} />
               ) : (
                 <div className="pdf-empty-state">
                   <p className="eyebrow">No unit</p>
@@ -1711,6 +1785,7 @@ function App() {
       })() : activePage === 'grammarElem-exercise' ? (() => {
         const unit = selectedGrammarElemUnit;
         const fileUrl = unit ? `/grammar-elem-pages/Unit-${unit}E.pdf` : '';
+        const answersUrl = unit ? `/grammar-elem-pages/answers/${unit}` : '';
 
         return (
           <main
@@ -1731,11 +1806,33 @@ function App() {
               </div>
 
               {fileUrl ? (
-                <PdfWorkspace key={fileUrl} fileUrl={fileUrl} defaultScale={1.5} />
+                <PdfWorkspace key={fileUrl} fileUrl={fileUrl} defaultScale={1.3} />
               ) : (
                 <div className="pdf-empty-state">
                   <p className="eyebrow">No unit</p>
                   <h1>No unit selected</h1>
+                </div>
+              )}
+
+              {showGrammarElemAnswers && answersUrl && (
+                <div className="section-answers-strip">
+                  <div className="section-answers-strip-head">
+                    <span>Answer key</span>
+                    <button
+                      type="button"
+                      className="section-answers-strip-close"
+                      onClick={() => setShowGrammarElemAnswers(false)}
+                      aria-label="Close answers"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <iframe
+                    key={answersUrl}
+                    src={answersUrl}
+                    title="Answer key"
+                    className="section-answers-strip-frame"
+                  />
                 </div>
               )}
             </section>
@@ -1762,14 +1859,77 @@ function App() {
                     handleNextGrammarElemUnit();
                     setActivePage('grammarElem-unit');
                   }}
-                  showAnswers={false}
-                  hasAnswer={false}
-                  onToggleAnswers={() => {}}
+                  showAnswers={showGrammarElemAnswers}
+                  hasAnswer={Boolean(answersUrl)}
+                  onToggleAnswers={() => setShowGrammarElemAnswers((prev) => !prev)}
                   rating={grammarElemUnitRatings[unit] || 0}
                   onRate={(value) => handleRateGrammarElemUnit(unit, value)}
                   userName={userName}
                 />
               )}
+            </aside>
+          </main>
+        );
+      })() : activePage === 'grammarElem-appendix' ? (() => {
+        const appendixNumber = selectedGrammarElemAppendix;
+        const fileUrl = appendixNumber ? `/grammar-elem-pages/appendix/${appendixNumber}` : '';
+
+        return (
+          <main
+            className="main-panels"
+            ref={layoutRef}
+            style={{
+              gridTemplateColumns: `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`,
+            }}
+          >
+            <section className="pdf-panel">
+              <div className="pdf-toolbar pdf-toolbar-left">
+                <div className="pdf-toolbar-nav">
+                  <button
+                    type="button"
+                    className="upload-button"
+                    onClick={handlePreviousGrammarElemAppendix}
+                    disabled={!appendixNumber || appendixNumber <= 1}
+                  >
+                    Previous Appendix
+                  </button>
+                  <button
+                    type="button"
+                    className="upload-button"
+                    onClick={handleNextGrammarElemAppendix}
+                    disabled={!appendixNumber || appendixNumber >= GRAMMAR_ELEM_APPENDIX_COUNT}
+                  >
+                    Next Appendix
+                  </button>
+                </div>
+              </div>
+
+              {fileUrl ? (
+                <PdfWorkspace key={fileUrl} fileUrl={fileUrl} defaultScale={1.3} />
+              ) : (
+                <div className="pdf-empty-state">
+                  <p className="eyebrow">No appendix</p>
+                  <h1>No appendix selected</h1>
+                </div>
+              )}
+            </section>
+
+            <button
+              className="resize-handle"
+              type="button"
+              aria-label="Resize right column"
+              onPointerDown={startPanelResize}
+            />
+
+            <aside className="side-panel right-panel">
+              <div className="panel-content related-panel">
+                <UnitNotes
+                  key={appendixNumber}
+                  unit={`appendix-${appendixNumber}`}
+                  userName={userName}
+                  storageKeyBase={`notes:grammarElem:appendix-${appendixNumber}`}
+                />
+              </div>
             </aside>
           </main>
         );
@@ -2145,8 +2305,8 @@ function App() {
                   <small>Downloads "My Notes" from every unit and reference page as a single plain-text file.</small>
                 </button>
                 <button type="button" className="profile-reset-btn" onClick={handleResetAmerican1Progress}>
-                  <span>Reset unit progress</span>
-                  <small>Clears which units count toward "Your Progress".</small>
+                  <span>Reset section progress</span>
+                  <small>Clears which sections count toward "Your Progress".</small>
                 </button>
                 <button type="button" className="profile-reset-btn" onClick={handleResetAmerican1SelfEvaluation}>
                   <span>Reset self-evaluation</span>

@@ -255,6 +255,118 @@ module.exports = function (app) {
   // American1, o áudio aqui não fica ancorado sobre o PDF — é só um link
   // simples com a letra ao lado do botão "Exercises" (ver App.js).
   const grammarElemRoot = path.join(__dirname, '..', '..', 'Grammar Elemetary');
+
+  // Respostas ("Show Answers", igual ao American1): o gabarito bruto está em
+  // answers_pdf/ como um PDF de UMA página por arquivo (confirmado com
+  // getPageCount — todo arquivo tem exatamente 1 página), e cada página
+  // impressa traz as respostas de várias units juntas (ex.: "answer 24p2 25
+  // 26 27 28 29p1.pdf" = uma página só, com o fim da unit 24, as units 25-28
+  // inteiras e o início da unit 29). Sufixo "p1"/"p2" marca a unit cuja
+  // resposta continua na página seguinte/anterior (por isso sempre aparece
+  // no primeiro ou último token do arquivo) — nesse caso a resposta da unit
+  // é a página inteira de 2 arquivos diferentes, não 2 páginas do mesmo
+  // arquivo. Sem sufixo, a unit inteira está nessa única página.
+  const grammarElemAnswersRoot = path.join(grammarElemRoot, 'answers_pdf');
+
+  const parseGrammarElemAnswerTokens = (filename) => {
+    const match = filename.match(/^answer (.+)\.pdf$/i);
+    if (!match) return null;
+    return match[1].trim().split(/\s+/).map((token) => {
+      const tokenMatch = token.match(/^(\d+)(p1|p2)?$/);
+      return tokenMatch ? { unit: Number(tokenMatch[1]), part: tokenMatch[2] || null } : null;
+    });
+  };
+
+  const buildGrammarElemAnswersMap = () => {
+    const map = {};
+    let files = [];
+    try {
+      files = fs.readdirSync(grammarElemAnswersRoot).filter((name) => name.toLowerCase().endsWith('.pdf'));
+    } catch (error) {
+      return map;
+    }
+    files.forEach((file) => {
+      const tokens = parseGrammarElemAnswerTokens(file);
+      if (!tokens) return;
+      tokens.forEach((token) => {
+        if (!token) return;
+        // Cada arquivo tem 1 página só, então a página da unit dentro do
+        // arquivo é sempre a primeira (índice 0) — não a posição do token.
+        const entry = { file, page: 1, part: token.part };
+        (map[token.unit] = map[token.unit] || []).push(entry);
+      });
+    });
+    // "p1" sempre antes de "p2" na resposta final, mesmo que a ordem de
+    // leitura dos arquivos no disco não garanta isso.
+    Object.values(map).forEach((entries) => {
+      entries.sort((a, b) => (a.part === 'p2' ? 1 : 0) - (b.part === 'p2' ? 1 : 0));
+    });
+    return map;
+  };
+
+  const grammarElemAnswersMap = buildGrammarElemAnswersMap();
+
+  app.get('/grammar-elem-pages/answers/:unit', async (req, res) => {
+    const unit = Number(req.params.unit);
+    const entries = grammarElemAnswersMap[unit];
+    if (!Number.isInteger(unit) || !entries || entries.length === 0) {
+      res.status(404).end();
+      return;
+    }
+    try {
+      const merged = await PDFDocument.create();
+      for (const entry of entries) {
+        const bytes = fs.readFileSync(path.join(grammarElemAnswersRoot, entry.file));
+        const source = await PDFDocument.load(bytes);
+        const [copiedPage] = await merged.copyPages(source, [entry.page - 1]);
+        merged.addPage(copiedPage);
+      }
+      const mergedBytes = await merged.save();
+      res.type('application/pdf').send(Buffer.from(mergedBytes));
+    } catch (error) {
+      res.status(404).end();
+    }
+  });
+
+  // Appendixes (1 a 7): ficam depois da última unit na lista, mas fora da
+  // contabilidade de progresso (ver App.js — a tela deles nunca marca
+  // "visited"). Cada um tem 1 ou 2 páginas em arquivos separados
+  // ("appendix <n> p1.pdf" / "appendix <n> p2.pdf" — nunca mais que 2).
+  // Registrado ANTES do express.static abaixo: senão o fallback 404 dele
+  // intercepta "/grammar-elem-pages/appendix/*" antes de chegar aqui.
+  const grammarElemAppendixesRoot = path.join(grammarElemRoot, 'Appendixes');
+
+  app.get('/grammar-elem-pages/appendix/:number', async (req, res) => {
+    const number = Number(req.params.number);
+    if (!Number.isInteger(number) || number < 1) {
+      res.status(400).end();
+      return;
+    }
+    const p1Path = path.join(grammarElemAppendixesRoot, `appendix ${number} p1.pdf`);
+    const p2Path = path.join(grammarElemAppendixesRoot, `appendix ${number} p2.pdf`);
+    try {
+      if (!fs.existsSync(p2Path)) {
+        res.type('application/pdf').sendFile(p1Path, (error) => {
+          if (error && !res.headersSent) {
+            res.status(404).end();
+          }
+        });
+        return;
+      }
+      const merged = await PDFDocument.create();
+      for (const filePath of [p1Path, p2Path]) {
+        const bytes = fs.readFileSync(filePath);
+        const source = await PDFDocument.load(bytes);
+        const [copiedPage] = await merged.copyPages(source, [0]);
+        merged.addPage(copiedPage);
+      }
+      const mergedBytes = await merged.save();
+      res.type('application/pdf').send(Buffer.from(mergedBytes));
+    } catch (error) {
+      res.status(404).end();
+    }
+  });
+
   app.use('/grammar-elem-pages', express.static(path.join(grammarElemRoot, 'pdf'), { fallthrough: false }));
   app.use('/grammar-elem-pages', notFoundOn404);
   app.use('/grammar-elem-audio', express.static(path.join(grammarElemRoot, 'audio_files'), { fallthrough: false }));

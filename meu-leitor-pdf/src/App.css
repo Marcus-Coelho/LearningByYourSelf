@@ -722,6 +722,20 @@ body {
   padding-right: 4px;
   max-height: calc(100vh - 260px);
   overflow: auto;
+  /* Encolhe pra sobrar espaço pro que vier depois dela na mesma coluna flex
+     (ex.: o título + grade de Appendixes do Grammar Elementary) em vez de
+     "roubar" esse espaço e empurrar o resto pra fora do painel. */
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Lista de Appendixes (Grammar English Elementary): só 7 itens / 2 linhas,
+   então fica sempre no tamanho natural (sem herdar o encolhimento/rolagem
+   da lista de 115 units acima). */
+.grammar-elem-appendix-list {
+  flex: none;
+  max-height: none;
+  overflow: visible;
 }
 
 .vocabulary-title {
