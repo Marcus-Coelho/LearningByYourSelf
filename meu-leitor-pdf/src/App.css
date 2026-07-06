@@ -10,9 +10,26 @@
   --soft: #f5f1ff;
   --line: rgba(86, 53, 142, 0.18);
   --shadow: 0 22px 48px rgba(30, 14, 64, 0.18);
+  --landing-light-gradient: linear-gradient(165deg, #ffffff 0%, #eef4fb 55%, #dce9f8 100%);
 }
 
 .app-shell { display: flex; flex-direction: column; height: 100vh; }
+
+/* Exceção só pra apresentação do Grammar English Elementary (classe
+   aplicada via JS só nessa tela — ver App.js): ela deixa de propósito a
+   lista de units/Appendixes/Additional Exercises transbordar (ver
+   .grammar-elem-landing-panel), então precisa que o app-shell CRESÇA junto
+   com esse conteúdo em vez de ficar travado em 100vh — senão o
+   transbordamento pinta fora da caixa do app-shell sem herdar o fundo dela,
+   e a página fica em branco ao rolar. Não pode ser o padrão de ".app-shell"
+   porque as outras telas (o leitor de PDF, principalmente) dependem do
+   app-shell ter uma altura definida de 100vh pro "flex-grow" do painel
+   central preencher exatamente a tela, sem isso o painel cresce sem
+   controle pelo conteúdo. */
+.app-shell.app-shell--allow-grow {
+  height: auto;
+  min-height: 100vh;
+}
 
 .app-header {
   display: flex;
@@ -380,11 +397,55 @@ body {
               linear-gradient(180deg, rgba(28, 20, 56, 0.96) 0%, rgba(22, 14, 45, 0.98) 100%);
 }
 
+/* Fundo claro (branco -> azul bem suave) no lugar do gradiente roxo escuro
+   padrão: usado na Home (com o hero openCourse.png), na tela "Courses" e
+   nas telas de entrada dos cursos (lista de units) — só o fundo muda; a
+   caixa do miolo (.course-links-panel / .vocabulary-page, com os links)
+   ganha cores claras próprias mais abaixo, layout intacto. Register não usa
+   nenhuma dessas classes e continua com o gradiente roxo original. */
 .landing-page.vocabulary-mode {
   align-items: flex-start;
   padding-top: 100px;
   padding-bottom: 40px;
   overflow: auto;
+  background: var(--landing-light-gradient);
+}
+
+.landing-page.landing-page--home,
+.landing-page.landing-page--courses {
+  background: var(--landing-light-gradient);
+}
+
+.home-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  max-width: 1120px;
+  width: 100%;
+}
+
+.home-hero-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 28px;
+  box-shadow: 0 32px 80px rgba(30, 58, 95, 0.18);
+}
+
+.home-hero-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.home-hero-tagline {
+  margin: 0;
+  color: #4d6178;
+  font-size: 15px;
+  font-style: italic;
 }
 
 .landing-hero {
@@ -437,6 +498,55 @@ body {
   max-height: calc(100vh - 118px);
   overflow: hidden;
   font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Essas 3 telas (units da Vocabulary/American1/Grammar Elementary) agora
+     ficam sobre o fundo claro (.landing-page.vocabulary-mode) em vez do
+     roxo escuro — o texto branco original ficava ilegível, então só as
+     cores da caixa mudam aqui pra um esquema claro; layout/estrutura
+     continuam os mesmos. */
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(27, 58, 94, 0.1);
+}
+
+.landing-panel.vocabulary-page .vocabulary-title {
+  color: #1b3a5e;
+}
+
+.landing-panel.vocabulary-page .vocabulary-link {
+  color: #1b3a5e;
+  background: rgba(27, 58, 94, 0.05);
+  border-color: rgba(27, 58, 94, 0.12);
+}
+
+.landing-panel.vocabulary-page .vocabulary-link:hover,
+.landing-panel.vocabulary-page .vocabulary-link:focus-visible {
+  background: rgba(27, 58, 94, 0.1);
+  border-color: rgba(139, 92, 246, 0.5);
+}
+
+.landing-panel.vocabulary-page .vocabulary-link small {
+  color: rgba(27, 58, 94, 0.68);
+}
+
+/* Grammar English Elementary junta 3 listas (units, Appendixes, Additional
+   Exercises) na mesma tela — em vez de cada lista (ou o painel, ou o
+   "landing-page") rolar por conta própria em caixas de altura fixa, deixa
+   tudo crescer com o conteúdo e usa só a rolagem mais externa (a da janela/
+   documento). As 3 regras abaixo desfazem, só pra essa tela, os 3 overflows
+   internos que existem por padrão (.landing-page.vocabulary-mode, depois
+   .landing-panel.vocabulary-page, depois .vocabulary-list). */
+.landing-page.vocabulary-mode.grammar-elem-landing {
+  overflow: visible;
+}
+
+.landing-panel.vocabulary-page.grammar-elem-landing-panel {
+  max-height: none;
+  overflow: visible;
+}
+
+.grammar-elem-landing-panel .vocabulary-list {
+  flex: none;
+  max-height: none;
+  overflow: visible;
 }
 
 .landing-panel .eyebrow {
@@ -500,6 +610,30 @@ body {
   display: block;
   color: rgba(255, 255, 255, 0.72);
   line-height: 1.5;
+}
+
+/* Tela "Courses" sobre o fundo claro (.landing-page--courses): mesmo ajuste
+   de cores já feito em .landing-panel.vocabulary-page, texto branco original
+   ficava ilegível — só cores, layout intacto. */
+.landing-panel.course-links-panel {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(27, 58, 94, 0.1);
+}
+
+.landing-panel.course-links-panel .course-link {
+  color: #1b3a5e;
+  background: rgba(27, 58, 94, 0.05);
+  border-color: rgba(27, 58, 94, 0.12);
+}
+
+.landing-panel.course-links-panel .course-link:hover,
+.landing-panel.course-links-panel .course-link:focus-visible {
+  background: rgba(27, 58, 94, 0.1);
+  border-color: rgba(139, 92, 246, 0.5);
+}
+
+.landing-panel.course-links-panel .course-link small {
+  color: rgba(27, 58, 94, 0.68);
 }
 
 /* Página "My Profile" — lista de botões de reset (dados locais, sem conta
@@ -722,20 +856,11 @@ body {
   padding-right: 4px;
   max-height: calc(100vh - 260px);
   overflow: auto;
-  /* Encolhe pra sobrar espaço pro que vier depois dela na mesma coluna flex
-     (ex.: o título + grade de Appendixes do Grammar Elementary) em vez de
-     "roubar" esse espaço e empurrar o resto pra fora do painel. */
+  /* Encolhe se sobrar pouco espaço no painel, em vez de empurrar o resto
+     do conteúdo pra fora dele (ver .grammar-elem-landing-panel abaixo para
+     o caso do Grammar Elementary, que substitui esse comportamento). */
   flex: 1 1 auto;
   min-height: 0;
-}
-
-/* Lista de Appendixes (Grammar English Elementary): só 7 itens / 2 linhas,
-   então fica sempre no tamanho natural (sem herdar o encolhimento/rolagem
-   da lista de 115 units acima). */
-.grammar-elem-appendix-list {
-  flex: none;
-  max-height: none;
-  overflow: visible;
 }
 
 .vocabulary-title {

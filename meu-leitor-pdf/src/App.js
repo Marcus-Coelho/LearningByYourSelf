@@ -294,6 +294,13 @@ const grammarElemUnitNumbers = Array.from({ length: GRAMMAR_ELEM_UNIT_COUNT }, (
 const GRAMMAR_ELEM_APPENDIX_COUNT = 7;
 const grammarElemAppendixNumbers = Array.from({ length: GRAMMAR_ELEM_APPENDIX_COUNT }, (_, i) => i + 1);
 
+// Additional Exercises do Grammar English Elementary: mesma ideia dos
+// Appendixes (depois das units, fora da contabilidade de progresso — ver
+// src/setupProxy.js para como as páginas são resolvidas a partir de
+// "Additional Exercises"/*.pdf).
+const GRAMMAR_ELEM_ADDITIONAL_COUNT = 35;
+const grammarElemAdditionalNumbers = Array.from({ length: GRAMMAR_ELEM_ADDITIONAL_COUNT }, (_, i) => i + 1);
+
 const renderPdfUpload = (onChange, label = 'Load PDF') => (
   <label className="upload-button">
     {label}
@@ -362,6 +369,7 @@ function App() {
   const [selectedAmerican1Reference, setSelectedAmerican1Reference] = useState(null);
   const [selectedGrammarElemUnit, setSelectedGrammarElemUnit] = useState(null);
   const [selectedGrammarElemAppendix, setSelectedGrammarElemAppendix] = useState(null);
+  const [selectedGrammarElemAdditional, setSelectedGrammarElemAdditional] = useState(null);
   const [showAnswers, setShowAnswers] = useState(false);
   const [showAmerican1Answers, setShowAmerican1Answers] = useState(false);
   const [showGrammarElemAnswers, setShowGrammarElemAnswers] = useState(false);
@@ -753,6 +761,7 @@ function App() {
     setSelectedAmerican1Section(null);
     setSelectedGrammarElemUnit(null);
     setSelectedGrammarElemAppendix(null);
+    setSelectedGrammarElemAdditional(null);
     setActiveCourseId(null);
   };
 
@@ -771,6 +780,7 @@ function App() {
     setSelectedAmerican1Section(null);
     setSelectedGrammarElemUnit(null);
     setSelectedGrammarElemAppendix(null);
+    setSelectedGrammarElemAdditional(null);
     setActiveCourseId(null);
   };
 
@@ -826,6 +836,7 @@ function App() {
     setActivePage('grammarElem');
     setSelectedGrammarElemUnit(null);
     setSelectedGrammarElemAppendix(null);
+    setSelectedGrammarElemAdditional(null);
     setActiveCourseId('grammarElem');
   };
 
@@ -878,6 +889,7 @@ function App() {
     setActivePage('grammarElem-appendix');
     setSelectedGrammarElemAppendix(appendixNumber);
     setSelectedGrammarElemUnit(null);
+    setSelectedGrammarElemAdditional(null);
     setActiveCourseId('grammarElem');
   };
 
@@ -889,6 +901,27 @@ function App() {
   const handleNextGrammarElemAppendix = () => {
     if (!selectedGrammarElemAppendix || selectedGrammarElemAppendix >= GRAMMAR_ELEM_APPENDIX_COUNT) return;
     setSelectedGrammarElemAppendix(selectedGrammarElemAppendix + 1);
+  };
+
+  // Additional Exercises: mesma ideia dos Appendixes — trilha à parte, sem
+  // marcar "visited" em lugar nenhum, então nunca entra em "Your Progress".
+  const handleGrammarElemAdditionalSelect = (event, additionalNumber) => {
+    event.preventDefault();
+    setActivePage('grammarElem-additional');
+    setSelectedGrammarElemAdditional(additionalNumber);
+    setSelectedGrammarElemUnit(null);
+    setSelectedGrammarElemAppendix(null);
+    setActiveCourseId('grammarElem');
+  };
+
+  const handlePreviousGrammarElemAdditional = () => {
+    if (!selectedGrammarElemAdditional || selectedGrammarElemAdditional <= 1) return;
+    setSelectedGrammarElemAdditional(selectedGrammarElemAdditional - 1);
+  };
+
+  const handleNextGrammarElemAdditional = () => {
+    if (!selectedGrammarElemAdditional || selectedGrammarElemAdditional >= GRAMMAR_ELEM_ADDITIONAL_COUNT) return;
+    setSelectedGrammarElemAdditional(selectedGrammarElemAdditional + 1);
   };
 
   const handleCloseAmerican1Reference = () => {
@@ -916,6 +949,7 @@ function App() {
     setSelectedAmerican1Section(null);
     setSelectedGrammarElemUnit(null);
     setSelectedGrammarElemAppendix(null);
+    setSelectedGrammarElemAdditional(null);
     setActiveCourseId(null);
   };
 
@@ -980,6 +1014,7 @@ function App() {
     setSelectedAmerican1Section(null);
     setSelectedGrammarElemUnit(null);
     setSelectedGrammarElemAppendix(null);
+    setSelectedGrammarElemAdditional(null);
     setActiveCourseId(null);
   };
 
@@ -1358,12 +1393,13 @@ function App() {
   // Verdadeiro em qualquer tela "dentro" de um curso (unit, exercícios,
   // página de teste do Course 2...), não só nas telas de unit/exercícios.
   const insideCourse = Boolean(selectedUnit) || Boolean(selectedAmerican1Unit)
-    || Boolean(selectedGrammarElemUnit) || Boolean(selectedGrammarElemAppendix);
+    || Boolean(selectedGrammarElemUnit) || Boolean(selectedGrammarElemAppendix)
+    || Boolean(selectedGrammarElemAdditional);
   const activeCourse = activeCourseId ? courses[activeCourseId] : null;
   const visitedUnitsCount = Object.keys(visitedUnits).length;
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell${activePage === 'grammarElem' ? ' app-shell--allow-grow' : ''}`}>
       <header className="app-header">
         <div className="brand">
           <span className="brand-mark"><img src="/logo192.png" alt="" className="brand-mark-icon" /></span>
@@ -1630,7 +1666,7 @@ function App() {
           </div>
         </main>
       ) : activePage === 'courses' ? (
-        <main className="landing-page">
+        <main className="landing-page landing-page--courses">
           <div className="landing-panel course-links-panel">
             <div className="course-links">
               <a className="course-link" href="#link-vocabulary" onClick={handleVocabulary}>
@@ -1672,8 +1708,8 @@ function App() {
           </div>
         </main>
       ) : activePage === 'grammarElem' ? (
-        <main className="landing-page vocabulary-mode" id="link-grammarElem">
-          <div className="landing-panel vocabulary-page">
+        <main className="landing-page vocabulary-mode grammar-elem-landing" id="link-grammarElem">
+          <div className="landing-panel vocabulary-page grammar-elem-landing-panel">
             <h2 className="vocabulary-title">{courses.grammarElem.title}</h2>
             <div className="vocabulary-list" role="list">
               {grammarElemUnitNumbers.map((unit) => (
@@ -1688,7 +1724,7 @@ function App() {
               ))}
             </div>
             <h2 className="vocabulary-title">Appendixes</h2>
-            <div className="vocabulary-list grammar-elem-appendix-list" role="list">
+            <div className="vocabulary-list" role="list">
               {grammarElemAppendixNumbers.map((appendixNumber) => (
                 <a
                   key={appendixNumber}
@@ -1697,6 +1733,19 @@ function App() {
                   onClick={(event) => handleGrammarElemAppendixSelect(event, appendixNumber)}
                 >
                   <span>Appendix {appendixNumber}</span>
+                </a>
+              ))}
+            </div>
+            <h2 className="vocabulary-title">Additional Exercises</h2>
+            <div className="vocabulary-list" role="list">
+              {grammarElemAdditionalNumbers.map((additionalNumber) => (
+                <a
+                  key={additionalNumber}
+                  className="vocabulary-link"
+                  href={`#grammarElem-additional-${additionalNumber}`}
+                  onClick={(event) => handleGrammarElemAdditionalSelect(event, additionalNumber)}
+                >
+                  <span>Additional Exercise {additionalNumber}</span>
                 </a>
               ))}
             </div>
@@ -1928,6 +1977,69 @@ function App() {
                   unit={`appendix-${appendixNumber}`}
                   userName={userName}
                   storageKeyBase={`notes:grammarElem:appendix-${appendixNumber}`}
+                />
+              </div>
+            </aside>
+          </main>
+        );
+      })() : activePage === 'grammarElem-additional' ? (() => {
+        const additionalNumber = selectedGrammarElemAdditional;
+        const fileUrl = additionalNumber ? `/grammar-elem-pages/additional/${additionalNumber}` : '';
+
+        return (
+          <main
+            className="main-panels"
+            ref={layoutRef}
+            style={{
+              gridTemplateColumns: `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`,
+            }}
+          >
+            <section className="pdf-panel">
+              <div className="pdf-toolbar pdf-toolbar-left">
+                <div className="pdf-toolbar-nav">
+                  <button
+                    type="button"
+                    className="upload-button"
+                    onClick={handlePreviousGrammarElemAdditional}
+                    disabled={!additionalNumber || additionalNumber <= 1}
+                  >
+                    Previous Additional Exercise
+                  </button>
+                  <button
+                    type="button"
+                    className="upload-button"
+                    onClick={handleNextGrammarElemAdditional}
+                    disabled={!additionalNumber || additionalNumber >= GRAMMAR_ELEM_ADDITIONAL_COUNT}
+                  >
+                    Next Additional Exercise
+                  </button>
+                </div>
+              </div>
+
+              {fileUrl ? (
+                <PdfWorkspace key={fileUrl} fileUrl={fileUrl} defaultScale={1.3} />
+              ) : (
+                <div className="pdf-empty-state">
+                  <p className="eyebrow">No additional exercise</p>
+                  <h1>No additional exercise selected</h1>
+                </div>
+              )}
+            </section>
+
+            <button
+              className="resize-handle"
+              type="button"
+              aria-label="Resize right column"
+              onPointerDown={startPanelResize}
+            />
+
+            <aside className="side-panel right-panel">
+              <div className="panel-content related-panel">
+                <UnitNotes
+                  key={additionalNumber}
+                  unit={`additional-${additionalNumber}`}
+                  userName={userName}
+                  storageKeyBase={`notes:grammarElem:additional-${additionalNumber}`}
                 />
               </div>
             </aside>
@@ -2416,19 +2528,19 @@ function App() {
           </div>
         </main>
       ) : (
-        <main className="landing-page">
-          <div className="landing-hero">
-            <div className="landing-panel">
-              <p className="eyebrow">Hello !</p>
-              <h1>So tell me… how’s your English these days?</h1>
-              <p className="landing-meta">Is it just enough to get by, or are you ready to surprise yourself with how far you can go?</p>
-              <p className="landing-note">Because every word you learn opens a new door — to conversations, to opportunities, to the world.</p>
-              <p className="landing-note">Your English isn’t just a skill… it’s your passport to something bigger.</p>
-              <p className="landing-note">An English Learning by Yourself Project</p>
+        <main className="landing-page landing-page--home">
+          <div className="home-hero">
+            <img
+              src="/openCourse.png"
+              alt="Learn English. Open Your World. Confident communication for real life."
+              className="home-hero-image"
+            />
+            <div className="home-hero-footer">
+              <p className="home-hero-tagline">A self-guided English learning project.</p>
+              <button type="button" className="landing-cta" onClick={handleCourses}>
+                Start Learning
+              </button>
             </div>
-            <button type="button" className="landing-cta" onClick={handleCourses}>
-              Start Learning
-            </button>
           </div>
         </main>
       )}

@@ -256,67 +256,66 @@ module.exports = function (app) {
   // simples com a letra ao lado do botão "Exercises" (ver App.js).
   const grammarElemRoot = path.join(__dirname, '..', '..', 'Grammar Elemetary');
 
-  // Respostas ("Show Answers", igual ao American1): o gabarito bruto está em
-  // answers_pdf/ como um PDF de UMA página por arquivo (confirmado com
-  // getPageCount — todo arquivo tem exatamente 1 página), e cada página
-  // impressa traz as respostas de várias units juntas (ex.: "answer 24p2 25
-  // 26 27 28 29p1.pdf" = uma página só, com o fim da unit 24, as units 25-28
-  // inteiras e o início da unit 29). Sufixo "p1"/"p2" marca a unit cuja
-  // resposta continua na página seguinte/anterior (por isso sempre aparece
-  // no primeiro ou último token do arquivo) — nesse caso a resposta da unit
-  // é a página inteira de 2 arquivos diferentes, não 2 páginas do mesmo
-  // arquivo. Sem sufixo, a unit inteira está nessa única página.
-  const grammarElemAnswersRoot = path.join(grammarElemRoot, 'answers_pdf');
-
-  const parseGrammarElemAnswerTokens = (filename) => {
-    const match = filename.match(/^answer (.+)\.pdf$/i);
+  // Helpers compartilhados por qualquer pasta do Grammar Elementary onde 1
+  // PDF de 1 página só cobre vários números juntos (respostas, additional
+  // exercises...): o nome do arquivo lista os números daquela página, e um
+  // número cuja resposta/exercício continua na página seguinte ganha "p1"/
+  // "p2" (colado, ex. "24p2", ou como token solto, ex. "16 p2" — os dois
+  // jeitos aparecem nos dados reais). Confirmado com getPageCount que todo
+  // arquivo dessas pastas tem exatamente 1 página, então a "página dentro do
+  // arquivo" é sempre a primeira — nunca a posição do token.
+  const parseNumberedPdfTokens = (filename, prefixPattern) => {
+    const match = filename.match(prefixPattern);
     if (!match) return null;
-    return match[1].trim().split(/\s+/).map((token) => {
-      const tokenMatch = token.match(/^(\d+)(p1|p2)?$/);
-      return tokenMatch ? { unit: Number(tokenMatch[1]), part: tokenMatch[2] || null } : null;
+    const entries = [];
+    match[1].trim().split(/\s+/).forEach((token) => {
+      const attached = token.match(/^(\d+)(p1|p2)?$/i);
+      if (attached) {
+        entries.push({ number: Number(attached[1]), part: attached[2] ? attached[2].toLowerCase() : null });
+        return;
+      }
+      const partOnly = token.match(/^p([12])$/i);
+      if (partOnly && entries.length > 0) {
+        entries[entries.length - 1].part = `p${partOnly[1]}`;
+      }
     });
+    return entries;
   };
 
-  const buildGrammarElemAnswersMap = () => {
+  const buildNumberedPdfMap = (dir, prefixPattern) => {
     const map = {};
     let files = [];
     try {
-      files = fs.readdirSync(grammarElemAnswersRoot).filter((name) => name.toLowerCase().endsWith('.pdf'));
+      files = fs.readdirSync(dir).filter((name) => name.toLowerCase().endsWith('.pdf'));
     } catch (error) {
       return map;
     }
     files.forEach((file) => {
-      const tokens = parseGrammarElemAnswerTokens(file);
-      if (!tokens) return;
-      tokens.forEach((token) => {
-        if (!token) return;
-        // Cada arquivo tem 1 página só, então a página da unit dentro do
-        // arquivo é sempre a primeira (índice 0) — não a posição do token.
-        const entry = { file, page: 1, part: token.part };
-        (map[token.unit] = map[token.unit] || []).push(entry);
+      const entries = parseNumberedPdfTokens(file, prefixPattern);
+      if (!entries) return;
+      entries.forEach(({ number, part }) => {
+        (map[number] = map[number] || []).push({ file, page: 1, part });
       });
     });
-    // "p1" sempre antes de "p2" na resposta final, mesmo que a ordem de
-    // leitura dos arquivos no disco não garanta isso.
+    // "p1"/sem sufixo sempre antes de "p2" na resposta final, mesmo que a
+    // ordem de leitura dos arquivos no disco não garanta isso.
     Object.values(map).forEach((entries) => {
       entries.sort((a, b) => (a.part === 'p2' ? 1 : 0) - (b.part === 'p2' ? 1 : 0));
     });
     return map;
   };
 
-  const grammarElemAnswersMap = buildGrammarElemAnswersMap();
-
-  app.get('/grammar-elem-pages/answers/:unit', async (req, res) => {
-    const unit = Number(req.params.unit);
-    const entries = grammarElemAnswersMap[unit];
-    if (!Number.isInteger(unit) || !entries || entries.length === 0) {
+  const serveNumberedPdfFromMap = (map, dir, paramName = 'number') => async (req, res) => {
+    const number = Number(req.params[paramName]);
+    const entries = map[number];
+    if (!Number.isInteger(number) || !entries || entries.length === 0) {
       res.status(404).end();
       return;
     }
     try {
       const merged = await PDFDocument.create();
       for (const entry of entries) {
-        const bytes = fs.readFileSync(path.join(grammarElemAnswersRoot, entry.file));
+        const bytes = fs.readFileSync(path.join(dir, entry.file));
         const source = await PDFDocument.load(bytes);
         const [copiedPage] = await merged.copyPages(source, [entry.page - 1]);
         merged.addPage(copiedPage);
@@ -326,7 +325,18 @@ module.exports = function (app) {
     } catch (error) {
       res.status(404).end();
     }
-  });
+  };
+
+  // Respostas ("Show Answers", igual ao American1): gabarito bruto em
+  // answers_pdf/, cada página impressa trazendo as respostas de várias units
+  // juntas (ex.: "answer 24p2 25 26 27 28 29p1.pdf" = uma página só, com o
+  // fim da unit 24, as units 25-28 inteiras e o início da unit 29).
+  const grammarElemAnswersRoot = path.join(grammarElemRoot, 'answers_pdf');
+  const grammarElemAnswersMap = buildNumberedPdfMap(grammarElemAnswersRoot, /^answer (.+)\.pdf$/i);
+  app.get(
+    '/grammar-elem-pages/answers/:unit',
+    serveNumberedPdfFromMap(grammarElemAnswersMap, grammarElemAnswersRoot, 'unit'),
+  );
 
   // Appendixes (1 a 7): ficam depois da última unit na lista, mas fora da
   // contabilidade de progresso (ver App.js — a tela deles nunca marca
@@ -366,6 +376,20 @@ module.exports = function (app) {
       res.status(404).end();
     }
   });
+
+  // Additional Exercises (1 a 35): mesma ideia das respostas — PDF de 1
+  // página por arquivo, cada página cobrindo vários exercícios juntos (ex.:
+  // "additional 10 11 12 13.pdf"), e "p2" num arquivo à parte quando o
+  // exercício continua na página seguinte (ex.: "additional 16 p2.pdf",
+  // "additional 31 p2.pdf" — no material bruto atual isso acontece com o 16
+  // e o 31, não só o 31). Fora da contabilidade de progresso, igual aos
+  // Appendixes.
+  const grammarElemAdditionalRoot = path.join(grammarElemRoot, 'Additional Exercises');
+  const grammarElemAdditionalMap = buildNumberedPdfMap(grammarElemAdditionalRoot, /^additional (.+)\.pdf$/i);
+  app.get(
+    '/grammar-elem-pages/additional/:number',
+    serveNumberedPdfFromMap(grammarElemAdditionalMap, grammarElemAdditionalRoot),
+  );
 
   app.use('/grammar-elem-pages', express.static(path.join(grammarElemRoot, 'pdf'), { fallthrough: false }));
   app.use('/grammar-elem-pages', notFoundOn404);
