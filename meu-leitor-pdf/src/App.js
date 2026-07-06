@@ -1018,6 +1018,49 @@ function App() {
     setActiveCourseId(null);
   };
 
+  // Diferente do "Switch user" (só desloga): apaga de vez o namespace
+  // inteiro "u:<nome>:*" do usuário ativo (progresso, notas, respostas e
+  // avaliações de todos os cursos) e a entrada dele na lista de usuários
+  // registrados. Sem volta.
+  const handleDeleteAccount = () => {
+    if (!userName) return;
+    if (!window.confirm(`Delete the registered user "${userName}" and ALL of their data (progress, scores, notes, answers) across every course? This cannot be undone.`)) {
+      return;
+    }
+    try {
+      const scopedPrefix = `u:${encodeURIComponent(userName)}:`;
+      const keysToRemove = [];
+      for (let i = 0; i < window.localStorage.length; i += 1) {
+        const key = window.localStorage.key(i);
+        if (key && key.startsWith(scopedPrefix)) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((key) => window.localStorage.removeItem(key));
+    } catch (error) {
+      // Armazenamento indisponível.
+    }
+
+    const nextUsers = registeredUsers.filter((name) => name !== userName);
+    setRegisteredUsers(nextUsers);
+    saveUsers(nextUsers);
+
+    setUserName('');
+    try {
+      window.localStorage.removeItem(ACTIVE_USER_KEY);
+    } catch (error) {
+      // Armazenamento indisponível.
+    }
+    setActivePage('register');
+    setSelectedUnit(null);
+    setSelectedAmerican1Unit(null);
+    setSelectedAmerican1Section(null);
+    setSelectedGrammarElemUnit(null);
+    setSelectedGrammarElemAppendix(null);
+    setSelectedGrammarElemAdditional(null);
+    setActiveCourseId(null);
+  };
+
   // Remove do localStorage todas as chaves do usuário ativo que começam com
   // um prefixo (ex.: "answers:", "rating:", "notes:") — usado pelos botões
   // de reset do perfil. Escopado por usuário para não apagar o progresso de
@@ -2344,6 +2387,10 @@ function App() {
               <button type="button" className="profile-reset-btn" onClick={handleSwitchUser}>
                 <span>Switch user</span>
                 <small>Log out of "{userName}" and register or continue as someone else on this browser.</small>
+              </button>
+              <button type="button" className="profile-reset-btn danger" onClick={handleDeleteAccount}>
+                <span>Delete this user</span>
+                <small>Permanently erases "{userName}" and every course's progress, score, notes and answers.</small>
               </button>
             </div>
 
