@@ -2,10 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { SpecialZoomLevel, Viewer, Worker } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
-import { highlightPlugin, Trigger } from '@react-pdf-viewer/highlight';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
-import '@react-pdf-viewer/highlight/lib/styles/index.css';
 import exerciseCoords from './exercises_coords.json';
 import answersCoords from './answers_coords.json';
 import audioAnchorsCoords from './audio_anchors_coords.json';
@@ -2598,10 +2596,6 @@ function App() {
 function PdfWorkspace({ fileUrl, onPdfChange, defaultScale, initialPage }) {
   const [activeTool, setActiveTool] = useState('text');
 
-  const highlightPluginInstance = highlightPlugin({
-    trigger: Trigger.TextSelection,
-  });
-
   const defaultLayoutPluginInstance = defaultLayoutPlugin({
     sidebarTabs: () => [],
     renderToolbar: (Toolbar) => (
@@ -2691,7 +2685,7 @@ function PdfWorkspace({ fileUrl, onPdfChange, defaultScale, initialPage }) {
           fileUrl={fileUrl}
           defaultScale={defaultScale}
           initialPage={initialPage}
-          plugins={[defaultLayoutPluginInstance, highlightPluginInstance]}
+          plugins={[defaultLayoutPluginInstance]}
           renderError={(error) => (
             <div className="pdf-empty-state pdf-error-state">
               <p className="eyebrow">Invalid PDF</p>
@@ -3528,6 +3522,19 @@ function UnitNotes({
     document.execCommand(command, false, value);
   };
 
+  // O texto copiado do leitor de PDF (pdf.js) vem com uma camada de spans
+  // posicionados em absolute (usada só para permitir selecionar o texto por
+  // cima do desenho da página) — colando isso como HTML "rico" no editor,
+  // o navegador insere esses spans com position:absolute, o que faz o texto
+  // colado sumir (fica fora do fluxo normal) e quebra a edição depois (o
+  // cursor fica preso dentro de um desses spans deslocados). Forçamos a
+  // colagem como texto puro para evitar isso.
+  const handlePaste = (event) => {
+    event.preventDefault();
+    const text = event.clipboardData.getData('text/plain');
+    document.execCommand('insertText', false, text);
+  };
+
   // Alterna o marca-texto do trecho selecionado (como negrito): se já está
   // destacado, remove; senão, aplica. Só age se houver texto selecionado —
   // aplicar com o cursor "piscando" (sem seleção) faz o navegador ligar um
@@ -3604,6 +3611,7 @@ function UnitNotes({
         className="notes-editor"
         contentEditable
         suppressContentEditableWarning
+        onPaste={handlePaste}
         data-placeholder="Write anything you want to remember about this unit..."
       />
 
