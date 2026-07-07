@@ -1300,6 +1300,28 @@ function App() {
     setActiveCourseId(null);
   };
 
+  // Link discreto na tela de cadastro (só aparece se já houver algum usuário
+  // registrado — é ali que a lista de "Continue as <nome>" aparece). Apaga
+  // literalmente TODO o localStorage desta origem, todos os usuários de uma
+  // vez, não só o ativo — pensado pra quando a lista de "Continue as" mostra
+  // gente que você não reconhece (ex.: duas cópias do app rodando na mesma
+  // porta por engano, ver StartLearning.bat) e entrar em cada usuário pra
+  // apagar um por um seria chato. Diferente de handleDeleteAccount (que
+  // exige estar logado num usuário específico), este funciona sem login.
+  const handleResetAllBrowserData = () => {
+    if (!window.confirm('Delete EVERY registered user and ALL of their data (progress, scores, notes, My Words) on this browser? This cannot be undone.')) {
+      return;
+    }
+    try {
+      window.localStorage.clear();
+    } catch (error) {
+      // Armazenamento indisponível.
+    }
+    setRegisteredUsers([]);
+    setRegisterNameInput('');
+    setRegisterError('');
+  };
+
   // Remove do localStorage todas as chaves do usuário ativo que começam com
   // um prefixo (ex.: "answers:", "rating:", "notes:") — usado pelos botões
   // de reset do perfil. Escopado por usuário para não apagar o progresso de
@@ -2832,6 +2854,14 @@ function App() {
                     </button>
                   ))}
                 </div>
+                <button
+                  type="button"
+                  className="register-reset-all-btn"
+                  onClick={handleResetAllBrowserData}
+                  title="Don't recognize these names? Erase every user and all of their data on this browser."
+                >
+                  Reset all data on this browser
+                </button>
               </div>
             )}
 

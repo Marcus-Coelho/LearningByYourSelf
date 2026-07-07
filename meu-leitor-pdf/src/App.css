@@ -885,6 +885,27 @@ body {
   border-color: rgba(139, 92, 246, 0.42);
 }
 
+/* Válvula de escape para quando a lista "Continue as" acima mostra gente que
+   você não reconhece (ex.: duas cópias do app que se misturaram na mesma
+   porta) — de propósito discreto (link pequeno, não um botão chamativo),
+   pra não ser clicado sem querer no meio dos botões de "Continue as". */
+.register-reset-all-btn {
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: rgba(255, 255, 255, 0.42);
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.register-reset-all-btn:hover {
+  color: #ffb4b4;
+}
+
 .register-form {
   margin-top: 24px;
   display: flex;
