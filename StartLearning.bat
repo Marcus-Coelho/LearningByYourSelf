@@ -3,8 +3,20 @@ setlocal
 set "PROJECT_DIR=%~dp0meu-leitor-pdf"
 set BROWSER=none
 
-echo Fechando qualquer servidor antigo na porta 3000...
-powershell -NoProfile -Command "Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object { taskkill /F /T /PID $_ }" >nul 2>&1
+rem Porta muda conforme o tipo de unidade onde este .bat está rodando: fixa
+rem (HD/SSD do PC, ex. C:) usa a porta padrao 3000; removivel (pendrive) usa
+rem 3001. Portas diferentes = origens diferentes no navegador = o localStorage
+rem (usuarios cadastrados, progresso, notas, My Words...) nunca se mistura
+rem entre a copia do PC e a copia do pendrive - mesmo copiando os mesmos
+rem arquivos de um lado pro outro, ja que a porta e recalculada aqui sempre a
+rem partir de ONDE o script esta rodando, nao fica salva em lugar nenhum.
+set "SCRIPT_DRIVE=%~d0"
+set "PORT=3000"
+for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "try { (Get-Volume -DriveLetter '%SCRIPT_DRIVE:~0,1%').DriveType } catch { 'Fixed' }"`) do set "DRIVE_TYPE=%%i"
+if /I "%DRIVE_TYPE%"=="Removable" set "PORT=3001"
+
+echo Fechando qualquer servidor antigo na porta %PORT%...
+powershell -NoProfile -Command "Get-NetTCPConnection -LocalPort %PORT% -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object { taskkill /F /T /PID $_ }" >nul 2>&1
 
 cd /d "%PROJECT_DIR%"
 
@@ -23,7 +35,7 @@ start "" wscript.exe "%~dp0RunHidden.vbs"
 call npm start
 
 echo.
-echo Fechando o servidor (porta 3000)...
-powershell -NoProfile -Command "Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object { taskkill /F /T /PID $_ }" >nul 2>&1
+echo Fechando o servidor (porta %PORT%)...
+powershell -NoProfile -Command "Get-NetTCPConnection -LocalPort %PORT% -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object { taskkill /F /T /PID $_ }" >nul 2>&1
 
 endlocal
