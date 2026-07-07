@@ -1158,6 +1158,33 @@ function App() {
     }
   };
 
+  // Navegação direta pro "Today's Plan" (Home) — pula a tela de lista do
+  // curso, então (diferente de handleUnitSelect/handleAmerican1UnitSelect/
+  // handleGrammarElemUnitSelect, que dependem da lista já ter marcado
+  // activeCourseId um passo antes) precisam marcar activeCourseId elas
+  // mesmas, senão o cabeçalho ("You are in the... Course") e o link
+  // "All Units" ficam quebrados ao entrar direto pela Home.
+  const openVocabularyUnit = (unit) => {
+    setActivePage('unit');
+    setSelectedUnit(unit);
+    setActiveCourseId('vocabulary');
+  };
+
+  const openAmerican1Section = (unit, section) => {
+    setActivePage('american1-unit');
+    setSelectedAmerican1Unit(unit);
+    setSelectedAmerican1Section(section);
+    setShowAmerican1Answers(false);
+    setActiveCourseId('american1');
+  };
+
+  const openGrammarElemUnit = (unit) => {
+    setActivePage('grammarElem-unit');
+    setSelectedGrammarElemUnit(unit);
+    setShowGrammarElemAnswers(false);
+    setActiveCourseId('grammarElem');
+  };
+
   // Mesma trava de acesso de "Courses"/"My Profile": o caderno de palavras é
   // por usuário, então sem alguém logado cai na tela de registro.
   const handleOpenWordbook = (event) => {
@@ -1707,6 +1734,55 @@ function App() {
     || Boolean(selectedGrammarElemAdditional);
   const activeCourse = activeCourseId ? courses[activeCourseId] : null;
   const visitedUnitsCount = Object.keys(visitedUnits).length;
+
+  // "Today's Plan" (Home): um empurrão de "por onde começar" pra quem senta
+  // pra estudar sem saber — mistura 1 sugestão de conteúdo novo + até 2
+  // revisões vencidas (mesma fonte do ReviewCard) + 1 sugestão de listening.
+  // "Novo" e "listening" apontam pra cursos DIFERENTES quando possível (só
+  // repetem o mesmo curso se os outros dois já estiverem 100% visitados) —
+  // dá pra reaproveitar a mesma busca de "próxima unit não visitada" pros
+  // dois, só pegando o 1º e o 2º candidato da lista.
+  const findNextUnvisitedByCourse = () => {
+    const nextVocabUnit = unitItems.find((unit) => !visitedUnits[unit.number]);
+    let nextAmerican1 = null;
+    for (const unit of american1UnitNumbers) {
+      const sections = american1SectionsByUnit[unit] || [];
+      const section = sections.find((s) => !american1VisitedSections[`${unit}|${s.section}`]);
+      if (section) {
+        nextAmerican1 = { unit, section: section.section, title: section.title };
+        break;
+      }
+    }
+    const nextGrammarElemUnit = grammarElemUnitNumbers.find((unit) => !grammarElemVisitedUnits[unit]);
+
+    const candidates = [];
+    if (nextVocabUnit) {
+      candidates.push({
+        label: `Unit ${nextVocabUnit.number}: ${nextVocabUnit.label}`,
+        sublabel: 'Vocabulary - English Pre Intermediate',
+        onOpen: () => openVocabularyUnit(nextVocabUnit.number),
+      });
+    }
+    if (nextAmerican1) {
+      candidates.push({
+        label: `Unit ${nextAmerican1.unit}${nextAmerican1.section}: ${nextAmerican1.title}`,
+        sublabel: 'American English Level 1',
+        onOpen: () => openAmerican1Section(nextAmerican1.unit, nextAmerican1.section),
+      });
+    }
+    if (nextGrammarElemUnit) {
+      candidates.push({
+        label: `Unit ${nextGrammarElemUnit}`,
+        sublabel: 'Grammar English Elementary',
+        onOpen: () => openGrammarElemUnit(nextGrammarElemUnit),
+      });
+    }
+    return candidates;
+  };
+
+  const unvisitedCandidates = userName ? findNextUnvisitedByCourse() : [];
+  const planNewUnit = unvisitedCandidates[0] || null;
+  const planListening = unvisitedCandidates[1] || null;
 
   // De onde a palavra foi salva (curso + unit) — gravado junto com a entrada
   // do "My Words" pelo botão flutuante "+ Word" das telas de estudo.
@@ -2897,11 +2973,16 @@ function App() {
               </button>
             </div>
             {userName && (
-              <ReviewCard
-                items={reviewQueue}
-                dueWordsCount={wordbookDueCount}
-                onOpenItem={handleOpenReviewItem}
-                onOpenWords={handleOpenWordbook}
+              // Único painel de orientação da Home — o ReviewCard "Today's
+              // Review" completo (todos os itens vencidos, sem limite de 2)
+              // fica só na tela Courses; repeti-lo aqui também deixava a
+              // Home com os mesmos itens listados duas vezes seguidas.
+              <TodayPlanCard
+                newUnit={planNewUnit}
+                listening={planListening}
+                reviewQueue={reviewQueue}
+                onOpenReviewItem={handleOpenReviewItem}
+                onSeeAllReviews={handleCourses}
               />
             )}
           </div>
@@ -2912,6 +2993,81 @@ function App() {
         <WordQuickAdd contextLabel={studyContextLabel} onAdd={handleAddWord} />
       )}
     </div>
+  );
+}
+
+// Card "Today's Plan" (só na Home): um empurrão de "por onde começar" pra
+// quem senta pra estudar sem plano — até 3 sugestões concretas (aprender algo
+// novo, revisar o que já venceu, praticar listening), cada uma um botão que
+// leva direto pra tela certa. Cada linha some sozinha se não houver nada pra
+// sugerir naquele slot; o card inteiro some se não sobrar nenhuma (ex.: todo
+// o conteúdo dos 3 cursos já foi visitado e não há revisão vencida).
+//
+// Mostra no máx. 2 itens de revisão (o resto da fila — se houver — fica só
+// no "Today's Review" completo da tela Courses, evitando repetir a mesma
+// lista inteira duas vezes na Home).
+function TodayPlanCard({ newUnit, listening, reviewQueue, onOpenReviewItem, onSeeAllReviews }) {
+  const reviewItems = reviewQueue.slice(0, 2);
+  const moreReviewCount = reviewQueue.length - reviewItems.length;
+
+  if (!newUnit && !listening && reviewItems.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="plan-card" aria-label="Today's plan">
+      <div className="plan-card-head">
+        <h2>Today's Plan</h2>
+      </div>
+      <p className="plan-card-hint">
+        Not sure where to start? Here's a simple plan for today's session.
+      </p>
+      <div className="plan-items">
+        {newUnit && (
+          <button type="button" className="plan-item" onClick={newUnit.onOpen}>
+            <span className="plan-item-icon" aria-hidden="true">📘</span>
+            <span className="plan-item-main">
+              <span className="plan-item-title">Learn something new</span>
+              <span className="plan-item-detail">{newUnit.label}</span>
+              <span className="plan-item-sub">{newUnit.sublabel}</span>
+            </span>
+          </button>
+        )}
+        {reviewItems.map((item) => {
+          const label = reviewItemLabel(item);
+          return (
+            <button
+              key={`${item.course}:${item.id}`}
+              type="button"
+              className="plan-item"
+              onClick={() => onOpenReviewItem(item)}
+            >
+              <span className="plan-item-icon" aria-hidden="true">🔁</span>
+              <span className="plan-item-main">
+                <span className="plan-item-title">Review</span>
+                <span className="plan-item-detail">{label.title}</span>
+                <span className="plan-item-sub">{label.subtitle}</span>
+              </span>
+            </button>
+          );
+        })}
+        {listening && (
+          <button type="button" className="plan-item" onClick={listening.onOpen}>
+            <span className="plan-item-icon" aria-hidden="true">🎧</span>
+            <span className="plan-item-main">
+              <span className="plan-item-title">Practice listening</span>
+              <span className="plan-item-detail">{listening.label}</span>
+              <span className="plan-item-sub">{listening.sublabel}</span>
+            </span>
+          </button>
+        )}
+      </div>
+      {moreReviewCount > 0 && (
+        <button type="button" className="plan-more-link" onClick={onSeeAllReviews}>
+          +{moreReviewCount} more review{moreReviewCount === 1 ? '' : 's'} due — see all in Courses
+        </button>
+      )}
+    </section>
   );
 }
 

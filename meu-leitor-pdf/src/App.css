@@ -1981,6 +1981,114 @@ body {
   }
 }
 
+/* ==== "Today's Plan" — card só na Home, empurrão de "por onde começar" ==== */
+
+.plan-card {
+  width: 100%;
+  max-width: 1120px;
+  text-align: left;
+  padding: 22px 24px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(27, 58, 94, 0.1);
+  box-shadow: 0 18px 48px rgba(30, 58, 95, 0.12);
+}
+
+.plan-card-head {
+  margin-bottom: 4px;
+}
+
+.plan-card-head h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #1b3a5e;
+}
+
+.plan-card .plan-card-hint {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: rgba(27, 58, 94, 0.6);
+}
+
+.plan-items {
+  display: grid;
+  gap: 8px;
+}
+
+.plan-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(27, 58, 94, 0.12);
+  background: rgba(27, 58, 94, 0.05);
+  color: #1b3a5e;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 140ms, border-color 140ms;
+}
+
+.plan-item:hover,
+.plan-item:focus-visible {
+  background: rgba(27, 58, 94, 0.1);
+  border-color: rgba(139, 92, 246, 0.5);
+}
+
+.plan-item-icon {
+  flex: 0 0 auto;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.plan-item-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.plan-item-title {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--purple-700);
+}
+
+.plan-item-detail {
+  display: block;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.plan-item-sub {
+  display: block;
+  font-size: 12px;
+  color: rgba(27, 58, 94, 0.65);
+  margin-top: 1px;
+}
+
+.plan-more-link {
+  display: block;
+  margin: 10px 0 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--purple-700);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.plan-more-link:hover {
+  color: var(--purple-500);
+}
+
 /* ==== "Today's Review" (revisão espaçada) — card na Home e no Courses ==== */
 
 .review-card {
