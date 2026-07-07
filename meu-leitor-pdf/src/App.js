@@ -37,6 +37,44 @@ const REVIEW_INTERVALS_BY_RATING = { 1: 1, 2: 2, 3: 3, 4: 7, 5: 30 };
 // um degrau, "Easy" sobe dois.
 const FLASHCARD_STEPS_DAYS = [1, 3, 7, 14, 30, 60];
 
+// Imagem de mnemônica do "My Words": redimensionada no navegador (maior lado
+// até 640px, JPEG 72%) antes de virar data URL e ir pro localStorage — sem
+// isso, uma foto de celular direto do clipboard/upload (vários MB) esgotaria
+// a cota do localStorage em poucas palavras salvas.
+const WORDBOOK_IMAGE_MAX_DIMENSION = 640;
+const WORDBOOK_IMAGE_QUALITY = 0.72;
+
+const resizeImageFileToDataUrl = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onerror = () => reject(reader.error || new Error('Could not read file'));
+  reader.onload = () => {
+    const img = new window.Image();
+    img.onerror = () => reject(new Error('Invalid image'));
+    img.onload = () => {
+      const scale = Math.min(1, WORDBOOK_IMAGE_MAX_DIMENSION / Math.max(img.width, img.height));
+      const width = Math.max(1, Math.round(img.width * scale));
+      const height = Math.max(1, Math.round(img.height * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', WORDBOOK_IMAGE_QUALITY));
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+// Só um dos itens colados costuma ser a imagem (o resto é texto/HTML da
+// mesma cópia) — pega o primeiro item de imagem, ignora o resto. Usado no
+// onPaste do FORMULÁRIO inteiro (não só da ImageDropZone), pra colar
+// funcionar com o cursor em qualquer campo — ver comentário em WordbookPage.
+const getImageFileFromClipboardEvent = (event) => {
+  const items = Array.from(event.clipboardData?.items || []);
+  const imageItem = items.find((item) => item.type.startsWith('image/'));
+  return imageItem ? imageItem.getAsFile() : null;
+};
+
 // Cadastro é só-nome, sem senha (ver PROJECT_SUMMARY.md): "users" guarda a
 // lista de nomes já cadastrados neste navegador e "activeUser" aponta quem
 // está "logado" agora. Todo progresso (respostas, notas, autoavaliação,
@@ -721,13 +759,18 @@ function App() {
     try {
       window.localStorage.setItem(userKey(userName, 'wordbook'), JSON.stringify(next));
     } catch (error) {
-      // Armazenamento indisponível — as palavras ficam só nesta sessão.
+      // Provavelmente estouro de cota do localStorage (as imagens salvas nas
+      // palavras são o jeito mais fácil de chegar lá) — diferente de outros
+      // dados do app, perder uma imagem em silêncio seria surpreendente pro
+      // usuário logo depois de ele ter colado/enviado ela, então avisa.
+      window.alert('Could not save — your browser storage is full. Try removing a picture from an older word to free up space.');
     }
   };
 
   // Palavra nova nasce vencida (due = agora): entra direto na próxima sessão
   // de flashcards, que é quando o usuário de fato a grava pela primeira vez.
-  const handleAddWord = ({ word, meaning, example, context }) => {
+  // `image` é opcional (data URL já redimensionada — ver resizeImageFileToDataUrl).
+  const handleAddWord = ({ word, meaning, example, context, image }) => {
     const trimmedWord = (word || '').trim();
     if (!trimmedWord || !userName) return;
     const entry = {
@@ -736,6 +779,7 @@ function App() {
       meaning: (meaning || '').trim(),
       example: (example || '').trim(),
       context: (context || '').trim(),
+      image: image || null,
       createdAt: Date.now(),
       step: 0,
       due: Date.now(),
@@ -2919,15 +2963,127 @@ function ReviewCard({ items, dueWordsCount, onOpenItem, onOpenWords, embedded })
   );
 }
 
+// Área de imagem-mnemônica do "My Words": aceita as 3 formas pedidas —
+// clique pra escolher um arquivo, arrastar-e-soltar, ou colar (Ctrl+V) uma
+// imagem copiada de outro lugar. Sem imagem, mostra a área de captura vazia;
+// com imagem, vira uma prévia com botão de remover (clicar na prévia não
+// reabre o seletor — é preciso remover primeiro, pra não trocar sem querer).
+//
+// O colar NÃO é tratado aqui dentro: como esta div só recebe foco se o
+// usuário clicar exatamente nela, um Ctrl+V com o cursor em "Word"/"Meaning"/
+// "Example" nunca chegaria até aqui. Em vez disso, o formulário INTEIRO (ver
+// WordbookPage/WordQuickAdd) escuta onPaste — o evento sobe (bubble) de
+// qualquer campo de texto até o <form>, então colar uma imagem funciona não
+// importa qual campo esteja focado no momento.
+function ImageDropZone({ image, onChange, compact }) {
+  const inputRef = useRef(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState('');
+
+  const processFile = async (file) => {
+    if (!file || !file.type.startsWith('image/')) {
+      setError('Please use an image file.');
+      return;
+    }
+    setError('');
+    setIsProcessing(true);
+    try {
+      const dataUrl = await resizeImageFileToDataUrl(file);
+      onChange(dataUrl);
+    } catch (err) {
+      setError('Could not load that image.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleFileInput = (event) => {
+    processFile(event.target.files?.[0]);
+    event.target.value = '';
+  };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    setIsDragOver(false);
+    processFile(event.dataTransfer?.files?.[0]);
+  };
+
+  if (image) {
+    return (
+      <div className={`image-dropzone image-dropzone--filled${compact ? ' image-dropzone--compact' : ''}`}>
+        <img src={image} alt="" className="image-dropzone-preview" />
+        <button
+          type="button"
+          className="image-dropzone-remove"
+          onClick={() => onChange(null)}
+          aria-label="Remove image"
+          title="Remove image"
+        >
+          ✕
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`image-dropzone${isDragOver ? ' is-dragover' : ''}${compact ? ' image-dropzone--compact' : ''}`}
+      tabIndex={0}
+      role="button"
+      aria-label="Add a picture: click to upload, drag a file here, or paste from the clipboard in any field of this form"
+      onClick={() => inputRef.current?.click()}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          inputRef.current?.click();
+        }
+      }}
+      onDragOver={(event) => {
+        event.preventDefault();
+        setIsDragOver(true);
+      }}
+      onDragLeave={() => setIsDragOver(false)}
+      onDrop={handleDrop}
+    >
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="image-dropzone-input"
+        onChange={handleFileInput}
+        tabIndex={-1}
+      />
+      {isProcessing ? (
+        <span className="image-dropzone-hint">Processing…</span>
+      ) : (
+        <span className="image-dropzone-hint">
+          Add a picture (optional)
+          <small>Click to upload, drag a file here, or paste (Ctrl+V) in any field</small>
+        </span>
+      )}
+      {error && <span className="image-dropzone-error">{error}</span>}
+    </div>
+  );
+}
+
 // Página "My Words": caderno de vocabulário pessoal do usuário. Lista as
-// palavras salvas (com significado/exemplo/contexto), permite adicionar e
-// apagar, e tem o modo de prática por flashcards (frente = palavra, verso =
-// significado + exemplo; Again/Good/Easy agenda a próxima revisão — ver
-// FLASHCARD_STEPS_DAYS).
+// palavras salvas (com significado/exemplo/contexto/imagem), permite
+// adicionar e apagar, e tem o modo de prática por flashcards. Again/Good/Easy
+// agenda a próxima revisão (ver FLASHCARD_STEPS_DAYS).
+//
+// Direção do flashcard depende de ter imagem ou não:
+// - Sem imagem: frente = palavra, verso = significado + exemplo (recall
+//   tradicional, L2 → L1).
+// - Com imagem: frente = imagem + significado JUNTOS, verso = a palavra —
+//   invertido de propósito (pedido do usuário): força o aluno a olhar a
+//   imagem, ler o significado, e tentar lembrar/reconhecer a palavra em
+//   inglês antes de revelar, em vez de só reconhecer a tradução.
 function WordbookPage({ entries, onAdd, onDelete, onGrade }) {
   const [word, setWord] = useState('');
   const [meaning, setMeaning] = useState('');
   const [example, setExample] = useState('');
+  const [image, setImage] = useState(null);
   const [practiceIds, setPracticeIds] = useState(null);
   const [practiceIndex, setPracticeIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -2939,10 +3095,26 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade }) {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (!word.trim()) return;
-    onAdd({ word, meaning, example, context: '' });
+    onAdd({ word, meaning, example, context: '', image });
     setWord('');
     setMeaning('');
     setExample('');
+    setImage(null);
+  };
+
+  // Colar uma imagem com o cursor em QUALQUER campo do formulário (não só
+  // dentro da ImageDropZone) já anexa a foto — pedido explícito do usuário
+  // depois de notar que colar só funcionava com a caixinha de imagem focada.
+  // O evento de paste sobe (bubble) de qualquer <input> até este <form>; só
+  // interceptamos (preventDefault) quando o clipboard realmente tem uma
+  // imagem, senão colar texto normal nos campos continua funcionando.
+  const handleFormPaste = (event) => {
+    const file = getImageFileFromClipboardEvent(event);
+    if (!file) return;
+    event.preventDefault();
+    resizeImageFileToDataUrl(file)
+      .then(setImage)
+      .catch(() => window.alert('Could not read that image from the clipboard.'));
   };
 
   const startPractice = () => {
@@ -2985,57 +3157,95 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade }) {
         </span>
       </div>
 
-      {practicing && currentCard ? (
-        <div className="flashcard">
-          <p className="flashcard-progress">
-            Card {practiceIndex + 1} of {practiceIds.length}
-          </p>
-          <p className="flashcard-word">{currentCard.word}</p>
-          {currentCard.context && <p className="flashcard-context">from {currentCard.context}</p>}
-          {flipped ? (
-            <div className="flashcard-back">
-              <p className="flashcard-meaning">{currentCard.meaning || '(no meaning saved)'}</p>
-              {currentCard.example && <p className="flashcard-example">“{currentCard.example}”</p>}
-              <div className="flashcard-actions">
-                <button type="button" className="flashcard-grade again" onClick={() => gradeCard('again')}>
-                  Again
-                  <small>1 day</small>
-                </button>
-                <button type="button" className="flashcard-grade good" onClick={() => gradeCard('good')}>
-                  Good
-                  <small>
-                    {FLASHCARD_STEPS_DAYS[Math.min(FLASHCARD_STEPS_DAYS.length - 1, (currentCard.step || 0) + 1)]} days
-                  </small>
-                </button>
-                <button type="button" className="flashcard-grade easy" onClick={() => gradeCard('easy')}>
-                  Easy
-                  <small>
-                    {FLASHCARD_STEPS_DAYS[Math.min(FLASHCARD_STEPS_DAYS.length - 1, (currentCard.step || 0) + 2)]} days
-                  </small>
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="flashcard-actions">
-              <button type="button" className="show-answers-btn" onClick={() => setFlipped(true)}>
-                Show meaning
-              </button>
-            </div>
-          )}
+      {practicing && currentCard ? (() => {
+        const hasImage = Boolean(currentCard.image);
+        const gradeButtons = (
           <div className="flashcard-actions">
-            <button
-              type="button"
-              className="ghost-button"
-              onClick={() => {
-                setPracticeIds(null);
-                setFlipped(false);
-              }}
-            >
-              Stop practicing
+            <button type="button" className="flashcard-grade again" onClick={() => gradeCard('again')}>
+              Again
+              <small>1 day</small>
+            </button>
+            <button type="button" className="flashcard-grade good" onClick={() => gradeCard('good')}>
+              Good
+              <small>
+                {FLASHCARD_STEPS_DAYS[Math.min(FLASHCARD_STEPS_DAYS.length - 1, (currentCard.step || 0) + 1)]} days
+              </small>
+            </button>
+            <button type="button" className="flashcard-grade easy" onClick={() => gradeCard('easy')}>
+              Easy
+              <small>
+                {FLASHCARD_STEPS_DAYS[Math.min(FLASHCARD_STEPS_DAYS.length - 1, (currentCard.step || 0) + 2)]} days
+              </small>
             </button>
           </div>
-        </div>
-      ) : (
+        );
+
+        return (
+          <div className="flashcard">
+            <p className="flashcard-progress">
+              Card {practiceIndex + 1} of {practiceIds.length}
+            </p>
+
+            {hasImage ? (
+              <>
+                {/* Frente: imagem + significado juntos, palavra escondida —
+                    força o aluno a identificar a palavra a partir dos dois,
+                    em vez de só reconhecer a tradução (ver comentário acima
+                    do componente). */}
+                <img src={currentCard.image} alt="" className="flashcard-image" />
+                <p className="flashcard-meaning flashcard-meaning--prompt">
+                  {currentCard.meaning || '(no meaning saved)'}
+                </p>
+                {currentCard.context && <p className="flashcard-context">from {currentCard.context}</p>}
+                {flipped ? (
+                  <div className="flashcard-back">
+                    <p className="flashcard-word">{currentCard.word}</p>
+                    {currentCard.example && <p className="flashcard-example">“{currentCard.example}”</p>}
+                    {gradeButtons}
+                  </div>
+                ) : (
+                  <div className="flashcard-actions">
+                    <button type="button" className="show-answers-btn" onClick={() => setFlipped(true)}>
+                      Show word
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <p className="flashcard-word">{currentCard.word}</p>
+                {currentCard.context && <p className="flashcard-context">from {currentCard.context}</p>}
+                {flipped ? (
+                  <div className="flashcard-back">
+                    <p className="flashcard-meaning">{currentCard.meaning || '(no meaning saved)'}</p>
+                    {currentCard.example && <p className="flashcard-example">“{currentCard.example}”</p>}
+                    {gradeButtons}
+                  </div>
+                ) : (
+                  <div className="flashcard-actions">
+                    <button type="button" className="show-answers-btn" onClick={() => setFlipped(true)}>
+                      Show meaning
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+
+            <div className="flashcard-actions">
+              <button
+                type="button"
+                className="ghost-button"
+                onClick={() => {
+                  setPracticeIds(null);
+                  setFlipped(false);
+                }}
+              >
+                Stop practicing
+              </button>
+            </div>
+          </div>
+        );
+      })() : (
         <>
           {finished && (
             <div className="flashcard flashcard--done">
@@ -3063,7 +3273,7 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade }) {
             </span>
           </div>
 
-          <form className="wordbook-form" onSubmit={handleSubmit}>
+          <form className="wordbook-form" onSubmit={handleSubmit} onPaste={handleFormPaste}>
             <input
               type="text"
               className="wordbook-input"
@@ -3078,6 +3288,7 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade }) {
               value={meaning}
               onChange={(event) => setMeaning(event.target.value)}
             />
+            <ImageDropZone image={image} onChange={setImage} />
             <input
               type="text"
               className="wordbook-input wordbook-input--wide"
@@ -3099,6 +3310,7 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade }) {
             ) : (
               sortedEntries.map((entry) => (
                 <div key={entry.id} className="wordbook-entry">
+                  {entry.image && <img src={entry.image} alt="" className="wordbook-entry-thumb" />}
                   <div className="wordbook-entry-main">
                     <span className="wordbook-entry-word">{entry.word}</span>
                     {entry.meaning && <p className="wordbook-entry-meaning">{entry.meaning}</p>}
@@ -3136,6 +3348,7 @@ function WordQuickAdd({ contextLabel, onAdd }) {
   const [word, setWord] = useState('');
   const [meaning, setMeaning] = useState('');
   const [example, setExample] = useState('');
+  const [image, setImage] = useState(null);
   const [justAdded, setJustAdded] = useState(false);
 
   const handleOpen = () => {
@@ -3153,18 +3366,30 @@ function WordQuickAdd({ contextLabel, onAdd }) {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (!word.trim()) return;
-    onAdd({ word, meaning, example, context: contextLabel });
+    onAdd({ word, meaning, example, context: contextLabel, image });
     setWord('');
     setMeaning('');
     setExample('');
+    setImage(null);
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1500);
+  };
+
+  // Mesma ideia do WordbookPage: colar uma imagem com o cursor em qualquer
+  // campo deste mini-formulário já anexa a foto (o evento sobe até o form).
+  const handleFormPaste = (event) => {
+    const file = getImageFileFromClipboardEvent(event);
+    if (!file) return;
+    event.preventDefault();
+    resizeImageFileToDataUrl(file)
+      .then(setImage)
+      .catch(() => window.alert('Could not read that image from the clipboard.'));
   };
 
   return (
     <>
       {open && (
-        <form className="word-quickadd" onSubmit={handleSubmit}>
+        <form className="word-quickadd" onSubmit={handleSubmit} onPaste={handleFormPaste}>
           <div className="word-quickadd-head">
             <strong>Add to My Words</strong>
             <button
@@ -3191,6 +3416,7 @@ function WordQuickAdd({ contextLabel, onAdd }) {
             value={meaning}
             onChange={(event) => setMeaning(event.target.value)}
           />
+          <ImageDropZone image={image} onChange={setImage} compact />
           <input
             type="text"
             className="wordbook-input"
