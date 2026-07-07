@@ -25,6 +25,18 @@ const MIN_RIGHT_WIDTH = 260;
 // Velocidades disponíveis no player de áudio ancorado.
 const AUDIO_SPEEDS = [0.75, 1, 1.25, 1.5, 2];
 
+// Revisão espaçada ("Today's Review"): dias até um item autoavaliado voltar
+// à fila de revisão, conforme a nota dada — nota baixa volta logo, nota alta
+// volta bem depois. O item sai da fila quando é reavaliado (qualquer nota),
+// o que agenda a próxima repetição.
+const DAY_MS = 24 * 60 * 60 * 1000;
+const REVIEW_INTERVALS_BY_RATING = { 1: 1, 2: 2, 3: 3, 4: 7, 5: 30 };
+
+// Escada de intervalos (em dias) dos flashcards do "My Words": palavra nova
+// nasce vencida (revisar já); "Again" volta ao primeiro degrau, "Good" sobe
+// um degrau, "Easy" sobe dois.
+const FLASHCARD_STEPS_DAYS = [1, 3, 7, 14, 30, 60];
+
 // Cadastro é só-nome, sem senha (ver PROJECT_SUMMARY.md): "users" guarda a
 // lista de nomes já cadastrados neste navegador e "activeUser" aponta quem
 // está "logado" agora. Todo progresso (respostas, notas, autoavaliação,
@@ -77,6 +89,42 @@ const migrateLegacyDataToUser = (name) => {
   } catch (error) {
     // Armazenamento indisponível — segue sem migrar dados antigos.
   }
+};
+
+// Varre as chaves "u:<nome>:review:<curso>:<id>" e devolve só os itens já
+// vencidos (due <= agora), mais atrasados primeiro — é o conteúdo do card
+// "Today's Review" da Home/Courses.
+const loadDueReviews = (name) => {
+  const due = [];
+  try {
+    const prefix = userKey(name, 'review:');
+    const now = Date.now();
+    for (let i = 0; i < window.localStorage.length; i += 1) {
+      const key = window.localStorage.key(i);
+      if (!key || !key.startsWith(prefix)) continue;
+      const remainder = key.slice(prefix.length);
+      const separator = remainder.indexOf(':');
+      if (separator === -1) continue;
+      let entry;
+      try {
+        entry = JSON.parse(window.localStorage.getItem(key));
+      } catch (error) {
+        continue;
+      }
+      if (entry && typeof entry.due === 'number' && entry.due <= now) {
+        due.push({
+          course: remainder.slice(0, separator),
+          id: remainder.slice(separator + 1),
+          rating: entry.rating,
+          due: entry.due,
+        });
+      }
+    }
+  } catch (error) {
+    // Armazenamento indisponível — sem fila de revisão nesta sessão.
+  }
+  due.sort((a, b) => a.due - b.due);
+  return due;
 };
 
 // Exercícios agrupados por unidade, em ordem numérica (N.1, N.2, ...).
@@ -357,6 +405,13 @@ const IconDots = () => (
   </svg>
 );
 
+const IconBack5 = () => (
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
+    <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
+    <text x="12" y="16.5" textAnchor="middle" fontSize="7.5" fontWeight="700" stroke="none">5</text>
+  </svg>
+);
+
 function App() {
   const [pdfFileUrl, setPdfFileUrl] = useState('');
   const [pdfFileName, setPdfFileName] = useState('');
@@ -385,6 +440,8 @@ function App() {
   const [american1VisitedSections, setAmerican1VisitedSections] = useState({});
   const [grammarElemUnitRatings, setGrammarElemUnitRatings] = useState({});
   const [grammarElemVisitedUnits, setGrammarElemVisitedUnits] = useState({});
+  const [reviewQueue, setReviewQueue] = useState([]);
+  const [wordbookEntries, setWordbookEntries] = useState([]);
   const layoutRef = useRef(null);
   const startDragRef = useRef(null);
 
@@ -458,6 +515,33 @@ function App() {
     }
   }, [userName]);
 
+  // Recarrega a fila de revisão vencida ao trocar de usuário e a cada troca
+  // de página — avaliar um item acontece dentro de um curso, então quando o
+  // usuário volta pra Home/Courses a fila já reflete o reagendamento.
+  useEffect(() => {
+    if (!userName) {
+      setReviewQueue([]);
+      return;
+    }
+    setReviewQueue(loadDueReviews(userName));
+  }, [userName, activePage]);
+
+  // Agenda (ou reagenda) a revisão espaçada de um item autoavaliado — a
+  // próxima data depende só da última nota dada (ver
+  // REVIEW_INTERVALS_BY_RATING).
+  const scheduleReview = (course, id, rating) => {
+    if (!userName) return;
+    const days = REVIEW_INTERVALS_BY_RATING[rating] || 7;
+    try {
+      window.localStorage.setItem(
+        userKey(userName, `review:${course}:${id}`),
+        JSON.stringify({ rating, ratedAt: Date.now(), due: Date.now() + days * DAY_MS }),
+      );
+    } catch (error) {
+      // Armazenamento indisponível — sem agendamento de revisão.
+    }
+  };
+
   // Autoavaliação é voluntária: só entra na média o exercício em que o
   // usuário realmente clicou numa estrela.
   const handleRateExercise = (exerciseId, value) => {
@@ -468,6 +552,7 @@ function App() {
     } catch (error) {
       // Armazenamento indisponível — a nota fica só nesta sessão.
     }
+    scheduleReview('vocabulary', exerciseId, value);
   };
 
   const ratingValues = Object.values(exerciseRatings);
@@ -534,6 +619,7 @@ function App() {
     } catch (error) {
       // Armazenamento indisponível — a nota fica só nesta sessão.
     }
+    scheduleReview('american1', unit, value);
   };
 
   const american1RatingValues = Object.values(american1UnitRatings);
@@ -601,6 +687,7 @@ function App() {
     } catch (error) {
       // Armazenamento indisponível — a nota fica só nesta sessão.
     }
+    scheduleReview('grammarElem', unit, value);
   };
 
   const grammarElemRatingValues = Object.values(grammarElemUnitRatings);
@@ -611,6 +698,69 @@ function App() {
   const grammarElemProgressPercent = grammarElemUnitNumbers.length > 0
     ? Math.round((grammarElemVisitedUnitsCount / grammarElemUnitNumbers.length) * 100)
     : 0;
+
+  // Caderno de vocabulário ("My Words"): um único array JSON por usuário
+  // (chave "u:<nome>:wordbook") com as palavras salvas e o agendamento de
+  // flashcard de cada uma ({step, due} — ver FLASHCARD_STEPS_DAYS).
+  useEffect(() => {
+    if (!userName) {
+      setWordbookEntries([]);
+      return;
+    }
+    try {
+      const raw = window.localStorage.getItem(userKey(userName, 'wordbook'));
+      const list = raw ? JSON.parse(raw) : [];
+      setWordbookEntries(Array.isArray(list) ? list : []);
+    } catch (error) {
+      setWordbookEntries([]);
+    }
+  }, [userName]);
+
+  const persistWordbook = (next) => {
+    setWordbookEntries(next);
+    try {
+      window.localStorage.setItem(userKey(userName, 'wordbook'), JSON.stringify(next));
+    } catch (error) {
+      // Armazenamento indisponível — as palavras ficam só nesta sessão.
+    }
+  };
+
+  // Palavra nova nasce vencida (due = agora): entra direto na próxima sessão
+  // de flashcards, que é quando o usuário de fato a grava pela primeira vez.
+  const handleAddWord = ({ word, meaning, example, context }) => {
+    const trimmedWord = (word || '').trim();
+    if (!trimmedWord || !userName) return;
+    const entry = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      word: trimmedWord,
+      meaning: (meaning || '').trim(),
+      example: (example || '').trim(),
+      context: (context || '').trim(),
+      createdAt: Date.now(),
+      step: 0,
+      due: Date.now(),
+    };
+    persistWordbook([entry, ...wordbookEntries]);
+  };
+
+  const handleDeleteWord = (id) => {
+    persistWordbook(wordbookEntries.filter((entry) => entry.id !== id));
+  };
+
+  // Autoavaliação do flashcard: "again" volta ao primeiro degrau da escada
+  // de intervalos, "good" sobe um degrau, "easy" sobe dois.
+  const handleGradeWord = (id, grade) => {
+    persistWordbook(wordbookEntries.map((entry) => {
+      if (entry.id !== id) return entry;
+      const currentStep = Number.isInteger(entry.step) ? entry.step : 0;
+      const nextStep = grade === 'again'
+        ? 0
+        : Math.min(FLASHCARD_STEPS_DAYS.length - 1, currentStep + (grade === 'easy' ? 2 : 1));
+      return { ...entry, step: nextStep, due: Date.now() + FLASHCARD_STEPS_DAYS[nextStep] * DAY_MS };
+    }));
+  };
+
+  const wordbookDueCount = wordbookEntries.filter((entry) => (entry.due ?? 0) <= Date.now()).length;
 
   useEffect(() => {
     return () => {
@@ -935,6 +1085,53 @@ function App() {
     setActivePage('american1-unit');
   };
 
+  // Abre um item vencido do "Today's Review" direto na tela onde ele é
+  // estudado (e reavaliado — é a reavaliação que agenda a próxima repetição).
+  const handleOpenReviewItem = (item) => {
+    if (item.course === 'vocabulary') {
+      const unit = Number(item.id.split('.')[0]);
+      if (!exerciseCoords[item.id] || !unit) return;
+      setSelectedUnit(unit);
+      setSelectedExercise(item.id);
+      setActiveCourseId('vocabulary');
+      setActivePage('exercises');
+    } else if (item.course === 'american1') {
+      const unit = Number(item.id);
+      const sections = american1SectionsByUnit[unit] || [];
+      if (sections.length === 0) return;
+      setSelectedAmerican1Unit(unit);
+      setSelectedAmerican1Section(sections[0]?.section ?? null);
+      setShowAmerican1Answers(false);
+      setActiveCourseId('american1');
+      setActivePage('american1-unit');
+    } else if (item.course === 'grammarElem') {
+      const unit = Number(item.id);
+      if (!unit || unit > GRAMMAR_ELEM_UNIT_COUNT) return;
+      setSelectedGrammarElemUnit(unit);
+      setShowGrammarElemAnswers(false);
+      setActiveCourseId('grammarElem');
+      setActivePage('grammarElem-unit');
+    }
+  };
+
+  // Mesma trava de acesso de "Courses"/"My Profile": o caderno de palavras é
+  // por usuário, então sem alguém logado cai na tela de registro.
+  const handleOpenWordbook = (event) => {
+    event.preventDefault();
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
+    setActivePage('wordbook');
+    setSelectedUnit(null);
+    setSelectedAmerican1Unit(null);
+    setSelectedAmerican1Section(null);
+    setSelectedGrammarElemUnit(null);
+    setSelectedGrammarElemAppendix(null);
+    setSelectedGrammarElemAdditional(null);
+    setActiveCourseId(null);
+  };
+
   const handleOpenProfile = (event) => {
     event.preventDefault();
     if (!userName) {
@@ -1216,6 +1413,7 @@ function App() {
     }
     setExerciseRatings({});
     removeLocalStorageKeysWithPrefix('rating:');
+    removeLocalStorageKeysWithPrefix('review:vocabulary:');
   };
 
   const handleResetLessonNotes = () => {
@@ -1246,6 +1444,7 @@ function App() {
       // Armazenamento indisponível.
     }
     removeLocalStorageKeysWithPrefix('rating:');
+    removeLocalStorageKeysWithPrefix('review:vocabulary:');
     removeLocalStorageKeysWithPrefix('notes:', ['american1', 'grammarElem']);
     removeLocalStorageKeysWithPrefix('answers:');
   };
@@ -1272,6 +1471,7 @@ function App() {
     }
     setAmerican1UnitRatings({});
     removeLocalStorageKeysWithPrefix('american1-rating:');
+    removeLocalStorageKeysWithPrefix('review:american1:');
   };
 
   const handleResetAmerican1Notes = () => {
@@ -1293,6 +1493,7 @@ function App() {
       // Armazenamento indisponível.
     }
     removeLocalStorageKeysWithPrefix('american1-rating:');
+    removeLocalStorageKeysWithPrefix('review:american1:');
     removeLocalStorageKeysWithPrefix('notes:american1');
   };
 
@@ -1314,6 +1515,7 @@ function App() {
     }
     setGrammarElemUnitRatings({});
     removeLocalStorageKeysWithPrefix('grammarElem-rating:');
+    removeLocalStorageKeysWithPrefix('review:grammarElem:');
   };
 
   const handleResetGrammarElemNotes = () => {
@@ -1342,6 +1544,7 @@ function App() {
       // Armazenamento indisponível.
     }
     removeLocalStorageKeysWithPrefix('grammarElem-rating:');
+    removeLocalStorageKeysWithPrefix('review:grammarElem:');
     removeLocalStorageKeysWithPrefix('notes:grammarElem');
     removeLocalStorageKeysWithPrefix('answers:grammarElem');
   };
@@ -1439,6 +1642,20 @@ function App() {
   const activeCourse = activeCourseId ? courses[activeCourseId] : null;
   const visitedUnitsCount = Object.keys(visitedUnits).length;
 
+  // De onde a palavra foi salva (curso + unit) — gravado junto com a entrada
+  // do "My Words" pelo botão flutuante "+ Word" das telas de estudo.
+  const studyContextLabel = selectedUnit
+    ? `Vocabulary Unit ${selectedUnit}`
+    : selectedAmerican1Unit
+      ? `American English 1 Unit ${selectedAmerican1Unit}${selectedAmerican1Section ? ` ${selectedAmerican1Section}` : ''}`
+      : selectedGrammarElemUnit
+        ? `Grammar Elementary Unit ${selectedGrammarElemUnit}`
+        : selectedGrammarElemAppendix
+          ? `Grammar Elementary Appendix ${selectedGrammarElemAppendix}`
+          : selectedGrammarElemAdditional
+            ? `Grammar Elementary Additional Exercise ${selectedGrammarElemAdditional}`
+            : '';
+
   return (
     <div className={`app-shell${activePage === 'grammarElem' ? ' app-shell--allow-grow' : ''}`}>
       <header className="app-header">
@@ -1451,12 +1668,13 @@ function App() {
             <ol>
               <li className="menu-item"><a href="#0" onClick={handleCourses}>Courses</a></li>
               <li className="menu-item"><a href="#0" onClick={handleAllUnits}>All Units</a></li>
+              <li className="menu-item"><a href="#0" onClick={handleOpenWordbook}>My Words</a></li>
             </ol>
           ) : (
             <ol>
               <li className="menu-item"><a href="#0" onClick={handleHome}>Home</a></li>
               <li className="menu-item"><a href="#0" onClick={handleCourses}>Courses</a></li>
-              <li className="menu-item"><a href="#link-1">Link 1</a></li>
+              <li className="menu-item"><a href="#0" onClick={handleOpenWordbook}>My Words</a></li>
               <li className="menu-item"><a href="#link-2">LINK 2</a></li>
               <li className="menu-item"><a href="#link-3">LINK 3</a></li>
             </ol>
@@ -1709,6 +1927,15 @@ function App() {
       ) : activePage === 'courses' ? (
         <main className="landing-page landing-page--courses">
           <div className="landing-panel course-links-panel">
+            {userName && (
+              <ReviewCard
+                items={reviewQueue}
+                dueWordsCount={wordbookDueCount}
+                onOpenItem={handleOpenReviewItem}
+                onOpenWords={handleOpenWordbook}
+                embedded
+              />
+            )}
             <div className="course-links">
               <a className="course-link" href="#link-vocabulary" onClick={handleVocabulary}>
                 <span>{courses.vocabulary.title}</span>
@@ -2371,6 +2598,15 @@ function App() {
             </div>
           </aside>
         </main>
+      ) : activePage === 'wordbook' ? (
+        <main className="landing-page vocabulary-mode">
+          <WordbookPage
+            entries={wordbookEntries}
+            onAdd={handleAddWord}
+            onDelete={handleDeleteWord}
+            onGrade={handleGradeWord}
+          />
+        </main>
       ) : activePage === 'profile' ? (
         <main className="landing-page vocabulary-mode">
           <div className="landing-panel profile-panel">
@@ -2586,10 +2822,398 @@ function App() {
                 Start Learning
               </button>
             </div>
+            {userName && (
+              <ReviewCard
+                items={reviewQueue}
+                dueWordsCount={wordbookDueCount}
+                onOpenItem={handleOpenReviewItem}
+                onOpenWords={handleOpenWordbook}
+              />
+            )}
           </div>
         </main>
       )}
+
+      {userName && insideCourse && (
+        <WordQuickAdd contextLabel={studyContextLabel} onAdd={handleAddWord} />
+      )}
     </div>
+  );
+}
+
+// Título/subtítulo de um item da fila "Today's Review", conforme o curso.
+const reviewItemLabel = (item) => {
+  if (item.course === 'vocabulary') {
+    const unit = Number(item.id.split('.')[0]);
+    return {
+      title: `Exercise ${item.id}`,
+      subtitle: `Vocabulary Pre Intermediate${unitTable[unit] ? ` — ${unitTable[unit]}` : ''}`,
+    };
+  }
+  if (item.course === 'american1') {
+    return { title: `Unit ${item.id}`, subtitle: 'American English Level 1' };
+  }
+  if (item.course === 'grammarElem') {
+    return { title: `Unit ${item.id}`, subtitle: 'Grammar English Elementary' };
+  }
+  return { title: item.id, subtitle: item.course };
+};
+
+// Card "Today's Review" (Home e Courses): lista os itens autoavaliados cuja
+// revisão espaçada venceu + o atalho pros flashcards vencidos do "My Words".
+// Some por completo quando não há nada a revisar — a Home continua limpa.
+function ReviewCard({ items, dueWordsCount, onOpenItem, onOpenWords, embedded }) {
+  const MAX_SHOWN = 8;
+  if (items.length === 0 && dueWordsCount === 0) {
+    return null;
+  }
+  const shown = items.slice(0, MAX_SHOWN);
+  const hiddenCount = items.length - shown.length;
+
+  return (
+    <section className={`review-card${embedded ? ' review-card--embedded' : ''}`} aria-label="Today's review">
+      <div className="review-card-head">
+        <h2>Today's Review</h2>
+        <span className="review-card-count">
+          {items.length + (dueWordsCount > 0 ? 1 : 0)} item{items.length + (dueWordsCount > 0 ? 1 : 0) === 1 ? '' : 's'}
+        </span>
+      </div>
+      <p className="review-card-hint">
+        Revisit what you studied before you forget it — after reviewing, rate the item again to
+        schedule the next repetition.
+      </p>
+      <div className="review-items">
+        {dueWordsCount > 0 && (
+          <button type="button" className="review-item review-item--words" onClick={onOpenWords}>
+            <span className="review-item-main">
+              <span className="review-item-title">
+                Practice {dueWordsCount} word{dueWordsCount === 1 ? '' : 's'}
+              </span>
+              <span className="review-item-sub">My Words — flashcards</span>
+            </span>
+            <span className="review-item-badge">Practice</span>
+          </button>
+        )}
+        {shown.map((item) => {
+          const label = reviewItemLabel(item);
+          return (
+            <button
+              key={`${item.course}:${item.id}`}
+              type="button"
+              className="review-item"
+              onClick={() => onOpenItem(item)}
+            >
+              <span className="review-item-main">
+                <span className="review-item-title">{label.title}</span>
+                <span className="review-item-sub">{label.subtitle}</span>
+              </span>
+              <span className="review-item-badge">rated {item.rating}★</span>
+            </button>
+          );
+        })}
+      </div>
+      {hiddenCount > 0 && (
+        <p className="review-more">…and {hiddenCount} more waiting after these.</p>
+      )}
+    </section>
+  );
+}
+
+// Página "My Words": caderno de vocabulário pessoal do usuário. Lista as
+// palavras salvas (com significado/exemplo/contexto), permite adicionar e
+// apagar, e tem o modo de prática por flashcards (frente = palavra, verso =
+// significado + exemplo; Again/Good/Easy agenda a próxima revisão — ver
+// FLASHCARD_STEPS_DAYS).
+function WordbookPage({ entries, onAdd, onDelete, onGrade }) {
+  const [word, setWord] = useState('');
+  const [meaning, setMeaning] = useState('');
+  const [example, setExample] = useState('');
+  const [practiceIds, setPracticeIds] = useState(null);
+  const [practiceIndex, setPracticeIndex] = useState(0);
+  const [flipped, setFlipped] = useState(false);
+  const [finished, setFinished] = useState(false);
+
+  const now = Date.now();
+  const dueEntries = entries.filter((entry) => (entry.due ?? 0) <= now);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (!word.trim()) return;
+    onAdd({ word, meaning, example, context: '' });
+    setWord('');
+    setMeaning('');
+    setExample('');
+  };
+
+  const startPractice = () => {
+    setPracticeIds(dueEntries.map((entry) => entry.id));
+    setPracticeIndex(0);
+    setFlipped(false);
+    setFinished(false);
+  };
+
+  const practicing = Array.isArray(practiceIds) && practiceIds.length > 0 && !finished;
+  const currentCard = practicing ? entries.find((entry) => entry.id === practiceIds[practiceIndex]) : null;
+
+  const gradeCard = (grade) => {
+    if (!currentCard) return;
+    onGrade(currentCard.id, grade);
+    setFlipped(false);
+    if (practiceIndex < practiceIds.length - 1) {
+      setPracticeIndex(practiceIndex + 1);
+    } else {
+      setFinished(true);
+      setPracticeIds(null);
+    }
+  };
+
+  const formatDue = (entry) => {
+    const due = entry.due ?? 0;
+    if (due <= now) return 'review now';
+    const days = Math.ceil((due - now) / DAY_MS);
+    return `review in ${days} day${days === 1 ? '' : 's'}`;
+  };
+
+  const sortedEntries = [...entries].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+  return (
+    <div className="landing-panel vocabulary-page wordbook-panel">
+      <div className="wordbook-head">
+        <h2 className="vocabulary-title">My Words</h2>
+        <span className="wordbook-count">
+          {entries.length} word{entries.length === 1 ? '' : 's'} saved
+        </span>
+      </div>
+
+      {practicing && currentCard ? (
+        <div className="flashcard">
+          <p className="flashcard-progress">
+            Card {practiceIndex + 1} of {practiceIds.length}
+          </p>
+          <p className="flashcard-word">{currentCard.word}</p>
+          {currentCard.context && <p className="flashcard-context">from {currentCard.context}</p>}
+          {flipped ? (
+            <div className="flashcard-back">
+              <p className="flashcard-meaning">{currentCard.meaning || '(no meaning saved)'}</p>
+              {currentCard.example && <p className="flashcard-example">“{currentCard.example}”</p>}
+              <div className="flashcard-actions">
+                <button type="button" className="flashcard-grade again" onClick={() => gradeCard('again')}>
+                  Again
+                  <small>1 day</small>
+                </button>
+                <button type="button" className="flashcard-grade good" onClick={() => gradeCard('good')}>
+                  Good
+                  <small>
+                    {FLASHCARD_STEPS_DAYS[Math.min(FLASHCARD_STEPS_DAYS.length - 1, (currentCard.step || 0) + 1)]} days
+                  </small>
+                </button>
+                <button type="button" className="flashcard-grade easy" onClick={() => gradeCard('easy')}>
+                  Easy
+                  <small>
+                    {FLASHCARD_STEPS_DAYS[Math.min(FLASHCARD_STEPS_DAYS.length - 1, (currentCard.step || 0) + 2)]} days
+                  </small>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flashcard-actions">
+              <button type="button" className="show-answers-btn" onClick={() => setFlipped(true)}>
+                Show meaning
+              </button>
+            </div>
+          )}
+          <div className="flashcard-actions">
+            <button
+              type="button"
+              className="ghost-button"
+              onClick={() => {
+                setPracticeIds(null);
+                setFlipped(false);
+              }}
+            >
+              Stop practicing
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {finished && (
+            <div className="flashcard flashcard--done">
+              <p className="flashcard-word">Session complete! 🎉</p>
+              <p className="flashcard-context">
+                Every reviewed word was rescheduled — come back when they are due again.
+              </p>
+            </div>
+          )}
+
+          <div className="wordbook-practice-row">
+            <button
+              type="button"
+              className="show-answers-btn"
+              onClick={startPractice}
+              disabled={dueEntries.length === 0}
+              title={dueEntries.length === 0 ? 'No words due for review right now' : ''}
+            >
+              Practice {dueEntries.length > 0 ? `${dueEntries.length} word${dueEntries.length === 1 ? '' : 's'}` : 'words'}
+            </button>
+            <span className="wordbook-practice-hint">
+              {dueEntries.length > 0
+                ? 'These words are due for review today.'
+                : 'Nothing due right now — add new words or come back later.'}
+            </span>
+          </div>
+
+          <form className="wordbook-form" onSubmit={handleSubmit}>
+            <input
+              type="text"
+              className="wordbook-input"
+              placeholder="Word or expression"
+              value={word}
+              onChange={(event) => setWord(event.target.value)}
+            />
+            <input
+              type="text"
+              className="wordbook-input"
+              placeholder="Meaning / translation"
+              value={meaning}
+              onChange={(event) => setMeaning(event.target.value)}
+            />
+            <input
+              type="text"
+              className="wordbook-input wordbook-input--wide"
+              placeholder="Example sentence (optional)"
+              value={example}
+              onChange={(event) => setExample(event.target.value)}
+            />
+            <button type="submit" className="show-answers-btn" disabled={!word.trim()}>
+              Add word
+            </button>
+          </form>
+
+          <div className="wordbook-list">
+            {sortedEntries.length === 0 ? (
+              <p className="wordbook-empty">
+                No words yet. Add one above, or use the “+ Word” button inside any unit — selecting
+                text in the reading PDF first fills the word in for you.
+              </p>
+            ) : (
+              sortedEntries.map((entry) => (
+                <div key={entry.id} className="wordbook-entry">
+                  <div className="wordbook-entry-main">
+                    <span className="wordbook-entry-word">{entry.word}</span>
+                    {entry.meaning && <p className="wordbook-entry-meaning">{entry.meaning}</p>}
+                    {entry.example && <p className="wordbook-entry-example">“{entry.example}”</p>}
+                    <p className="wordbook-entry-meta">
+                      {entry.context ? `${entry.context} · ` : ''}
+                      {formatDue(entry)}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="wordbook-delete"
+                    title={`Delete "${entry.word}"`}
+                    aria-label={`Delete "${entry.word}"`}
+                    onClick={() => onDelete(entry.id)}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// Botão flutuante "+ Word", presente em toda tela de estudo: abre um mini
+// formulário pra salvar uma palavra no "My Words" sem sair da leitura. O
+// mousedown é engolido (preventDefault) pra NÃO desfazer a seleção de texto
+// no PDF — assim o texto selecionado no leitor entra como a palavra.
+function WordQuickAdd({ contextLabel, onAdd }) {
+  const [open, setOpen] = useState(false);
+  const [word, setWord] = useState('');
+  const [meaning, setMeaning] = useState('');
+  const [example, setExample] = useState('');
+  const [justAdded, setJustAdded] = useState(false);
+
+  const handleOpen = () => {
+    if (!open) {
+      const selection = (window.getSelection?.().toString() || '').trim().replace(/\s+/g, ' ');
+      if (selection && selection.length <= 120) {
+        setWord(selection);
+      }
+      setOpen(true);
+    } else {
+      setOpen(false);
+    }
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (!word.trim()) return;
+    onAdd({ word, meaning, example, context: contextLabel });
+    setWord('');
+    setMeaning('');
+    setExample('');
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 1500);
+  };
+
+  return (
+    <>
+      {open && (
+        <form className="word-quickadd" onSubmit={handleSubmit}>
+          <div className="word-quickadd-head">
+            <strong>Add to My Words</strong>
+            <button
+              type="button"
+              className="word-quickadd-close"
+              onClick={() => setOpen(false)}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+          </div>
+          <input
+            type="text"
+            className="wordbook-input"
+            placeholder="Word or expression"
+            value={word}
+            onChange={(event) => setWord(event.target.value)}
+            autoFocus
+          />
+          <input
+            type="text"
+            className="wordbook-input"
+            placeholder="Meaning / translation"
+            value={meaning}
+            onChange={(event) => setMeaning(event.target.value)}
+          />
+          <input
+            type="text"
+            className="wordbook-input"
+            placeholder="Example sentence (optional)"
+            value={example}
+            onChange={(event) => setExample(event.target.value)}
+          />
+          {contextLabel && <span className="word-quickadd-context">from {contextLabel}</span>}
+          <button type="submit" className="show-answers-btn" disabled={!word.trim()}>
+            {justAdded ? 'Added ✓' : 'Save word'}
+          </button>
+        </form>
+      )}
+      <button
+        type="button"
+        className="word-fab"
+        title="Save a word to My Words (select text in the PDF first to fill it in)"
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={handleOpen}
+      >
+        + Word
+      </button>
+    </>
   );
 }
 
@@ -2806,13 +3430,22 @@ function UnitAudioReader({ fileUrl, onPdfChange, anchors, unit }) {
   );
 }
 
-// Player compacto (play/pause, stop, velocidade) ancorado a um ponto (x, y)
-// da página do PDF, em pontos, escalado para o tamanho renderizado atual.
-function AudioAnchorPlayer({ anchor, scale, unit }) {
+// Miolo compartilhado pelos três players de áudio do app (o <audio> + a
+// pílula de botões): play/pause, voltar 5s, stop, loop A-B e menu de
+// velocidade — antes cada player duplicava tudo isso; agora só muda o
+// wrapper/posicionamento de cada um.
+//
+// Loop A-B (repetir um trecho, essencial pra ditado/shadowing): o mesmo
+// botão marca o início (A) no primeiro clique, o fim (B) no segundo (e já
+// volta pro A tocando em loop), e desliga no terceiro. "Stop" também limpa o
+// loop, já que zera a posição.
+function AudioPlayerControls({ src }) {
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [rate, setRate] = useState(1);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [loopStart, setLoopStart] = useState(null);
+  const [loopEnd, setLoopEnd] = useState(null);
 
   useEffect(() => {
     if (!menuOpen) {
@@ -2845,6 +3478,45 @@ function AudioAnchorPlayer({ anchor, scale, unit }) {
     if (!audio) return;
     audio.pause();
     audio.currentTime = 0;
+    setLoopStart(null);
+    setLoopEnd(null);
+  };
+
+  const rewindFive = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.currentTime = Math.max(0, audio.currentTime - 5);
+  };
+
+  const cycleLoop = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (loopStart === null) {
+      setLoopStart(audio.currentTime);
+    } else if (loopEnd === null) {
+      // Marcar B praticamente em cima do A não forma um trecho tocável —
+      // trata como desistência e desarma o A.
+      if (audio.currentTime > loopStart + 0.5) {
+        setLoopEnd(audio.currentTime);
+        audio.currentTime = loopStart;
+        if (audio.paused) {
+          audio.play();
+        }
+      } else {
+        setLoopStart(null);
+      }
+    } else {
+      setLoopStart(null);
+      setLoopEnd(null);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    const audio = audioRef.current;
+    if (!audio || loopStart === null || loopEnd === null) return;
+    if (audio.currentTime >= loopEnd) {
+      audio.currentTime = loopStart;
+    }
   };
 
   const changeRate = (speed) => {
@@ -2855,6 +3527,74 @@ function AudioAnchorPlayer({ anchor, scale, unit }) {
     setMenuOpen(false);
   };
 
+  const loopTitle = loopStart === null
+    ? 'Repeat a passage: click to mark the start (A)'
+    : loopEnd === null
+      ? 'Click to mark the end (B) and start repeating'
+      : 'Stop repeating this passage';
+
+  return (
+    <>
+      <audio
+        ref={audioRef}
+        src={src}
+        preload="none"
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onEnded={() => setIsPlaying(false)}
+        onTimeUpdate={handleTimeUpdate}
+      />
+      <button type="button" className="ap-btn" title="Play/Pause" onClick={togglePlay}>
+        {isPlaying ? <IconPause /> : <IconPlay />}
+      </button>
+      <button type="button" className="ap-btn" title="Back 5 seconds" onClick={rewindFive}>
+        <IconBack5 />
+      </button>
+      <button type="button" className="ap-btn" title="Stop" onClick={stop}>
+        <IconStop />
+      </button>
+      <button
+        type="button"
+        className={`ap-btn ap-btn-ab${loopEnd !== null ? ' is-looping' : loopStart !== null ? ' is-armed' : ''}`}
+        title={loopTitle}
+        onClick={cycleLoop}
+      >
+        {loopStart !== null && loopEnd === null ? 'A·' : 'A·B'}
+      </button>
+      <div className="ap-wrap">
+        <button
+          type="button"
+          className="ap-btn"
+          title="Speed"
+          onClick={(event) => {
+            event.stopPropagation();
+            setMenuOpen((open) => !open);
+          }}
+        >
+          <IconDots />
+        </button>
+        {menuOpen && (
+          <div className="ap-menu open">
+            {AUDIO_SPEEDS.map((speed) => (
+              <button
+                key={speed}
+                type="button"
+                className={speed === rate ? 'active' : ''}
+                onClick={() => changeRate(speed)}
+              >
+                {speed}x
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+// Player compacto ancorado a um ponto (x, y) da página do PDF, em pontos,
+// escalado para o tamanho renderizado atual (controles: AudioPlayerControls).
+function AudioAnchorPlayer({ anchor, scale, unit }) {
   // Ancorado na margem esquerda da página (sempre vazia), com a borda direita
   // encostando pouco antes da letra e centralizado na sua altura — a faixa
   // colorida da própria letra é estreita demais para caber o player, e
@@ -2869,147 +3609,20 @@ function AudioAnchorPlayer({ anchor, scale, unit }) {
         transform: 'translate(-100%, -50%)',
       }}
     >
-      <audio
-        ref={audioRef}
-        src={`/audio/unit_${unit}/${anchor.audio}`}
-        preload="none"
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        onEnded={() => setIsPlaying(false)}
-      />
-      <button type="button" className="ap-btn" title="Play/Pause" onClick={togglePlay}>
-        {isPlaying ? <IconPause /> : <IconPlay />}
-      </button>
-      <button type="button" className="ap-btn" title="Stop" onClick={stop}>
-        <IconStop />
-      </button>
-      <div className="ap-wrap">
-        <button
-          type="button"
-          className="ap-btn"
-          title="Speed"
-          onClick={(event) => {
-            event.stopPropagation();
-            setMenuOpen((open) => !open);
-          }}
-        >
-          <IconDots />
-        </button>
-        {menuOpen && (
-          <div className="ap-menu open">
-            {AUDIO_SPEEDS.map((speed) => (
-              <button
-                key={speed}
-                type="button"
-                className={speed === rate ? 'active' : ''}
-                onClick={() => changeRate(speed)}
-              >
-                {speed}x
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      <AudioPlayerControls src={`/audio/unit_${unit}/${anchor.audio}`} />
     </div>
   );
 }
 
-// Mesmo player do curso Vocabulary (play/pause, stop, menu de velocidade —
-// ver AudioAnchorPlayer), mas sem ancoragem num ponto (x, y) da página: fica
-// no fluxo normal da toolbar, ao lado da letra (A, B, C...) do Grammar
-// English Elementary — não tem PDF pra ancorar em cima, é só um link de
-// áudio simples.
+// Mesmo player do curso Vocabulary (controles: AudioPlayerControls), mas sem
+// ancoragem num ponto (x, y) da página: fica no fluxo normal da toolbar, ao
+// lado da letra (A, B, C...) do Grammar English Elementary — não tem PDF pra
+// ancorar em cima, é só um link de áudio simples.
 function SimpleAudioPlayer({ src, label }) {
-  const audioRef = useRef(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [rate, setRate] = useState(1);
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  useEffect(() => {
-    if (!menuOpen) {
-      return undefined;
-    }
-    const closeMenu = () => setMenuOpen(false);
-    document.addEventListener('click', closeMenu);
-    return () => document.removeEventListener('click', closeMenu);
-  }, [menuOpen]);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    return () => {
-      audio?.pause();
-    };
-  }, []);
-
-  const togglePlay = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (audio.paused) {
-      audio.play();
-    } else {
-      audio.pause();
-    }
-  };
-
-  const stop = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.pause();
-    audio.currentTime = 0;
-  };
-
-  const changeRate = (speed) => {
-    setRate(speed);
-    if (audioRef.current) {
-      audioRef.current.playbackRate = speed;
-    }
-    setMenuOpen(false);
-  };
-
   return (
     <div className="audio-anchor audio-anchor-inline">
       <span className="audio-anchor-inline-label">{label}</span>
-      <audio
-        ref={audioRef}
-        src={src}
-        preload="none"
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        onEnded={() => setIsPlaying(false)}
-      />
-      <button type="button" className="ap-btn" title="Play/Pause" onClick={togglePlay}>
-        {isPlaying ? <IconPause /> : <IconPlay />}
-      </button>
-      <button type="button" className="ap-btn" title="Stop" onClick={stop}>
-        <IconStop />
-      </button>
-      <div className="ap-wrap">
-        <button
-          type="button"
-          className="ap-btn"
-          title="Speed"
-          onClick={(event) => {
-            event.stopPropagation();
-            setMenuOpen((open) => !open);
-          }}
-        >
-          <IconDots />
-        </button>
-        {menuOpen && (
-          <div className="ap-menu open">
-            {AUDIO_SPEEDS.map((speed) => (
-              <button
-                key={speed}
-                type="button"
-                className={speed === rate ? 'active' : ''}
-                onClick={() => changeRate(speed)}
-              >
-                {speed}x
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      <AudioPlayerControls src={src} />
     </div>
   );
 }
@@ -3148,57 +3761,11 @@ function American1AudioReader({ fileUrl, anchors }) {
   );
 }
 
-// Mesmo player do curso Vocabulary (play/pause, stop, menu de velocidade —
-// ver AudioAnchorPlayer), só que centralizado exatamente em cima do selo
-// impresso (não ancorado numa margem) e um pouco menor/translúcido (ver
-// .american1-audio-anchor no CSS), já que aqui ele fica sobre texto corrido.
+// Mesmo player do curso Vocabulary (controles: AudioPlayerControls), só que
+// centralizado exatamente em cima do selo impresso (não ancorado numa
+// margem) e um pouco menor/translúcido (ver .american1-audio-anchor no CSS),
+// já que aqui ele fica sobre texto corrido.
 function American1AudioAnchorPlayer({ anchor, scale }) {
-  const audioRef = useRef(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [rate, setRate] = useState(1);
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  useEffect(() => {
-    if (!menuOpen) {
-      return undefined;
-    }
-    const closeMenu = () => setMenuOpen(false);
-    document.addEventListener('click', closeMenu);
-    return () => document.removeEventListener('click', closeMenu);
-  }, [menuOpen]);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    return () => {
-      audio?.pause();
-    };
-  }, []);
-
-  const togglePlay = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (audio.paused) {
-      audio.play();
-    } else {
-      audio.pause();
-    }
-  };
-
-  const stop = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.pause();
-    audio.currentTime = 0;
-  };
-
-  const changeRate = (speed) => {
-    setRate(speed);
-    if (audioRef.current) {
-      audioRef.current.playbackRate = speed;
-    }
-    setMenuOpen(false);
-  };
-
   return (
     <div
       className="american1-audio-anchor"
@@ -3207,47 +3774,7 @@ function American1AudioAnchorPlayer({ anchor, scale }) {
         top: `${anchor.y * scale}px`,
       }}
     >
-      <audio
-        ref={audioRef}
-        src={anchor.audio}
-        preload="none"
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        onEnded={() => setIsPlaying(false)}
-      />
-      <button type="button" className="ap-btn" title="Play/Pause" onClick={togglePlay}>
-        {isPlaying ? <IconPause /> : <IconPlay />}
-      </button>
-      <button type="button" className="ap-btn" title="Stop" onClick={stop}>
-        <IconStop />
-      </button>
-      <div className="ap-wrap">
-        <button
-          type="button"
-          className="ap-btn"
-          title="Speed"
-          onClick={(event) => {
-            event.stopPropagation();
-            setMenuOpen((open) => !open);
-          }}
-        >
-          <IconDots />
-        </button>
-        {menuOpen && (
-          <div className="ap-menu open">
-            {AUDIO_SPEEDS.map((speed) => (
-              <button
-                key={speed}
-                type="button"
-                className={speed === rate ? 'active' : ''}
-                onClick={() => changeRate(speed)}
-              >
-                {speed}x
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      <AudioPlayerControls src={anchor.audio} />
     </div>
   );
 }

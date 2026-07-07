@@ -82,6 +82,11 @@
   margin: 0 0 0 18px;
   overflow: visible;
   position: relative;
+  /* Não deixa o menu encolher no header apertado (dentro de um curso, com o
+     card de progresso): os itens têm largura fixa (180px, ver media query) e
+     encolher fazia o último quebrar pra uma segunda linha — quem absorve o
+     aperto é o nome do curso ao lado, que já trunca com ellipsis. */
+  flex: 0 0 auto;
 }
 
 /* Link "My Profile", sempre encostado na ponta direita do cabeçalho —
@@ -1309,12 +1314,21 @@ body {
   pointer-events: auto;
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  padding: 3px;
+  gap: 1px;
+  padding: 2px;
   background: rgba(255, 214, 0, 0.92);
   border: 1px solid #e0a800;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* Com os controles novos (voltar 5s e loop A-B) a pílula tem 5 botões — no
+   player ancorado na margem esquerda do PDF, os 26px originais por botão
+   estouravam a largura da margem e a pílula era cortada na borda da página.
+   Botões um pouco mais estreitos mantêm tudo dentro da margem. */
+.audio-anchor .ap-btn {
+  width: 21px;
+  height: 24px;
 }
 
 /* Mesmo visual do .audio-anchor (ancorado sobre o PDF), mas no fluxo normal
@@ -1941,4 +1955,433 @@ body {
     grid-template-columns: 1fr;
     overflow: auto;
   }
+}
+
+/* ==== "Today's Review" (revisão espaçada) — card na Home e no Courses ==== */
+
+.review-card {
+  width: 100%;
+  max-width: 1120px;
+  text-align: left;
+  padding: 22px 24px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(27, 58, 94, 0.1);
+  box-shadow: 0 18px 48px rgba(30, 58, 95, 0.12);
+}
+
+/* Dentro do painel claro da tela "Courses" o card dispensa a própria caixa
+   (ficaria caixa dentro de caixa) — só o conteúdo, com um respiro embaixo. */
+.review-card--embedded {
+  max-width: none;
+  padding: 0 0 6px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.review-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.review-card-head h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #1b3a5e;
+}
+
+.review-card-count {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--purple-700);
+  background: rgba(139, 92, 246, 0.14);
+  padding: 4px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.review-card .review-card-hint {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: rgba(27, 58, 94, 0.6);
+}
+
+.review-items {
+  display: grid;
+  gap: 8px;
+}
+
+.review-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(27, 58, 94, 0.12);
+  background: rgba(27, 58, 94, 0.05);
+  color: #1b3a5e;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 140ms, border-color 140ms;
+}
+
+.review-item:hover,
+.review-item:focus-visible {
+  background: rgba(27, 58, 94, 0.1);
+  border-color: rgba(139, 92, 246, 0.5);
+}
+
+.review-item--words {
+  background: rgba(139, 92, 246, 0.08);
+  border-color: rgba(139, 92, 246, 0.25);
+}
+
+.review-item-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.review-item-title {
+  display: block;
+  font-weight: 700;
+}
+
+.review-item-sub {
+  display: block;
+  font-size: 12px;
+  color: rgba(27, 58, 94, 0.65);
+}
+
+.review-item-badge {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--purple-700);
+  background: rgba(139, 92, 246, 0.14);
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.review-card .review-more {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  color: rgba(27, 58, 94, 0.6);
+}
+
+/* ==== "My Words" (caderno de vocabulário + flashcards) ==== */
+
+.wordbook-panel {
+  max-width: 900px;
+  overflow: auto;
+}
+
+.wordbook-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.wordbook-count {
+  font-size: 13px;
+  color: rgba(27, 58, 94, 0.6);
+  white-space: nowrap;
+}
+
+.wordbook-practice-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.wordbook-practice-hint {
+  font-size: 13px;
+  color: rgba(27, 58, 94, 0.65);
+}
+
+.wordbook-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(27, 58, 94, 0.05);
+  border: 1px solid rgba(27, 58, 94, 0.12);
+}
+
+.wordbook-form .wordbook-input--wide,
+.wordbook-form button {
+  grid-column: 1 / -1;
+}
+
+.wordbook-form button {
+  justify-self: start;
+}
+
+.wordbook-input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(27, 58, 94, 0.2);
+  background: #fff;
+  color: #1b3a5e;
+  font: inherit;
+  font-size: 14px;
+  min-width: 0;
+}
+
+.wordbook-input:focus {
+  outline: none;
+  border-color: var(--purple-500);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+.wordbook-list {
+  display: grid;
+  gap: 10px;
+}
+
+.wordbook-panel .wordbook-empty {
+  margin: 0;
+  color: rgba(27, 58, 94, 0.65);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.wordbook-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(27, 58, 94, 0.05);
+  border: 1px solid rgba(27, 58, 94, 0.12);
+}
+
+.wordbook-entry-main {
+  flex: 1;
+  min-width: 0;
+  color: #1b3a5e;
+}
+
+.wordbook-entry-word {
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.wordbook-entry .wordbook-entry-meaning {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: #1b3a5e;
+}
+
+.wordbook-entry .wordbook-entry-example {
+  margin: 4px 0 0;
+  font-size: 13.5px;
+  font-style: italic;
+  color: rgba(27, 58, 94, 0.75);
+}
+
+.wordbook-entry .wordbook-entry-meta {
+  margin: 6px 0 0;
+  font-size: 11.5px;
+  color: rgba(27, 58, 94, 0.55);
+}
+
+.wordbook-delete {
+  flex: 0 0 auto;
+  border: none;
+  background: transparent;
+  color: rgba(27, 58, 94, 0.45);
+  cursor: pointer;
+  font-size: 15px;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.wordbook-delete:hover {
+  color: #c0392b;
+  background: rgba(192, 57, 43, 0.08);
+}
+
+/* Flashcard do modo de prática. */
+.flashcard {
+  border-radius: 18px;
+  border: 1px solid rgba(27, 58, 94, 0.15);
+  background: #fff;
+  padding: 30px 28px;
+  text-align: center;
+  box-shadow: 0 14px 40px rgba(30, 58, 95, 0.12);
+}
+
+.flashcard--done {
+  padding: 22px;
+}
+
+.flashcard .flashcard-progress {
+  margin: 0 0 12px;
+  font-size: 12.5px;
+  color: rgba(27, 58, 94, 0.6);
+}
+
+.flashcard .flashcard-word {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1b3a5e;
+}
+
+.flashcard .flashcard-context {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  color: rgba(27, 58, 94, 0.55);
+}
+
+.flashcard-back {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px dashed rgba(27, 58, 94, 0.25);
+  color: #1b3a5e;
+}
+
+.flashcard .flashcard-meaning {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #1b3a5e;
+}
+
+.flashcard .flashcard-example {
+  margin: 10px 0 0;
+  font-style: italic;
+  color: rgba(27, 58, 94, 0.75);
+}
+
+.flashcard-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.flashcard-grade {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 92px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 120ms, filter 120ms;
+}
+
+.flashcard-grade:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.flashcard-grade small {
+  font-weight: 600;
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.flashcard-grade.again { background: #c95555; }
+.flashcard-grade.good { background: var(--purple-500); }
+.flashcard-grade.easy { background: #3e9e6e; }
+
+/* Botão flutuante "+ Word" + mini formulário, presentes nas telas de estudo. */
+.word-fab {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 60;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 999px;
+  background: var(--purple-500);
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 14px 36px rgba(109, 66, 216, 0.4);
+  transition: background 140ms, transform 140ms;
+}
+
+.word-fab:hover {
+  background: var(--purple-700);
+  transform: translateY(-1px);
+}
+
+.word-quickadd {
+  position: fixed;
+  right: 22px;
+  bottom: 76px;
+  z-index: 60;
+  width: 300px;
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid rgba(27, 58, 94, 0.15);
+  box-shadow: 0 24px 60px rgba(20, 20, 50, 0.3);
+}
+
+.word-quickadd-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #1b3a5e;
+}
+
+.word-quickadd-close {
+  border: none;
+  background: transparent;
+  color: rgba(27, 58, 94, 0.5);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.word-quickadd-close:hover {
+  color: #1b3a5e;
+  background: rgba(27, 58, 94, 0.08);
+}
+
+.word-quickadd-context {
+  font-size: 11.5px;
+  color: rgba(27, 58, 94, 0.55);
+}
+
+/* Botão de loop A-B dos players de áudio (ver AudioPlayerControls). */
+.ap-btn.ap-btn-ab {
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.ap-btn.ap-btn-ab.is-armed {
+  color: var(--purple-700);
+  outline: 1px solid rgba(109, 66, 216, 0.55);
+}
+
+.ap-btn.ap-btn-ab.is-looping {
+  background: rgba(109, 66, 216, 0.22);
+  color: var(--purple-700);
 }
