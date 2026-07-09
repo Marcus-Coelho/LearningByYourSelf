@@ -476,17 +476,44 @@ const IconBack5 = () => (
   </svg>
 );
 
+// Restaura a posição (página + unit/seção selecionada) depois de um F5 —
+// sem react-router, um reload sempre jogava de volta pra Home. sessionStorage
+// (não localStorage) porque é posição de navegação, não progresso: some
+// sozinha ao fechar a aba, igual o comportamento normal de um app com URL.
+// Só restaura se já havia um usuário ativo — sem isso as telas de curso
+// ficariam num estado inconsistente (gate de cadastro pede um usuário).
+// Lido uma vez só, no carregamento do módulo (mesmo padrão de ACTIVE_USER_KEY
+// abaixo), pra alimentar os useState iniciais sem piscar a Home antes.
+const SESSION_POSITION_KEY = 'sessionPosition';
+// 'register' nunca é restaurada: é a tela do usuário DESLOGADO, e só é
+// alcançável nesse estado (ver handleSwitchUser) — se por algum motivo
+// ficou salva com um usuário ainda ativo, cai na Home em vez de travar ali.
+const NON_RESTORABLE_PAGES = ['register'];
+const RESTORED_POSITION = (() => {
+  try {
+    const hasActiveUser = window.localStorage.getItem(ACTIVE_USER_KEY);
+    if (!hasActiveUser) return null;
+    const raw = window.sessionStorage.getItem(SESSION_POSITION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (NON_RESTORABLE_PAGES.includes(parsed.activePage)) return null;
+    return parsed;
+  } catch (error) {
+    return null;
+  }
+})();
+
 function App() {
   const [pdfFileUrl, setPdfFileUrl] = useState('');
   const [pdfFileName, setPdfFileName] = useState('');
-  const [selectedUnit, setSelectedUnit] = useState(null);
-  const [selectedExercise, setSelectedExercise] = useState(null);
-  const [selectedAmerican1Unit, setSelectedAmerican1Unit] = useState(null);
-  const [selectedAmerican1Section, setSelectedAmerican1Section] = useState(null);
-  const [selectedAmerican1Reference, setSelectedAmerican1Reference] = useState(null);
-  const [selectedGrammarElemUnit, setSelectedGrammarElemUnit] = useState(null);
-  const [selectedGrammarElemAppendix, setSelectedGrammarElemAppendix] = useState(null);
-  const [selectedGrammarElemAdditional, setSelectedGrammarElemAdditional] = useState(null);
+  const [selectedUnit, setSelectedUnit] = useState(RESTORED_POSITION?.selectedUnit ?? null);
+  const [selectedExercise, setSelectedExercise] = useState(RESTORED_POSITION?.selectedExercise ?? null);
+  const [selectedAmerican1Unit, setSelectedAmerican1Unit] = useState(RESTORED_POSITION?.selectedAmerican1Unit ?? null);
+  const [selectedAmerican1Section, setSelectedAmerican1Section] = useState(RESTORED_POSITION?.selectedAmerican1Section ?? null);
+  const [selectedAmerican1Reference, setSelectedAmerican1Reference] = useState(RESTORED_POSITION?.selectedAmerican1Reference ?? null);
+  const [selectedGrammarElemUnit, setSelectedGrammarElemUnit] = useState(RESTORED_POSITION?.selectedGrammarElemUnit ?? null);
+  const [selectedGrammarElemAppendix, setSelectedGrammarElemAppendix] = useState(RESTORED_POSITION?.selectedGrammarElemAppendix ?? null);
+  const [selectedGrammarElemAdditional, setSelectedGrammarElemAdditional] = useState(RESTORED_POSITION?.selectedGrammarElemAdditional ?? null);
   const [showAnswers, setShowAnswers] = useState(false);
   const [showAmerican1Answers, setShowAmerican1Answers] = useState(false);
   const [showAmerican1ReferenceAnswers, setShowAmerican1ReferenceAnswers] = useState(false);
@@ -496,8 +523,8 @@ function App() {
   // score/progresso visíveis. Objeto (não dois booleans soltos) porque mais
   // cursos serão adicionados depois.
   const [expandedProfileCourses, setExpandedProfileCourses] = useState({});
-  const [activePage, setActivePage] = useState('home');
-  const [activeCourseId, setActiveCourseId] = useState(null);
+  const [activePage, setActivePage] = useState(RESTORED_POSITION?.activePage || 'home');
+  const [activeCourseId, setActiveCourseId] = useState(RESTORED_POSITION?.activeCourseId ?? null);
   const [rightWidth, setRightWidth] = useState(650);
   // Esconde/mostra o painel direito (notas + respostas) inteiro, dando a
   // largura toda pro leitor — a mesma flag controla o botão flutuante
@@ -1000,6 +1027,45 @@ function App() {
     });
   }, [activePage, selectedUnit, selectedAmerican1Unit, selectedAmerican1Section, selectedGrammarElemUnit, userName]);
 
+  // Restaurar posição ao recarregar (F5): sem router, um reload sempre
+  // jogava de volta pra Home — grava a página atual + toda unit/seção
+  // selecionada em sessionStorage a cada mudança, e RESTORED_POSITION (topo
+  // do arquivo) relê isso nos useState iniciais. sessionStorage (não
+  // localStorage) de propósito: é só a posição da aba atual, não progresso —
+  // some sozinha ao fechar a aba, como uma URL de verdade faria.
+  useEffect(() => {
+    if (!userName) return;
+    const position = {
+      activePage,
+      activeCourseId,
+      selectedUnit,
+      selectedExercise,
+      selectedAmerican1Unit,
+      selectedAmerican1Section,
+      selectedAmerican1Reference,
+      selectedGrammarElemUnit,
+      selectedGrammarElemAppendix,
+      selectedGrammarElemAdditional,
+    };
+    try {
+      window.sessionStorage.setItem(SESSION_POSITION_KEY, JSON.stringify(position));
+    } catch (error) {
+      // Armazenamento indisponível — F5 volta pra Home, sem quebrar nada.
+    }
+  }, [
+    activePage,
+    activeCourseId,
+    selectedUnit,
+    selectedExercise,
+    selectedAmerican1Unit,
+    selectedAmerican1Section,
+    selectedAmerican1Reference,
+    selectedGrammarElemUnit,
+    selectedGrammarElemAppendix,
+    selectedGrammarElemAdditional,
+    userName,
+  ]);
+
   const handlePdfChange = (event) => {
     const file = event.target.files?.[0];
     if (!file) {
@@ -1375,6 +1441,11 @@ function App() {
     setUserName('');
     try {
       window.localStorage.removeItem(ACTIVE_USER_KEY);
+      // Sem isso, um F5 depois do próximo login (mesma aba, outro usuário —
+      // cenário comum de PC/pendrive compartilhado) restauraria a posição
+      // de navegação de QUEM SAIU, já que sessionStorage não é namespaced
+      // por usuário como o localStorage (ver userKey/RESTORED_POSITION).
+      window.sessionStorage.removeItem(SESSION_POSITION_KEY);
     } catch (error) {
       // Armazenamento indisponível.
     }
@@ -1418,6 +1489,7 @@ function App() {
     setUserName('');
     try {
       window.localStorage.removeItem(ACTIVE_USER_KEY);
+      window.sessionStorage.removeItem(SESSION_POSITION_KEY);
     } catch (error) {
       // Armazenamento indisponível.
     }
@@ -1445,6 +1517,7 @@ function App() {
     }
     try {
       window.localStorage.clear();
+      window.sessionStorage.removeItem(SESSION_POSITION_KEY);
     } catch (error) {
       // Armazenamento indisponível.
     }
