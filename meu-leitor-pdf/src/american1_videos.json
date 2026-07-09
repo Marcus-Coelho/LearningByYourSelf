@@ -73,7 +73,7 @@
   },
   {
     "unit": 2,
-    "section": "Revise",
+    "section": "Review and Check",
     "folder": "onthestreet1-2",
     "videos": [
       { "label": "On the Street 1&2", "file": "On the Street1&2.mp4" },
@@ -82,7 +82,7 @@
   },
   {
     "unit": 4,
-    "section": "Revise",
+    "section": "Review and Check",
     "folder": "onthestreet3-4",
     "videos": [
       { "label": "On the Street 3&4", "file": "AEF1_OntheStreet_3&4.mp4" },
@@ -91,7 +91,7 @@
   },
   {
     "unit": 6,
-    "section": "Revise",
+    "section": "Review and Check",
     "folder": "onthestreet5-6",
     "videos": [
       { "label": "On the Street 5&6", "file": "AEF1_OntheStreet_5&6.mp4" },
@@ -100,7 +100,7 @@
   },
   {
     "unit": 8,
-    "section": "Revise",
+    "section": "Review and Check",
     "folder": "onthestreet7-8",
     "videos": [
       { "label": "On the Street 7&8", "file": "AEF1_OntheStreet_7&8.mp4" },
@@ -109,7 +109,7 @@
   },
   {
     "unit": 10,
-    "section": "Revise",
+    "section": "Review and Check",
     "folder": "onthestreet9-10",
     "videos": [
       { "label": "On the Street 9&10", "file": "AEF1_OntheStreet_9&10.mp4" },
@@ -118,7 +118,7 @@
   },
   {
     "unit": 12,
-    "section": "Revise",
+    "section": "Review and Check",
     "folder": "onthestreet11-12",
     "videos": [
       { "label": "On the Street 11&12", "file": "AEF1_OntheStreet_11&12.mp4" },

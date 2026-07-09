@@ -35,9 +35,20 @@ module.exports = function (app) {
   // os arquivos soltos e montar 2 leitores lado a lado no front, mescla as
   // 2 páginas em um único PDF de 2 páginas sob demanda (pdf-lib), para o
   // leitor mostrar a seção como um "spread" contínuo, com um só toolbar.
-  const american1SectionsRoot = path.join(
-    __dirname, '..', '..', 'American English Level 1', 'pdfs', 'Secoes'
-  );
+  //
+  // Reorganização manual de 2026-07-09: o conteúdo deixou de ficar solto em
+  // "American English Level 1/pdfs/" e passou para
+  // "American English Level 1/pdfs and videos/", separado em StudentBook/
+  // (páginas do livro do aluno, incl. os apêndices grammar_bank/
+  // Vocabulary_bank/sound_bank/comunication/writing) e teacher_book/ (páginas
+  // do livro do professor: Units de resposta, Practical English/Review and
+  // Check em PDF, Grammar/Vocabulary Extra Activities...).
+  const american1Root = path.join(__dirname, '..', '..', 'American English Level 1');
+  const american1PdfsVideosRoot = path.join(american1Root, 'pdfs and videos');
+  const american1StudentBookRoot = path.join(american1PdfsVideosRoot, 'StudentBook');
+  const american1TeacherBookRoot = path.join(american1PdfsVideosRoot, 'teacher_book');
+
+  const american1SectionsRoot = path.join(american1StudentBookRoot, 'Secoes');
   const AMERICAN1_FILE_PREFIX = 'American English File Book 1 2nd edition Student Book';
 
   app.get('/american1-pages/section/:start/:end', async (req, res) => {
@@ -69,14 +80,39 @@ module.exports = function (app) {
   // Bank e Sound Bank sempre ocupam um par de páginas (a referência impressa
   // aponta pra primeira; a segunda é a próxima); Vocabulary/Communication/
   // Writing são página única.
-  const american1PdfsRoot = path.join(__dirname, '..', '..', 'American English Level 1', 'pdfs');
   const AMERICAN1_REFERENCE_FOLDERS = {
-    grammar: { dir: 'grammar_bank', pair: true },
-    vocabulary: { dir: 'Vocabulary_bank', pair: false },
-    sound: { dir: 'sound_bank', pair: true },
-    communication: { dir: 'comunication', pair: false },
-    writing: { dir: 'writing', pair: false },
+    // grammar_bank foi renomeada manualmente para "grammar bank L pNNN.pdf"
+    // (páginas pares, L de Leitura/Learning) / "grammar bank E pNNN.pdf"
+    // (páginas ímpares, E de Exercises) — número da página logo antes de
+    // ".pdf", precedido de "p".
+    grammar: { root: american1StudentBookRoot, dir: 'grammar_bank', pair: true, naming: 'page-suffix' },
+    // Vocabulary_bank foi renomeada manualmente para "pNNN <título>.pdf"
+    // (número da página logo após o "p", ex.: "p148 vocabulary bank days
+    // and numbers.pdf") — não segue mais o padrão AMERICAN1_FILE_PREFIX-N.
+    vocabulary: { root: american1StudentBookRoot, dir: 'Vocabulary_bank', pair: false, naming: 'page-prefix' },
+    sound: { root: american1StudentBookRoot, dir: 'sound_bank', pair: true, naming: 'legacy' },
+    communication: { root: american1StudentBookRoot, dir: 'comunication', pair: false, naming: 'legacy' },
+    writing: { root: american1StudentBookRoot, dir: 'writing', pair: false, naming: 'legacy' },
   };
+
+  // Resolve o caminho do PDF de uma página de referência, de acordo com a
+  // convenção de nome de arquivo da pasta ('legacy' = prefixo fixo + "-N.pdf",
+  // 'page-prefix' = número da página logo após o "p" inicial do nome,
+  // 'page-suffix' = número da página logo antes de ".pdf", precedido de "p").
+  function resolveReferenceFilePath(dir, page, naming) {
+    if (naming === 'page-prefix' || naming === 'page-suffix') {
+      const pattern = naming === 'page-prefix' ? /^p(\d+)\D/i : /p(\d+)\.pdf$/i;
+      const match = fs.readdirSync(dir).find((name) => {
+        const m = name.match(pattern);
+        return m && Number(m[1]) === page;
+      });
+      if (!match) {
+        throw new Error(`No file found for page ${page} in ${dir}`);
+      }
+      return path.join(dir, match);
+    }
+    return path.join(dir, `${AMERICAN1_FILE_PREFIX}-${page}.pdf`);
+  }
 
   app.get('/american1-pages/ref/:type/:page', async (req, res) => {
     const config = AMERICAN1_REFERENCE_FOLDERS[req.params.type];
@@ -85,12 +121,12 @@ module.exports = function (app) {
       res.status(400).end();
       return;
     }
-    const dir = path.join(american1PdfsRoot, config.dir);
+    const dir = path.join(config.root, config.dir);
     try {
       if (config.pair) {
         const merged = await PDFDocument.create();
         for (const pageNumber of [page, page + 1]) {
-          const filePath = path.join(dir, `${AMERICAN1_FILE_PREFIX}-${pageNumber}.pdf`);
+          const filePath = resolveReferenceFilePath(dir, pageNumber, config.naming);
           const bytes = fs.readFileSync(filePath);
           const source = await PDFDocument.load(bytes);
           const [copiedPage] = await merged.copyPages(source, [0]);
@@ -99,7 +135,7 @@ module.exports = function (app) {
         const mergedBytes = await merged.save();
         res.type('application/pdf').send(Buffer.from(mergedBytes));
       } else {
-        const filePath = path.join(dir, `${AMERICAN1_FILE_PREFIX}-${page}.pdf`);
+        const filePath = resolveReferenceFilePath(dir, page, config.naming);
         res.type('application/pdf').sendFile(filePath);
       }
     } catch (error) {
@@ -113,8 +149,8 @@ module.exports = function (app) {
   // próprio nome de arquivo. Os limites de CD não coincidem com limites de unit:
   // CD1 = units 1-2, CD2 = units 3-4 + unit 5 seção A, CD3 = unit 5 seção B até
   // unit 7 Practical English, CD4 = unit 8 completa até unit 9 Practical
-  // English, CD5 = unit 10 completa até unit 12 Revise (fim do índice atual).
-  const american1AudioRoot = path.join(__dirname, '..', '..', 'American English Level 1');
+  // English, CD5 = unit 10 completa até unit 12 Review and Check (fim do índice atual).
+  const american1AudioRoot = american1Root;
   app.use('/american1-audio/cd1', express.static(path.join(american1AudioRoot, 'audio_files_1'), { fallthrough: false }));
   app.use('/american1-audio/cd1', notFoundOn404);
   app.use('/american1-audio/cd2', express.static(path.join(american1AudioRoot, 'audio_files_2'), { fallthrough: false }));
@@ -129,17 +165,23 @@ module.exports = function (app) {
   // Transcriptions: PDF único (8 páginas, já mesclado previamente com
   // pdf-lib a partir das páginas soltas 116-123) com as transcrições dos
   // áudios do livro. Ancorado com src/american1_transcriptions_audio_anchors.json
-  // (índice de página 0-7 == páginas 116-123 do livro).
+  // (índice de página 0-7 == páginas 116-123 do livro). Na reorganização de
+  // 2026-07-09 esse arquivo foi renomeado e ganhou uma versão com OCR (texto
+  // pesquisável) ao lado da original — usamos a versão com OCR, já que o
+  // conteúdo visual das páginas é o mesmo e a busca de texto passa a
+  // funcionar no leitor.
   app.get('/american1-pages/transcriptions', (req, res) => {
-    res.type('application/pdf').sendFile(path.join(american1PdfsRoot, 'listening', 'Listening.pdf'));
+    res.type('application/pdf').sendFile(
+      path.join(american1StudentBookRoot, 'listening', 'Listening all pages com OCR.pdf')
+    );
   });
 
   // Respostas do Teacher's Book ("Show Answers", faixa inferior do leitor de
   // seção): as páginas soltas do teacher's book já foram organizadas em
-  // pastas por seção (ver American English Level 1/pdfs/teacher_book) —
+  // pastas por seção (ver American English Level 1/pdfs and videos/teacher_book) —
   // aqui só mescla os PDFs de uma pasta (ordenados pelo número de página no
   // nome do arquivo, ex. "5B_p70.pdf") num único PDF de resposta.
-  const teacherBookRoot = path.join(american1PdfsRoot, 'teacher_book');
+  const teacherBookRoot = american1TeacherBookRoot;
 
   const pageNumberFromFilename = (filename) => {
     const match = filename.match(/_p(\d+)\.pdf$/i);
@@ -225,25 +267,31 @@ module.exports = function (app) {
     });
   });
 
-  // Vídeos do Practical English: cada episódio tem sua própria pasta com
-  // arquivos .mp4 (A/B/C/D/E), servidos estaticamente e abertos numa nova
-  // aba do navegador pelo link (ver american1_videos.json, campo "folder").
+  // Vídeos do Practical English e do "On the street": cada episódio tem sua
+  // própria pasta com arquivos .mp4 (A/B/C/D/E), servidos estaticamente e
+  // abertos numa nova aba do navegador pelo link (ver american1_videos.json,
+  // campo "folder"). Na reorganização de 2026-07-09 essas pastas deixaram de
+  // ficar soltas em "pdfs/" e passaram a viver cada uma sob sua própria
+  // pasta-mãe em "pdfs and videos/" (Practical Englihs videos / On the
+  // street videos — nomes exatos das pastas no disco, com o typo mantido).
+  const american1PracticalEnglishVideoRoot = path.join(american1PdfsVideosRoot, 'Practical Englihs videos');
+  const american1OnTheStreetVideoRoot = path.join(american1PdfsVideosRoot, 'On the street videos');
   const AMERICAN1_VIDEO_FOLDERS = {
-    ep1: 'aef2e_level01_ep1_arriving_in_london',
-    ep2: 'aef2e_level01_ep2_at_a_coffee_shop',
-    ep3: 'aef2e_level01_ep3_in_a_clothing_store',
-    ep4: 'aef2e_level01_ep4_getting_lost',
-    ep5: 'aef2e_level01_ep5_at_a_restaurant',
-    ep6: 'aef2e_level01_ep6_going_home',
-    'onthestreet1-2': 'aef2e_level01_onthestreet_1-2',
-    'onthestreet3-4': 'aef2e_level01_onthestreet_3-4',
-    'onthestreet5-6': 'aef2e_level01_onthestreet_5-6',
-    'onthestreet7-8': 'aef2e_level01_onthestreet_7-8',
-    'onthestreet9-10': 'aef2e_level01_onthestreet_9-10',
-    'onthestreet11-12': 'aef2e_level01_onthestreet_11-12',
+    ep1: { root: american1PracticalEnglishVideoRoot, dir: 'aef2e_level01_ep1_arriving_in_london' },
+    ep2: { root: american1PracticalEnglishVideoRoot, dir: 'aef2e_level01_ep2_at_a_coffee_shop' },
+    ep3: { root: american1PracticalEnglishVideoRoot, dir: 'aef2e_level01_ep3_in_a_clothing_store' },
+    ep4: { root: american1PracticalEnglishVideoRoot, dir: 'aef2e_level01_ep4_getting_lost' },
+    ep5: { root: american1PracticalEnglishVideoRoot, dir: 'aef2e_level01_ep5_at_a_restaurant' },
+    ep6: { root: american1PracticalEnglishVideoRoot, dir: 'aef2e_level01_ep6_going_home' },
+    'onthestreet1-2': { root: american1OnTheStreetVideoRoot, dir: 'aef2e_level01_onthestreet_1-2' },
+    'onthestreet3-4': { root: american1OnTheStreetVideoRoot, dir: 'aef2e_level01_onthestreet_3-4' },
+    'onthestreet5-6': { root: american1OnTheStreetVideoRoot, dir: 'aef2e_level01_onthestreet_5-6' },
+    'onthestreet7-8': { root: american1OnTheStreetVideoRoot, dir: 'aef2e_level01_onthestreet_7-8' },
+    'onthestreet9-10': { root: american1OnTheStreetVideoRoot, dir: 'aef2e_level01_onthestreet_9-10' },
+    'onthestreet11-12': { root: american1OnTheStreetVideoRoot, dir: 'aef2e_level01_onthestreet_11-12' },
   };
-  Object.entries(AMERICAN1_VIDEO_FOLDERS).forEach(([slug, folder]) => {
-    app.use(`/american1-video/${slug}`, express.static(path.join(american1PdfsRoot, folder), { fallthrough: false }));
+  Object.entries(AMERICAN1_VIDEO_FOLDERS).forEach(([slug, { root, dir }]) => {
+    app.use(`/american1-video/${slug}`, express.static(path.join(root, dir), { fallthrough: false }));
     app.use(`/american1-video/${slug}`, notFoundOn404);
   });
 

@@ -1013,8 +1013,39 @@ body {
 
 .side-panel { background: #f9f9f9; overflow-y: auto; }
 
+.side-panel.is-hidden { display: none; }
+
 .right-panel {
   border-radius: 0 14px 14px 0;
+}
+
+/* Botão circular que esconde/mostra o painel direito (notas + respostas) —
+   fixo na viewport (não filho do grid, pra não precisar existir em cada uma
+   das 8 telas que têm painel direito), acompanha a borda entre o leitor e
+   o painel via "right" calculado em JS a partir de rightWidth/sidePanelVisible. */
+.panel-toggle-btn {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 40;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--purple-300);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--purple-700);
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(72, 39, 130, 0.25);
+  transition: background 140ms, right 160ms ease;
+}
+
+.panel-toggle-btn:hover {
+  background: var(--soft);
 }
 
 .panel-content {
@@ -1082,7 +1113,7 @@ body {
 }
 
 /* Usado na tela de unit do American English Level 1: Previous/Next Unit e as
-   abas A/B/C/Revise ficam encostadas à esquerda (em vez de flex-end) — os
+   abas A/B/C/Review and Check ficam encostadas à esquerda (em vez de flex-end) — os
    links de referência (.reference-links, com margin-left: auto) ocupam o
    espaço restante e ficam à direita. */
 .pdf-toolbar-left {
@@ -1239,8 +1270,8 @@ body {
    ocupando cerca de 1/4 da altura do painel principal, sem substituir o
    leitor da seção acima (que fica com flex:1 e encolhe pra abrir espaço). */
 .section-answers-strip {
-  flex: 0 0 25%;
-  min-height: 160px;
+  flex: 0 0 34%;
+  min-height: 224px;
   display: flex;
   flex-direction: column;
   border-top: 2px solid var(--purple-300);
@@ -1277,7 +1308,9 @@ body {
   flex: 1;
   min-height: 0;
   width: 100%;
-  border: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .audio-anchor-host {
@@ -1474,6 +1507,8 @@ body {
   background: rgba(255, 255, 255, 0.3);
 }
 
+.resize-handle.is-hidden { display: none; }
+
 /* Container do viewer PDF */
 .pdf-viewer-stage {
   position: relative;
@@ -1582,7 +1617,7 @@ body {
 }
 
 /* Aba da seção especial (American English Level 1): o texto alterna entre
-   "Practical English" e "Revise" de unit pra unit — largura mínima fixa
+   "Practical English" e "Review and Check" de unit pra unit — largura mínima fixa
    pro texto mais longo, pra essa aba (e tudo à esquerda dela, incluindo os
    botões Previous/Next Unit) não deslocar de posição ao trocar de unit. */
 .exercise-tab-wide {

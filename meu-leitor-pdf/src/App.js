@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { SpecialZoomLevel, Viewer, Worker } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+import { SelectionMode } from '@react-pdf-viewer/selection-mode';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import exerciseCoords from './exercises_coords.json';
@@ -305,7 +306,7 @@ const american1UnitNumbers = Object.keys(american1SectionsByUnit)
   .map(Number)
   .sort((a, b) => a - b);
 
-// Progresso é contado por seção (1A, 1B, ... Practical English/Revise de
+// Progresso é contado por seção (1A, 1B, ... Practical English/Review and Check de
 // cada unit), não por unit — as units são longas, então marcar a unit
 // inteira como "vista" ao abrir a primeira seção inflava o progresso.
 const american1SectionsTotal = american1Index.length;
@@ -463,6 +464,7 @@ function App() {
   const [selectedGrammarElemAdditional, setSelectedGrammarElemAdditional] = useState(null);
   const [showAnswers, setShowAnswers] = useState(false);
   const [showAmerican1Answers, setShowAmerican1Answers] = useState(false);
+  const [showAmerican1ReferenceAnswers, setShowAmerican1ReferenceAnswers] = useState(false);
   const [showGrammarElemAnswers, setShowGrammarElemAnswers] = useState(false);
   // Cada curso do Profile abre/fecha independente (chave = id do curso em
   // `courses`) — fechado por padrão, deixando só o título e a linha de
@@ -472,6 +474,15 @@ function App() {
   const [activePage, setActivePage] = useState('home');
   const [activeCourseId, setActiveCourseId] = useState(null);
   const [rightWidth, setRightWidth] = useState(650);
+  // Esconde/mostra o painel direito (notas + respostas) inteiro, dando a
+  // largura toda pro leitor — a mesma flag controla o botão flutuante
+  // "+ Word", que some junto (ver render de WordQuickAdd mais abaixo).
+  const [sidePanelVisible, setSidePanelVisible] = useState(true);
+  // Toda tela que tem o painel direito ("side-panel right-panel", com
+  // UnitNotes/respostas) usa o mesmo layout de grid de 3 colunas — listado
+  // aqui pra saber quando faz sentido mostrar o botão de esconder/mostrar
+  // (não existe em telas de grade de units, home, etc.).
+  const PAGES_WITH_SIDE_PANEL = ['unit', 'grammarElem-unit', 'grammarElem-exercise', 'grammarElem-appendix', 'grammarElem-additional', 'american1-unit', 'american1-reference', 'american1-transcriptions'];
   const [exerciseRatings, setExerciseRatings] = useState({});
   const [visitedUnits, setVisitedUnits] = useState({});
   const [american1UnitRatings, setAmerican1UnitRatings] = useState({});
@@ -850,7 +861,7 @@ function App() {
   }, [selectedUnit, activePage, userName]);
 
   // Mesma ideia, para o American English Level 1: conta como visitada assim
-  // que a tela de leitura de uma seção (1A, 1B, Practical English/Revise...)
+  // que a tela de leitura de uma seção (1A, 1B, Practical English/Review and Check...)
   // é aberta — cada seção conta um acesso, não a unit inteira, já que as
   // units são longas (3-4 seções cada).
   useEffect(() => {
@@ -1020,6 +1031,7 @@ function App() {
 
   const handleOpenAmerican1Reference = (ref) => {
     setSelectedAmerican1Reference(ref);
+    setShowAmerican1ReferenceAnswers(false);
     setActivePage('american1-reference');
   };
 
@@ -1993,7 +2005,9 @@ function App() {
           className="main-panels"
           ref={layoutRef}
           style={{
-            gridTemplateColumns: `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`,
+            gridTemplateColumns: sidePanelVisible
+                ? `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`
+                : `minmax(${MIN_CENTER_WIDTH}px, 1fr)`,
           }}
         >
           <section className="pdf-panel">
@@ -2040,13 +2054,13 @@ function App() {
           </section>
 
           <button
-            className="resize-handle"
+            className={`resize-handle${sidePanelVisible ? '' : ' is-hidden'}`}
             type="button"
             aria-label="Resize right column"
             onPointerDown={startPanelResize}
           />
 
-          <aside className="side-panel right-panel">
+          <aside className={`side-panel right-panel${sidePanelVisible ? '' : ' is-hidden'}`}>
             <div className="panel-content related-panel">
               <UnitNotes key={selectedUnit} unit={selectedUnit} userName={userName} />
             </div>
@@ -2171,7 +2185,9 @@ function App() {
             className="main-panels"
             ref={layoutRef}
             style={{
-              gridTemplateColumns: `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`,
+              gridTemplateColumns: sidePanelVisible
+                ? `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`
+                : `minmax(${MIN_CENTER_WIDTH}px, 1fr)`,
             }}
           >
             <section className="pdf-panel">
@@ -2221,13 +2237,13 @@ function App() {
             </section>
 
             <button
-              className="resize-handle"
+              className={`resize-handle${sidePanelVisible ? '' : ' is-hidden'}`}
               type="button"
               aria-label="Resize right column"
               onPointerDown={startPanelResize}
             />
 
-            <aside className="side-panel right-panel">
+            <aside className={`side-panel right-panel${sidePanelVisible ? '' : ' is-hidden'}`}>
               <div className="panel-content related-panel">
                 <UnitNotes
                   key={unit}
@@ -2251,7 +2267,9 @@ function App() {
             className="main-panels"
             ref={layoutRef}
             style={{
-              gridTemplateColumns: `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`,
+              gridTemplateColumns: sidePanelVisible
+                ? `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`
+                : `minmax(${MIN_CENTER_WIDTH}px, 1fr)`,
             }}
           >
             <section className="pdf-panel">
@@ -2297,13 +2315,13 @@ function App() {
             </section>
 
             <button
-              className="resize-handle"
+              className={`resize-handle${sidePanelVisible ? '' : ' is-hidden'}`}
               type="button"
               aria-label="Resize right column"
               onPointerDown={startPanelResize}
             />
 
-            <aside className="side-panel right-panel">
+            <aside className={`side-panel right-panel${sidePanelVisible ? '' : ' is-hidden'}`}>
               {unit && (
                 <AnswerArea
                   exerciseId={`grammarElem-${unit}`}
@@ -2338,7 +2356,9 @@ function App() {
             className="main-panels"
             ref={layoutRef}
             style={{
-              gridTemplateColumns: `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`,
+              gridTemplateColumns: sidePanelVisible
+                ? `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`
+                : `minmax(${MIN_CENTER_WIDTH}px, 1fr)`,
             }}
           >
             <section className="pdf-panel">
@@ -2374,13 +2394,13 @@ function App() {
             </section>
 
             <button
-              className="resize-handle"
+              className={`resize-handle${sidePanelVisible ? '' : ' is-hidden'}`}
               type="button"
               aria-label="Resize right column"
               onPointerDown={startPanelResize}
             />
 
-            <aside className="side-panel right-panel">
+            <aside className={`side-panel right-panel${sidePanelVisible ? '' : ' is-hidden'}`}>
               <div className="panel-content related-panel">
                 <UnitNotes
                   key={appendixNumber}
@@ -2401,7 +2421,9 @@ function App() {
             className="main-panels"
             ref={layoutRef}
             style={{
-              gridTemplateColumns: `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`,
+              gridTemplateColumns: sidePanelVisible
+                ? `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`
+                : `minmax(${MIN_CENTER_WIDTH}px, 1fr)`,
             }}
           >
             <section className="pdf-panel">
@@ -2437,13 +2459,13 @@ function App() {
             </section>
 
             <button
-              className="resize-handle"
+              className={`resize-handle${sidePanelVisible ? '' : ' is-hidden'}`}
               type="button"
               aria-label="Resize right column"
               onPointerDown={startPanelResize}
             />
 
-            <aside className="side-panel right-panel">
+            <aside className={`side-panel right-panel${sidePanelVisible ? '' : ' is-hidden'}`}>
               <div className="panel-content related-panel">
                 <UnitNotes
                   key={additionalNumber}
@@ -2475,7 +2497,7 @@ function App() {
             ? `/american1-pages/answers/${selectedAmerican1Unit}/${activeSection.section}`
             : activeSection.section === 'Practical English'
               ? `/american1-pages/answers-pe/${selectedAmerican1Unit}`
-              : activeSection.section === 'Revise'
+              : activeSection.section === 'Review and Check'
                 ? `/american1-pages/answers-revise/${selectedAmerican1Unit}`
                 : ''
           : '';
@@ -2485,7 +2507,9 @@ function App() {
             className="main-panels"
             ref={layoutRef}
             style={{
-              gridTemplateColumns: `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`,
+              gridTemplateColumns: sidePanelVisible
+                ? `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`
+                : `minmax(${MIN_CENTER_WIDTH}px, 1fr)`,
             }}
           >
             <section className="pdf-panel">
@@ -2600,24 +2624,21 @@ function App() {
                       ✕
                     </button>
                   </div>
-                  <iframe
-                    key={answersUrl}
-                    src={answersUrl}
-                    title="Teacher's Book answers"
-                    className="section-answers-strip-frame"
-                  />
+                  <div className="section-answers-strip-frame">
+                    <PdfWorkspace key={answersUrl} fileUrl={answersUrl} initialTool="hand" />
+                  </div>
                 </div>
               )}
             </section>
 
             <button
-              className="resize-handle"
+              className={`resize-handle${sidePanelVisible ? '' : ' is-hidden'}`}
               type="button"
               aria-label="Resize right column"
               onPointerDown={startPanelResize}
             />
 
-            <aside className="side-panel right-panel">
+            <aside className={`side-panel right-panel${sidePanelVisible ? '' : ' is-hidden'}`}>
               <div className="panel-content related-panel">
                 <UnitNotes
                   key={selectedAmerican1Unit}
@@ -2641,13 +2662,22 @@ function App() {
         const referenceAudioAnchors = ref
           ? american1ReferenceAudioAnchors[`${ref.type}:${ref.pages[0]}`] || []
           : [];
+        // Mesmo gabarito do Teacher's Book da unit/seção de onde essa página de
+        // referência foi aberta (ref.unit/ref.section, ver handleOpenAmerican1Reference)
+        // — só existe para seções A/B/C (Practical English/Review and Check não têm link de
+        // referência de qualquer forma).
+        const referenceAnswersUrl = ref && /^[A-C]$/.test(ref.section || '')
+          ? `/american1-pages/answers/${ref.unit}/${ref.section}`
+          : '';
 
         return (
           <main
             className="main-panels"
             ref={layoutRef}
             style={{
-              gridTemplateColumns: `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`,
+              gridTemplateColumns: sidePanelVisible
+                ? `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`
+                : `minmax(${MIN_CENTER_WIDTH}px, 1fr)`,
             }}
           >
             <section className="pdf-panel">
@@ -2672,22 +2702,44 @@ function App() {
                   <h1>Nothing to show</h1>
                 </div>
               )}
+
+              {showAmerican1ReferenceAnswers && referenceAnswersUrl && (
+                <div className="section-answers-strip">
+                  <div className="section-answers-strip-head">
+                    <span>Teacher's Book answers</span>
+                    <button
+                      type="button"
+                      className="section-answers-strip-close"
+                      onClick={() => setShowAmerican1ReferenceAnswers(false)}
+                      aria-label="Close answers"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="section-answers-strip-frame">
+                    <PdfWorkspace key={referenceAnswersUrl} fileUrl={referenceAnswersUrl} initialTool="hand" />
+                  </div>
+                </div>
+              )}
             </section>
 
             <button
-              className="resize-handle"
+              className={`resize-handle${sidePanelVisible ? '' : ' is-hidden'}`}
               type="button"
               aria-label="Resize right column"
               onPointerDown={startPanelResize}
             />
 
-            <aside className="side-panel right-panel">
+            <aside className={`side-panel right-panel${sidePanelVisible ? '' : ' is-hidden'}`}>
               <div className="panel-content related-panel">
                 <UnitNotes
                   key={`${ref?.type}-${ref?.pages?.[0]}`}
                   unit={ref?.pages?.[0]}
                   userName={userName}
                   storageKeyBase={`notes:american1-ref:${ref?.type}:${ref?.pages?.[0]}`}
+                  hasAnswers={Boolean(referenceAnswersUrl)}
+                  showAnswers={showAmerican1ReferenceAnswers}
+                  onToggleAnswers={() => setShowAmerican1ReferenceAnswers((prev) => !prev)}
                 />
               </div>
             </aside>
@@ -2698,7 +2750,9 @@ function App() {
           className="main-panels"
           ref={layoutRef}
           style={{
-            gridTemplateColumns: `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`,
+            gridTemplateColumns: sidePanelVisible
+                ? `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`
+                : `minmax(${MIN_CENTER_WIDTH}px, 1fr)`,
           }}
         >
           <section className="pdf-panel">
@@ -2723,13 +2777,13 @@ function App() {
           </section>
 
           <button
-            className="resize-handle"
+            className={`resize-handle${sidePanelVisible ? '' : ' is-hidden'}`}
             type="button"
             aria-label="Resize right column"
             onPointerDown={startPanelResize}
           />
 
-          <aside className="side-panel right-panel">
+          <aside className={`side-panel right-panel${sidePanelVisible ? '' : ' is-hidden'}`}>
             <div className="panel-content related-panel">
               <UnitNotes
                 key="transcriptions"
@@ -2989,7 +3043,20 @@ function App() {
         </main>
       )}
 
-      {userName && insideCourse && (
+      {PAGES_WITH_SIDE_PANEL.includes(activePage) && (
+        <button
+          type="button"
+          className="panel-toggle-btn"
+          style={{ right: sidePanelVisible ? rightWidth + 14 : 0 }}
+          onClick={() => setSidePanelVisible((value) => !value)}
+          aria-label={sidePanelVisible ? 'Hide notes and answers panel' : 'Show notes and answers panel'}
+          title={sidePanelVisible ? 'Hide notes and answers panel' : 'Show notes and answers panel'}
+        >
+          {sidePanelVisible ? '›' : '‹'}
+        </button>
+      )}
+
+      {userName && insideCourse && (!PAGES_WITH_SIDE_PANEL.includes(activePage) || sidePanelVisible) && (
         <WordQuickAdd contextLabel={studyContextLabel} onAdd={handleAddWord} />
       )}
     </div>
@@ -3629,11 +3696,16 @@ function WordQuickAdd({ contextLabel, onAdd }) {
   );
 }
 
-function PdfWorkspace({ fileUrl, onPdfChange, defaultScale, initialPage }) {
-  const [activeTool, setActiveTool] = useState('text');
+function PdfWorkspace({ fileUrl, onPdfChange, defaultScale, initialPage, initialTool }) {
+  const [activeTool, setActiveTool] = useState(initialTool || 'text');
 
   const defaultLayoutPluginInstance = defaultLayoutPlugin({
     sidebarTabs: () => [],
+    toolbarPlugin: {
+      selectionModePlugin: {
+        selectionMode: initialTool === 'hand' ? SelectionMode.Hand : SelectionMode.Text,
+      },
+    },
     renderToolbar: (Toolbar) => (
       <Toolbar>
         {(slots) => {
