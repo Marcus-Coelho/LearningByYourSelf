@@ -179,6 +179,31 @@ const exercisesByUnit = (() => {
   return map;
 })();
 
+// Estado visual das grades de unit ("badge" colorido no card): unvisited
+// (nunca aberta) / visited (aberta, sem nota) / rated (pelo menos uma nota
+// dada) / mastered (nota máxima). Usado nas 3 grades (Vocabulary, American
+// English Level 1, Grammar Elementary) — ver renderUnitBadge em App().
+const UNIT_BADGE_MASTERED_RATING = 5;
+const getUnitBadgeStatus = (visited, rating) => {
+  if (!visited) return 'unvisited';
+  if (!rating) return 'visited';
+  return rating >= UNIT_BADGE_MASTERED_RATING ? 'mastered' : 'rated';
+};
+// Vocabulary não tem uma nota única por unit (a autoavaliação é por
+// exercício, ver exerciseRatings) — "mastered" exige ter avaliado TODOS os
+// exercícios da unit com a nota máxima; qualquer outra avaliação já conta
+// como "rated". Units sem exercício indexado nunca passam de "visited".
+const getVocabularyUnitBadgeStatus = (unitNumber, visited, exerciseRatings) => {
+  if (!visited) return 'unvisited';
+  const ids = exercisesByUnit[unitNumber] || [];
+  const given = ids.map((id) => exerciseRatings[id] || 0);
+  const ratedCount = given.filter((value) => value > 0).length;
+  if (ratedCount === 0) return 'visited';
+  const allMastered = given.length === ratedCount
+    && given.every((value) => value >= UNIT_BADGE_MASTERED_RATING);
+  return allMastered ? 'mastered' : 'rated';
+};
+
 const unitTable = {
   1: 'Learning vocabulary',
   2: 'Keeping a vocabulary notebook',
@@ -482,13 +507,19 @@ function App() {
   // UnitNotes/respostas) usa o mesmo layout de grid de 3 colunas — listado
   // aqui pra saber quando faz sentido mostrar o botão de esconder/mostrar
   // (não existe em telas de grade de units, home, etc.).
-  const PAGES_WITH_SIDE_PANEL = ['unit', 'grammarElem-unit', 'grammarElem-exercise', 'grammarElem-appendix', 'grammarElem-additional', 'american1-unit', 'american1-reference', 'american1-transcriptions'];
+  const PAGES_WITH_SIDE_PANEL = ['exercises', 'unit', 'grammarElem-unit', 'grammarElem-exercise', 'grammarElem-appendix', 'grammarElem-additional', 'american1-unit', 'american1-reference', 'american1-transcriptions'];
   const [exerciseRatings, setExerciseRatings] = useState({});
   const [visitedUnits, setVisitedUnits] = useState({});
   const [american1UnitRatings, setAmerican1UnitRatings] = useState({});
   const [american1VisitedSections, setAmerican1VisitedSections] = useState({});
   const [grammarElemUnitRatings, setGrammarElemUnitRatings] = useState({});
   const [grammarElemVisitedUnits, setGrammarElemVisitedUnits] = useState({});
+  // Última unit/seção aberta EM CADA curso — alimenta o botão "Continue
+  // where you left off", um por curso na tela Courses e um só (o mais
+  // recente dos 3, por timestamp) na Home. Chave = id do curso
+  // ('vocabulary'/'american1'/'grammarElem'), valor = {unit, section?,
+  // timestamp} (section só usado pelo American1).
+  const [lastVisitedByCourse, setLastVisitedByCourse] = useState({});
   const [reviewQueue, setReviewQueue] = useState([]);
   const [wordbookEntries, setWordbookEntries] = useState([]);
   const layoutRef = useRef(null);
@@ -561,6 +592,36 @@ function App() {
     } catch (error) {
       // Armazenamento indisponível — progresso conta só a partir de agora.
       setVisitedUnits({});
+    }
+  }, [userName]);
+
+  useEffect(() => {
+    if (!userName) {
+      setLastVisitedByCourse({});
+      return;
+    }
+    try {
+      const raw = window.localStorage.getItem(userKey(userName, 'lastVisited'));
+      if (!raw) {
+        setLastVisitedByCourse({});
+        return;
+      }
+      const parsed = JSON.parse(raw);
+      // Formato antigo (2026-07-10, versão de 1 ponteiro só): {course, unit,
+      // section}. O formato atual é por curso: {vocabulary: {...}, ...}.
+      // Sem essa migração, um valor salvo no formato antigo carrega como um
+      // objeto sem nenhuma das 3 chaves esperadas e nenhum botão aparece.
+      if (parsed && parsed.course && parsed.unit) {
+        const migrated = {
+          [parsed.course]: { unit: parsed.unit, section: parsed.section, timestamp: Date.now() },
+        };
+        setLastVisitedByCourse(migrated);
+        window.localStorage.setItem(userKey(userName, 'lastVisited'), JSON.stringify(migrated));
+        return;
+      }
+      setLastVisitedByCourse(parsed || {});
+    } catch (error) {
+      setLastVisitedByCourse({});
     }
   }, [userName]);
 
@@ -907,6 +968,37 @@ function App() {
       return next;
     });
   }, [selectedGrammarElemUnit, activePage, userName]);
+
+  // "Continue where you left off": grava a última unit/seção aberta DE CADA
+  // curso (um botão por curso na tela Courses) + timestamp (pra Home saber
+  // qual dos 3 foi o mais recente e mostrar só esse). Reage às mesmas 3
+  // telas de leitura marcadas como visitadas acima.
+  useEffect(() => {
+    if (!userName) return;
+    let course = null;
+    let entry = null;
+    if (activePage === 'unit' && selectedUnit) {
+      course = 'vocabulary';
+      entry = { unit: selectedUnit, timestamp: Date.now() };
+    } else if (activePage === 'american1-unit' && selectedAmerican1Unit && selectedAmerican1Section) {
+      course = 'american1';
+      entry = { unit: selectedAmerican1Unit, section: selectedAmerican1Section, timestamp: Date.now() };
+    } else if (activePage === 'grammarElem-unit' && selectedGrammarElemUnit) {
+      course = 'grammarElem';
+      entry = { unit: selectedGrammarElemUnit, timestamp: Date.now() };
+    } else {
+      return;
+    }
+    setLastVisitedByCourse((prev) => {
+      const next = { ...prev, [course]: entry };
+      try {
+        window.localStorage.setItem(userKey(userName, 'lastVisited'), JSON.stringify(next));
+      } catch (error) {
+        // Armazenamento indisponível — "Continue" some até a próxima visita.
+      }
+      return next;
+    });
+  }, [activePage, selectedUnit, selectedAmerican1Unit, selectedAmerican1Section, selectedGrammarElemUnit, userName]);
 
   const handlePdfChange = (event) => {
     const file = event.target.files?.[0];
@@ -1388,6 +1480,24 @@ function App() {
     }
   };
 
+  // Se o progresso de um curso acabou de ser resetado, o "Continue where you
+  // left off" desse curso fica órfão (levaria a uma unit "não visitada" com
+  // um botão dizendo "continue"). Chamado pelos resets de progresso/"reset
+  // all" dos 3 cursos.
+  const clearLastVisitedForCourse = (course) => {
+    setLastVisitedByCourse((prev) => {
+      if (!prev[course]) return prev;
+      const next = { ...prev };
+      delete next[course];
+      try {
+        window.localStorage.setItem(userKey(userName, 'lastVisited'), JSON.stringify(next));
+      } catch (error) {
+        // Armazenamento indisponível.
+      }
+      return next;
+    });
+  };
+
   // Junta as anotações ("My Notes") de todas as units num único .txt e
   // dispara o download. As notas são salvas como HTML (negrito/marca-texto),
   // então convertemos para texto puro antes de exportar. `courseFilter`
@@ -1505,6 +1615,7 @@ function App() {
       return;
     }
     setVisitedUnits({});
+    clearLastVisitedForCourse('vocabulary');
     try {
       window.localStorage.removeItem(userKey(userName, 'visitedUnits'));
     } catch (error) {
@@ -1543,6 +1654,7 @@ function App() {
     }
     setVisitedUnits({});
     setExerciseRatings({});
+    clearLastVisitedForCourse('vocabulary');
     try {
       window.localStorage.removeItem(userKey(userName, 'visitedUnits'));
     } catch (error) {
@@ -1563,6 +1675,7 @@ function App() {
       return;
     }
     setAmerican1VisitedSections({});
+    clearLastVisitedForCourse('american1');
     try {
       window.localStorage.removeItem(userKey(userName, 'american1-visitedUnits'));
     } catch (error) {
@@ -1592,6 +1705,7 @@ function App() {
     }
     setAmerican1VisitedSections({});
     setAmerican1UnitRatings({});
+    clearLastVisitedForCourse('american1');
     try {
       window.localStorage.removeItem(userKey(userName, 'american1-visitedUnits'));
     } catch (error) {
@@ -1607,6 +1721,7 @@ function App() {
       return;
     }
     setGrammarElemVisitedUnits({});
+    clearLastVisitedForCourse('grammarElem');
     try {
       window.localStorage.removeItem(userKey(userName, 'grammarElem-visitedUnits'));
     } catch (error) {
@@ -1643,6 +1758,7 @@ function App() {
     }
     setGrammarElemVisitedUnits({});
     setGrammarElemUnitRatings({});
+    clearLastVisitedForCourse('grammarElem');
     try {
       window.localStorage.removeItem(userKey(userName, 'grammarElem-visitedUnits'));
     } catch (error) {
@@ -1776,8 +1892,16 @@ function App() {
       });
     }
     if (nextAmerican1) {
+      // Seções A/B/C ficam coladas no número ("Unit 2A"), igual ao resto do
+      // app — mas as seções especiais ("Review and Check", "Practical
+      // English") são palavras inteiras, não uma letra, e o título delas já
+      // repete esse nome (ex. title "Review and Check 1&2") — colar direto
+      // vira "Unit 2Review and Check: Review and Check 1&2".
+      const isLetterSection = /^[A-C]$/.test(nextAmerican1.section);
       candidates.push({
-        label: `Unit ${nextAmerican1.unit}${nextAmerican1.section}: ${nextAmerican1.title}`,
+        label: isLetterSection
+          ? `Unit ${nextAmerican1.unit}${nextAmerican1.section}: ${nextAmerican1.title}`
+          : `Unit ${nextAmerican1.unit}: ${nextAmerican1.title}`,
         sublabel: 'American English Level 1',
         onOpen: () => openAmerican1Section(nextAmerican1.unit, nextAmerican1.section),
       });
@@ -1795,6 +1919,41 @@ function App() {
   const unvisitedCandidates = userName ? findNextUnvisitedByCourse() : [];
   const planNewUnit = unvisitedCandidates[0] || null;
   const planListening = unvisitedCandidates[1] || null;
+
+  // "Continue where you left off": um botão por curso (tela Courses, usa
+  // lastVisitedByCourse[courseId] direto) + um só na Home (o curso com o
+  // timestamp mais recente entre os 3 — "onde você parou", no singular).
+  const openLastVisitedEntry = (course, entry) => {
+    if (!entry) return;
+    if (course === 'vocabulary') {
+      openVocabularyUnit(entry.unit);
+    } else if (course === 'american1') {
+      openAmerican1Section(entry.unit, entry.section);
+    } else if (course === 'grammarElem') {
+      openGrammarElemUnit(entry.unit);
+    }
+  };
+  const formatLastVisitedLabel = (course, entry) => {
+    if (!entry) return '';
+    if (course === 'vocabulary') return `Unit ${entry.unit} · ${courses.vocabulary.title}`;
+    if (course === 'american1') {
+      return /^[A-C]$/.test(entry.section)
+        ? `Unit ${entry.unit}${entry.section} · ${courses.american1.title}`
+        : `Unit ${entry.unit} (${entry.section}) · ${courses.american1.title}`;
+    }
+    return `Unit ${entry.unit} · ${courses.grammarElem.title}`;
+  };
+  const mostRecentLastVisited = Object.entries(lastVisitedByCourse).reduce(
+    (best, curr) => (!best || curr[1].timestamp > best[1].timestamp ? curr : best),
+    null,
+  );
+  const handleContinueLastVisited = () => {
+    if (!mostRecentLastVisited) return;
+    openLastVisitedEntry(mostRecentLastVisited[0], mostRecentLastVisited[1]);
+  };
+  const lastVisitedLabel = mostRecentLastVisited
+    ? formatLastVisitedLabel(mostRecentLastVisited[0], mostRecentLastVisited[1])
+    : '';
 
   // De onde a palavra foi salva (curso + unit) — gravado junto com a entrada
   // do "My Words" pelo botão flutuante "+ Word" das telas de estudo.
@@ -1947,7 +2106,15 @@ function App() {
             </div>
           </div>
 
-          <div className="study-columns">
+          <div
+            className="study-columns"
+            ref={layoutRef}
+            style={{
+              gridTemplateColumns: sidePanelVisible
+                ? `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`
+                : `minmax(${MIN_CENTER_WIDTH}px, 1fr)`,
+            }}
+          >
             <div className="study-left">
               <section className="study-reader">
                 {activeCoords ? (
@@ -1978,7 +2145,14 @@ function App() {
               </section>
             </div>
 
-            <aside className="study-answers">
+            <button
+              className={`resize-handle${sidePanelVisible ? '' : ' is-hidden'}`}
+              type="button"
+              aria-label="Resize right column"
+              onPointerDown={startPanelResize}
+            />
+
+            <aside className={`study-answers${sidePanelVisible ? '' : ' is-hidden'}`}>
               {activeExerciseId && (
                 <AnswerArea
                   exerciseId={activeExerciseId}
@@ -2070,9 +2244,11 @@ function App() {
         <main className="landing-page vocabulary-mode" id="link-vocabulary">
           <div className="landing-panel vocabulary-page">
             <h2 className="vocabulary-title">Vocabulary - English Pre Intermediate</h2>
+            <UnitBadgeLegend />
             <div className="vocabulary-list" role="list">
               {unitItems.map((unit) => (
                 <a key={unit.number} className="vocabulary-link" href={`#unit-${unit.number}`} onClick={(event) => handleUnitSelect(event, unit.number)}>
+                  <UnitBadgeDot status={getVocabularyUnitBadgeStatus(unit.number, Boolean(visitedUnits[unit.number]), exerciseRatings)} />
                   <span>Unit {unit.number}</span>
                   <small>{unit.label}</small>
                 </a>
@@ -2093,18 +2269,54 @@ function App() {
               />
             )}
             <div className="course-links">
-              <a className="course-link" href="#link-vocabulary" onClick={handleVocabulary}>
-                <span>{courses.vocabulary.title}</span>
-                <small>{courses.vocabulary.description}</small>
-              </a>
-              <a className="course-link" href="#link-american1" onClick={handleAmerican1}>
-                <span>{courses.american1.title}</span>
-                <small>{courses.american1.description}</small>
-              </a>
-              <a className="course-link" href="#link-grammarElem" onClick={handleGrammarElem}>
-                <span>{courses.grammarElem.title}</span>
-                <small>{courses.grammarElem.description}</small>
-              </a>
+              <div className="course-link-row">
+                <a className="course-link" href="#link-vocabulary" onClick={handleVocabulary}>
+                  <span>{courses.vocabulary.title}</span>
+                  <small>{courses.vocabulary.description}</small>
+                </a>
+                {lastVisitedByCourse.vocabulary && (
+                  <button
+                    type="button"
+                    className="continue-cta course-continue-cta"
+                    onClick={() => openLastVisitedEntry('vocabulary', lastVisitedByCourse.vocabulary)}
+                  >
+                    Continue where you left off
+                    <small>{formatLastVisitedLabel('vocabulary', lastVisitedByCourse.vocabulary)}</small>
+                  </button>
+                )}
+              </div>
+              <div className="course-link-row">
+                <a className="course-link" href="#link-american1" onClick={handleAmerican1}>
+                  <span>{courses.american1.title}</span>
+                  <small>{courses.american1.description}</small>
+                </a>
+                {lastVisitedByCourse.american1 && (
+                  <button
+                    type="button"
+                    className="continue-cta course-continue-cta"
+                    onClick={() => openLastVisitedEntry('american1', lastVisitedByCourse.american1)}
+                  >
+                    Continue where you left off
+                    <small>{formatLastVisitedLabel('american1', lastVisitedByCourse.american1)}</small>
+                  </button>
+                )}
+              </div>
+              <div className="course-link-row">
+                <a className="course-link" href="#link-grammarElem" onClick={handleGrammarElem}>
+                  <span>{courses.grammarElem.title}</span>
+                  <small>{courses.grammarElem.description}</small>
+                </a>
+                {lastVisitedByCourse.grammarElem && (
+                  <button
+                    type="button"
+                    className="continue-cta course-continue-cta"
+                    onClick={() => openLastVisitedEntry('grammarElem', lastVisitedByCourse.grammarElem)}
+                  >
+                    Continue where you left off
+                    <small>{formatLastVisitedLabel('grammarElem', lastVisitedByCourse.grammarElem)}</small>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </main>
@@ -2112,10 +2324,12 @@ function App() {
         <main className="landing-page vocabulary-mode" id="link-american1">
           <div className="landing-panel vocabulary-page">
             <h2 className="vocabulary-title">American English Level 1</h2>
+            <UnitBadgeLegend />
             <div className="vocabulary-list" role="list">
               {american1UnitNumbers.map((unit) => {
                 const sections = american1SectionsByUnit[unit] || [];
                 const theme = sections.find((section) => section.section === 'A')?.title || sections[0]?.title || '';
+                const visited = Object.keys(american1VisitedSections).some((key) => key.startsWith(`${unit}|`));
                 return (
                   <a
                     key={unit}
@@ -2123,6 +2337,7 @@ function App() {
                     href={`#american1-unit-${unit}`}
                     onClick={(event) => handleAmerican1UnitSelect(event, unit)}
                   >
+                    <UnitBadgeDot status={getUnitBadgeStatus(visited, american1UnitRatings[unit] || 0)} />
                     <span>Unit {unit}</span>
                     <small>{theme}</small>
                   </a>
@@ -2135,6 +2350,7 @@ function App() {
         <main className="landing-page vocabulary-mode grammar-elem-landing" id="link-grammarElem">
           <div className="landing-panel vocabulary-page grammar-elem-landing-panel">
             <h2 className="vocabulary-title">{courses.grammarElem.title}</h2>
+            <UnitBadgeLegend />
             <div className="vocabulary-list" role="list">
               {grammarElemUnitNumbers.map((unit) => (
                 <a
@@ -2143,6 +2359,7 @@ function App() {
                   href={`#grammarElem-unit-${unit}`}
                   onClick={(event) => handleGrammarElemUnitSelect(event, unit)}
                 >
+                  <UnitBadgeDot status={getUnitBadgeStatus(Boolean(grammarElemVisitedUnits[unit]), grammarElemUnitRatings[unit] || 0)} />
                   <span>Unit {unit}</span>
                 </a>
               ))}
@@ -3025,6 +3242,12 @@ function App() {
               <button type="button" className="landing-cta" onClick={handleCourses}>
                 Start Learning
               </button>
+              {mostRecentLastVisited && (
+                <button type="button" className="landing-cta continue-cta" onClick={handleContinueLastVisited}>
+                  Continue where you left off
+                  <small>{lastVisitedLabel}</small>
+                </button>
+              )}
             </div>
             {userName && (
               // Único painel de orientação da Home — o ReviewCard "Today's
@@ -3073,6 +3296,54 @@ function App() {
 // Mostra no máx. 2 itens de revisão (o resto da fila — se houver — fica só
 // no "Today's Review" completo da tela Courses, evitando repetir a mesma
 // lista inteira duas vezes na Home).
+const UNIT_BADGE_LABELS = {
+  unvisited: 'Not visited',
+  visited: 'Visited',
+  rated: 'Rated',
+  mastered: 'Mastered',
+};
+
+function UnitBadgeDot({ status }) {
+  return <span className={`unit-badge-dot unit-badge-dot--${status}`} title={UNIT_BADGE_LABELS[status]} />;
+}
+
+function UnitBadgeLegend() {
+  const [showInfo, setShowInfo] = useState(false);
+
+  return (
+    <div className="unit-badge-legend">
+      {Object.entries(UNIT_BADGE_LABELS).map(([status, label]) => (
+        <span key={status} className="unit-badge-legend-item">
+          <UnitBadgeDot status={status} />
+          {label}
+        </span>
+      ))}
+      <span className="unit-badge-legend-info-wrap">
+        <button
+          type="button"
+          className="unit-badge-legend-info-btn"
+          onClick={() => setShowInfo((value) => !value)}
+          aria-expanded={showInfo}
+          aria-label="What do these badges mean?"
+        >
+          i
+        </button>
+        {showInfo && (
+          <div className="unit-badge-legend-info-popover" role="tooltip">
+            <p><strong>Not visited</strong> — you haven't opened this unit yet.</p>
+            <p><strong>Visited</strong> — opened, but not self-rated yet.</p>
+            <p><strong>Rated</strong> — self-rated at least once, below the maximum.</p>
+            <p>
+              <strong>Mastered</strong> — rated 5★. For Vocabulary (rated per exercise, not
+              per unit), every exercise in the unit must be rated 5★.
+            </p>
+          </div>
+        )}
+      </span>
+    </div>
+  );
+}
+
 function TodayPlanCard({ newUnit, listening, reviewQueue, onOpenReviewItem, onSeeAllReviews }) {
   const reviewItems = reviewQueue.slice(0, 2);
   const moreReviewCount = reviewQueue.length - reviewItems.length;

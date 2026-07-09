@@ -492,6 +492,31 @@ body {
   transform: translateY(-1px);
 }
 
+/* Variante secundária (contorno, não preenchida) do "Start Learning" — usada
+   pelo "Continue where you left off", que só aparece depois da primeira
+   unit visitada, então não deve competir visualmente com o CTA principal. */
+.continue-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: transparent;
+  border: 2px solid var(--purple-500);
+  color: var(--purple-700);
+}
+
+.continue-cta:hover {
+  background: rgba(109, 66, 216, 0.08);
+}
+
+.continue-cta small {
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 600;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
 .landing-panel.vocabulary-page {
   max-width: 1120px;
   width: 100%;
@@ -584,6 +609,65 @@ body {
   display: grid;
   gap: 18px;
   padding: 16px 0 4px;
+}
+
+/* Cada curso na tela Courses ganha sua própria linha (card + botão
+   "Continue where you left off" à direita, alinhado com o card, só quando
+   esse curso específico já foi visitado — ver lastVisitedByCourse). Os 3
+   botões têm sempre a mesma largura fixa (não o tamanho do texto), pra
+   ficarem alinhados numa coluna reta em vez de cada um um tamanho.
+   Em telas estreitas, empilha. */
+.course-link-row {
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  gap: 14px;
+}
+
+.course-link-row .course-link {
+  flex: 1;
+}
+
+.course-continue-cta {
+  flex: 0 0 200px;
+  width: 200px;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 14px;
+  background: rgba(109, 66, 216, 0.1);
+  color: var(--purple-700);
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 12.5px;
+}
+
+.course-continue-cta:hover {
+  background: rgba(109, 66, 216, 0.18);
+  transform: none;
+}
+
+.course-continue-cta small {
+  max-width: 100%;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .course-link-row {
+    flex-direction: column;
+  }
+
+  .course-continue-cta {
+    width: 100%;
+  }
 }
 
 .course-link {
@@ -982,6 +1066,7 @@ body {
 }
 
 .vocabulary-link {
+  position: relative;
   display: block;
   padding: 18px 20px;
   border-radius: 18px;
@@ -990,6 +1075,102 @@ body {
   text-decoration: none;
   color: #fff;
   transition: transform 220ms ease, background 220ms ease, border-color 220ms ease;
+}
+
+/* Badge de progresso no canto do card (grades de unit dos 3 cursos) — ver
+   getUnitBadgeStatus/getVocabularyUnitBadgeStatus em App.js. */
+.unit-badge-dot {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(27, 58, 94, 0.25);
+}
+
+.unit-badge-dot--unvisited { background: transparent; opacity: 0.35; }
+.unit-badge-dot--visited { background: #4a90d9; }
+.unit-badge-dot--rated { background: var(--purple-500); border-color: transparent; }
+.unit-badge-dot--mastered { background: #2fa86b; border-color: transparent; }
+
+.unit-badge-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin: -8px 0 18px;
+  font-size: 16px;
+  color: rgba(27, 58, 94, 0.68);
+}
+
+.unit-badge-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.unit-badge-legend-item .unit-badge-dot {
+  position: static;
+  width: 13px;
+  height: 13px;
+}
+
+.unit-badge-legend-info-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.unit-badge-legend-info-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(27, 58, 94, 0.45);
+  background: transparent;
+  color: rgba(27, 58, 94, 0.75);
+  font-size: 12px;
+  font-style: italic;
+  font-weight: 700;
+  font-family: Georgia, 'Times New Roman', serif;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.unit-badge-legend-info-btn:hover,
+.unit-badge-legend-info-btn[aria-expanded="true"] {
+  border-color: var(--purple-500);
+  color: var(--purple-500);
+}
+
+.unit-badge-legend-info-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 30;
+  width: 300px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid rgba(27, 58, 94, 0.15);
+  box-shadow: 0 16px 40px rgba(27, 58, 94, 0.22);
+  font-size: 13px;
+  line-height: 1.5;
+  color: #1b3a5e;
+  text-align: left;
+}
+
+.unit-badge-legend-info-popover p {
+  margin: 0 0 8px;
+  /* .landing-panel p (regra global mais antiga) força texto branco — sem
+     isso o popover fica com texto invisível sobre o próprio fundo branco. */
+  color: #1b3a5e;
+}
+
+.unit-badge-legend-info-popover p:last-child {
+  margin-bottom: 0;
 }
 
 .vocabulary-link:hover,
@@ -1034,7 +1215,7 @@ body {
   align-items: center;
   justify-content: center;
   border: 1px solid var(--purple-300);
-  border-radius: 999px;
+  border-radius: 10px;
   background: #fff;
   color: var(--purple-700);
   font-size: 28px;
@@ -1486,25 +1667,45 @@ body {
   height: 14px;
 }
 
+/* Linha bem fina por padrão (quase invisível) com uma pequena pílula de
+   "pegar" centralizada — engrossa/ganha cor só no hover ou durante o
+   arraste, em vez de ser uma barra sólida cinza o tempo todo. */
 .resize-handle {
   position: relative;
   cursor: col-resize;
-  background: #e0e0e0;
+  background: transparent;
   border: none;
+}
+
+.resize-handle::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: rgba(27, 58, 94, 0.18);
+  transition: width 140ms, background 140ms;
 }
 
 .resize-handle::before {
   content: "";
   position: absolute;
-  inset: 16px 5px;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 32px;
+  transform: translate(-50%, -50%);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.74);
-  box-shadow: 0 0 0 1px rgba(72, 39, 130, 0.2);
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(72, 39, 130, 0.28);
 }
 
-.resize-handle:hover,
-.resize-handle[data-resize-handle-active] {
-  background: rgba(255, 255, 255, 0.3);
+.resize-handle:hover::after,
+.resize-handle[data-resize-handle-active]::after {
+  width: 4px;
+  background: rgba(109, 66, 216, 0.5);
 }
 
 .resize-handle.is-hidden { display: none; }
@@ -1781,6 +1982,8 @@ body {
   border-radius: 12px;
   box-shadow: var(--shadow);
 }
+
+.study-answers.is-hidden { display: none; }
 
 .answers-inner {
   display: flex;
