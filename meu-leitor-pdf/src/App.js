@@ -15,6 +15,8 @@ import american1TranscriptionsAudioAnchors from './american1_transcriptions_audi
 import american1References from './american1_references.json';
 import american1Videos from './american1_videos.json';
 import grammarElemAudio from './grammar_elem_audio.json';
+import grammarElemIndex from './grammar_elem_index.json';
+import grammarElemAppendixIndex from './grammar_elem_appendix_index.json';
 import './App.css';
 
 // URL do gabarito único (multipágina), servido por src/setupProxy.js.
@@ -331,6 +333,24 @@ const american1UnitNumbers = Object.keys(american1SectionsByUnit)
   .map(Number)
   .sort((a, b) => a - b);
 
+// Busca por palavra-chave na grade de units (ver UnitSearchBox em App()):
+// junta título + grammar + vocabulary + pronunciation de TODAS as seções da
+// unit (não só a seção "A" mostrada como resumo no card), porque um tópico
+// como "phrasal verbs" pode estar só na seção B ou C. Pré-computado uma vez
+// (dado estático do módulo), não a cada tecla digitada.
+const american1UnitSearchText = (() => {
+  const map = {};
+  american1UnitNumbers.forEach((unit) => {
+    const sections = american1SectionsByUnit[unit] || [];
+    map[unit] = sections
+      .flatMap((section) => [section.title, section.grammar, section.vocabulary, section.pronunciation])
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+  });
+  return map;
+})();
+
 // Progresso é contado por seção (1A, 1B, ... Practical English/Review and Check de
 // cada unit), não por unit — as units são longas, então marcar a unit
 // inteira como "vista" ao abrir a primeira seção inflava o progresso.
@@ -398,11 +418,30 @@ const courses = {
 const GRAMMAR_ELEM_UNIT_COUNT = 115;
 const grammarElemUnitNumbers = Array.from({ length: GRAMMAR_ELEM_UNIT_COUNT }, (_, i) => i + 1);
 
+// Título/tópico de cada unit (grammar_elem_index.json) — extraído das
+// próprias páginas Unit-<n>L.pdf (a de leitura; as _E são só exercícios,
+// não têm o título): PyMuPDF, localizando o bloco de texto no topo da
+// página, acima do primeiro marcador de seção "A" (algumas páginas listam
+// A/B/C na ordem de leitura ANTES do título, apesar de estarem visualmente
+// abaixo — layout em colunas). Script de extração não fica no repo (mesma
+// política dos outros geradores de índice deste projeto, ver
+// exercise-crop-feature/american1-anchored-audio-detection).
+const getGrammarElemUnitTitle = (unit) => grammarElemIndex[String(unit)] || '';
+
 // Appendixes do Grammar English Elementary: ficam depois da última unit,
 // mas não contam pra "Your Progress" (ver src/setupProxy.js para como as
 // páginas de cada appendix são resolvidas a partir de Appendixes/*.pdf).
 const GRAMMAR_ELEM_APPENDIX_COUNT = 7;
 const grammarElemAppendixNumbers = Array.from({ length: GRAMMAR_ELEM_APPENDIX_COUNT }, (_, i) => i + 1);
+
+// Título de cada appendix (grammar_elem_appendix_index.json) — mesma técnica
+// de extração de getGrammarElemUnitTitle, aplicada em "appendix <n> p1.pdf"
+// (a página 1 de cada appendix; alguns têm p2, mas o título só está na p1).
+// Essas páginas não têm marcador de seção "A" (texto corrido, sem
+// subseções), então o corte usado foi o mesmo fallback das units 110/114:
+// logo depois do próprio bloco de título (tamanho >= 36), excluindo o
+// rótulo "Appendix N" (que aparece 2x na página, incl. um "fantasma" maior).
+const getGrammarElemAppendixTitle = (appendixNumber) => grammarElemAppendixIndex[String(appendixNumber)] || '';
 
 // Additional Exercises do Grammar English Elementary: mesma ideia dos
 // Appendixes (depois das units, fora da contabilidade de progresso — ver
@@ -420,6 +459,13 @@ const renderPdfUpload = (onChange, label = 'Load PDF') => (
       onChange={onChange}
     />
   </label>
+);
+
+const IconSearch = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="7" />
+    <path d="M21 21l-4.3-4.3" />
+  </svg>
 );
 
 const IconLanguage = () => (
@@ -544,6 +590,12 @@ function App() {
   const [expandedProfileCourses, setExpandedProfileCourses] = useState({});
   const [activePage, setActivePage] = useState(RESTORED_POSITION?.activePage || 'home');
   const [activeCourseId, setActiveCourseId] = useState(RESTORED_POSITION?.activeCourseId ?? null);
+  // Busca por palavra-chave nas 3 grades de unit (Vocabulary/American1/
+  // Grammar Elementary) — compartilhada entre as 3 porque só uma grade fica
+  // visível de cada vez; zerada ao entrar em qualquer uma delas (ver
+  // handleVocabulary/handleAmerican1/handleGrammarElem) pra não começar
+  // filtrada sem o usuário saber por quê.
+  const [unitSearchQuery, setUnitSearchQuery] = useState('');
   const [rightWidth, setRightWidth] = useState(650);
   // Esconde/mostra o painel direito (notas + respostas) inteiro, dando a
   // largura toda pro leitor — a mesma flag controla o botão flutuante
@@ -1265,6 +1317,7 @@ function App() {
     setActivePage('vocabulary');
     setSelectedUnit(null);
     setActiveCourseId('vocabulary');
+    setUnitSearchQuery('');
   };
 
   const handleAmerican1 = (event) => {
@@ -1273,6 +1326,7 @@ function App() {
     setSelectedAmerican1Unit(null);
     setSelectedAmerican1Section(null);
     setActiveCourseId('american1');
+    setUnitSearchQuery('');
   };
 
   const handleAmerican1UnitSelect = (event, unit) => {
@@ -1315,6 +1369,7 @@ function App() {
     setSelectedGrammarElemAppendix(null);
     setSelectedGrammarElemAdditional(null);
     setActiveCourseId('grammarElem');
+    setUnitSearchQuery('');
   };
 
   // Link "All Units" no header: some direto pra tela de escolha de unit do
@@ -2104,6 +2159,23 @@ function App() {
     return candidates;
   };
 
+  // Busca nas 3 grades de unit ("Em qual unit ficava phrasal verbs?"): filtra
+  // pelo título/tópico já indexado (unitTable pro Vocabulary,
+  // american1UnitSearchText — título+grammar+vocabulary+pronunciation de
+  // TODAS as seções — pro American1, grammarElemIndex pro Grammar
+  // Elementary) e também pelo número da unit em texto, pra "24" achar a
+  // Unit 24 direto.
+  const unitSearchNormalized = unitSearchQuery.trim().toLowerCase();
+  const filteredUnitItems = unitSearchNormalized
+    ? unitItems.filter((unit) => unit.label.toLowerCase().includes(unitSearchNormalized) || String(unit.number).includes(unitSearchNormalized))
+    : unitItems;
+  const filteredAmerican1UnitNumbers = unitSearchNormalized
+    ? american1UnitNumbers.filter((unit) => (american1UnitSearchText[unit] || '').includes(unitSearchNormalized) || String(unit).includes(unitSearchNormalized))
+    : american1UnitNumbers;
+  const filteredGrammarElemUnitNumbers = unitSearchNormalized
+    ? grammarElemUnitNumbers.filter((unit) => getGrammarElemUnitTitle(unit).toLowerCase().includes(unitSearchNormalized) || String(unit).includes(unitSearchNormalized))
+    : grammarElemUnitNumbers;
+
   const unvisitedCandidates = userName ? findNextUnvisitedByCourse() : [];
   const planNewUnit = unvisitedCandidates[0] || null;
   const planListening = unvisitedCandidates[1] || null;
@@ -2432,16 +2504,21 @@ function App() {
         <main className="landing-page vocabulary-mode" id="link-vocabulary">
           <div className="landing-panel vocabulary-page">
             <h2 className="vocabulary-title">Vocabulary - English Pre Intermediate</h2>
+            <UnitSearchBox value={unitSearchQuery} onChange={setUnitSearchQuery} placeholder="Search units... (e.g. phrasal verbs)" />
             <UnitBadgeLegend />
-            <div className="vocabulary-list" role="list">
-              {unitItems.map((unit) => (
-                <a key={unit.number} className="vocabulary-link" href={`#unit-${unit.number}`} onClick={(event) => handleUnitSelect(event, unit.number)}>
-                  <UnitBadgeDot status={getVocabularyUnitBadgeStatus(unit.number, Boolean(visitedUnits[unit.number]), exerciseRatings)} />
-                  <span>Unit {unit.number}</span>
-                  <small>{unit.label}</small>
-                </a>
-              ))}
-            </div>
+            {filteredUnitItems.length === 0 ? (
+              <p className="unit-search-empty">No units match "{unitSearchQuery}".</p>
+            ) : (
+              <div className="vocabulary-list" role="list">
+                {filteredUnitItems.map((unit) => (
+                  <a key={unit.number} className="vocabulary-link" href={`#unit-${unit.number}`} onClick={(event) => handleUnitSelect(event, unit.number)}>
+                    <UnitBadgeDot status={getVocabularyUnitBadgeStatus(unit.number, Boolean(visitedUnits[unit.number]), exerciseRatings)} />
+                    <span>Unit {unit.number}</span>
+                    <small>{unit.label}</small>
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
         </main>
       ) : activePage === 'courses' ? (
@@ -2512,46 +2589,57 @@ function App() {
         <main className="landing-page vocabulary-mode" id="link-american1">
           <div className="landing-panel vocabulary-page">
             <h2 className="vocabulary-title">American English Level 1</h2>
+            <UnitSearchBox value={unitSearchQuery} onChange={setUnitSearchQuery} placeholder="Search units... (e.g. phrasal verbs)" />
             <UnitBadgeLegend />
-            <div className="vocabulary-list" role="list">
-              {american1UnitNumbers.map((unit) => {
-                const sections = american1SectionsByUnit[unit] || [];
-                const theme = sections.find((section) => section.section === 'A')?.title || sections[0]?.title || '';
-                const visited = Object.keys(american1VisitedSections).some((key) => key.startsWith(`${unit}|`));
-                return (
-                  <a
-                    key={unit}
-                    className="vocabulary-link"
-                    href={`#american1-unit-${unit}`}
-                    onClick={(event) => handleAmerican1UnitSelect(event, unit)}
-                  >
-                    <UnitBadgeDot status={getUnitBadgeStatus(visited, american1UnitRatings[unit] || 0)} />
-                    <span>Unit {unit}</span>
-                    <small>{theme}</small>
-                  </a>
-                );
-              })}
-            </div>
+            {filteredAmerican1UnitNumbers.length === 0 ? (
+              <p className="unit-search-empty">No units match "{unitSearchQuery}".</p>
+            ) : (
+              <div className="vocabulary-list" role="list">
+                {filteredAmerican1UnitNumbers.map((unit) => {
+                  const sections = american1SectionsByUnit[unit] || [];
+                  const theme = sections.find((section) => section.section === 'A')?.title || sections[0]?.title || '';
+                  const visited = Object.keys(american1VisitedSections).some((key) => key.startsWith(`${unit}|`));
+                  return (
+                    <a
+                      key={unit}
+                      className="vocabulary-link"
+                      href={`#american1-unit-${unit}`}
+                      onClick={(event) => handleAmerican1UnitSelect(event, unit)}
+                    >
+                      <UnitBadgeDot status={getUnitBadgeStatus(visited, american1UnitRatings[unit] || 0)} />
+                      <span>Unit {unit}</span>
+                      <small>{theme}</small>
+                    </a>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </main>
       ) : activePage === 'grammarElem' ? (
         <main className="landing-page vocabulary-mode grammar-elem-landing" id="link-grammarElem">
           <div className="landing-panel vocabulary-page grammar-elem-landing-panel">
             <h2 className="vocabulary-title">{courses.grammarElem.title}</h2>
+            <UnitSearchBox value={unitSearchQuery} onChange={setUnitSearchQuery} placeholder="Search units... (e.g. phrasal verbs)" />
             <UnitBadgeLegend />
-            <div className="vocabulary-list" role="list">
-              {grammarElemUnitNumbers.map((unit) => (
-                <a
-                  key={unit}
-                  className="vocabulary-link"
-                  href={`#grammarElem-unit-${unit}`}
-                  onClick={(event) => handleGrammarElemUnitSelect(event, unit)}
-                >
-                  <UnitBadgeDot status={getUnitBadgeStatus(Boolean(grammarElemVisitedUnits[unit]), grammarElemUnitRatings[unit] || 0)} />
-                  <span>Unit {unit}</span>
-                </a>
-              ))}
-            </div>
+            {filteredGrammarElemUnitNumbers.length === 0 ? (
+              <p className="unit-search-empty">No units match "{unitSearchQuery}".</p>
+            ) : (
+              <div className="vocabulary-list" role="list">
+                {filteredGrammarElemUnitNumbers.map((unit) => (
+                  <a
+                    key={unit}
+                    className="vocabulary-link"
+                    href={`#grammarElem-unit-${unit}`}
+                    onClick={(event) => handleGrammarElemUnitSelect(event, unit)}
+                  >
+                    <UnitBadgeDot status={getUnitBadgeStatus(Boolean(grammarElemVisitedUnits[unit]), grammarElemUnitRatings[unit] || 0)} />
+                    <span>Unit {unit}</span>
+                    <small>{getGrammarElemUnitTitle(unit)}</small>
+                  </a>
+                ))}
+              </div>
+            )}
             <h2 className="vocabulary-title">Appendixes</h2>
             <div className="vocabulary-list" role="list">
               {grammarElemAppendixNumbers.map((appendixNumber) => (
@@ -2562,6 +2650,7 @@ function App() {
                   onClick={(event) => handleGrammarElemAppendixSelect(event, appendixNumber)}
                 >
                   <span>Appendix {appendixNumber}</span>
+                  <small>{getGrammarElemAppendixTitle(appendixNumber)}</small>
                 </a>
               ))}
             </div>
@@ -2630,6 +2719,12 @@ function App() {
                   </div>
                 )}
               </div>
+
+              {unit && getGrammarElemUnitTitle(unit) && (
+                <div className="section-info">
+                  <strong>{getGrammarElemUnitTitle(unit)}</strong>
+                </div>
+              )}
 
               {fileUrl ? (
                 <PdfWorkspace key={fileUrl} fileUrl={fileUrl} defaultScale={1.3} />
@@ -2787,6 +2882,12 @@ function App() {
                   </button>
                 </div>
               </div>
+
+              {appendixNumber && getGrammarElemAppendixTitle(appendixNumber) && (
+                <div className="section-info">
+                  <strong>{getGrammarElemAppendixTitle(appendixNumber)}</strong>
+                </div>
+              )}
 
               {fileUrl ? (
                 <PdfWorkspace key={fileUrl} fileUrl={fileUrl} defaultScale={1.3} />
@@ -3496,6 +3597,36 @@ const UNIT_BADGE_LABELS = {
 
 function UnitBadgeDot({ status }) {
   return <span className={`unit-badge-dot unit-badge-dot--${status}`} title={UNIT_BADGE_LABELS[status]} />;
+}
+
+// Caixa de busca das 3 grades de unit — só um input controlado por fora
+// (value/onChange), pra o estado (unitSearchQuery) poder ser compartilhado
+// e zerado ao trocar de curso (ver handleVocabulary/handleAmerican1/
+// handleGrammarElem em App()).
+function UnitSearchBox({ value, onChange, placeholder }) {
+  return (
+    <div className="unit-search-box">
+      <IconSearch />
+      <input
+        type="search"
+        className="unit-search-input"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder || 'Search units...'}
+        aria-label="Search units by keyword"
+      />
+      {value && (
+        <button
+          type="button"
+          className="unit-search-clear"
+          onClick={() => onChange('')}
+          aria-label="Clear search"
+        >
+          ×
+        </button>
+      )}
+    </div>
+  );
 }
 
 function UnitBadgeLegend() {

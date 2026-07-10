@@ -1094,6 +1094,67 @@ body {
 .unit-badge-dot--rated { background: var(--purple-500); border-color: transparent; }
 .unit-badge-dot--mastered { background: #2fa86b; border-color: transparent; }
 
+/* Busca por palavra-chave nas 3 grades de unit (Vocabulary/American1/
+   Grammar Elementary) — ver UnitSearchBox e unitSearchQuery em App.js. */
+.unit-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 360px;
+  margin: 0 0 16px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: rgba(27, 58, 94, 0.05);
+  border: 1px solid rgba(27, 58, 94, 0.12);
+  color: rgba(27, 58, 94, 0.55);
+}
+
+.unit-search-box:focus-within {
+  border-color: var(--purple-500);
+  background: #fff;
+}
+
+.unit-search-input {
+  flex: 1;
+  padding: 10px 8px;
+  border: none;
+  background: transparent;
+  color: #1b3a5e;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+}
+
+.unit-search-input::placeholder {
+  color: rgba(27, 58, 94, 0.45);
+}
+
+/* Remove o "x" nativo de type="search" no Chrome/Edge — usamos o botão
+   .unit-search-clear próprio, consistente entre navegadores. */
+.unit-search-input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.unit-search-clear {
+  border: none;
+  background: transparent;
+  color: rgba(27, 58, 94, 0.5);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.unit-search-clear:hover {
+  color: var(--purple-700);
+}
+
+.unit-search-empty {
+  margin: 8px 0 0;
+  color: rgba(27, 58, 94, 0.6);
+  font-size: 14px;
+}
+
 .unit-badge-legend {
   display: flex;
   flex-wrap: wrap;
