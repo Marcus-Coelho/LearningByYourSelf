@@ -1853,6 +1853,107 @@ function App() {
     }
   };
 
+  // Backup/restore completo do progresso de UM usuário (respostas, notas,
+  // autoavaliações, units visitadas, My Words, "Continue where you left
+  // off"...) — diferente do "Export lesson notes" acima (só notas, em
+  // .txt, só pra leitura humana), este é um dump 1:1 de TODO o namespace
+  // "u:<nome>:*" do localStorage, pensado pra restaurar depois de limpar o
+  // cache ou trocar de navegador/computador (o localStorage nunca sai
+  // daquele navegador — nem OneDrive nem git protegem isso, é local puro).
+  // Dump genérico por chave, não uma lista hardcoded de prefixos — assim
+  // qualquer chave nova que uma feature futura adicionar já entra no
+  // backup de graça, sem precisar lembrar de atualizar esta função.
+  const handleExportBackup = () => {
+    if (!userName) return;
+    try {
+      const prefix = userKey(userName, '');
+      const data = {};
+      for (let i = 0; i < window.localStorage.length; i += 1) {
+        const key = window.localStorage.key(i);
+        if (!key || !key.startsWith(prefix)) continue;
+        data[key.slice(prefix.length)] = window.localStorage.getItem(key);
+      }
+      if (Object.keys(data).length === 0) {
+        window.alert('Nothing to back up yet — no progress saved for this user.');
+        return;
+      }
+      const backup = {
+        app: 'lets-learn-english-backup',
+        version: 1,
+        userName,
+        exportedAt: new Date().toISOString(),
+        data,
+      };
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const datePart = new Date().toISOString().slice(0, 10);
+      link.download = `lets-learn-english-backup-${userName}-${datePart}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      window.alert('Could not export your backup.');
+    }
+  };
+
+  // Restaura um backup gerado por handleExportBackup — sempre nas chaves do
+  // usuário ATIVO agora (não necessariamente o mesmo "userName" salvo no
+  // arquivo: o cenário típico é reinstalar/trocar de navegador, recadastrar
+  // o mesmo nome ali, e importar por cima). Escreve direto no localStorage
+  // e recarrega a página em vez de tentar sincronizar manualmente cada
+  // pedaço de estado React espalhado pelo app — muito mais simples e sem
+  // risco de esquecer algum setState.
+  const handleImportBackupFile = (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file || !userName) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      let parsed;
+      try {
+        parsed = JSON.parse(String(reader.result));
+      } catch (error) {
+        window.alert("Could not read this file — make sure it's a backup .json exported from this app.");
+        return;
+      }
+      if (!parsed || typeof parsed.data !== 'object' || parsed.data === null) {
+        window.alert("This file doesn't look like a Let's Learn English backup.");
+        return;
+      }
+      const keys = Object.keys(parsed.data).filter((k) => typeof parsed.data[k] === 'string');
+      if (keys.length === 0) {
+        window.alert('This backup file is empty.');
+        return;
+      }
+      const fromDifferentUser = parsed.userName && parsed.userName !== userName;
+      const warning = fromDifferentUser
+        ? `This backup was exported from "${parsed.userName}". `
+        : '';
+      if (!window.confirm(
+        `${warning}Import ${keys.length} saved item(s) into "${userName}"? This will overwrite any matching progress, notes, answers and ratings already saved for this user on this browser. This cannot be undone.`,
+      )) {
+        return;
+      }
+      try {
+        keys.forEach((relativeKey) => {
+          window.localStorage.setItem(userKey(userName, relativeKey), parsed.data[relativeKey]);
+        });
+      } catch (error) {
+        window.alert('Could not write the backup to this browser (storage may be full or unavailable).');
+        return;
+      }
+      window.alert('Backup imported. The page will reload to apply it.');
+      window.location.reload();
+    };
+    reader.onerror = () => {
+      window.alert('Could not read this file.');
+    };
+    reader.readAsText(file);
+  };
+
   const handleResetProgress = () => {
     if (!window.confirm('Reset your unit progress? This cannot be undone.')) {
       return;
@@ -3314,21 +3415,6 @@ function App() {
           <div className="landing-panel profile-panel">
             <p className="eyebrow">My Profile</p>
             <h1>{userName}</h1>
-            <p className="landing-meta">
-              Everything below is stored only in this browser (no account, no server) — these
-              buttons erase it for good.
-            </p>
-
-            <div className="profile-reset-list">
-              <button type="button" className="profile-reset-btn" onClick={handleSwitchUser}>
-                <span>Switch user</span>
-                <small>Log out of "{userName}" and register or continue as someone else on this browser.</small>
-              </button>
-              <button type="button" className="profile-reset-btn danger" onClick={handleDeleteAccount}>
-                <span>Delete this user</span>
-                <small>Permanently erases "{userName}" and every course's progress, score, notes and answers.</small>
-              </button>
-            </div>
 
             <div className="profile-course-head">
               <h2 className="profile-course-heading">{courses.vocabulary.title}</h2>
@@ -3461,6 +3547,51 @@ function App() {
                   <span>Reset All</span>
                   <small>Everything above, all at once.</small>
                 </button>
+              </div>
+            )}
+
+            <p className="landing-meta profile-section-divider">
+              Everything below is stored only in this browser (no account, no server) — these
+              buttons erase it for good.
+            </p>
+            <div className="profile-reset-list">
+              <button type="button" className="profile-reset-btn" onClick={handleSwitchUser}>
+                <span>Switch user</span>
+                <small>Log out of "{userName}" and register or continue as someone else on this browser.</small>
+              </button>
+              <button type="button" className="profile-reset-btn danger" onClick={handleDeleteAccount}>
+                <span>Delete this user</span>
+                <small>Permanently erases "{userName}" and every course's progress, score, notes and answers.</small>
+              </button>
+            </div>
+
+            <div className="profile-course-head">
+              <h2 className="profile-course-heading">Backup &amp; Restore</h2>
+              <button
+                type="button"
+                className="profile-course-toggle"
+                onClick={() => toggleProfileCourse('backup')}
+                aria-expanded={Boolean(expandedProfileCourses.backup)}
+                aria-label={expandedProfileCourses.backup ? 'Collapse' : 'Expand'}
+              >
+                {expandedProfileCourses.backup ? '−' : '+'}
+              </button>
+            </div>
+            <p className="landing-meta">
+              Your progress lives only in this browser's storage — clearing the cache, a browser
+              update, or moving to a new computer can erase it for good.
+            </p>
+            {expandedProfileCourses.backup && (
+              <div className="profile-reset-list">
+                <button type="button" className="profile-reset-btn primary" onClick={handleExportBackup}>
+                  <span>Export full backup (.json)</span>
+                  <small>Downloads everything for "{userName}": progress, notes, answers, ratings and My Words.</small>
+                </button>
+                <label className="profile-reset-btn primary">
+                  <span>Import backup (.json)</span>
+                  <small>Restores a backup file into "{userName}" on this browser. Overwrites matching data.</small>
+                  <input type="file" accept="application/json,.json" onChange={handleImportBackupFile} />
+                </label>
               </div>
             )}
           </div>

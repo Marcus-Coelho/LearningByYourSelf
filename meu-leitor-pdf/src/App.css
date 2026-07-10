@@ -779,6 +779,15 @@ body {
   color: #fff;
 }
 
+/* Mesma linha separadora de .profile-course-head, usada aqui pra marcar a
+   transição das seções de curso pras ações de conta (Switch user/Delete
+   this user, logo acima de Backup & Restore). */
+.profile-section-divider {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
+
 /* Botão +/- que abre/fecha os resets de cada curso — fechado por padrão,
    deixando só o título e a linha de score/progresso à vista (ver
    expandedProfileCourses em App.js). Pensado para escalar quando mais
@@ -835,6 +844,17 @@ body {
   color: rgba(255, 255, 255, 0.65);
 }
 
+/* "Import backup" usa um <label> (não <button>) envolvendo um
+   <input type="file"> escondido — mesmo truque de .upload-button, pra
+   clicar em qualquer lugar do card abrir o seletor de arquivo. */
+.profile-reset-btn input[type="file"] {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .profile-reset-btn.danger {
   background: rgba(248, 113, 113, 0.14);
   border-color: rgba(248, 113, 113, 0.4);
@@ -867,6 +887,10 @@ body {
    acima) — mesmo layout, só troca as cores brancas/translúcidas pensadas
    pro fundo roxo escuro por versões escuras legíveis no fundo claro. */
 .profile-panel .profile-course-head {
+  border-top-color: rgba(27, 58, 94, 0.15);
+}
+
+.profile-panel .profile-section-divider {
   border-top-color: rgba(27, 58, 94, 0.15);
 }
 
