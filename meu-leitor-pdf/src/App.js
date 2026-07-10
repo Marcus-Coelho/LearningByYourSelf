@@ -431,6 +431,25 @@ const IconLanguage = () => (
   </svg>
 );
 
+// Setinha do botão de esconder/mostrar o painel — SVG (não texto ›/‹) pra
+// controlar a espessura de verdade via strokeWidth, em vez de depender do
+// peso da fonte do navegador.
+const IconChevron = ({ direction = 'right' }) => (
+  <svg
+    viewBox="0 0 10 10"
+    width="10"
+    height="10"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ transformOrigin: 'center', transform: direction === 'left' ? 'rotate(180deg)' : undefined }}
+  >
+    <path d="M3.5 1.5l4 3.5-4 3.5" />
+  </svg>
+);
+
 const IconText = () => (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M4 7h16" />
@@ -549,6 +568,13 @@ function App() {
   const [lastVisitedByCourse, setLastVisitedByCourse] = useState({});
   const [reviewQueue, setReviewQueue] = useState([]);
   const [wordbookEntries, setWordbookEntries] = useState([]);
+  // Centro vertical (em px, relativo à viewport) do container que tem o
+  // resize-handle — usado só pelo botão de esconder/mostrar o painel, que é
+  // fixed na viewport (não filho do grid) e por isso não pode simplesmente
+  // usar "top: 50%": a metade da TELA não é a metade do painel, já que o
+  // cabeçalho consome espaço no topo. Recalculado via layoutRef (já anexado
+  // ao container de cada uma das 8 telas com painel — ver PAGES_WITH_SIDE_PANEL).
+  const [panelCenterY, setPanelCenterY] = useState(null);
   const layoutRef = useRef(null);
   const startDragRef = useRef(null);
   // Controla a integração com o botão Voltar/Avançar do navegador (History
@@ -573,6 +599,28 @@ function App() {
   const [registeredUsers, setRegisteredUsers] = useState(() => loadUsers());
   const [registerNameInput, setRegisterNameInput] = useState('');
   const [registerError, setRegisterError] = useState('');
+
+  // Mede o centro vertical real do container do resize-handle (ver
+  // panelCenterY acima) sempre que a tela muda (layoutRef passa a apontar
+  // pra um container novo) e quando a janela é redimensionada — o botão de
+  // esconder/mostrar é fixed na viewport, então precisa desse valor em vez
+  // de um simples "top: 50%" (que seria o centro da TELA, não do painel).
+  useEffect(() => {
+    if (!PAGES_WITH_SIDE_PANEL.includes(activePage)) return undefined;
+    const updateCenter = () => {
+      if (!layoutRef.current) return;
+      const rect = layoutRef.current.getBoundingClientRect();
+      setPanelCenterY(rect.top + rect.height / 2);
+    };
+    updateCenter();
+    window.addEventListener('resize', updateCenter);
+    const ro = new ResizeObserver(updateCenter);
+    if (layoutRef.current) ro.observe(layoutRef.current);
+    return () => {
+      window.removeEventListener('resize', updateCenter);
+      ro.disconnect();
+    };
+  }, [activePage]);
 
   // Carrega as autoavaliações de exercícios do usuário ativo (chaves
   // "u:<nome>:rating:<exerciseId>") para calcular o score geral — recarrega
@@ -3410,12 +3458,15 @@ function App() {
         <button
           type="button"
           className="panel-toggle-btn"
-          style={{ right: sidePanelVisible ? rightWidth + 14 : 0 }}
+          style={{
+            right: sidePanelVisible ? rightWidth - 1 : 0,
+            top: panelCenterY ?? '50%',
+          }}
           onClick={() => setSidePanelVisible((value) => !value)}
           aria-label={sidePanelVisible ? 'Hide notes and answers panel' : 'Show notes and answers panel'}
           title={sidePanelVisible ? 'Hide notes and answers panel' : 'Show notes and answers panel'}
         >
-          {sidePanelVisible ? '›' : '‹'}
+          <IconChevron direction={sidePanelVisible ? 'right' : 'left'} />
         </button>
       )}
 

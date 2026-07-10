@@ -1200,33 +1200,51 @@ body {
   border-radius: 0 14px 14px 0;
 }
 
-/* Botão circular que esconde/mostra o painel direito (notas + respostas) —
-   fixo na viewport (não filho do grid, pra não precisar existir em cada uma
-   das 8 telas que têm painel direito), acompanha a borda entre o leitor e
-   o painel via "right" calculado em JS a partir de rightWidth/sidePanelVisible. */
+/* Botão que esconde/mostra o painel direito (notas + respostas) — fixo na
+   viewport (não filho do grid, pra não precisar existir em cada uma das 8
+   telas que têm painel direito), embutido bem em cima do divisor
+   (.resize-handle): "right" calculado em JS pra centralizar nos 14px da
+   coluna do divisor (rightWidth - metade do botão + metade da coluna), não
+   só encostado na borda dela. "top" também vem de JS (panelCenterY,
+   medido via layoutRef) em vez de "50%" fixo — a metade da TELA não é a
+   metade do painel, já que o cabeçalho consome espaço no topo; "50%" aqui
+   é só o valor inicial antes da 1ª medição. A linha fina do divisor fica
+   visível acima e abaixo do botão, passando "por trás" dele. */
 .panel-toggle-btn {
   position: fixed;
   top: 50%;
   transform: translateY(-50%);
   z-index: 40;
-  width: 56px;
+  width: 16px;
   height: 56px;
+  /* Sem isso, o padding padrão do navegador pra <button> (uns 6px de cada
+     lado) sobrava só ~2-4px de largura útil pro flex centralizar o SVG de
+     10px, espremendo-o quase até sumir — era essa a seta "invisível". */
+  padding: 0;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1px solid var(--purple-300);
-  border-radius: 10px;
-  background: #fff;
-  color: var(--purple-700);
-  font-size: 28px;
+  border-radius: 999px;
+  /* Roxo claro da própria paleta do app (mesmo tom de --soft/--purple-300
+     já usados em painéis e badges) — dá contraste real contra o fundo
+     branco do leitor/painel, sem introduzir uma cor nova. */
+  background: var(--purple-300);
+  color: var(--purple-900);
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(72, 39, 130, 0.25);
-  transition: background 140ms, right 160ms ease;
+  box-shadow: 0 6px 18px rgba(72, 39, 130, 0.25);
+  transition: background 140ms, right 160ms ease, top 140ms ease;
+}
+
+.panel-toggle-btn svg {
+  flex-shrink: 0;
 }
 
 .panel-toggle-btn:hover {
-  background: var(--soft);
+  background: var(--purple-500);
+  color: #fff;
 }
 
 .panel-content {
