@@ -1929,7 +1929,17 @@ body {
   min-width: 0;
   min-height: 0;
   flex: 1 1 auto;
-  overflow: auto;
+  /* "auto" (não "hidden") causava um loop infinito de zoom em alguns
+     exercícios (ex.: Unit 1 1.2, recorte alto): CroppedExerciseViewer ajusta
+     a altura do leitor com base na largura atual (zoom "ajustar à largura")
+     — se essa altura ficasse bem na borda do espaço disponível, a barra de
+     rolagem vertical aparecia/sumia a cada recálculo, mudando a largura
+     disponível e realimentando o próprio cálculo de zoom (168% ↔ 170% sem
+     parar). CroppedExerciseViewer já define a altura exata do leitor
+     (viewerRoot.style.height) — o scroll deste container nunca era
+     necessário de verdade.
+  */
+  overflow: hidden;
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 12px;

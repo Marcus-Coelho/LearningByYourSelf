@@ -551,6 +551,14 @@ function App() {
   const [wordbookEntries, setWordbookEntries] = useState([]);
   const layoutRef = useRef(null);
   const startDragRef = useRef(null);
+  // Controla a integração com o botão Voltar/Avançar do navegador (History
+  // API) — ver o efeito "Restaurar posição" abaixo. hasPushedHistoryRef
+  // decide replaceState (1ª vez, não empilha entrada nova) vs pushState
+  // (navegações seguintes); isPopStateRef evita que uma mudança de estado
+  // DISPARADA por um Voltar/Avançar empilhe outra entrada em cima (senão o
+  // botão Voltar ficaria preso reempilhando pra frente a cada clique).
+  const hasPushedHistoryRef = useRef(false);
+  const isPopStateRef = useRef(false);
 
   // Identidade do "usuário" (só nome, sem senha — ver comentário acima de
   // userKey). Lido de forma síncrona do localStorage no useState para não
@@ -1033,6 +1041,16 @@ function App() {
   // do arquivo) relê isso nos useState iniciais. sessionStorage (não
   // localStorage) de propósito: é só a posição da aba atual, não progresso —
   // some sozinha ao fechar a aba, como uma URL de verdade faria.
+  //
+  // Mesmo efeito também alimenta o botão Voltar/Avançar do navegador (History
+  // API): sem nunca chamar pushState, o app não tinha NENHUMA entrada de
+  // histórico própria, então Voltar pulava direto pra página que estava
+  // aberta antes de abrir o app. replaceState na 1ª vez (não empilha uma
+  // entrada extra pro estado inicial); pushState nas mudanças seguintes.
+  // isPopStateRef.current pula esse empilhamento quando a mudança de estado
+  // veio DE um Voltar/Avançar (ver o listener de popstate logo abaixo) — sem
+  // isso, cada clique em Voltar reempilharia uma entrada pra frente e o
+  // usuário nunca conseguiria sair do lugar.
   useEffect(() => {
     if (!userName) return;
     const position = {
@@ -1052,6 +1070,22 @@ function App() {
     } catch (error) {
       // Armazenamento indisponível — F5 volta pra Home, sem quebrar nada.
     }
+
+    if (isPopStateRef.current) {
+      isPopStateRef.current = false;
+      return;
+    }
+    try {
+      if (!hasPushedHistoryRef.current) {
+        hasPushedHistoryRef.current = true;
+        window.history.replaceState(position, '');
+      } else {
+        window.history.pushState(position, '');
+      }
+    } catch (error) {
+      // History API indisponível — o app continua funcionando, só sem
+      // integração com o botão Voltar/Avançar do navegador.
+    }
   }, [
     activePage,
     activeCourseId,
@@ -1065,6 +1099,39 @@ function App() {
     selectedGrammarElemAdditional,
     userName,
   ]);
+
+  // Aplica de volta o estado de uma entrada de histórico quando o usuário
+  // clica Voltar/Avançar — o event.state é exatamente o objeto `position`
+  // gravado pelo pushState/replaceState acima. Marca isPopStateRef ANTES de
+  // disparar os setState (React 18+ agrupa tudo isso num commit só), pra o
+  // efeito de cima ver a flag ligada quando rodar depois desse commit.
+  useEffect(() => {
+    const handlePopState = (event) => {
+      if (!event.state) return;
+      isPopStateRef.current = true;
+      if (!userName) {
+        // Voltar/Avançar depois de um logout (Switch user/Delete account):
+        // a entrada de histórico pode ser de uma tela de curso de quando
+        // ainda havia usuário ativo — mas sem login essas telas ficam
+        // inconsistentes, então cai no gate de cadastro em vez de restaurar.
+        setActivePage('register');
+        return;
+      }
+      const state = event.state;
+      setActivePage(state.activePage || 'home');
+      setActiveCourseId(state.activeCourseId ?? null);
+      setSelectedUnit(state.selectedUnit ?? null);
+      setSelectedExercise(state.selectedExercise ?? null);
+      setSelectedAmerican1Unit(state.selectedAmerican1Unit ?? null);
+      setSelectedAmerican1Section(state.selectedAmerican1Section ?? null);
+      setSelectedAmerican1Reference(state.selectedAmerican1Reference ?? null);
+      setSelectedGrammarElemUnit(state.selectedGrammarElemUnit ?? null);
+      setSelectedGrammarElemAppendix(state.selectedGrammarElemAppendix ?? null);
+      setSelectedGrammarElemAdditional(state.selectedGrammarElemAdditional ?? null);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [userName]);
 
   const handlePdfChange = (event) => {
     const file = event.target.files?.[0];
@@ -4622,6 +4689,13 @@ function CroppedExerciseViewer({ fileUrl, coords }) {
 
     let cancelled = false;
     let rafId = null;
+    // Detecta o loop infinito de zoom (ver comentário em .study-reader no
+    // App.css): se a largura calculada agora é igual à de duas aplicações
+    // atrás (ping-pong entre 2 valores, ex. 168%/170%), para de reagir a
+    // novos resizes/mutations em vez de ficar alternando pra sempre — o
+    // recorte já foi aplicado corretamente, só a reatividade é encerrada.
+    let recentWidths = [];
+    let oscillationBroken = false;
 
     const targetPage = coords.page || 0;
 
@@ -4640,6 +4714,12 @@ function CroppedExerciseViewer({ fileUrl, coords }) {
         rafId = requestAnimationFrame(applyCrop);
         return;
       }
+
+      const roundedWidth = Math.round(width);
+      if (recentWidths.includes(roundedWidth) && recentWidths.length >= 2) {
+        oscillationBroken = true;
+      }
+      recentWidths = [...recentWidths.slice(-2), roundedWidth];
 
       const scale = width / coords.pageWidth;
       const bandHeight = Math.max(48, (coords.bottom - coords.top) * scale);
@@ -4663,6 +4743,11 @@ function CroppedExerciseViewer({ fileUrl, coords }) {
       const viewerRoot = shell.querySelector('.rpv-core__viewer');
       if (viewerRoot) {
         viewerRoot.style.setProperty('height', `${toolbarH + bandHeight + 2}px`, 'important');
+      }
+
+      if (oscillationBroken) {
+        mo.disconnect();
+        ro.disconnect();
       }
     };
 
