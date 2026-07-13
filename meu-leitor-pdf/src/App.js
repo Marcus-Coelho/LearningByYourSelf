@@ -24,6 +24,18 @@ const ANSWERS_KEY_URL = '/answers-key.pdf';
 
 const MIN_CENTER_WIDTH = 420;
 const MIN_RIGHT_WIDTH = 260;
+// .main-panels ganha padding:10px de cada lado em telas <=820px (ver
+// App.css) — sem descontar isso, um rightWidth calculado a partir de
+// window.innerWidth "cabe" no cálculo mas ainda estoura a tela de verdade
+// por esses 20px de padding. Um pouco de folga a mais por segurança.
+const RESPONSIVE_WIDTH_BUFFER = 24;
+// Largura inicial do painel direito (My Notes) como fração da janela, não
+// mais um valor fixo de 650px — a pedido do usuário em 2026-07-11, que
+// achava o painel largo demais por padrão (obrigando a redimensionar toda
+// vez que abre uma unit) e mandou uma imagem de referência com a proporção
+// desejada (~21% da largura total). Continua ajustável por arrasto — isso
+// só muda onde o painel nasce.
+const RIGHT_PANEL_WIDTH_RATIO = 0.21;
 
 // Velocidades disponíveis no player de áudio ancorado.
 const AUDIO_SPEEDS = [0.75, 1, 1.25, 1.5, 2];
@@ -184,7 +196,7 @@ const exercisesByUnit = (() => {
 // Estado visual das grades de unit ("badge" colorido no card): unvisited
 // (nunca aberta) / visited (aberta, sem nota) / rated (pelo menos uma nota
 // dada) / mastered (nota máxima). Usado nas 3 grades (Vocabulary, American
-// English Level 1, Grammar Elementary) — ver renderUnitBadge em App().
+// English A1, Grammar English A1) — ver renderUnitBadge em App().
 const UNIT_BADGE_MASTERED_RATING = 5;
 const getUnitBadgeStatus = (visited, rating) => {
   if (!visited) return 'unvisited';
@@ -317,7 +329,7 @@ const unitItems = Array.from({ length: 100 }, (_, index) => {
   };
 });
 
-// Curso "American English Level 1": american1_index.json é a leitura direta
+// Curso "American English A1": american1_index.json é a leitura direta
 // de American_English_File_Book1_Index_Ordenado.csv (unit, seção A/B/C/-,
 // título, foco de grammar/vocabulary/pronunciation e a dupla de páginas do
 // livro). Agrupado por unit, na mesma ordem em que aparece no CSV.
@@ -389,28 +401,24 @@ const AMERICAN1_REFERENCE_LABELS = {
   writing: 'writing',
 };
 
-// Cursos listados na página "Courses". headerLabel é o texto exibido no topo
-// enquanto o usuário está dentro do curso (unit, exercícios, página de
-// teste...).
+// Cursos listados na página "Courses". title também é usado no topo do
+// leitor (reader-title-bar) enquanto o usuário está dentro de uma unit.
 const courses = {
   vocabulary: {
-    title: 'Vocabulary - English Pre Intermediate',
+    title: 'English Vocabulary B',
     description: 'Explore pre-intermediate vocabulary practice and lessons.',
-    headerLabel: 'You are in the English Vocabulary Pre Intermediate Course',
   },
   american1: {
-    title: 'American English Level 1',
+    title: 'American English A1',
     description: 'Read through American English File Book 1, unit by unit, section by section.',
-    headerLabel: 'You are in the American English Level 1 Course',
   },
   grammarElem: {
-    title: 'Grammar English Elementary',
+    title: 'Grammar English A1',
     description: 'Essential Grammar in Use, unit by unit — reading, exercises and audio.',
-    headerLabel: 'You are in the Grammar English Elementary Course',
   },
 };
 
-// Curso "Grammar English Elementary": 115 units, cada uma com um par de PDFs
+// Curso "Grammar English A1": 115 units, cada uma com um par de PDFs
 // de página única (Unit-<n>L.pdf de leitura, Unit-<n>E.pdf de exercícios,
 // ver src/setupProxy.js) e um punhado de áudios curtos por unit (ver
 // grammar_elem_audio.json, gerado a partir dos nomes de arquivo em
@@ -428,7 +436,7 @@ const grammarElemUnitNumbers = Array.from({ length: GRAMMAR_ELEM_UNIT_COUNT }, (
 // exercise-crop-feature/american1-anchored-audio-detection).
 const getGrammarElemUnitTitle = (unit) => grammarElemIndex[String(unit)] || '';
 
-// Appendixes do Grammar English Elementary: ficam depois da última unit,
+// Appendixes do Grammar English A1: ficam depois da última unit,
 // mas não contam pra "Your Progress" (ver src/setupProxy.js para como as
 // páginas de cada appendix são resolvidas a partir de Appendixes/*.pdf).
 const GRAMMAR_ELEM_APPENDIX_COUNT = 7;
@@ -443,7 +451,7 @@ const grammarElemAppendixNumbers = Array.from({ length: GRAMMAR_ELEM_APPENDIX_CO
 // rótulo "Appendix N" (que aparece 2x na página, incl. um "fantasma" maior).
 const getGrammarElemAppendixTitle = (appendixNumber) => grammarElemAppendixIndex[String(appendixNumber)] || '';
 
-// Additional Exercises do Grammar English Elementary: mesma ideia dos
+// Additional Exercises do Grammar English A1: mesma ideia dos
 // Appendixes (depois das units, fora da contabilidade de progresso — ver
 // src/setupProxy.js para como as páginas são resolvidas a partir de
 // "Additional Exercises"/*.pdf).
@@ -465,6 +473,71 @@ const IconSearch = () => (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="11" cy="11" r="7" />
     <path d="M21 21l-4.3-4.3" />
+  </svg>
+);
+
+// Botão hambúrguer do menu mobile — vira um "X" quando o dropdown está
+// aberto (duas linhas do meio giram formando o X, mesma animação clássica
+// de app de celular), em vez de trocar por um ícone diferente.
+const IconMenuToggle = ({ open }) => (
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+    <line x1="3" y1="6" x2="21" y2="6" style={{ transition: 'transform 160ms, opacity 160ms', transform: open ? 'translateY(6px) rotate(45deg)' : 'none', transformOrigin: 'center' }} />
+    <line x1="3" y1="12" x2="21" y2="12" style={{ transition: 'opacity 160ms', opacity: open ? 0 : 1 }} />
+    <line x1="3" y1="18" x2="21" y2="18" style={{ transition: 'transform 160ms, opacity 160ms', transform: open ? 'translateY(-6px) rotate(-45deg)' : 'none', transformOrigin: 'center' }} />
+  </svg>
+);
+
+// Ícones do left slide menu — um por item, mesmo estilo de traço do
+// IconSearch/IconChevron (stroke currentColor, sem preenchimento).
+const IconHome = () => (
+  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 11.5 12 4l9 7.5" />
+    <path d="M5.5 10v9a1 1 0 0 0 1 1H10v-6h4v6h3.5a1 1 0 0 0 1-1v-9" />
+  </svg>
+);
+
+const IconCourses = () => (
+  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5v-13z" />
+    <path d="M12 3h5.5A2.5 2.5 0 0 1 20 5.5v13a2.5 2.5 0 0 1-2.5 2.5H12" />
+  </svg>
+);
+
+const IconWords = () => (
+  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6.5 3.5h9a1.5 1.5 0 0 1 1.5 1.5v15.5l-6-3.5-6 3.5V5a1.5 1.5 0 0 1 1.5-1.5z" />
+  </svg>
+);
+
+const IconHeadphones = () => (
+  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 14v-2a8 8 0 0 1 16 0v2" />
+    <rect x="3" y="14" width="4.5" height="6" rx="1.5" />
+    <rect x="16.5" y="14" width="4.5" height="6" rx="1.5" />
+  </svg>
+);
+
+const IconMic = () => (
+  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="9" y="3" width="6" height="11" rx="3" />
+    <path d="M5 11v1a7 7 0 0 0 14 0v-1" />
+    <path d="M12 19v2" />
+    <path d="M8.5 21h7" />
+  </svg>
+);
+
+const IconProfile = () => (
+  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="8" r="3.6" />
+    <path d="M4.5 20c1.4-3.8 4.4-5.8 7.5-5.8s6.1 2 7.5 5.8" />
+  </svg>
+);
+
+const IconSound = () => (
+  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 9.5v5h3.5L12 18V6L7.5 9.5H4z" />
+    <path d="M16.5 9a4 4 0 0 1 0 6" />
+    <path d="M19 6.5a8 8 0 0 1 0 11" />
   </svg>
 );
 
@@ -596,11 +669,37 @@ function App() {
   // handleVocabulary/handleAmerican1/handleGrammarElem) pra não começar
   // filtrada sem o usuário saber por quê.
   const [unitSearchQuery, setUnitSearchQuery] = useState('');
-  const [rightWidth, setRightWidth] = useState(650);
+  // Largura inicial = RIGHT_PANEL_WIDTH_RATIO da janela (ver comentário na
+  // constante), com piso em MIN_RIGHT_WIDTH e teto no espaço realmente
+  // disponível — numa tablet mais estreita (~820px), MIN_CENTER_WIDTH(420) +
+  // 14px do divisor já não deixa espaço nem pro piso, então o teto
+  // (`available`) sempre vence quando a tela é estreita.
+  const [rightWidth, setRightWidth] = useState(() => {
+    try {
+      const available = window.innerWidth - MIN_CENTER_WIDTH - 14 - RESPONSIVE_WIDTH_BUFFER;
+      const target = window.innerWidth * RIGHT_PANEL_WIDTH_RATIO;
+      return Math.min(available, Math.max(MIN_RIGHT_WIDTH, target));
+    } catch (error) {
+      return 400;
+    }
+  });
   // Esconde/mostra o painel direito (notas + respostas) inteiro, dando a
   // largura toda pro leitor — a mesma flag controla o botão flutuante
   // "+ Word", que some junto (ver render de WordQuickAdd mais abaixo).
   const [sidePanelVisible, setSidePanelVisible] = useState(true);
+  // Left slide menu: painel que desliza da esquerda, aberto pelo botão
+  // hambúrguer (ver .menu-toggle/.side-drawer no CSS). Fechado por padrão;
+  // fecha sozinho ao navegar (cada link já tem seu próprio onClick), ao
+  // clicar fora dele/no backdrop, ou com Esc.
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const mobileMenuRef = useRef(null);
+
+  // Rede de segurança: fecha o dropdown em QUALQUER navegação, não só nos
+  // links de dentro dele (ex.: clicar em "My Profile", que é um botão à
+  // parte do .menu).
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [activePage]);
   // Toda tela que tem o painel direito ("side-panel right-panel", com
   // UnitNotes/respostas) usa o mesmo layout de grid de 3 colunas — listado
   // aqui pra saber quando faz sentido mostrar o botão de esconder/mostrar
@@ -651,6 +750,44 @@ function App() {
   const [registeredUsers, setRegisteredUsers] = useState(() => loadUsers());
   const [registerNameInput, setRegisterNameInput] = useState('');
   const [registerError, setRegisterError] = useState('');
+
+  // Reencolhe o painel de notas se a janela ficar estreita demais pra ele
+  // (ex.: girar um tablet de paisagem pra retrato) — só encolhe até caber,
+  // nunca alarga de volta sozinho (não queremos desfazer um ajuste manual
+  // do usuário quando a tela volta a ficar larga).
+  useEffect(() => {
+    const handleWindowResize = () => {
+      setRightWidth((prev) => {
+        const available = window.innerWidth - MIN_CENTER_WIDTH - 14 - RESPONSIVE_WIDTH_BUFFER;
+        const maxAllowed = Math.max(MIN_RIGHT_WIDTH, available);
+        return Math.min(prev, maxAllowed);
+      });
+    };
+    window.addEventListener('resize', handleWindowResize);
+    return () => window.removeEventListener('resize', handleWindowResize);
+  }, []);
+
+  // Fecha o dropdown do menu mobile ao clicar/tocar fora dele, ou com Esc —
+  // mesmo comportamento padrão de app de celular. Só liga o listener
+  // enquanto o menu está aberto, pra não pagar o custo de um listener
+  // global o tempo todo.
+  useEffect(() => {
+    if (!mobileMenuOpen) return undefined;
+    const handleOutsideClick = (event) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+        setMobileMenuOpen(false);
+      }
+    };
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') setMobileMenuOpen(false);
+    };
+    document.addEventListener('pointerdown', handleOutsideClick);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('pointerdown', handleOutsideClick);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [mobileMenuOpen]);
 
   // Mede o centro vertical real do container do resize-handle (ver
   // panelCenterY acima) sempre que a tela muda (layoutRef passa a apontar
@@ -806,7 +943,7 @@ function App() {
     : null;
 
   // Mesmo mecanismo de autoavaliação/progresso do curso Vocabulary, só que
-  // por unit (não por exercício — o American English Level 1 não tem
+  // por unit (não por exercício — o American English A1 não tem
   // exercícios numerados soltos) e com chaves totalmente separadas
   // ("american1-rating:"/"american1-visitedUnits", em vez de "rating:"/
   // "visitedUnits") para que os resets de cada curso, no Profile, não se
@@ -876,7 +1013,7 @@ function App() {
     ? Math.round((american1VisitedSectionsCount / american1SectionsTotal) * 100)
     : 0;
 
-  // Mesmo mecanismo, agora para o Grammar English Elementary — chaves
+  // Mesmo mecanismo, agora para o Grammar English A1 — chaves
   // "grammarElem-rating:"/"grammarElem-visitedUnits", independentes dos
   // outros dois cursos.
   useEffect(() => {
@@ -1056,7 +1193,7 @@ function App() {
     });
   }, [selectedUnit, activePage, userName]);
 
-  // Mesma ideia, para o American English Level 1: conta como visitada assim
+  // Mesma ideia, para o American English A1: conta como visitada assim
   // que a tela de leitura de uma seção (1A, 1B, Practical English/Review and Check...)
   // é aberta — cada seção conta um acesso, não a unit inteira, já que as
   // units são longas (3-4 seções cada).
@@ -1082,7 +1219,7 @@ function App() {
     });
   }, [selectedAmerican1Unit, selectedAmerican1Section, activePage, userName]);
 
-  // Mesma ideia, para o Grammar English Elementary.
+  // Mesma ideia, para o Grammar English A1.
   useEffect(() => {
     if (activePage !== 'grammarElem-unit' || !selectedGrammarElemUnit || !userName) {
       return;
@@ -1362,6 +1499,19 @@ function App() {
     setActivePage('american1-reference');
   };
 
+  // "Sound Bank" no menu principal: mesma página de referência de sempre
+  // (american1-pages/ref/sound/166, o par de páginas 166-167 — fixo, todo
+  // american1_references.json aponta pro mesmo par pra todo unit/seção),
+  // mas aberta sem unit/section (ref.unit fica undefined de propósito) —
+  // é assim que a tela sabe que essa é uma consulta avulsa, não vinda de
+  // dentro de uma unit, e esconde o botão "‹ Back to Unit" (ver JSX).
+  const handleOpenAmerican1SoundBank = (event) => {
+    event.preventDefault();
+    setSelectedAmerican1Reference({ type: 'sound', pages: [166, 167] });
+    setShowAmerican1ReferenceAnswers(false);
+    setActivePage('american1-reference');
+  };
+
   const handleGrammarElem = (event) => {
     event.preventDefault();
     setActivePage('grammarElem');
@@ -1370,19 +1520,6 @@ function App() {
     setSelectedGrammarElemAdditional(null);
     setActiveCourseId('grammarElem');
     setUnitSearchQuery('');
-  };
-
-  // Link "All Units" no header: some direto pra tela de escolha de unit do
-  // curso em que o usuário já está, em vez de mandar pra "Courses" de novo.
-  const handleAllUnits = (event) => {
-    event.preventDefault();
-    if (activeCourseId === 'vocabulary') {
-      handleVocabulary(event);
-    } else if (activeCourseId === 'american1') {
-      handleAmerican1(event);
-    } else if (activeCourseId === 'grammarElem') {
-      handleGrammarElem(event);
-    }
   };
 
   const handleGrammarElemUnitSelect = (event, unit) => {
@@ -1702,7 +1839,7 @@ function App() {
   // outra pessoa que também usa este navegador.
   // `exclude`: pula chaves cujo restante (depois do prefixo) comece com esse
   // valor — usado só para separar o reset de notas do curso Vocabulary do
-  // American English Level 1, já que as duas compartilham o mesmo prefixo
+  // American English A1, já que as duas compartilham o mesmo prefixo
   // "notes:" (ver handleExportNotes).
   const removeLocalStorageKeysWithPrefix = (prefix, exclude) => {
     if (!userName) return;
@@ -1771,21 +1908,21 @@ function App() {
           entries.push({
             course: 'american1',
             unit: `ref-${refType}-${refPage}`,
-            title: `American English Level 1 - ${AMERICAN1_REFERENCE_LABELS[refType] || refType} p.${refPage}`,
+            title: `American English A1 - ${AMERICAN1_REFERENCE_LABELS[refType] || refType} p.${refPage}`,
             html,
           });
         } else if (american1Match) {
           entries.push({
             course: 'american1',
             unit: Number(american1Match[1]),
-            title: `American English Level 1 - Unit ${american1Match[1]}`,
+            title: `American English A1 - Unit ${american1Match[1]}`,
             html,
           });
         } else if (remainder === 'american1-transcriptions') {
           entries.push({
             course: 'american1',
             unit: 'transcriptions',
-            title: 'American English Level 1 - Transcriptions',
+            title: 'American English A1 - Transcriptions',
             html,
           });
         } else {
@@ -1993,7 +2130,7 @@ function App() {
   };
 
   const handleResetAll = () => {
-    if (!window.confirm('Reset EVERYTHING for Vocabulary - English Pre Intermediate — progress, self-evaluation, lesson notes and exercise answers? This cannot be undone.')) {
+    if (!window.confirm('Reset EVERYTHING for English Vocabulary B — progress, self-evaluation, lesson notes and exercise answers? This cannot be undone.')) {
       return;
     }
     setVisitedUnits({});
@@ -2010,12 +2147,12 @@ function App() {
     removeLocalStorageKeysWithPrefix('answers:');
   };
 
-  // Equivalentes dos resets acima, só que para o American English Level 1 —
+  // Equivalentes dos resets acima, só que para o American English A1 —
   // chaves totalmente separadas (ver american1UnitRatings/american1VisitedSections
   // e o comentário em removeLocalStorageKeysWithPrefix), então resetar um
   // curso nunca afeta o progresso do outro.
   const handleResetAmerican1Progress = () => {
-    if (!window.confirm('Reset your American English Level 1 section progress? This cannot be undone.')) {
+    if (!window.confirm('Reset your American English A1 section progress? This cannot be undone.')) {
       return;
     }
     setAmerican1VisitedSections({});
@@ -2028,7 +2165,7 @@ function App() {
   };
 
   const handleResetAmerican1SelfEvaluation = () => {
-    if (!window.confirm('Reset your American English Level 1 self-evaluation score and every star rating you gave? This cannot be undone.')) {
+    if (!window.confirm('Reset your American English A1 self-evaluation score and every star rating you gave? This cannot be undone.')) {
       return;
     }
     setAmerican1UnitRatings({});
@@ -2037,14 +2174,14 @@ function App() {
   };
 
   const handleResetAmerican1Notes = () => {
-    if (!window.confirm('Reset your American English Level 1 "My Notes" for every unit and reference page? This cannot be undone.')) {
+    if (!window.confirm('Reset your American English A1 "My Notes" for every unit and reference page? This cannot be undone.')) {
       return;
     }
     removeLocalStorageKeysWithPrefix('notes:american1');
   };
 
   const handleResetAmerican1All = () => {
-    if (!window.confirm('Reset EVERYTHING for American English Level 1 — progress, self-evaluation and lesson notes? This cannot be undone.')) {
+    if (!window.confirm('Reset EVERYTHING for American English A1 — progress, self-evaluation and lesson notes? This cannot be undone.')) {
       return;
     }
     setAmerican1VisitedSections({});
@@ -2061,7 +2198,7 @@ function App() {
   };
 
   const handleResetGrammarElemProgress = () => {
-    if (!window.confirm('Reset your Grammar English Elementary unit progress? This cannot be undone.')) {
+    if (!window.confirm('Reset your Grammar English A1 unit progress? This cannot be undone.')) {
       return;
     }
     setGrammarElemVisitedUnits({});
@@ -2074,7 +2211,7 @@ function App() {
   };
 
   const handleResetGrammarElemSelfEvaluation = () => {
-    if (!window.confirm('Reset your Grammar English Elementary self-evaluation score and every star rating you gave? This cannot be undone.')) {
+    if (!window.confirm('Reset your Grammar English A1 self-evaluation score and every star rating you gave? This cannot be undone.')) {
       return;
     }
     setGrammarElemUnitRatings({});
@@ -2083,21 +2220,21 @@ function App() {
   };
 
   const handleResetGrammarElemNotes = () => {
-    if (!window.confirm('Reset your Grammar English Elementary "My Notes" for every unit? This cannot be undone.')) {
+    if (!window.confirm('Reset your Grammar English A1 "My Notes" for every unit? This cannot be undone.')) {
       return;
     }
     removeLocalStorageKeysWithPrefix('notes:grammarElem');
   };
 
   const handleResetGrammarElemAnswers = () => {
-    if (!window.confirm('Reset your Grammar English Elementary written answers for every unit? This cannot be undone.')) {
+    if (!window.confirm('Reset your Grammar English A1 written answers for every unit? This cannot be undone.')) {
       return;
     }
     removeLocalStorageKeysWithPrefix('answers:grammarElem');
   };
 
   const handleResetGrammarElemAll = () => {
-    if (!window.confirm('Reset EVERYTHING for Grammar English Elementary — progress, self-evaluation, lesson notes and answers? This cannot be undone.')) {
+    if (!window.confirm('Reset EVERYTHING for Grammar English A1 — progress, self-evaluation, lesson notes and answers? This cannot be undone.')) {
       return;
     }
     setGrammarElemVisitedUnits({});
@@ -2204,7 +2341,6 @@ function App() {
   const insideCourse = Boolean(selectedUnit) || Boolean(selectedAmerican1Unit)
     || Boolean(selectedGrammarElemUnit) || Boolean(selectedGrammarElemAppendix)
     || Boolean(selectedGrammarElemAdditional);
-  const activeCourse = activeCourseId ? courses[activeCourseId] : null;
   const visitedUnitsCount = Object.keys(visitedUnits).length;
 
   // "Today's Plan" (Home): um empurrão de "por onde começar" pra quem senta
@@ -2231,7 +2367,7 @@ function App() {
     if (nextVocabUnit) {
       candidates.push({
         label: `Unit ${nextVocabUnit.number}: ${nextVocabUnit.label}`,
-        sublabel: 'Vocabulary - English Pre Intermediate',
+        sublabel: 'English Vocabulary B',
         onOpen: () => openVocabularyUnit(nextVocabUnit.number),
       });
     }
@@ -2246,14 +2382,14 @@ function App() {
         label: isLetterSection
           ? `Unit ${nextAmerican1.unit}${nextAmerican1.section}: ${nextAmerican1.title}`
           : `Unit ${nextAmerican1.unit}: ${nextAmerican1.title}`,
-        sublabel: 'American English Level 1',
+        sublabel: 'American English A1',
         onOpen: () => openAmerican1Section(nextAmerican1.unit, nextAmerican1.section),
       });
     }
     if (nextGrammarElemUnit) {
       candidates.push({
         label: `Unit ${nextGrammarElemUnit}`,
-        sublabel: 'Grammar English Elementary',
+        sublabel: 'Grammar English A1',
         onOpen: () => openGrammarElemUnit(nextGrammarElemUnit),
       });
     }
@@ -2331,111 +2467,55 @@ function App() {
             : '';
 
   return (
-    <div className={`app-shell${activePage === 'grammarElem' ? ' app-shell--allow-grow' : ''}`}>
+    <div className={`app-shell${['vocabulary', 'american1', 'grammarElem'].includes(activePage) ? ' app-shell--allow-grow' : ''}`}>
       <header className="app-header">
+        {/* Left slide menu: o botão hambúrguer abre um painel deslizando da
+            esquerda (.side-drawer), com um ícone por item — substitui o
+            antigo menu inline/dropdown. Sempre visível, em qualquer largura
+            de tela. */}
+        <button
+          type="button"
+          className="menu-toggle"
+          onClick={() => setMobileMenuOpen((value) => !value)}
+          aria-expanded={mobileMenuOpen}
+          aria-controls="main-menu"
+          aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+        >
+          <IconMenuToggle open={mobileMenuOpen} />
+        </button>
+
         <div className="brand">
           <span className="brand-mark"><img src="/logo192.png" alt="" className="brand-mark-icon" /></span>
           <span>Let's Learn English</span>
         </div>
-        <nav className="menu" aria-label="Main links">
-          {insideCourse ? (
-            <ol>
-              <li className="menu-item"><a href="#0" onClick={handleCourses}>Courses</a></li>
-              <li className="menu-item"><a href="#0" onClick={handleAllUnits}>All Units</a></li>
-              <li className="menu-item"><a href="#0" onClick={handleOpenWordbook}>My Words</a></li>
-            </ol>
-          ) : (
-            <ol>
-              <li className="menu-item"><a href="#0" onClick={handleHome}>Home</a></li>
-              <li className="menu-item"><a href="#0" onClick={handleCourses}>Courses</a></li>
-              <li className="menu-item"><a href="#0" onClick={handleOpenWordbook}>My Words</a></li>
-              <li className="menu-item"><a href="#link-2">LINK 2</a></li>
-              <li className="menu-item"><a href="#link-3">LINK 3</a></li>
-            </ol>
-          )}
+
+        <div className={`side-drawer-backdrop${mobileMenuOpen ? ' is-visible' : ''}`} aria-hidden="true" />
+        <nav
+          id="main-menu"
+          ref={mobileMenuRef}
+          className={`side-drawer${mobileMenuOpen ? ' side-drawer--open' : ''}`}
+          aria-label="Main links"
+        >
+          <div className="side-drawer-head">
+            <span className="side-drawer-title">Menu</span>
+            <button type="button" className="side-drawer-close" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu">
+              ✕
+            </button>
+          </div>
+          {/* Menu único e idêntico em qualquer lugar do app, dentro ou fora
+              de um curso — não tem mais uma lista "insideCourse" diferente
+              (que só tinha Courses/All Units/My Words/My Profile). */}
+          <ol>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleHome(event); setMobileMenuOpen(false); }}><IconHome /><span>Home</span></a></li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleCourses(event); setMobileMenuOpen(false); }}><IconCourses /><span>Courses</span></a></li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenWordbook(event); setMobileMenuOpen(false); }}><IconWords /><span>My Words</span></a></li>
+            <li className="side-drawer-item"><a href="#link-2" onClick={() => setMobileMenuOpen(false)}><IconHeadphones /><span>Listening</span></a></li>
+            <li className="side-drawer-item"><a href="#link-3" onClick={() => setMobileMenuOpen(false)}><IconMic /><span>Speaking</span></a></li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenAmerican1SoundBank(event); setMobileMenuOpen(false); }}><IconSound /><span>Sound Bank</span></a></li>
+            <li className="side-drawer-divider" role="separator" />
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenProfile(event); setMobileMenuOpen(false); }}><IconProfile /><span>My Profile</span></a></li>
+          </ol>
         </nav>
-
-        {insideCourse && activeCourse && (
-          <div className="header-course-info">
-            <span>{activeCourse.headerLabel}</span>
-          </div>
-        )}
-
-        {selectedUnit && (
-          <div className="header-stats-card">
-            <div className="header-stat-cell" title={`${visitedUnitsCount} of 100 units visited`}>
-              <span className="header-stat-label">Your Progress</span>
-              <span className="header-stat-value">{visitedUnitsCount}%</span>
-            </div>
-            <div
-              className="header-stat-cell"
-              title={
-                overallScorePercent !== null
-                  ? `Average of ${ratingValues.length} self-rated exercise${ratingValues.length > 1 ? 's' : ''}`
-                  : 'No exercise self-rated yet'
-              }
-            >
-              <span className="header-stat-label">Your Score</span>
-              <span className="header-stat-value">
-                {overallScorePercent !== null ? `${overallScorePercent}%` : '—'}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {selectedAmerican1Unit && (
-          <div className="header-stats-card">
-            <div
-              className="header-stat-cell"
-              title={`${american1VisitedSectionsCount} of ${american1SectionsTotal} sections visited`}
-            >
-              <span className="header-stat-label">Your Progress</span>
-              <span className="header-stat-value">{american1ProgressPercent}%</span>
-            </div>
-            <div
-              className="header-stat-cell"
-              title={
-                american1ScorePercent !== null
-                  ? `Average of ${american1RatingValues.length} self-rated unit${american1RatingValues.length > 1 ? 's' : ''}`
-                  : 'No unit self-rated yet'
-              }
-            >
-              <span className="header-stat-label">Your Score</span>
-              <span className="header-stat-value">
-                {american1ScorePercent !== null ? `${american1ScorePercent}%` : '—'}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {selectedGrammarElemUnit && (
-          <div className="header-stats-card">
-            <div
-              className="header-stat-cell"
-              title={`${grammarElemVisitedUnitsCount} of ${grammarElemUnitNumbers.length} units visited`}
-            >
-              <span className="header-stat-label">Your Progress</span>
-              <span className="header-stat-value">{grammarElemProgressPercent}%</span>
-            </div>
-            <div
-              className="header-stat-cell"
-              title={
-                grammarElemScorePercent !== null
-                  ? `Average of ${grammarElemRatingValues.length} self-rated unit${grammarElemRatingValues.length > 1 ? 's' : ''}`
-                  : 'No unit self-rated yet'
-              }
-            >
-              <span className="header-stat-label">Your Score</span>
-              <span className="header-stat-value">
-                {grammarElemScorePercent !== null ? `${grammarElemScorePercent}%` : '—'}
-              </span>
-            </div>
-          </div>
-        )}
-
-        <div className="header-profile-link">
-          <a href="#0" onClick={handleOpenProfile}>My Profile</a>
-        </div>
       </header>
 
       {activePage === 'exercises' ? (
@@ -2445,8 +2525,11 @@ function App() {
               <button type="button" className="ghost-button" onClick={handleBackToUnit}>
                 ‹ Back to Unit
               </button>
+              <button type="button" className="ghost-button all-units-link" onClick={handleVocabulary}>
+                All Units
+              </button>
               <span className="study-unit-label">
-                Unit {selectedUnit}
+                {courses.vocabulary.title} · Unit {selectedUnit}
                 {unitTable[selectedUnit] ? ` - ${unitTable[selectedUnit]}` : null}
               </span>
             </div>
@@ -2549,6 +2632,9 @@ function App() {
             <div className="pdf-toolbar">
               {pdfFileName ? (
                 <div className="pdf-toolbar-nav">
+                  <button type="button" className="upload-button all-units-link" onClick={handleVocabulary}>
+                    All Units
+                  </button>
                   {selectedUnit > 1 && (
                     <button type="button" className="upload-button" onClick={handlePreviousUnit}>
                       Previous Unit
@@ -2569,6 +2655,15 @@ function App() {
                 renderPdfUpload(handlePdfChange, 'Load PDF')
               )}
             </div>
+
+            {pdfFileName && (
+              <div className="section-info">
+                <strong>
+                  {courses.vocabulary.title} · Unit {selectedUnit}
+                  {unitTable[selectedUnit] ? ` — ${unitTable[selectedUnit]}` : ''}
+                </strong>
+              </div>
+            )}
 
             {pdfFileUrl ? (
               <UnitAudioReader
@@ -2602,9 +2697,9 @@ function App() {
           </aside>
         </main>
       ) : activePage === 'vocabulary' ? (
-        <main className="landing-page vocabulary-mode" id="link-vocabulary">
-          <div className="landing-panel vocabulary-page">
-            <h2 className="vocabulary-title">Vocabulary - English Pre Intermediate</h2>
+        <main className="landing-page vocabulary-mode vocabulary-grid-mode" id="link-vocabulary">
+          <div className="landing-panel vocabulary-page vocabulary-grid-mode">
+            <h2 className="vocabulary-title">English Vocabulary B</h2>
             <UnitSearchBox value={unitSearchQuery} onChange={setUnitSearchQuery} placeholder="Search units... (e.g. phrasal verbs)" />
             <UnitBadgeLegend />
             {filteredUnitItems.length === 0 ? (
@@ -2687,9 +2782,9 @@ function App() {
           </div>
         </main>
       ) : activePage === 'american1' ? (
-        <main className="landing-page vocabulary-mode" id="link-american1">
-          <div className="landing-panel vocabulary-page">
-            <h2 className="vocabulary-title">American English Level 1</h2>
+        <main className="landing-page vocabulary-mode vocabulary-grid-mode" id="link-american1">
+          <div className="landing-panel vocabulary-page vocabulary-grid-mode">
+            <h2 className="vocabulary-title">American English A1</h2>
             <UnitSearchBox value={unitSearchQuery} onChange={setUnitSearchQuery} placeholder="Search units... (e.g. phrasal verbs)" />
             <UnitBadgeLegend />
             {filteredAmerican1UnitNumbers.length === 0 ? (
@@ -2788,6 +2883,9 @@ function App() {
             <section className="pdf-panel">
               <div className="pdf-toolbar pdf-toolbar-left">
                 <div className="pdf-toolbar-nav">
+                  <button type="button" className="upload-button all-units-link" onClick={handleGrammarElem}>
+                    All Units
+                  </button>
                   <button
                     type="button"
                     className="upload-button"
@@ -2821,9 +2919,12 @@ function App() {
                 )}
               </div>
 
-              {unit && getGrammarElemUnitTitle(unit) && (
+              {unit && (
                 <div className="section-info">
-                  <strong>{getGrammarElemUnitTitle(unit)}</strong>
+                  <strong>
+                    {courses.grammarElem.title} · Unit {unit}
+                    {getGrammarElemUnitTitle(unit) ? ` — ${getGrammarElemUnitTitle(unit)}` : ''}
+                  </strong>
                 </div>
               )}
 
@@ -2879,9 +2980,21 @@ function App() {
                   <button type="button" className="upload-button" onClick={handleBackToGrammarElemUnit}>
                     ‹ Back to Unit
                   </button>
+                  <button type="button" className="upload-button all-units-link" onClick={handleGrammarElem}>
+                    All Units
+                  </button>
                   <span className="study-unit-label">Unit {unit}</span>
                 </div>
               </div>
+
+              {unit && (
+                <div className="section-info">
+                  <strong>
+                    {courses.grammarElem.title} · Unit {unit} Exercises
+                    {getGrammarElemUnitTitle(unit) ? ` — ${getGrammarElemUnitTitle(unit)}` : ''}
+                  </strong>
+                </div>
+              )}
 
               {fileUrl ? (
                 <PdfWorkspace key={fileUrl} fileUrl={fileUrl} defaultScale={1.3} />
@@ -2965,6 +3078,9 @@ function App() {
             <section className="pdf-panel">
               <div className="pdf-toolbar pdf-toolbar-left">
                 <div className="pdf-toolbar-nav">
+                  <button type="button" className="upload-button all-units-link" onClick={handleGrammarElem}>
+                    All Units
+                  </button>
                   <button
                     type="button"
                     className="upload-button"
@@ -2984,9 +3100,12 @@ function App() {
                 </div>
               </div>
 
-              {appendixNumber && getGrammarElemAppendixTitle(appendixNumber) && (
+              {appendixNumber && (
                 <div className="section-info">
-                  <strong>{getGrammarElemAppendixTitle(appendixNumber)}</strong>
+                  <strong>
+                    {courses.grammarElem.title} · Appendix {appendixNumber}
+                    {getGrammarElemAppendixTitle(appendixNumber) ? ` — ${getGrammarElemAppendixTitle(appendixNumber)}` : ''}
+                  </strong>
                 </div>
               )}
 
@@ -3036,6 +3155,9 @@ function App() {
             <section className="pdf-panel">
               <div className="pdf-toolbar pdf-toolbar-left">
                 <div className="pdf-toolbar-nav">
+                  <button type="button" className="upload-button all-units-link" onClick={handleGrammarElem}>
+                    All Units
+                  </button>
                   <button
                     type="button"
                     className="upload-button"
@@ -3054,6 +3176,12 @@ function App() {
                   </button>
                 </div>
               </div>
+
+              {additionalNumber && (
+                <div className="section-info">
+                  <strong>{courses.grammarElem.title} · Additional Exercise {additionalNumber}</strong>
+                </div>
+              )}
 
               {fileUrl ? (
                 <PdfWorkspace key={fileUrl} fileUrl={fileUrl} defaultScale={1.3} />
@@ -3122,6 +3250,9 @@ function App() {
             <section className="pdf-panel">
               <div className="pdf-toolbar pdf-toolbar-left">
                 <div className="pdf-toolbar-nav">
+                  <button type="button" className="upload-button all-units-link" onClick={handleAmerican1}>
+                    All Units
+                  </button>
                   <button
                     type="button"
                     className="upload-button"
@@ -3197,7 +3328,9 @@ function App() {
 
               {activeSection && (
                 <div className="section-info">
-                  <strong>{activeSection.title}</strong>
+                  <strong>
+                    {courses.american1.title} · Unit {selectedAmerican1Unit}{activeSection.section} — {activeSection.title}
+                  </strong>
                   {(activeSection.grammar || activeSection.vocabulary || activeSection.pronunciation) && (
                     <span className="section-info-tags">
                       {activeSection.grammar && <span>Grammar: {activeSection.grammar}</span>}
@@ -3290,19 +3423,40 @@ function App() {
             <section className="pdf-panel">
               <div className="pdf-toolbar">
                 <div className="pdf-toolbar-nav">
-                  <button
-                    type="button"
-                    className="upload-button"
-                    onClick={handleCloseAmerican1Reference}
-                  >
-                    ‹ Back to Unit {ref?.unit} {ref?.section}
-                  </button>
+                  {ref?.unit ? (
+                    <button
+                      type="button"
+                      className="upload-button"
+                      onClick={handleCloseAmerican1Reference}
+                    >
+                      ‹ Back to Unit {ref.unit} {ref.section}
+                    </button>
+                  ) : (
+                    // Aberta direto do menu (Sound Bank), sem vir de uma unit
+                    // — não faz sentido um botão "Back to Unit" pra lugar
+                    // nenhum, então só identifica a tela.
+                    <span className="reference-standalone-label">Sound Bank</span>
+                  )}
+                  {ref?.unit && (
+                    // Só faz sentido dentro do fluxo da unit — a consulta
+                    // avulsa ao Sound Bank (sem ref.unit) não faz parte do
+                    // curso, então não tem por que voltar pra grade de units.
+                    <button type="button" className="upload-button all-units-link" onClick={handleAmerican1}>
+                      All Units
+                    </button>
+                  )}
                 </div>
-                <span className="reference-page-label">{label}</span>
+                {ref?.unit && (
+                  <span className="reference-page-label">{courses.american1.title} · {label}</span>
+                )}
               </div>
 
               {fileUrl ? (
-                <American1AudioReader key={fileUrl} fileUrl={fileUrl} anchors={referenceAudioAnchors} />
+                <American1AudioReader
+                  key={fileUrl}
+                  fileUrl={fileUrl}
+                  anchors={referenceAudioAnchors}
+                />
               ) : (
                 <div className="pdf-empty-state">
                   <p className="eyebrow">No reference</p>
@@ -3372,8 +3526,11 @@ function App() {
                 >
                   ‹ Back to Unit {selectedAmerican1Unit} {selectedAmerican1Section}
                 </button>
+                <button type="button" className="upload-button all-units-link" onClick={handleAmerican1}>
+                  All Units
+                </button>
               </div>
-              <span className="reference-page-label">Transcriptions</span>
+              <span className="reference-page-label">{courses.american1.title} · Transcriptions</span>
             </div>
 
             <American1AudioReader
@@ -3868,14 +4025,14 @@ const reviewItemLabel = (item) => {
     const unit = Number(item.id.split('.')[0]);
     return {
       title: `Exercise ${item.id}`,
-      subtitle: `Vocabulary Pre Intermediate${unitTable[unit] ? ` — ${unitTable[unit]}` : ''}`,
+      subtitle: `English Vocabulary B${unitTable[unit] ? ` — ${unitTable[unit]}` : ''}`,
     };
   }
   if (item.course === 'american1') {
-    return { title: `Unit ${item.id}`, subtitle: 'American English Level 1' };
+    return { title: `Unit ${item.id}`, subtitle: 'American English A1' };
   }
   if (item.course === 'grammarElem') {
-    return { title: `Unit ${item.id}`, subtitle: 'Grammar English Elementary' };
+    return { title: `Unit ${item.id}`, subtitle: 'Grammar English A1' };
   }
   return { title: item.id, subtitle: item.course };
 };
@@ -4824,7 +4981,7 @@ function AudioAnchorPlayer({ anchor, scale, unit }) {
 
 // Mesmo player do curso Vocabulary (controles: AudioPlayerControls), mas sem
 // ancoragem num ponto (x, y) da página: fica no fluxo normal da toolbar, ao
-// lado da letra (A, B, C...) do Grammar English Elementary — não tem PDF pra
+// lado da letra (A, B, C...) do Grammar English A1 — não tem PDF pra
 // ancorar em cima, é só um link de áudio simples.
 function SimpleAudioPlayer({ src, label }) {
   return (
@@ -4835,7 +4992,7 @@ function SimpleAudioPlayer({ src, label }) {
   );
 }
 
-// Curso "American English Level 1": ancora um player compacto sobre cada selo
+// Curso "American English A1": ancora um player compacto sobre cada selo
 // de áudio impresso no PDF (ver american1_audio_anchors.json — gerado por
 // casamento de template + inferência de faixa, já que esse PDF não tem
 // nenhuma camada de texto, é tudo imagem escaneada; detalhes no
@@ -4947,7 +5104,12 @@ function American1AudioReader({ fileUrl, anchors }) {
 
   return (
     <div className="unit-reader-shell" ref={shellRef}>
-      {!anyPageRevealed && (
+      {/* Só mostra a barra enquanto realmente existe algo pra ancorar —
+          sem essa checagem, uma página sem nenhum áudio (ex.: Sound Bank)
+          nunca marca nenhuma página como "revealed" (o efeito acima nem
+          roda, pagesNeeded fica vazio) e a barra ficava girando pra sempre,
+          parecendo que a página está travada carregando. */}
+      {pagesNeeded.length > 0 && !anyPageRevealed && (
         <div className="audio-anchors-loading" role="status" aria-label="Loading audio players">
           <div className="audio-anchors-loading-bar" />
         </div>
@@ -4957,7 +5119,7 @@ function American1AudioReader({ fileUrl, anchors }) {
         <div key={pageIndex} className={`audio-anchor-layer${revealedPages[pageIndex] ? ' is-visible' : ''}`}>
           {(anchorsByPage[pageIndex] || []).map((anchor) => (
             <American1AudioAnchorPlayer
-              key={`${anchor.cd}-${anchor.track}`}
+              key={`${anchor.page}:${anchor.track}`}
               anchor={anchor}
               scale={scales[pageIndex] || 1}
             />

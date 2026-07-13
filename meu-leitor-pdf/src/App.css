@@ -15,16 +15,19 @@
 
 .app-shell { display: flex; flex-direction: column; height: 100vh; }
 
-/* Exceção só pra apresentação do Grammar English Elementary (classe
-   aplicada via JS só nessa tela — ver App.js): ela deixa de propósito a
-   lista de units/Appendixes/Additional Exercises transbordar (ver
-   .grammar-elem-landing-panel), então precisa que o app-shell CRESÇA junto
-   com esse conteúdo em vez de ficar travado em 100vh — senão o
-   transbordamento pinta fora da caixa do app-shell sem herdar o fundo dela,
-   e a página fica em branco ao rolar. Não pode ser o padrão de ".app-shell"
-   porque as outras telas (o leitor de PDF, principalmente) dependem do
-   app-shell ter uma altura definida de 100vh pro "flex-grow" do painel
-   central preencher exatamente a tela, sem isso o painel cresce sem
+/* Exceção pras 3 grades de units (Vocabulary/American1/Grammar English A1 —
+   classe aplicada via JS só nessas telas, ver App.js): elas deixam de
+   propósito a lista de units (e, no caso do Grammar English A1, também
+   Appendixes/Additional Exercises) transbordar (ver .vocabulary-grid-mode/
+   .grammar-elem-landing-panel), então precisam que o app-shell CRESÇA junto
+   com esse conteúdo em vez de ficar travado em 100vh. Sem isso, o app-shell
+   fica com altura fixa mas o conteúdo (com overflow:visible) transborda
+   pra fora dele mesmo assim — e como o app-shell nunca chega a crescer, o
+   header (position:sticky) perde a referência de scroll correta e some ao
+   rolar, em vez de ficar fixo no topo. Não pode ser o padrão de
+   ".app-shell" porque as outras telas (o leitor de PDF, principalmente)
+   dependem do app-shell ter uma altura definida de 100vh pro "flex-grow" do
+   painel central preencher exatamente a tela, sem isso o painel cresce sem
    controle pelo conteúdo. */
 .app-shell.app-shell--allow-grow {
   height: auto;
@@ -78,309 +81,157 @@
   display: block;
 }
 
-.menu {
-  margin: 0 0 0 18px;
-  overflow: visible;
-  position: relative;
-  /* Não deixa o menu encolher no header apertado (dentro de um curso, com o
-     card de progresso): os itens têm largura fixa (180px, ver media query) e
-     encolher fazia o último quebrar pra uma segunda linha — quem absorve o
-     aperto é o nome do curso ao lado, que já trunca com ellipsis. */
-  flex: 0 0 auto;
-}
-
-/* Link "My Profile", sempre encostado na ponta direita do cabeçalho —
-   funciona tanto no menu completo (fora de um curso) quanto dentro de uma
-   unit, já que sempre sobra (ou é empurrado) espaço à sua esquerda. */
-.header-profile-link {
-  margin-left: auto;
-  flex: 0 0 auto;
-}
-
-.header-profile-link a {
-  display: inline-flex;
-  align-items: center;
-  padding: 10px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 999px;
-  color: #fff;
-  font-weight: 700;
-  font-size: 13px;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: background 140ms, border-color 140ms;
-}
-
-.header-profile-link a:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.6);
-}
-
-/* Nome do curso atual, centralizado no espaço livre do cabeçalho entre o
-   menu e a barra de progresso (só aparece dentro de uma unit). */
-.header-course-info {
-  flex: 1 1 auto;
-  min-width: 0;
-  text-align: center;
-  font-size: 17px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.92);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 0 16px;
-}
-
-/* Cartão "Your Progress" / "Your Score" no cabeçalho: duas células lado a
-   lado, com o rótulo separado do valor por uma linha pontilhada — mesma
-   ideia de referência que o usuário mandou por imagem. */
-.header-stats-card {
-  display: flex;
-  flex: 0 0 auto;
-  background: #fdf3ea;
-  border: 1px solid #e8c9a8;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.header-stat-cell {
-  display: flex;
-  flex-direction: column;
-  min-width: 120px;
-  padding: 7px 20px 9px;
-}
-
-.header-stat-cell + .header-stat-cell {
-  border-left: 1px solid #e8c9a8;
-}
-
-.header-stat-label {
-  font-size: 13px;
-  font-weight: 700;
-  color: #7a5230;
-  white-space: nowrap;
-  padding-bottom: 5px;
-  margin-bottom: 5px;
-  border-bottom: 1px dotted #c99a63;
-}
-
-.header-stat-value {
-  font-size: 20px;
-  font-weight: 800;
-  color: #4a2f14;
-  line-height: 1;
-}
-
-.menu ol {
-  list-style: none;
-  margin: -25px 0 0 0;
-  padding: 0;
+/* Botão hambúrguer — sempre visível, abre/fecha o .side-drawer (left slide
+   menu). Vira um "X" quando aberto (ver IconMenuToggle). */
+.menu-toggle {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.menu > ol > .menu-item {
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.08);
-  border-left: 5px solid var(--gradient-color, #FDA085);
-  margin-bottom: 1px;
-  position: relative;
-  transition: 0.5s;
+  color: #fff;
+  cursor: pointer;
+  transition: background 140ms;
 }
 
-.menu-item a {
-  color: #fbfbfb;
-  display: block;
-  padding: 15px 18px;
-  position: relative;
-  text-decoration: none;
-  z-index: 1;
-  font-size: 14px;
-  font-weight: 700;
+.menu-toggle:hover {
+  background: rgba(255, 255, 255, 0.16);
 }
 
-.menu-item.has-submenu > a::after {
-  content: "▾";
-  position: absolute;
-  right: 18px;
-  top: 50%;
-  transform: translateY(-50%);
-  transition: transform 0.3s ease;
-}
+/* "My Profile" virou um item do side-drawer (ver .side-drawer-divider
+   abaixo) — não é mais um botão solto no cabeçalho, então o cabeçalho só
+   tem o hambúrguer + a marca. */
 
-.menu-item:focus-within > a::after,
-.menu-item:hover > a::after {
-  transform: translateY(-50%) rotate(-180deg);
-}
+/* O nome do curso no cabeçalho (.header-course-info, "You are in the X
+   Course") e o card "Your Progress"/"Your Score" (.header-stats-card/
+   .header-stat-cell/-label/-value) foram removidos — curso/unit/conteúdo
+   agora aparecem no .reader-title-bar/.section-info no topo do leitor, e o
+   progresso já mora no Profile de cada usuário. */
 
-.menu-item:hover,
-.menu-item:focus-within {
-  z-index: 100;
-}
-
-.menu-item:hover:after,
-.menu-item:focus-within:after {
-  content: "";
-  background: linear-gradient(to left, var(--accent-color, #45494E), var(--gradient-color, #FBFBFB));
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  transition: 0.5s;
-  max-width: 100%;
-}
-
-.menu-item {
-  position: relative;
-}
-
-
-.menu > ol > .menu-item {
-  position: relative;
-}
-
-.menu-item .sub-menu {
-  border-left: 0;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%) translateY(-10px);
-  width: min(100vw, 1000px);
-  max-width: 1000px;
-  background: rgba(10, 11, 28, 0.97);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
-  border-radius: 24px;
-  padding: 16px;
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 16px;
-  z-index: 30;
+/* Left slide menu: painel fixo que desliza da esquerda por cima do
+   conteúdo (não participa do flex do .app-header), com um dimming
+   backdrop atrás. Substitui o antigo menu inline/dropdown do template
+   original (que tinha submenus em grade, sublinhado animado no hover e
+   cores por nth-child — nada disso era usado de fato). */
+.side-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 6, 20, 0.55);
   opacity: 0;
   visibility: hidden;
-  transform-origin: top center;
-  transition: opacity 220ms ease, transform 220ms ease, visibility 220ms ease;
+  transition: opacity 220ms ease, visibility 220ms ease;
+  z-index: 40;
 }
 
-.menu-item.has-submenu:hover > .sub-menu,
-.menu-item.has-submenu:focus-within > .sub-menu {
+.side-drawer-backdrop.is-visible {
   opacity: 1;
   visibility: visible;
-  transform: translateX(-50%) translateY(0);
 }
 
-.menu-column {
-  display: grid;
-  gap: 10px;
+.side-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: min(300px, 84vw);
+  background: rgba(16, 10, 30, 0.98);
+  box-shadow: 12px 0 48px rgba(0, 0, 0, 0.4);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  transform: translateX(-100%);
+  transition: transform 240ms ease;
 }
 
-.column-title {
-  font-size: 13px;
-  font-weight: 700;
+.side-drawer.side-drawer--open {
+  transform: translateX(0);
+}
+
+.side-drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  flex: 0 0 auto;
+}
+
+.side-drawer-title {
+  font-size: 15px;
+  font-weight: 800;
   color: #fff;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  letter-spacing: 0.02em;
 }
 
-.menu-item .sub-menu a {
-  display: block;
-  padding: 10px 12px;
-  color: #f3f3ff;
-  font-size: 13px;
+.side-drawer-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 140ms;
+}
+
+.side-drawer-close:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.side-drawer ol {
+  list-style: none;
+  margin: 0;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.side-drawer-item a {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 14px;
+  border-radius: 10px;
+  color: #f3f0ff;
+  font-size: 15px;
+  font-weight: 600;
   text-decoration: none;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  transition: background 180ms ease, color 180ms ease;
+  transition: background 160ms, color 160ms;
 }
 
-.menu-item .sub-menu a:hover,
-.menu-item .sub-menu a:focus {
-  background: rgba(139, 92, 246, 0.18);
+.side-drawer-item a svg {
+  flex: 0 0 auto;
+  opacity: 0.8;
+}
+
+.side-drawer-item a:hover,
+.side-drawer-item a:focus-visible {
+  background: rgba(139, 92, 246, 0.24);
   color: #fff;
 }
 
-.menu-item .sub-menu .menu-item a:hover::after,
-.menu-item .sub-menu .menu-item a:focus::after {
-  width: 15px;
+.side-drawer-item a:hover svg,
+.side-drawer-item a:focus-visible svg {
+  opacity: 1;
 }
 
-.menu-item a::after {
-  content: "";
-  background: #fbfbfb;
-  position: absolute;
-  bottom: 5px;
-  left: 15px;
-  height: 3px;
-  width: 0;
-  transition: 0.5s;
-  transition-delay: 0.2s;
-}
-
-.menu-item a:hover::after,
-.menu-item a:focus::after {
-  width: 50px;
-}
-
-.menu-item:nth-child(1) {
-  --accent-color: #FDA085;
-  --gradient-color: #F6D365;
-}
-
-.menu-item:nth-child(2) {
-  --accent-color: #BFF098;
-  --gradient-color: #6FD6FF;
-}
-
-.menu-item:nth-child(3) {
-  --accent-color: #EA8D8D;
-  --gradient-color: #A890FE;
-}
-
-.menu-item:nth-child(4) {
-  --accent-color: #D8B5FF;
-  --gradient-color: #1EAE98;
-}
-
-.menu-item:nth-child(5) {
-  --accent-color: #C6EA8D;
-  --gradient-color: #FE90AF;
-}
-
-@media (min-width: 600px) {
-  .menu {
-    margin-top: 30px;
-  }
-  .menu > ol {
-    display: block;
-    text-align: center;
-  }
-  .menu > ol > .menu-item {
-    border-left: 0;
-    border-top: 5px solid var(--accent-color);
-    display: inline-block;
-    margin-left: -5px;
-    vertical-align: top;
-    width: 150px;
-  }
-  .menu-item a::after {
-    left: 0;
-    right: 0;
-    margin: auto;
-  }
-  .menu-item .sub-menu {
-    border-left: 0;
-    margin: 15px -15px -15px;
-    padding-left: 0;
-  }
-}
-
-@media (min-width: 775px) {
-  .menu > ol > .menu-item {
-    width: 180px;
-  }
+/* Separa "My Profile" (conta, não navegação de curso) do resto dos itens. */
+.side-drawer-divider {
+  height: 1px;
+  margin: 8px 14px;
+  background: rgba(255, 255, 255, 0.14);
+  list-style: none;
 }
 
 .main-panels { display: grid; flex-grow: 1; overflow: hidden; }
@@ -557,23 +408,31 @@ body {
   color: rgba(27, 58, 94, 0.68);
 }
 
-/* Grammar English Elementary junta 3 listas (units, Appendixes, Additional
-   Exercises) na mesma tela — em vez de cada lista (ou o painel, ou o
-   "landing-page") rolar por conta própria em caixas de altura fixa, deixa
-   tudo crescer com o conteúdo e usa só a rolagem mais externa (a da janela/
-   documento). As 3 regras abaixo desfazem, só pra essa tela, os 3 overflows
-   internos que existem por padrão (.landing-page.vocabulary-mode, depois
-   .landing-panel.vocabulary-page, depois .vocabulary-list). */
-.landing-page.vocabulary-mode.grammar-elem-landing {
+/* Grades de units (Vocabulary/American1 via .vocabulary-grid-mode, Grammar
+   English A1 via .grammar-elem-landing) — em vez de cada lista (ou o
+   painel, ou o "landing-page") rolar por conta própria em caixas de altura
+   fixa, deixa tudo crescer com o conteúdo e usa só a rolagem mais externa
+   (a da .landing-page). As 3 regras abaixo desfazem, só pra essas telas, os
+   3 overflows internos que existem por padrão (.landing-page.vocabulary-mode,
+   depois .landing-panel.vocabulary-page, depois .vocabulary-list) — sem
+   isso, a lista rolava sozinha E a página rolava por fora ao mesmo tempo,
+   duas barras de rolagem verticais simultâneas. Grammar English A1 juntar
+   3 listas (units/Appendixes/Additional Exercises) foi o motivo original
+   dessa exceção existir; Vocabulary/American1 (uma lista só) ganharam o
+   mesmo tratamento depois, para não ter esse double-scrollbar. */
+.landing-page.vocabulary-mode.grammar-elem-landing,
+.landing-page.vocabulary-mode.vocabulary-grid-mode {
   overflow: visible;
 }
 
-.landing-panel.vocabulary-page.grammar-elem-landing-panel {
+.landing-panel.vocabulary-page.grammar-elem-landing-panel,
+.landing-panel.vocabulary-page.vocabulary-grid-mode {
   max-height: none;
   overflow: visible;
 }
 
-.grammar-elem-landing-panel .vocabulary-list {
+.grammar-elem-landing-panel .vocabulary-list,
+.vocabulary-grid-mode .vocabulary-list {
   flex: none;
   max-height: none;
   overflow: visible;
@@ -629,22 +488,22 @@ body {
 }
 
 .course-continue-cta {
-  flex: 0 0 200px;
-  width: 200px;
+  flex: 0 0 216px;
+  width: 216px;
   align-self: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  padding: 12px 14px;
+  gap: 4px;
+  padding: 15px 16px;
   border: none;
   border-radius: 14px;
   background: rgba(109, 66, 216, 0.1);
   color: var(--purple-700);
   text-transform: none;
   letter-spacing: normal;
-  font-size: 12.5px;
+  font-size: 14px;
 }
 
 .course-continue-cta:hover {
@@ -654,7 +513,7 @@ body {
 
 .course-continue-cta small {
   max-width: 100%;
-  font-size: 11px;
+  font-size: 12.5px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1396,7 +1255,7 @@ body {
   font-weight: 800;
 }
 
-/* Usado na tela de unit do American English Level 1: Previous/Next Unit e as
+/* Usado na tela de unit do American English A1: Previous/Next Unit e as
    abas A/B/C/Review and Check ficam encostadas à esquerda (em vez de flex-end) — os
    links de referência (.reference-links, com margin-left: auto) ocupam o
    espaço restante e ficam à direita. */
@@ -1417,7 +1276,7 @@ body {
   font-size: 13px;
 }
 
-/* Faixa de metadados da seção ativa (American English Level 1): título +
+/* Faixa de metadados da seção ativa (American English A1): título +
    foco de grammar/vocabulary/pronunciation, entre o toolbar e o PDF. */
 .section-info {
   display: flex;
@@ -1514,7 +1373,7 @@ body {
   box-shadow: 0 18px 36px rgba(109, 66, 216, 0.4);
 }
 
-/* Previous/Next Unit (American English Level 1) ficam sempre montados —
+/* Previous/Next Unit (American English A1) ficam sempre montados —
    só desabilitados na primeira/última unit — para o botão nunca sumir e
    deslocar o resto do toolbar (tabs de seção) de lugar. */
 .upload-button:disabled {
@@ -1741,7 +1600,7 @@ body {
   color: var(--purple-700);
 }
 
-/* Player de áudio ancorado do American English Level 1 — mesmo player do
+/* Player de áudio ancorado do American English A1 — mesmo player do
    curso Vocabulary (play/pause, stop, menu de velocidade — reaproveita
    .ap-btn/.ap-wrap/.ap-menu), só que centralizado exatamente em cima do
    selo impresso (não ancorado numa margem vazia, já que aqui o selo fica
@@ -1754,12 +1613,11 @@ body {
   align-items: center;
   gap: 1px;
   padding: 2px;
-  /* Altura e opacidade reduzidas em 20% (22px/0.6) a pedido do usuário em
-     2026-07-07 — o player fica sobre texto corrido, quanto mais discreto
-     melhor. */
   height: 18px;
-  background: rgba(255, 214, 0, 0.48);
-  border: 1px solid rgba(224, 168, 0, 0.48);
+  /* Sem transparência (a pedido do usuário em 2026-07-11, ajustando os
+     players do Sound Bank) — era rgba(...,0.48) antes. */
+  background: rgb(255, 214, 0);
+  border: 1px solid rgb(224, 168, 0);
   border-radius: 7px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   transform: translate(-20px, -7px);
@@ -1838,6 +1696,7 @@ body {
     height: auto;
     min-height: 72px;
     flex-wrap: wrap;
+    align-items: center;
     padding: 14px 18px;
   }
 
@@ -1852,12 +1711,31 @@ body {
   .pdf-empty-state h1 {
     font-size: 32px;
   }
+
+  /* .side-drawer já é fixed/full-height em qualquer largura — nada extra
+     necessário aqui pra telas estreitas. */
 }
 
 /* ===================== Página de exercícios (2 colunas) ===================== */
 .exercises-link {
   background: var(--purple-700) !important;
   color: #fff !important;
+}
+
+/* "All Units" nos toolbars de leitura de cada curso — volta pra grade de
+   units do curso atual (mesma função que "handleVocabulary"/"handleAmerican1"/
+   "handleGrammarElem" já usam nos links "Courses"). Estilo outline (não o
+   gradiente roxo sólido de Previous/Next/Back) pra sinalizar que é uma ação
+   diferente: sai da unit atual, não navega dentro dela. */
+.all-units-link {
+  background: transparent !important;
+  color: var(--purple-700) !important;
+  box-shadow: none !important;
+  border: 1.5px solid var(--purple-500) !important;
+}
+
+.all-units-link:hover {
+  background: rgba(109, 66, 216, 0.1) !important;
 }
 
 .study-page {
@@ -1920,7 +1798,7 @@ body {
   color: var(--purple-700);
 }
 
-/* Aba da seção especial (American English Level 1): o texto alterna entre
+/* Aba da seção especial (American English A1): o texto alterna entre
    "Practical English" e "Review and Check" de unit pra unit — largura mínima fixa
    pro texto mais longo, pra essa aba (e tudo à esquerda dela, incluindo os
    botões Previous/Next Unit) não deslocar de posição ao trocar de unit. */
@@ -1935,7 +1813,7 @@ body {
 }
 
 /* Links de referência (Grammar/Vocabulary/Sound Bank/Communication/Writing)
-   de cada seção A/B/C do curso American English Level 1 — pequenas caixas à
+   de cada seção A/B/C do curso American English A1 — pequenas caixas à
    direita das abas de seção, uma por página do apêndice referenciada. */
 .reference-links {
   display: flex;
@@ -1982,6 +1860,22 @@ body {
   font-size: 13px;
   font-weight: 800;
   color: var(--purple-950);
+}
+
+/* Ocupa o lugar do botão "‹ Back to Unit" quando a página de referência foi
+   aberta direto do menu (Sound Bank), sem vir de dentro de uma unit — só
+   identifica a tela, não é clicável. */
+.reference-standalone-label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .ghost-button {

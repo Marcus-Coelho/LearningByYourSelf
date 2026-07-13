@@ -162,6 +162,12 @@ module.exports = function (app) {
   app.use('/american1-audio/cd5', express.static(path.join(american1AudioRoot, 'audio_files_5'), { fallthrough: false }));
   app.use('/american1-audio/cd5', notFoundOn404);
 
+  // Áudio ancorado das páginas do Sound Bank (166-167, ver americ1_reference_audio_anchors.json
+  // com chave "sound:166") — um arquivo por palavra ("fish.wav", "tourist.wav"...),
+  // não por CD/faixa como o Class Audio acima, então tem sua própria pasta/rota.
+  app.use('/american1-soundbank-audio', express.static(path.join(american1Root, 'Sound Bank Audio'), { fallthrough: false }));
+  app.use('/american1-soundbank-audio', notFoundOn404);
+
   // Transcriptions: PDF único (8 páginas, já mesclado previamente com
   // pdf-lib a partir das páginas soltas 116-123) com as transcrições dos
   // áudios do livro. Ancorado com src/american1_transcriptions_audio_anchors.json
