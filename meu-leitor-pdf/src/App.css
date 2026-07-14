@@ -1679,6 +1679,16 @@ body {
   overflow: hidden;
 }
 
+/* "Full screen" próprio do leitor: só CSS (position: fixed cobrindo a
+   viewport), nunca a Fullscreen API do navegador — ver comentário em
+   PdfWorkspace sobre o spinner que travava pra sempre com a API nativa. */
+.pdf-viewer-stage--maximized {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #fff;
+}
+
 /* Canvas de desenho: por padrão invisível para eventos */
 .drawing-layer {
   position: absolute;

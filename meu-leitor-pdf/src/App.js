@@ -587,6 +587,24 @@ const IconHand = () => (
   </svg>
 );
 
+const IconMaximize = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+    <path d="M16 3h3a2 2 0 0 1 2 2v3" />
+    <path d="M8 21H5a2 2 0 0 1-2-2v-3" />
+    <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+  </svg>
+);
+
+const IconMinimize = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 3v3a2 2 0 0 1-2 2H4" />
+    <path d="M15 3v3a2 2 0 0 0 2 2h3" />
+    <path d="M9 21v-3a2 2 0 0 0-2-2H4" />
+    <path d="M15 21v-3a2 2 0 0 1 2-2h3" />
+  </svg>
+);
+
 const IconPlay = () => (
   <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
 );
@@ -4579,6 +4597,25 @@ function WordQuickAdd({ contextLabel, onAdd }) {
 
 function PdfWorkspace({ fileUrl, onPdfChange, defaultScale, initialPage, initialTool }) {
   const [activeTool, setActiveTool] = useState(initialTool || 'text');
+  // Substitui o "Full screen" nativo (Fullscreen API do navegador) por um
+  // "maximizar" só com CSS: o botão da própria lib deixava o leitor preso
+  // com o spinner de carregamento girando pra sempre em telas reais fora do
+  // DevTools (a virtualização interna da lib não reagia direito à promoção
+  // pro "top layer" do navegador — várias tentativas de contornar isso por
+  // fora não resolveram de forma confiável). Um resize comum de DOM, que é o
+  // que isMaximized causa, é exatamente o tipo de mudança de tamanho que o
+  // leitor já lida bem em todo o resto do app (painel de notas, redimensionar
+  // janela etc.), então evita a classe inteira do problema.
+  const [isMaximized, setIsMaximized] = useState(false);
+
+  useEffect(() => {
+    if (!isMaximized) return undefined;
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') setIsMaximized(false);
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isMaximized]);
 
   const defaultLayoutPluginInstance = defaultLayoutPlugin({
     sidebarTabs: () => [],
@@ -4599,7 +4636,6 @@ function PdfWorkspace({ fileUrl, onPdfChange, defaultScale, initialPage, initial
             ZoomIn,
             ZoomOut,
             SwitchSelectionMode,
-            EnterFullScreen,
             ShowSearchPopover,
           } = slots;
 
@@ -4659,7 +4695,24 @@ function PdfWorkspace({ fileUrl, onPdfChange, defaultScale, initialPage, initial
               {toolButton('Text', <IconText />, 'Select text')}
               {toolButton('Hand', <IconHand />, 'Hand tool')}
               <div style={{ flex: 1 }} />
-              <EnterFullScreen />
+              <button
+                title={isMaximized ? 'Exit full screen' : 'Full screen'}
+                onClick={() => setIsMaximized((prev) => !prev)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '32px',
+                  height: '32px',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  background: 'transparent',
+                  color: '#444',
+                }}
+              >
+                {isMaximized ? <IconMinimize /> : <IconMaximize />}
+              </button>
             </div>
           );
         }}
@@ -4668,7 +4721,7 @@ function PdfWorkspace({ fileUrl, onPdfChange, defaultScale, initialPage, initial
   });
 
   return (
-    <div className="pdf-viewer-stage">
+    <div className={`pdf-viewer-stage${isMaximized ? ' pdf-viewer-stage--maximized' : ''}`}>
       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
         <Viewer
           fileUrl={fileUrl}
