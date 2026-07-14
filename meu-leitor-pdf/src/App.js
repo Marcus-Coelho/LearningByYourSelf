@@ -18,12 +18,13 @@ import grammarElemAudio from './grammar_elem_audio.json';
 import grammarElemIndex from './grammar_elem_index.json';
 import grammarElemAppendixIndex from './grammar_elem_appendix_index.json';
 import listeningAmerican1 from './listening_american1.json';
+import listeningVocabulary from './listening_vocabulary.json';
 import './App.css';
 
 // Fontes de Listening disponíveis na tela "Listening" do menu principal —
 // hoje só a do American English A1, mas é uma lista pra caber outras depois
 // (ex.: um listening da Grammar Elementary) sem precisar remodelar nada.
-const LISTENING_SOURCES = [listeningAmerican1];
+const LISTENING_SOURCES = [listeningAmerican1, listeningVocabulary];
 
 // URL do gabarito único (multipágina), servido por src/setupProxy.js.
 const ANSWERS_KEY_URL = '/answers-key.pdf';
@@ -5369,7 +5370,7 @@ function ListeningClozeExercise({ track, userName }) {
   return (
     <div className="listening-exercise">
       <div className="listening-audio-bar" ref={audioBarRef}>
-        <SimpleAudioPlayer src={track.audio} label={`${track.cd.replace(/^CD/i, '')}-${track.track}`} />
+        <SimpleAudioPlayer src={track.audio} label={track.audioLabel || `${track.cd.replace(/^CD/i, '')}-${track.track}`} />
         <p className="listening-instructions">
           Listen to the audio and type the missing word(s) in each sentence — press the Space key
           to pause/play the audio, then press Check answers.
@@ -5402,6 +5403,9 @@ function ListeningClozeExercise({ track, userName }) {
                       stateClass = ' is-incorrect';
                     }
                   }
+                  // Piso de 8ch (não 4ch): pra palavras curtas tipo "is"/"a", o
+                  // padding do input sozinho já comia quase toda a largura,
+                  // deixando pouco espaço até pra digitar a resposta certa.
                   return (
                     <span key={partIndex}>
                       {part.before}
@@ -5410,7 +5414,7 @@ function ListeningClozeExercise({ track, userName }) {
                         className={`listening-blank-input${stateClass}`}
                         value={value}
                         onChange={(event) => handleChange(key, event.target.value)}
-                        style={{ width: `${Math.max(4, part.word.length + 2)}ch` }}
+                        style={{ width: `${Math.max(8, part.word.length + 3)}ch` }}
                         aria-label={`Blank ${blankIndexInSentence + 1} of sentence ${sentenceIndex + 1}`}
                         autoComplete="off"
                         spellCheck="false"
