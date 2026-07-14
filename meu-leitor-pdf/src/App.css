@@ -809,6 +809,206 @@ body {
   border-color: rgba(139, 92, 246, 0.6);
 }
 
+/* Tela "Listening" do menu principal: hub -> fonte -> track -> exercício de
+   preencher lacuna. Mesmo fundo claro do Profile/Courses (landing-page
+   vocabulary-mode), reaproveitando .course-link/.course-link-row pros
+   cartões de fonte/track. */
+.listening-panel {
+  text-align: left;
+  max-width: 640px;
+}
+
+/* Sem uppercase/letter-spacing do .eyebrow padrão (achado agressivo demais
+   pra essa tela) — só uma legenda discreta acima do título. */
+.landing-panel.listening-panel .eyebrow {
+  color: var(--purple-700);
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* O h1 padrão de .landing-panel (clamp de até 4.2rem, peso do sans-serif do
+   sistema) pesava demais pra um título de exercício — troca pra Quicksand
+   (mesma fonte "redonda"/amigável já usada nas grades de units) num peso e
+   tamanho bem mais discretos. */
+.landing-panel.listening-panel h1 {
+  color: #1b3a5e;
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
+  font-size: clamp(1.5rem, 2.2vw, 2rem);
+  line-height: 1.25;
+}
+
+/* Mesmo tratamento de rolagem única já usado nas grades de units (ver
+   comentário grande em .landing-page.vocabulary-mode.grammar-elem-landing /
+   .vocabulary-grid-mode): sem isso, o painel do Listening rolava por conta
+   própria E a página rolava por fora ao mesmo tempo — duas barras. */
+.landing-page.vocabulary-mode.listening-mode {
+  overflow: visible;
+}
+
+/* .landing-panel p (a regra base, branca) tem mais especificidade que uma
+   classe sozinha (.listening-instructions) — precisa desse mesmo formato
+   ".landing-panel.listening-panel p" pra realmente vencer a cascata. */
+.landing-panel.listening-panel p {
+  color: rgba(27, 58, 94, 0.75);
+}
+
+.listening-panel .upload-button {
+  margin-bottom: 20px;
+}
+
+/* Linha "Done 2× · Last score: 83%" dentro do card do exercício — só
+   aparece quando já existe alguma tentativa salva (ver loadListeningStats).
+   Cor de destaque (roxo), diferente da legenda cinza de baixo, pra chamar
+   atenção de que esse exercício já foi feito antes. Precisa do seletor
+   completo (".course-link small.listening-track-stats") pra vencer a regra
+   ".landing-panel.course-links-panel .course-link small" — mais específica
+   que uma classe sozinha. */
+.landing-panel.course-links-panel .course-link small.listening-track-stats {
+  display: block;
+  margin-top: 4px;
+  color: var(--purple-700);
+  font-weight: 700;
+}
+
+.listening-exercise-panel {
+  max-width: 780px;
+}
+
+.listening-audio-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: rgba(27, 58, 94, 0.05);
+  border: 1px solid rgba(27, 58, 94, 0.12);
+  margin-bottom: 24px;
+}
+
+/* Dentro da barra clara do exercício (não sobre um PDF), a pílula amarela
+   fica estática, não posicionada — ver .audio-anchor-inline no App.js. */
+.listening-audio-bar .audio-anchor {
+  position: static;
+}
+
+.listening-instructions {
+  margin: 0;
+  color: rgba(27, 58, 94, 0.75);
+  font-size: 14px;
+}
+
+.listening-sentences {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.listening-sentence {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(27, 58, 94, 0.04);
+  border: 1px solid rgba(27, 58, 94, 0.1);
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.listening-sentence-number {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(27, 58, 94, 0.1);
+  color: #1b3a5e;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.listening-sentence-text {
+  flex: 1 1 320px;
+  color: #1b3a5e;
+  line-height: 1.5;
+}
+
+.listening-blank-input {
+  width: 8ch;
+  padding: 3px 8px;
+  margin: 0 2px;
+  border: none;
+  border-bottom: 2px solid var(--purple-500);
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  color: var(--purple-700);
+  text-align: center;
+}
+
+.listening-blank-input:focus {
+  outline: none;
+  border-bottom-color: var(--purple-700);
+}
+
+/* Feedback aplicado diretamente no input (não na fala inteira, já que uma
+   fala longa pode ter várias lacunas com resultados diferentes). */
+.listening-blank-input.is-correct {
+  border-bottom-color: #16a34a;
+  color: #16a34a;
+}
+
+.listening-blank-input.is-incorrect {
+  border-bottom-color: #dc2626;
+  color: #dc2626;
+}
+
+.listening-blank-input.is-empty {
+  border-bottom-color: rgba(27, 58, 94, 0.35);
+  border-bottom-style: dashed;
+}
+
+.listening-check-all {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin-top: 24px;
+}
+
+/* Largura fixa (150px) do .show-answers-btn padrão estoura com "Do it again
+   with other words" — esses 3 botões seguem o tamanho do próprio texto. */
+.listening-check-all .show-answers-btn {
+  width: auto;
+  padding: 10px 18px;
+}
+
+.listening-check-summary {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1b3a5e;
+}
+
+/* Palavra certa exibida ao lado da lacuna quando "Show answers" está ativo
+   — não mexe no que o usuário digitou, só mostra a resposta ao lado. */
+.listening-answer-hint {
+  margin: 0 2px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(139, 92, 246, 0.14);
+  color: var(--purple-700);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 /* Página de cadastro/login (só nome) — trava de acesso aos cursos. */
 .register-panel {
   max-width: 520px;

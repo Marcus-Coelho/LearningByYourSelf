@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { SpecialZoomLevel, Viewer, Worker } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
@@ -17,7 +17,13 @@ import american1Videos from './american1_videos.json';
 import grammarElemAudio from './grammar_elem_audio.json';
 import grammarElemIndex from './grammar_elem_index.json';
 import grammarElemAppendixIndex from './grammar_elem_appendix_index.json';
+import listeningAmerican1 from './listening_american1.json';
 import './App.css';
+
+// Fontes de Listening disponíveis na tela "Listening" do menu principal —
+// hoje só a do American English A1, mas é uma lista pra caber outras depois
+// (ex.: um listening da Grammar Elementary) sem precisar remodelar nada.
+const LISTENING_SOURCES = [listeningAmerican1];
 
 // URL do gabarito único (multipágina), servido por src/setupProxy.js.
 const ANSWERS_KEY_URL = '/answers-key.pdf';
@@ -670,6 +676,13 @@ function App() {
   const [selectedGrammarElemUnit, setSelectedGrammarElemUnit] = useState(RESTORED_POSITION?.selectedGrammarElemUnit ?? null);
   const [selectedGrammarElemAppendix, setSelectedGrammarElemAppendix] = useState(RESTORED_POSITION?.selectedGrammarElemAppendix ?? null);
   const [selectedGrammarElemAdditional, setSelectedGrammarElemAdditional] = useState(RESTORED_POSITION?.selectedGrammarElemAdditional ?? null);
+  // Navegação da tela "Listening" (menu principal): hub -> fonte (ex.:
+  // "Listening from American English A1") -> track (ex.: CD1 Track 13).
+  // Guardamos só os ids (não os objetos) pra caber no histórico/sessionStorage
+  // como o resto da posição restaurável — os dados completos vêm de volta
+  // procurando em LISTENING_SOURCES.
+  const [selectedListeningSource, setSelectedListeningSource] = useState(RESTORED_POSITION?.selectedListeningSource ?? null);
+  const [selectedListeningTrack, setSelectedListeningTrack] = useState(RESTORED_POSITION?.selectedListeningTrack ?? null);
   const [showAnswers, setShowAnswers] = useState(false);
   const [showAmerican1Answers, setShowAmerican1Answers] = useState(false);
   const [showAmerican1ReferenceAnswers, setShowAmerican1ReferenceAnswers] = useState(false);
@@ -1319,6 +1332,8 @@ function App() {
       selectedGrammarElemUnit,
       selectedGrammarElemAppendix,
       selectedGrammarElemAdditional,
+      selectedListeningSource,
+      selectedListeningTrack,
     };
     try {
       window.sessionStorage.setItem(SESSION_POSITION_KEY, JSON.stringify(position));
@@ -1352,6 +1367,8 @@ function App() {
     selectedGrammarElemUnit,
     selectedGrammarElemAppendix,
     selectedGrammarElemAdditional,
+    selectedListeningSource,
+    selectedListeningTrack,
     userName,
   ]);
 
@@ -1383,6 +1400,8 @@ function App() {
       setSelectedGrammarElemUnit(state.selectedGrammarElemUnit ?? null);
       setSelectedGrammarElemAppendix(state.selectedGrammarElemAppendix ?? null);
       setSelectedGrammarElemAdditional(state.selectedGrammarElemAdditional ?? null);
+      setSelectedListeningSource(state.selectedListeningSource ?? null);
+      setSelectedListeningTrack(state.selectedListeningTrack ?? null);
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -1622,6 +1641,36 @@ function App() {
 
   const handleCloseAmerican1Transcriptions = () => {
     setActivePage('american1-unit');
+  };
+
+  // Tela "Listening" do menu principal: hub -> fonte -> track (ver
+  // LISTENING_SOURCES/listening_american1.json). Link do menu abre sempre no
+  // hub, mesmo se já havia uma fonte/track selecionada de uma visita anterior.
+  const handleOpenListening = (event) => {
+    event.preventDefault();
+    setActivePage('listening');
+    setActiveCourseId(null);
+  };
+
+  const handleOpenListeningSource = (source) => {
+    setSelectedListeningSource(source.id);
+    setActivePage('listening-tracks');
+  };
+
+  const handleOpenListeningTrack = (track) => {
+    setSelectedListeningTrack(track.id);
+    setActivePage('listening-exercise');
+  };
+
+  const handleBackToListeningHub = () => {
+    setActivePage('listening');
+    setSelectedListeningSource(null);
+    setSelectedListeningTrack(null);
+  };
+
+  const handleBackToListeningTracks = () => {
+    setActivePage('listening-tracks');
+    setSelectedListeningTrack(null);
   };
 
   // Abre um item vencido do "Today's Review" direto na tela onde ele é
@@ -2527,7 +2576,7 @@ function App() {
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleHome(event); setMobileMenuOpen(false); }}><IconHome /><span>Home</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleCourses(event); setMobileMenuOpen(false); }}><IconCourses /><span>Courses</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenWordbook(event); setMobileMenuOpen(false); }}><IconWords /><span>My Words</span></a></li>
-            <li className="side-drawer-item"><a href="#link-2" onClick={() => setMobileMenuOpen(false)}><IconHeadphones /><span>Listening</span></a></li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenListening(event); setMobileMenuOpen(false); }}><IconHeadphones /><span>Listening</span></a></li>
             <li className="side-drawer-item"><a href="#link-3" onClick={() => setMobileMenuOpen(false)}><IconMic /><span>Speaking</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenAmerican1SoundBank(event); setMobileMenuOpen(false); }}><IconSound /><span>Sound Bank</span></a></li>
             <li className="side-drawer-divider" role="separator" />
@@ -3576,7 +3625,92 @@ function App() {
             </div>
           </aside>
         </main>
-      ) : activePage === 'wordbook' ? (
+      ) : activePage === 'listening' ? (
+        <main className="landing-page landing-page--courses vocabulary-mode listening-mode">
+          <div className="landing-panel course-links-panel listening-panel">
+            <p className="eyebrow">Listening</p>
+            <h1>Choose a listening source</h1>
+            <div className="course-links">
+              {LISTENING_SOURCES.map((source) => (
+                <div className="course-link-row" key={source.id}>
+                  <a
+                    className="course-link"
+                    href="#0"
+                    onClick={(event) => { event.preventDefault(); handleOpenListeningSource(source); }}
+                  >
+                    <span>{source.title}</span>
+                    <small>{source.description}</small>
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        </main>
+      ) : activePage === 'listening-tracks' ? (() => {
+        const source = LISTENING_SOURCES.find((item) => item.id === selectedListeningSource);
+        return (
+          <main className="landing-page landing-page--courses vocabulary-mode listening-mode">
+            <div className="landing-panel course-links-panel listening-panel">
+              <button type="button" className="upload-button" onClick={handleBackToListeningHub}>
+                ‹ Back to Listening
+              </button>
+              <p className="eyebrow">{source?.title || 'Listening'}</p>
+              <h1>Choose an exercise</h1>
+              <div className="course-links">
+                {(source?.tracks || []).map((track) => {
+                  const stats = loadListeningStats(userName, track.id);
+                  return (
+                    <div className="course-link-row" key={track.id}>
+                      <a
+                        className="course-link"
+                        href="#0"
+                        onClick={(event) => { event.preventDefault(); handleOpenListeningTrack(track); }}
+                      >
+                        <span>Listening Exercise n. {track.number}</span>
+                        <small>{track.sentences.length} sentences · fill in the blank</small>
+                        {stats && (
+                          <small className="listening-track-stats">
+                            Done {stats.attempts}× · Last score: {stats.lastScorePercent}%
+                          </small>
+                        )}
+                      </a>
+                      {stats && (
+                        <button
+                          type="button"
+                          className="continue-cta course-continue-cta"
+                          onClick={() => handleOpenListeningTrack(track)}
+                        >
+                          Try again
+                          <small>Last score: {stats.lastScorePercent}%</small>
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </main>
+        );
+      })() : activePage === 'listening-exercise' ? (() => {
+        const source = LISTENING_SOURCES.find((item) => item.id === selectedListeningSource);
+        const track = (source?.tracks || []).find((item) => item.id === selectedListeningTrack);
+        return (
+          <main className="landing-page landing-page--courses vocabulary-mode listening-mode">
+            <div className="landing-panel course-links-panel listening-panel listening-exercise-panel">
+              <button type="button" className="upload-button" onClick={handleBackToListeningTracks}>
+                ‹ Back to Exercises
+              </button>
+              <p className="eyebrow">{source?.title || 'Listening'}</p>
+              <h1>{track ? `Listening Exercise n. ${track.number}` : 'Exercise'}</h1>
+              {track ? (
+                <ListeningClozeExercise key={track.id} track={track} userName={userName} />
+              ) : (
+                <p>Exercise not found.</p>
+              )}
+            </div>
+          </main>
+        );
+      })() : activePage === 'wordbook' ? (
         <main className="landing-page vocabulary-mode">
           <WordbookPage
             entries={wordbookEntries}
@@ -5041,6 +5175,278 @@ function SimpleAudioPlayer({ src, label }) {
     <div className="audio-anchor audio-anchor-inline">
       <span className="audio-anchor-inline-label">{label}</span>
       <AudioPlayerControls src={src} />
+    </div>
+  );
+}
+
+// Palavras curtas/funcionais que não viram lacuna (artigo, pronome, verbo
+// auxiliar...) — a ideia é sortear palavras de conteúdo (substantivos,
+// verbos, números "grandes"), como no exemplo original ("cheese" em vez de
+// "a"/"and"), não palavras triviais demais pra reconhecer de ouvido.
+const LISTENING_STOPWORDS = new Set([
+  'a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'been', 'am',
+  'i', 'you', 'he', 'she', 'it', 'we', 'they', 'my', 'your', 'his', 'her', 'its', 'our', 'their',
+  'to', 'of', 'in', 'on', 'at', 'by', 'for', 'with', 'about', 'and', 'but', 'or', 'so', 'if',
+  'this', 'that', 'these', 'those', 'there', 'here',
+  'do', 'does', 'did', 'have', 'has', 'had', 'can', 'could', 'will', 'would', 'shall', 'should', 'may', 'might', 'must',
+  'yes', 'no', 'not', 'please', 'thank', 'thanks', 'ok', 'oh',
+]);
+
+// Tira um rótulo de falante do início da fala (ex.: "A: ", "Teacher: ",
+// "Student 1: ") — nunca vira lacuna nem conta pro tamanho da fala.
+function splitListeningSpeakerLabel(text) {
+  const match = text.match(/^([A-Z][a-zA-Z]*(?:\s\d+)?:\s+)/);
+  if (!match) return { label: '', rest: text };
+  return { label: match[1], rest: text.slice(match[1].length) };
+}
+
+// Preserva os espaços como tokens próprios, pra recompor o texto original
+// trocando só as palavras sorteadas por <input> sem perder espaçamento.
+function tokenizeListeningText(text) {
+  return text.split(/(\s+)/).filter((token) => token.length > 0);
+}
+
+function isListeningBlankCandidate(token) {
+  const stripped = token.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
+  if (stripped.length < 3) return false;
+  return /^\d+$/.test(stripped) || !LISTENING_STOPWORDS.has(stripped.toLowerCase());
+}
+
+function pickRandomIndices(candidates, count) {
+  const pool = [...candidates];
+  const picked = [];
+  while (pool.length > 0 && picked.length < count) {
+    const i = Math.floor(Math.random() * pool.length);
+    picked.push(pool[i]);
+    pool.splice(i, 1);
+  }
+  return picked.sort((a, b) => a - b);
+}
+
+// Monta o modelo de uma fala: quantas lacunas ela ganha depende do tamanho
+// (falas curtas — menos de 10 palavras — ganham 1; falas mais longas ganham
+// mais, cerca de 1 a cada 6 palavras) e QUAIS palavras viram lacuna é
+// sorteado toda vez que a função roda — chamada de dentro de um useMemo sem
+// dependência persistida, então cada visita à tela sorteia palavras
+// diferentes, evitando que o usuário decore a resposta certa.
+function buildListeningSentenceModel(text) {
+  const { label, rest } = splitListeningSpeakerLabel(text);
+  const tokens = tokenizeListeningText(rest);
+  const wordIndices = [];
+  tokens.forEach((token, i) => {
+    if (!/^\s+$/.test(token)) wordIndices.push(i);
+  });
+
+  let candidates = wordIndices.filter((i) => isListeningBlankCandidate(tokens[i]));
+  if (candidates.length === 0) candidates = wordIndices;
+
+  const blankCount = Math.max(
+    1,
+    Math.min(candidates.length, wordIndices.length < 10 ? 1 : Math.ceil(wordIndices.length / 6))
+  );
+  const blankTokenIndices = new Set(pickRandomIndices(candidates, blankCount));
+
+  const parts = tokens.map((token, i) => {
+    if (!blankTokenIndices.has(i)) return { type: 'text', value: token };
+    const match = token.match(/^([^a-zA-Z0-9]*)([a-zA-Z0-9]+)([^a-zA-Z0-9]*)$/);
+    return match
+      ? { type: 'blank', before: match[1], word: match[2], after: match[3] }
+      : { type: 'blank', before: '', word: token, after: '' };
+  });
+
+  return { label, parts };
+}
+
+const normalizeListeningAnswer = (text) => text.trim().toLowerCase().replace(/[.,!?"'’]/g, '');
+
+// Histórico de tentativas de um exercício de Listening (quantas vezes o
+// usuário conferiu as respostas e a pontuação da última vez) — mostrado na
+// tela "Choose an exercise" antes mesmo de abrir o exercício de novo.
+const listeningStatsKey = (userName, trackId) => userKey(userName, `listening:${trackId}:stats`);
+
+function loadListeningStats(userName, trackId) {
+  if (!userName) return null;
+  try {
+    const raw = window.localStorage.getItem(listeningStatsKey(userName, trackId));
+    return raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function saveListeningAttempt(userName, trackId, scorePercent) {
+  if (!userName) return;
+  try {
+    const prev = loadListeningStats(userName, trackId);
+    const next = {
+      attempts: (prev?.attempts || 0) + 1,
+      lastScorePercent: scorePercent,
+      lastAttemptAt: new Date().toISOString(),
+    };
+    window.localStorage.setItem(listeningStatsKey(userName, trackId), JSON.stringify(next));
+  } catch (error) {
+    // Armazenamento indisponível — segue funcionando, só sem estatística.
+  }
+}
+
+// Tela do exercício de um track (ex.: CD1 Track 13): player de áudio no topo
+// (SimpleAudioPlayer — reaproveita o botão de repetir A-B, essencial pra
+// ouvir uma palavra difícil de novo) e a lista de falas com lacuna(s) abaixo,
+// corrigidas todas de uma vez pelo botão "Check answers" no final. A barra de
+// espaço toca/pausa o áudio sempre que o foco não estiver num campo de texto
+// (senão digitar um espaço dentro de uma resposta pausaria o áudio).
+function ListeningClozeExercise({ track, userName }) {
+  // regenerateKey só existe pra forçar o useMemo a sortear de novo — não
+  // representa nenhum dado real, só entra na dependência pra invalidar o
+  // cache quando o usuário pede "Do it again with other words".
+  const [regenerateKey, setRegenerateKey] = useState(0);
+  const sentenceModels = useMemo(
+    () => track.sentences.map((text) => buildListeningSentenceModel(text)),
+    [track.id, regenerateKey]
+  );
+  const [answers, setAnswers] = useState({});
+  const [checked, setChecked] = useState(false);
+  const [showAnswers, setShowAnswers] = useState(false);
+  const audioBarRef = useRef(null);
+
+  useEffect(() => {
+    setAnswers({});
+    setChecked(false);
+    setShowAnswers(false);
+  }, [track.id, regenerateKey]);
+
+  const handleRegenerate = () => {
+    setRegenerateKey((key) => key + 1);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.code !== 'Space') return;
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'BUTTON') return;
+      const audio = audioBarRef.current?.querySelector('audio');
+      if (!audio) return;
+      event.preventDefault();
+      if (audio.paused) {
+        audio.play();
+      } else {
+        audio.pause();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const handleChange = (key, value) => {
+    setAnswers((prev) => ({ ...prev, [key]: value }));
+    if (checked) setChecked(false);
+  };
+
+  const handleCheckAll = () => {
+    setChecked(true);
+    let total = 0;
+    let correct = 0;
+    sentenceModels.forEach((model, sentenceIndex) => {
+      let blankIdx = -1;
+      model.parts.forEach((part) => {
+        if (part.type !== 'blank') return;
+        blankIdx += 1;
+        total += 1;
+        const value = answers[`${sentenceIndex}:${blankIdx}`] || '';
+        if (value.trim() && normalizeListeningAnswer(value) === normalizeListeningAnswer(part.word)) {
+          correct += 1;
+        }
+      });
+    });
+    if (total > 0) {
+      saveListeningAttempt(userName, track.id, Math.round((correct / total) * 100));
+    }
+  };
+
+  let totalBlanks = 0;
+  let correctBlanks = 0;
+
+  return (
+    <div className="listening-exercise">
+      <div className="listening-audio-bar" ref={audioBarRef}>
+        <SimpleAudioPlayer src={track.audio} label={`${track.cd.replace(/^CD/i, '')}-${track.track}`} />
+        <p className="listening-instructions">
+          Listen to the audio and type the missing word(s) in each sentence — press the Space key
+          to pause/play the audio, then press Check answers.
+        </p>
+      </div>
+      <ol className="listening-sentences">
+        {sentenceModels.map((model, sentenceIndex) => {
+          let blankIndexInSentence = -1;
+          return (
+            <li key={sentenceIndex} className="listening-sentence">
+              <span className="listening-sentence-number">{sentenceIndex + 1}</span>
+              <span className="listening-sentence-text">
+                {model.label}
+                {model.parts.map((part, partIndex) => {
+                  if (part.type === 'text') {
+                    return <span key={partIndex}>{part.value}</span>;
+                  }
+                  blankIndexInSentence += 1;
+                  const key = `${sentenceIndex}:${blankIndexInSentence}`;
+                  const value = answers[key] || '';
+                  totalBlanks += 1;
+                  let stateClass = '';
+                  if (checked) {
+                    if (!value.trim()) {
+                      stateClass = ' is-empty';
+                    } else if (normalizeListeningAnswer(value) === normalizeListeningAnswer(part.word)) {
+                      stateClass = ' is-correct';
+                      correctBlanks += 1;
+                    } else {
+                      stateClass = ' is-incorrect';
+                    }
+                  }
+                  return (
+                    <span key={partIndex}>
+                      {part.before}
+                      <input
+                        type="text"
+                        className={`listening-blank-input${stateClass}`}
+                        value={value}
+                        onChange={(event) => handleChange(key, event.target.value)}
+                        style={{ width: `${Math.max(4, part.word.length + 2)}ch` }}
+                        aria-label={`Blank ${blankIndexInSentence + 1} of sentence ${sentenceIndex + 1}`}
+                        autoComplete="off"
+                        spellCheck="false"
+                      />
+                      {showAnswers && (
+                        <span className="listening-answer-hint">{part.word}</span>
+                      )}
+                      {part.after}
+                    </span>
+                  );
+                })}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+      <div className="listening-check-all">
+        <button type="button" className="show-answers-btn" onClick={handleCheckAll}>
+          Check answers
+        </button>
+        <button
+          type="button"
+          className="show-answers-btn secondary"
+          onClick={() => setShowAnswers((prev) => !prev)}
+        >
+          {showAnswers ? 'Hide answers' : 'Show answers'}
+        </button>
+        <button type="button" className="show-answers-btn secondary" onClick={handleRegenerate}>
+          Do it again with other words
+        </button>
+        {checked && (
+          <span className="listening-check-summary">
+            {correctBlanks} / {totalBlanks} correct
+          </span>
+        )}
+      </div>
     </div>
   );
 }
