@@ -502,7 +502,7 @@ body {
 }
 
 .course-continue-cta {
-  flex: 0 0 216px;
+  flex: 0 0 auto;
   width: 216px;
   align-self: center;
   display: flex;
@@ -518,6 +518,7 @@ body {
   text-transform: none;
   letter-spacing: normal;
   font-size: 14px;
+  height: fit-content;
 }
 
 .course-continue-cta:hover {
