@@ -717,6 +717,11 @@ function App() {
   // handleVocabulary/handleAmerican1/handleGrammarElem) pra não começar
   // filtrada sem o usuário saber por quê.
   const [unitSearchQuery, setUnitSearchQuery] = useState('');
+  // Busca (unit ou número do exercício) e filtro "hide 100%" da lista de
+  // listening exercises — zerados ao abrir uma fonte (ver
+  // handleOpenListeningSource) pra não começar filtrada sem o usuário saber.
+  const [listeningSearchQuery, setListeningSearchQuery] = useState('');
+  const [hideMasteredListening, setHideMasteredListening] = useState(false);
   // Largura inicial = RIGHT_PANEL_WIDTH_RATIO da janela (ver comentário na
   // constante), com piso em MIN_RIGHT_WIDTH e teto no espaço realmente
   // disponível — numa tablet mais estreita (~820px), MIN_CENTER_WIDTH(420) +
@@ -1672,6 +1677,8 @@ function App() {
   const handleOpenListeningSource = (source) => {
     setSelectedListeningSource(source.id);
     setActivePage('listening-tracks');
+    setListeningSearchQuery('');
+    setHideMasteredListening(false);
   };
 
   const handleOpenListeningTrack = (track) => {
@@ -3675,6 +3682,19 @@ function App() {
         </main>
       ) : activePage === 'listening-tracks' ? (() => {
         const source = LISTENING_SOURCES.find((item) => item.id === selectedListeningSource);
+        const listeningSearchNormalized = listeningSearchQuery.trim().toLowerCase();
+        const allListeningTracks = (source?.tracks || []).map((track) => ({
+          track,
+          stats: loadListeningStats(userName, track.id),
+        }));
+        const visibleListeningTracks = allListeningTracks.filter(({ track, stats }) => {
+          if (hideMasteredListening && stats?.lastScorePercent === 100) return false;
+          if (!listeningSearchNormalized) return true;
+          return (
+            listeningTrackLabel(track).toLowerCase().includes(listeningSearchNormalized)
+            || String(track.number).includes(listeningSearchNormalized)
+          );
+        });
         return (
           <main className="landing-page landing-page--courses vocabulary-mode listening-mode">
             <div className="landing-panel course-links-panel listening-panel">
@@ -3683,9 +3703,25 @@ function App() {
               </button>
               <p className="eyebrow">{source?.title || 'Listening'}</p>
               <h1>Choose an exercise</h1>
+              <div className="listening-tracks-controls">
+                <UnitSearchBox
+                  value={listeningSearchQuery}
+                  onChange={setListeningSearchQuery}
+                  placeholder="Search by unit or exercise number..."
+                />
+                <button
+                  type="button"
+                  className={`upload-button listening-hide-mastered-toggle${hideMasteredListening ? ' is-active' : ''}`}
+                  onClick={() => setHideMasteredListening((current) => !current)}
+                >
+                  {hideMasteredListening ? '✓ Hiding 100% score' : 'Hide 100% score'}
+                </button>
+              </div>
+              {visibleListeningTracks.length === 0 && (
+                <p className="unit-search-empty">No exercises match your filters.</p>
+              )}
               <div className="course-links">
-                {(source?.tracks || []).map((track) => {
-                  const stats = loadListeningStats(userName, track.id);
+                {visibleListeningTracks.map(({ track, stats }) => {
                   return (
                     <div className="course-link-row" key={track.id}>
                       <a
@@ -3738,7 +3774,29 @@ function App() {
                 )}
               </div>
               <p className="eyebrow">{source?.title || 'Listening'}</p>
-              <h1>{track ? `Listening Exercise n. ${track.number} (${listeningTrackLabel(track)})` : 'Exercise'}</h1>
+              <h1>
+                {track ? (
+                  <>
+                    {`Listening Exercise n. ${track.number} (`}
+                    {track.unit ? (
+                      <span
+                        className="listening-unit-link"
+                        role="link"
+                        tabIndex={0}
+                        onClick={() => openVocabularyUnit(track.unit)}
+                        onKeyDown={(event) => {
+                          if (event.key !== 'Enter' && event.key !== ' ') return;
+                          event.preventDefault();
+                          openVocabularyUnit(track.unit);
+                        }}
+                      >
+                        {listeningTrackLabel(track)}
+                      </span>
+                    ) : listeningTrackLabel(track)}
+                    {')'}
+                  </>
+                ) : 'Exercise'}
+              </h1>
               {track ? (
                 <ListeningClozeExercise key={track.id} track={track} userName={userName} />
               ) : (

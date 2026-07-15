@@ -13,6 +13,7 @@
       "sentences": [
         "I have a brown leather chair by the window, and I often sit there in the morning to listen to music.",
         "In the sentence above, I is a pronoun; chair, window, morning and music are all nouns; have, sit and listen are verbs; brown and leather are adjectives; often is an adverb; by and to are prepositions; the is a definite article; a is an indefinite article; and is a conjunction or link word.",
+        "Here are two more examples:",
         "We saw an elephant at the zoo yesterday.",
         "Elephant and zoo are nouns; saw is a verb; at is a preposition; an is an indefinite article; the is a definite article.",
         "It was a cold night, so I walked quickly.",
@@ -57,9 +58,9 @@
       "audio": "/audio/unit_4/U_004.D.mp3",
       "audioLabel": "4D",
       "sentences": [
-        "Dictionaries show the pronunciation of a word using phonemic symbols.",
+        "Dictionaries show the pronunciation of a word using phonemic symbols, for example book, before, cinema.",
         "Every word has one or more syllables, e.g. book has one syllable, before has two syllables, cinema has three syllables.",
-        "It is important to know which syllable to stress.",
+        "It is important to know which syllable to stress, for example on before it is the second syllable, on cinema it is the first syllable.",
         "The vertical mark shows where the stressed syllable begins."
       ],
       "number": 4
@@ -120,7 +121,7 @@
       "audioLabel": "5B",
       "sentences": [
         "The continents in the world are Europe, Africa, Asia, North America, South America, Australia and Antarctica.",
-        "We also use these terms for different parts of the world: the Middle East, the Far East, the Caribbean, and Scandinavia."
+        "We also use these terms for different parts of the world: the Middle East, for example United Arab Emirates and Saudi Arabia; the Far East, for example Thailand and Japan; the Caribbean, for example Jamaica and Barbados; and Scandinavia, for example Sweden, Norway, Denmark and Finland."
       ],
       "number": 7
     },
@@ -246,7 +247,16 @@
         "The most common are dogs and cats, but people also keep birds, e.g. parrots, that are usually in a cage.",
         "Children sometimes keep mice and rabbits.",
         "Some people keep more unusual animals as pets, e.g. frogs, snakes and spiders.",
-        "Farms in the UK may have sheep, pigs, cows, horses, donkeys, chickens, goats and a bull."
+        "Farms in the UK may have sheep, pigs, cows, horses, donkeys, chickens, goats and a bull.",
+        "Parrot.",
+        "Rabbit.",
+        "Donkey.",
+        "Frog.",
+        "Spider.",
+        "Mouse.",
+        "Snake.",
+        "Bull.",
+        "Goat."
       ],
       "number": 14
     },
@@ -261,9 +271,33 @@
         "The pictures show a number of wild animals.",
         "If you are lucky, you may see these animals in the wild, but you will probably see them in a zoo.",
         "Some of these animals, for example tigers, are now quite rare.",
-        "It is important that we protect these endangered animals."
+        "It is important that we protect these endangered animals.",
+        "Monkey.",
+        "Tiger.",
+        "Camel.",
+        "Giraffe.",
+        "Leopard.",
+        "Bear.",
+        "Elephant.",
+        "Lion."
       ],
       "number": 15
+    },
+    {
+      "unit": 8,
+      "letter": "C",
+      "title": "Unit 8C - Insects",
+      "sentences": [
+        "Bee.",
+        "Ant.",
+        "Mosquito.",
+        "Fly.",
+        "Butterfly."
+      ],
+      "id": "unit8-c",
+      "audio": "/audio/unit_8/U_008.C.mp3",
+      "audioLabel": "8C",
+      "number": 16
     },
     {
       "id": "unit8-d",
@@ -273,9 +307,13 @@
       "audio": "/audio/unit_8/U_008.D.mp3",
       "audioLabel": "8D",
       "sentences": [
-        "Many different creatures live in the sea."
+        "Many different creatures live in the sea.",
+        "Whale.",
+        "Dolphin.",
+        "Shark.",
+        "Octopus."
       ],
-      "number": 16
+      "number": 17
     },
     {
       "id": "unit9-a",
@@ -286,9 +324,11 @@
       "audioLabel": "9A",
       "sentences": [
         "The outer part of the body is covered in skin.",
-        "Too much sun is bad for your skin."
+        "Too much sun is bad for your skin.",
+        "Forehead, cheek, lips, neck, chest, elbow, waist, bottom, hip, knee, ankle.",
+        "Chin, shoulder, breast, wrist, thumb, heel, toe."
       ],
-      "number": 17
+      "number": 18
     },
     {
       "id": "unit9-b",
@@ -306,7 +346,7 @@
         "People in some countries nod their head to mean ‘yes’, and shake their head for ‘no’.",
         "People often yawn when they’re tired, and sometimes when they’re bored."
       ],
-      "number": 18
+      "number": 19
     },
     {
       "id": "unit9-c",
@@ -322,7 +362,7 @@
         "Wave to somebody.",
         "Blow your nose."
       ],
-      "number": 19
+      "number": 20
     },
     {
       "id": "unit10-a",
@@ -342,7 +382,7 @@
         "Olivia was very pretty when she was younger.",
         "They’re a very good-looking couple."
       ],
-      "number": 20
+      "number": 21
     },
     {
       "id": "unit10-b",
@@ -360,7 +400,26 @@
         "Is Marco quite big?",
         "No, about average."
       ],
-      "number": 21
+      "number": 22
+    },
+    {
+      "unit": 10,
+      "letter": "C",
+      "title": "Unit 10C - Hair",
+      "sentences": [
+        "Blonde, or blond.",
+        "Fair.",
+        "Brown.",
+        "Dark.",
+        "Black.",
+        "Straight.",
+        "Wavy.",
+        "Curly."
+      ],
+      "id": "unit10-c",
+      "audio": "/audio/unit_10/U_010.C.mp3",
+      "audioLabel": "10C",
+      "number": 23
     },
     {
       "id": "unit10-d",
@@ -379,7 +438,7 @@
         "Is he quite smart?",
         "Yeah, he dresses quite well."
       ],
-      "number": 22
+      "number": 24
     },
     {
       "id": "unit11-a",
@@ -403,7 +462,7 @@
         "I’m usually quite patient.",
         "I’m quite impatient."
       ],
-      "number": 23
+      "number": 25
     },
     {
       "id": "unit11-b",
@@ -419,7 +478,7 @@
         "Clever, intelligent, stupid.",
         "Calm, nervous, anxious."
       ],
-      "number": 24
+      "number": 26
     },
     {
       "id": "unit11-c",
@@ -434,7 +493,7 @@
         "She’s also very creative; she makes things, and she’s a very talented artist.",
         "I wish I had her talent."
       ],
-      "number": 25
+      "number": 27
     },
     {
       "id": "unit12-a",
@@ -447,15 +506,9 @@
         "I'm very proud of my son's success, but I'm a bit disappointed that the local paper hasn't shown more interest in the story.",
         "The politicians seem confused about what to do, so I'm not hopeful that things will improve.",
         "We were curious to see what all the noise was about, but I felt anxious when I saw how angry the men were, and really scared when they started coming towards us.",
-        "I think Harry ended the relationship because his girlfriend was getting jealous, but now he’s quite upset.",
-        "Proud, pride.",
-        "Disappointed, disappointment.",
-        "Jealous, jealousy.",
-        "Confused, confusion.",
-        "Curious, curiosity.",
-        "Anxious, anxiety."
+        "I think Harry ended the relationship because his girlfriend was getting jealous, but now he’s quite upset."
       ],
-      "number": 26
+      "number": 28
     },
     {
       "id": "unit12-b",
@@ -469,7 +522,7 @@
         "Why do some people suffer from SAD, which makes them feel depressed during long dark winters?",
         "Can the weather really affect our mood, or is it just in our imaginations?"
       ],
-      "number": 27
+      "number": 29
     },
     {
       "id": "unit12-c",
@@ -485,7 +538,7 @@
         "Green is associated with nature and is good for people suffering from stress.",
         "Blue is relaxing and helps us to be creative, but too much dark blue can make us depressed."
       ],
-      "number": 28
+      "number": 30
     },
     {
       "id": "unit13-a",
@@ -507,7 +560,7 @@
         "Recently my brother Thomas got married.",
         "His wife’s name is Sabine, so I now have a sister-in-law as well."
       ],
-      "number": 29
+      "number": 31
     },
     {
       "id": "unit13-b",
@@ -523,7 +576,7 @@
         "He spends a lot of time with my family, and his current girlfriend is actually one of Thomas’s ex-girlfriends.",
         "But we all get on really well."
       ],
-      "number": 30
+      "number": 32
     },
     {
       "id": "unit14-a",
@@ -543,7 +596,7 @@
         "60 or 65, retirement: when people stop work, they are retired.",
         "80 and over, old age: we usually describe people as elderly."
       ],
-      "number": 31
+      "number": 33
     },
     {
       "id": "unit14-b",
@@ -559,7 +612,7 @@
         "My grandfather is nearly eighty.",
         "My English teacher’s approximately thirty."
       ],
-      "number": 32
+      "number": 34
     },
     {
       "id": "unit14-c",
@@ -586,7 +639,7 @@
         "I was allowed to drive my dad’s car.",
         "You’re not allowed to smoke in that room."
       ],
-      "number": 33
+      "number": 35
     },
     {
       "id": "unit15-a",
@@ -604,7 +657,7 @@
         "At first we were just friends, then we started going out with each other, and after a few months we realised we were in love.",
         "We got engaged a couple of years after we left university."
       ],
-      "number": 34
+      "number": 36
     },
     {
       "id": "unit15-b",
@@ -618,7 +671,7 @@
         "We didn't want a big ceremony, so we had the wedding in the local church near Melanie's home with just family and a few friends.",
         "Afterwards we had the reception in a small hotel nearby, and then went on our honeymoon to Greece."
       ],
-      "number": 35
+      "number": 37
     },
     {
       "id": "unit15-c",
@@ -629,13 +682,9 @@
       "audioLabel": "15C",
       "sentences": [
         "Just over three years later Melanie got pregnant, and our first child, Cal, was born just two days after our fourth wedding anniversary.",
-        "We had a big celebration.",
-        "Engaged, engagement.",
-        "Celebrate, celebration.",
-        "Pregnant, pregnancy.",
-        "Marry, marriage."
+        "We had a big celebration."
       ],
-      "number": 36
+      "number": 38
     },
     {
       "id": "unit15-d",
@@ -652,7 +701,7 @@
         "I felt I couldn't give up my job, and in the end Melanie decided to leave me.",
         "The following year we got divorced."
       ],
-      "number": 37
+      "number": 39
     },
     {
       "id": "unit16-a",
@@ -668,7 +717,7 @@
         "In the evenings I go to bed about 10.30 pm, and usually go to sleep straight away.",
         "If I have a late night I try to have a sleep in the afternoon when I get home from college."
       ],
-      "number": 38
+      "number": 40
     },
     {
       "id": "unit16-b",
@@ -683,7 +732,7 @@
         "If Mum's late home from work, she doesn't bother to cook; we just get a takeaway instead.",
         "One of us has to feed the cat as well."
       ],
-      "number": 39
+      "number": 41
     },
     {
       "id": "unit16-c",
@@ -698,7 +747,7 @@
         "In the winter I sometimes have a bath instead of a shower.",
         "I like to lie in the bath and listen to music."
       ],
-      "number": 40
+      "number": 42
     },
     {
       "id": "unit16-d",
@@ -709,10 +758,9 @@
       "audioLabel": "16D",
       "sentences": [
         "Fortunately we've got a cleaner who does a lot of the housework, and that includes doing my washing.",
-        "But I still have to make my bed and do some of my ironing, and I sometimes do the shopping with Mum.",
-        "When we do the shopping, we buy food at the supermarket; when we go shopping, it is a leisure activity and we perhaps buy clothes, DVDs, books, etc."
+        "But I still have to make my bed and do some of my ironing, and I sometimes do the shopping with Mum."
       ],
-      "number": 41
+      "number": 43
     },
     {
       "id": "unit16-e",
@@ -726,7 +774,7 @@
         "At the weekend I go out quite a lot with my friends, either to the cinema or just to a cafe, and I eat out once a week.",
         "Sometimes friends come round and we chat about clothes, music and college."
       ],
-      "number": 42
+      "number": 44
     },
     {
       "id": "unit17-a",
@@ -739,7 +787,7 @@
         "We live on the outskirts of town, and it's a very nice location.",
         "We used to live in the centre, but we moved to our present flat when we had children because there's more space for them to play and it has nice views."
       ],
-      "number": 43
+      "number": 45
     },
     {
       "id": "unit17-b",
@@ -754,7 +802,7 @@
         "There's a family in the flat downstairs, and a young French couple upstairs, on the top floor.",
         "It's a modern block of flats, and it's quite good, although the lift is small, and there's no air conditioning."
       ],
-      "number": 44
+      "number": 46
     },
     {
       "id": "unit17-c",
@@ -767,7 +815,7 @@
         "My parents own a cottage.",
         "It's a charming house and has lots of character, but like many old buildings, it's quite dark (opp light), quite difficult to heat, and it doesn't have central heating."
       ],
-      "number": 45
+      "number": 47
     },
     {
       "id": "unit18-a",
@@ -785,7 +833,7 @@
         "We've also got a lovely big kitchen with a fridge-freezer, a cooker with two ovens and a dishwasher.",
         "Next to it, there's a small utility room where we keep the washing machine."
       ],
-      "number": 46
+      "number": 48
     },
     {
       "id": "unit18-b",
@@ -801,7 +849,7 @@
         "A duvet, or a sheet and a blanket?",
         "One pillow, or two?"
       ],
-      "number": 47
+      "number": 49
     },
     {
       "id": "unit19-a",
@@ -811,9 +859,11 @@
       "audio": "/audio/unit_19/U_019.A.mp3",
       "audioLabel": "19A",
       "sentences": [
-        "In the UK the currency is sterling; in America it is the dollar; in much of Europe it's the euro."
+        "In the UK the currency is sterling; in America it is the dollar; in much of Europe it's the euro.",
+        "Notes, for example ten pounds, twenty euros, a ten-pound note, a twenty-euro note.",
+        "Coins in the UK, for example fifty pence, usually spoken as fifty p, a pound, a fifty-pence piece, but a one-pound coin."
       ],
-      "number": 48
+      "number": 50
     },
     {
       "id": "unit19-b",
@@ -826,7 +876,7 @@
         "I've had a bank account for a few years now, and I make sure my account is always in credit.",
         "I go to the cashpoint once a week, so I always have some cash with me, and I check my account online once a week to see how much money I've got."
       ],
-      "number": 49
+      "number": 51
     },
     {
       "id": "unit19-c",
@@ -842,7 +892,7 @@
         "At the moment I'm saving up for a new laptop; the one I have is very slow and keeps going wrong.",
         "I'd love to have a car as well, but I can't afford it."
       ],
-      "number": 50
+      "number": 52
     },
     {
       "id": "unit19-d",
@@ -855,7 +905,7 @@
         "This year I'm renting a flat with three friends of mine.",
         "We had to pay one month's rent as a deposit, but it's a nice place, quite good value for money, and the landlord isn't charging us to use his garage."
       ],
-      "number": 51
+      "number": 53
     },
     {
       "id": "unit20-a",
@@ -877,7 +927,7 @@
         "I feel sick.",
         "Go to the bathroom quickly!"
       ],
-      "number": 52
+      "number": 54
     },
     {
       "id": "unit20-b",
@@ -901,7 +951,7 @@
         "My throat hurts when I speak.",
         "I hit my leg on the table and it really hurts / it's very painful."
       ],
-      "number": 53
+      "number": 55
     },
     {
       "id": "unit20-c",
@@ -918,7 +968,7 @@
         "Heart attacks can happen very suddenly.",
         "Hepatitis is a disease affecting the liver."
       ],
-      "number": 54
+      "number": 56
     },
     {
       "id": "unit21-a",
@@ -932,7 +982,7 @@
         "The man is smartly dressed.",
         "The boy's clothes are more casual."
       ],
-      "number": 55
+      "number": 57
     },
     {
       "id": "unit21-b",
@@ -949,7 +999,7 @@
         "I think I look good in black because dark colours suit me.",
         "When I get home from work, I usually change into a pair of jeans."
       ],
-      "number": 56
+      "number": 58
     },
     {
       "id": "unit22-a",
@@ -970,7 +1020,7 @@
         "I like to dress in clothes that are casual but still look quite fashionable.",
         "I'm always happy with what I've got on."
       ],
-      "number": 57
+      "number": 59
     },
     {
       "id": "unit22-b",
@@ -995,7 +1045,7 @@
         "Yes, of course.",
         "The changing rooms are down there."
       ],
-      "number": 58
+      "number": 60
     },
     {
       "id": "unit23-a",
@@ -1013,7 +1063,7 @@
         "And be careful of special offers, e.g. three for the price of two.",
         "People often buy more than they need and throw away half of it."
       ],
-      "number": 59
+      "number": 61
     },
     {
       "id": "unit23-b",
@@ -1030,7 +1080,50 @@
         "Sometimes you can try to agree a lower price for something you buy in a street market; we call this haggling.",
         "Of course, if you don't like what you buy in a street market, you can't normally take it back and get a refund."
       ],
-      "number": 60
+      "number": 62
+    },
+    {
+      "unit": 24,
+      "letter": "A",
+      "title": "Unit 24A - Fruit",
+      "sentences": [
+        "Pineapple.",
+        "Peach.",
+        "Strawberry.",
+        "A bunch of grapes.",
+        "Olives.",
+        "Pear.",
+        "Melon.",
+        "Lemon.",
+        "Coconut."
+      ],
+      "id": "unit24-a",
+      "audio": "/audio/unit_24/U_024.A.mp3",
+      "audioLabel": "24A",
+      "number": 63
+    },
+    {
+      "unit": 24,
+      "letter": "B",
+      "title": "Unit 24B - Vegetables",
+      "sentences": [
+        "Beans.",
+        "Peas.",
+        "Onion.",
+        "Garlic.",
+        "Carrot.",
+        "Mushrooms.",
+        "Aubergine.",
+        "Courgette.",
+        "Pepper.",
+        "Cabbage.",
+        "Broccoli.",
+        "Spinach."
+      ],
+      "id": "unit24-b",
+      "audio": "/audio/unit_24/U_024.B.mp3",
+      "audioLabel": "24B",
+      "number": 64
     },
     {
       "id": "unit24-c",
@@ -1044,7 +1137,7 @@
         "In Britain it mainly has lettuce, as well as tomato, cucumber, onion, and other things.",
         "We often put salad dressing (usually oil and vinegar, or perhaps oil and lemon) on salad."
       ],
-      "number": 61
+      "number": 65
     },
     {
       "id": "unit24-d",
@@ -1061,7 +1154,7 @@
         "Chicken/hen, chicken.",
         "A person who does not eat meat is a vegetarian."
       ],
-      "number": 62
+      "number": 66
     },
     {
       "id": "unit25-a",
@@ -1079,7 +1172,7 @@
         "You barbecue meat and fish on a barbecue.",
         "Food which is not cooked is raw."
       ],
-      "number": 63
+      "number": 67
     },
     {
       "id": "unit25-b",
@@ -1094,7 +1187,7 @@
         "Fry the onion before adding some chopped tomatoes.",
         "Then stir it all for a few minutes."
       ],
-      "number": 64
+      "number": 68
     },
     {
       "id": "unit25-c",
@@ -1112,7 +1205,7 @@
         "You get ice cream in different flavours.",
         "Lena said her pasta was horrible, but I thought it was delicious."
       ],
-      "number": 65
+      "number": 69
     },
     {
       "id": "unit25-d",
@@ -1125,7 +1218,7 @@
         "I'm a bit nervous when I cook, so I always follow a recipe, and make sure I have all the right ingredients before I start.",
         "However, I am quite good at making pies, especially apple pie."
       ],
-      "number": 66
+      "number": 70
     },
     {
       "id": "unit26-a",
@@ -1141,7 +1234,7 @@
         "But if I get the bus, it takes me longer, and that makes the journey very stressful.",
         "When I get home in the evenings I often feel exhausted – more from the travelling than from my work."
       ],
-      "number": 67
+      "number": 71
     },
     {
       "id": "unit26-b",
@@ -1155,7 +1248,7 @@
         "The town centre is always lively in the evening, and there is a wide variety of bars, clubs and restaurants to go to.",
         "If you are more interested in culture and cultural activities, you can go to the cinema, the theatre, concerts, art galleries, etc."
       ],
-      "number": 68
+      "number": 72
     },
     {
       "id": "unit26-c",
@@ -1174,7 +1267,7 @@
         "On the positive side, you get a real mix of people and nationalities in a big city; that makes life more interesting.",
         "I also enjoy the fact that there's always something going on in a big city, so life is never dull."
       ],
-      "number": 69
+      "number": 73
     },
     {
       "id": "unit27-a",
@@ -1190,7 +1283,7 @@
         "The seasons were all different, and I loved the scenery, the open spaces, and the fresh air.",
         "I still do."
       ],
-      "number": 70
+      "number": 74
     },
     {
       "id": "unit27-b",
@@ -1204,7 +1297,7 @@
         "He keeps a few animals, but mostly he grows crops like barley, wheat and potatoes.",
         "Farming is a hard life: my uncle is usually up at five in the morning, and sometimes his work isn't finished until sunset."
       ],
-      "number": 71
+      "number": 75
     },
     {
       "id": "unit27-c",
@@ -1218,7 +1311,7 @@
         "The nearest town is eight miles away, and public transport is hopeless.",
         "And, of course, you don't get many shops in a village."
       ],
-      "number": 72
+      "number": 76
     },
     {
       "id": "unit28-a",
@@ -1228,9 +1321,15 @@
       "audio": "/audio/unit_28/U_028.A.mp3",
       "audioLabel": "28A",
       "sentences": [
-        "Vehicle is the general word for all types of road transport."
+        "Vehicle is the general word for all types of road transport.",
+        "Bus.",
+        "Coach.",
+        "Lorry, also called truck.",
+        "Van.",
+        "Bicycle.",
+        "Motorbike."
       ],
-      "number": 73
+      "number": 77
     },
     {
       "id": "unit28-b",
@@ -1248,7 +1347,7 @@
         "If there are more flights, airfares should be cheaper.",
         "We were going to get the train to Paris, but in the end we decided to fly."
       ],
-      "number": 74
+      "number": 78
     },
     {
       "id": "unit28-c",
@@ -1266,7 +1365,7 @@
         "Trains are expensive - a return to London is forty pounds - but I've got a season ticket, and that makes it cheaper.",
         "My only real complaint is that if I miss my train, I have to wait half an hour for the next one."
       ],
-      "number": 75
+      "number": 79
     },
     {
       "id": "unit29-a",
@@ -1276,10 +1375,21 @@
       "audio": "/audio/unit_29/U_029.A.mp3",
       "audioLabel": "29A",
       "sentences": [
+        "Traffic lights.",
+        "Road junction.",
+        "A bend in the road.",
         "This road bends to the right.",
-        "You can't pass another car."
+        "Pedestrian crossing.",
+        "Road signs.",
+        "No overtaking.",
+        "You can't pass another car.",
+        "Speed limit.",
+        "Bridge.",
+        "Motorway.",
+        "Inside, or slow, lane.",
+        "Outside, or fast, lane."
       ],
-      "number": 76
+      "number": 80
     },
     {
       "id": "unit29-b",
@@ -1293,7 +1403,7 @@
         "I decided to use side roads and go via the village of Pensford, but I took the wrong turning just before I got there, and I ended up in a supermarket car park.",
         "Fortunately I was able to ask someone the way, and a very kind woman directed me to the A38, where I could then follow signs for the airport."
       ],
-      "number": 77
+      "number": 81
     },
     {
       "id": "unit29-c",
@@ -1308,7 +1418,7 @@
         "The driver braked, but the car swerved and crashed into a parked car on the opposite side of the road.",
         "Fortunately the driver wasn't injured but both cars were quite badly damaged."
       ],
-      "number": 78
+      "number": 82
     },
     {
       "id": "unit30-a",
@@ -1322,7 +1432,7 @@
         "All the tickets have been sold.",
         "You can go in free."
       ],
-      "number": 79
+      "number": 83
     },
     {
       "id": "unit30-b",
@@ -1337,7 +1447,7 @@
         "Do not walk on the grass.",
         "Be quiet, an exam is happening now."
       ],
-      "number": 80
+      "number": 84
     },
     {
       "id": "unit30-c",
@@ -1353,7 +1463,7 @@
         "On a hotel door: don't put a bag down, leave me to sleep, and walk away.",
         "Do not give food to the animals."
       ],
-      "number": 81
+      "number": 85
     },
     {
       "id": "unit30-d",
@@ -1368,7 +1478,7 @@
         "There's a step.",
         "Be careful, this parcel will break easily."
       ],
-      "number": 82
+      "number": 86
     },
     {
       "id": "unit31-a",
@@ -1383,7 +1493,7 @@
         "You use a pencil sharpener to sharpen pencils.",
         "You use a highlighter pen to highlight a word."
       ],
-      "number": 83
+      "number": 87
     },
     {
       "id": "unit31-b",
@@ -1405,7 +1515,7 @@
         "Kim, could you share your book with Petra?",
         "Repeat this sentence after me."
       ],
-      "number": 84
+      "number": 88
     },
     {
       "id": "unit31-c",
@@ -1427,7 +1537,7 @@
         "A: If you lend something to someone, they have to give it back.",
         "A: If you give something to them, they can keep it."
       ],
-      "number": 85
+      "number": 89
     },
     {
       "id": "unit32-a",
@@ -1447,7 +1557,7 @@
         "Then they can go to a college for vocational training, e.g. hotel management or travel and tourism courses, or they can stay at school for two more years.",
         "Pupils take 'A' level exams in three or four subjects, and then they can leave school and get a job or go on to university, or go to a college for further education or training, e.g. teaching or business studies."
       ],
-      "number": 86
+      "number": 90
     },
     {
       "id": "unit32-b",
@@ -1463,7 +1573,7 @@
         "At the end of the school year, pupils usually take or do exams before they break up.",
         "After the summer holidays, they go back for the new school year."
       ],
-      "number": 87
+      "number": 91
     },
     {
       "id": "unit32-c",
@@ -1479,7 +1589,7 @@
         "I remember we had to call the male teachers 'sir' and female teachers 'miss', and we had to wear a horrible uniform.",
         "Nowadays, the atmosphere is more relaxed: older pupils can often dress the way they want, as long as they're reasonably smart, and the teachers are not as strict."
       ],
-      "number": 88
+      "number": 92
     },
     {
       "id": "unit33-a",
@@ -1499,7 +1609,7 @@
         "Andreas is a fantastic language learner.",
         "He picks things up very quickly, and he has a good ear for language."
       ],
-      "number": 89
+      "number": 93
     },
     {
       "id": "unit33-b",
@@ -1519,7 +1629,7 @@
         "Today I want the students to write an essay.",
         "Most of them still find it difficult to write accurately, so I need to work on that with them."
       ],
-      "number": 90
+      "number": 94
     },
     {
       "id": "unit34-a",
@@ -1538,7 +1648,7 @@
         "Architecture, to become an architect.",
         "Psychology, to become a psychologist."
       ],
-      "number": 91
+      "number": 95
     },
     {
       "id": "unit34-b",
@@ -1559,7 +1669,7 @@
         "Students doing arts subjects, e.g. English or history, will spend time working in the library and writing essays.",
         "Students doing science degrees, e.g. physics or chemistry, will probably spend a lot of their time working in a laboratory."
       ],
-      "number": 92
+      "number": 96
     },
     {
       "id": "unit34-c",
@@ -1575,7 +1685,7 @@
         "These are called postgraduate degrees.",
         "The longest one is a PhD (Doctor of Philosophy) where students do research for at least three years."
       ],
-      "number": 93
+      "number": 97
     },
     {
       "id": "unit35-a",
@@ -1592,7 +1702,7 @@
         "A police officer works in the police force.",
         "A mechanic repairs cars when there is a problem."
       ],
-      "number": 94
+      "number": 98
     },
     {
       "id": "unit35-b",
@@ -1608,7 +1718,7 @@
         "An accountant controls the financial situation of people and companies.",
         "A university lecturer teaches in a university, e.g. gives lectures."
       ],
-      "number": 95
+      "number": 99
     },
     {
       "id": "unit35-c",
@@ -1622,7 +1732,7 @@
         "GPs, dentists and vets all work in a place called a surgery.",
         "In hospital there are nurses who look after people, and surgeons who operate on people."
       ],
-      "number": 96
+      "number": 100
     },
     {
       "id": "unit35-d",
@@ -1638,7 +1748,7 @@
         "A pilot is in the air force.",
         "A fireman, or firefighter, is in the fire brigade."
       ],
-      "number": 97
+      "number": 101
     },
     {
       "id": "unit36-a",
@@ -1656,7 +1766,7 @@
         "A: What do you do?",
         "B: I work for Union Bank, Fiat, or Sony, etc."
       ],
-      "number": 98
+      "number": 102
     },
     {
       "id": "unit36-b",
@@ -1673,7 +1783,7 @@
         "She runs the day-to-day business of the surgery and is in charge of a small team: three receptionists, an accounts manager and a secretary.",
         "Her work involves a lot of admin such as buying food, medicine and equipment; she also handles any complaints that customers make."
       ],
-      "number": 99
+      "number": 103
     },
     {
       "id": "unit36-c",
@@ -1690,7 +1800,7 @@
         "I earn or make about 25,000 pounds a year.",
         "Some of that income you can keep, but some goes to the government; in the UK this is called income tax, e.g. I lose 20% of my income in income tax."
       ],
-      "number": 100
+      "number": 104
     },
     {
       "id": "unit36-d",
@@ -1707,7 +1817,7 @@
         "Some people have good working conditions, e.g. nice offices, paid holidays, extra time off for a new mother and father when a baby is born, etc.",
         "There is also a minimum wage."
       ],
-      "number": 101
+      "number": 105
     },
     {
       "id": "unit37-a",
@@ -1720,7 +1830,7 @@
         "When I left school, I applied for jobs in different companies, and finally, after sending out lots of CVs and having some interviews, a small company employed me.",
         "I didn't earn a lot, but the company gave me some training, which was good."
       ],
-      "number": 102
+      "number": 106
     },
     {
       "id": "unit37-b",
@@ -1734,7 +1844,7 @@
         "They also gave me a good pay rise.",
         "It was really good experience, and when my boss left the company a few years later, they gave me an important promotion."
       ],
-      "number": 103
+      "number": 107
     },
     {
       "id": "unit37-c",
@@ -1749,7 +1859,7 @@
         "After a couple of months I got a job in London.",
         "At first I liked it, but..."
       ],
-      "number": 104
+      "number": 108
     },
     {
       "id": "unit37-d",
@@ -1763,7 +1873,7 @@
         "Finally, the company sacked me, and after that I was unemployed for two months.",
         "Finally I got a part-time job in the kitchen of a restaurant."
       ],
-      "number": 105
+      "number": 109
     },
     {
       "id": "unit37-e",
@@ -1780,7 +1890,27 @@
         "I believe anyone can succeed if they work hard enough, and have a little bit of luck.",
         "Last year, aged sixty, I retired and went back to Italy."
       ],
-      "number": 106
+      "number": 110
+    },
+    {
+      "unit": 38,
+      "letter": "A",
+      "title": "Unit 38A - Office equipment",
+      "sentences": [
+        "Calendar.",
+        "Filing cabinet.",
+        "Photocopier.",
+        "Diary.",
+        "Noticeboard.",
+        "Keyboard.",
+        "Calculator.",
+        "Files.",
+        "Rubbish bin."
+      ],
+      "id": "unit38-a",
+      "audio": "/audio/unit_38/U_038.A.mp3",
+      "audioLabel": "38A",
+      "number": 111
     },
     {
       "id": "unit38-b",
@@ -1795,13 +1925,9 @@
         "His job involves quite a lot of paperwork.",
         "He types letters to different companies, sends out invoices to customers and sends emails.",
         "He also has to arrange visits to other companies, make appointments for his boss, and sometimes he shows visitors round the factory.",
-        "Occasionally he has to attend meetings with his boss, but one of Josh's most important tasks is to organise the office party every year.",
-        "Arrange, arrangement.",
-        "Attend, attendance.",
-        "Organise, organisation.",
-        "Produce, production."
+        "Occasionally he has to attend meetings with his boss, but one of Josh's most important tasks is to organise the office party every year."
       ],
-      "number": 107
+      "number": 112
     },
     {
       "id": "unit38-c",
@@ -1815,7 +1941,7 @@
         "The photocopier has broken down, the computer isn't working and the printer has run out of paper.",
         "On top of that, two of his colleagues are absent, just when there is loads of work to do."
       ],
-      "number": 108
+      "number": 113
     },
     {
       "id": "unit39-a",
@@ -1832,7 +1958,7 @@
         "The company is run from a factory in Ilminster, where the bread is baked daily and then delivered to shops across the south-west of England.",
         "The firm has expanded a great deal in the last 20 years, but it still remains a family business."
       ],
-      "number": 109
+      "number": 114
     },
     {
       "id": "unit39-b",
@@ -1850,7 +1976,7 @@
         "Last year the company attracted a lot of attention when it became the first firm of accountants to advertise on local TV and radio.",
         "At the time, James Morgan said it was his ambition to change the image that people have of accountants."
       ],
-      "number": 110
+      "number": 115
     },
     {
       "id": "unit40-a",
@@ -1877,7 +2003,7 @@
         "We’ve seen a slight increase in profit.",
         "Profits were £5 million, which is a decrease of 10%."
       ],
-      "number": 111
+      "number": 116
     },
     {
       "id": "unit40-b",
@@ -1892,7 +2018,7 @@
         "Figures published yesterday show that trade between the two countries has now risen for the fifth year in a row.",
         "Although the value of the pound fell slightly against the dollar yesterday, the news that sales rose in the last quarter has raised hopes that we may be coming out of recession."
       ],
-      "number": 112
+      "number": 117
     },
     {
       "id": "unit41-a",
@@ -1913,7 +2039,7 @@
         "Basketball, basketball player, play, basketball court.",
         "Sailing, sailor, sail, on the sea or a lake."
       ],
-      "number": 113
+      "number": 118
     },
     {
       "id": "unit41-b",
@@ -1930,7 +2056,7 @@
         "My mum does a bit of jogging as well – just for fun.",
         "I’m afraid I don’t do any exercise at all."
       ],
-      "number": 114
+      "number": 119
     },
     {
       "id": "unit42-a",
@@ -1952,7 +2078,7 @@
         "Spain and Italy drew 1–1.",
         "It was a 1–1 draw between Spain and Italy."
       ],
-      "number": 115
+      "number": 120
     },
     {
       "id": "unit42-b",
@@ -1968,7 +2094,7 @@
         "Many teams also play in cup competitions, e.g. the FA Cup or the World Cup, which ends with two teams playing against each other in a final.",
         "The winners are the champions, e.g. Germany became World Cup champions in 2014, and Philipp Lahm received the cup as captain of the winning team."
       ],
-      "number": 116
+      "number": 121
     },
     {
       "id": "unit42-c",
@@ -1988,7 +2114,7 @@
         "The winner, Lewis Hamilton, passed Sebastian Vettel and won by five seconds.",
         "But Nico Rosberg now leads the drivers championship with 107 points."
       ],
-      "number": 117
+      "number": 122
     },
     {
       "id": "unit43-a",
@@ -2006,7 +2132,7 @@
         "Two of my favourite poets are Antonio Machado and Federico García Lorca.",
         "They both wrote poems in the early 20th century."
       ],
-      "number": 118
+      "number": 123
     },
     {
       "id": "unit43-b",
@@ -2027,10 +2153,9 @@
         "I’ll go and see anything that Ashton Kutcher is in!",
         "I look to see what’s on, and go to anything that I fancy seeing.",
         "For me, the film director is the most important thing.",
-        "I always go and see the latest film by directors I really like such as Ben Affleck.",
-        "Review, reviewer, review."
+        "I always go and see the latest film by directors I really like such as Ben Affleck."
       ],
-      "number": 119
+      "number": 124
     },
     {
       "id": "unit44-a",
@@ -2046,7 +2171,7 @@
         "My dad just listens to music at home; he isn’t interested in live performances.",
         "When I listen to music I am mostly interested in the tune, but my brother is more interested in the lyrics."
       ],
-      "number": 120
+      "number": 125
     },
     {
       "id": "unit44-b",
@@ -2067,7 +2192,7 @@
         "Bass guitar, bass guitarist.",
         "Keyboard, keyboard player."
       ],
-      "number": 121
+      "number": 126
     },
     {
       "id": "unit44-c",
@@ -2085,7 +2210,7 @@
         "A solo artist is someone who sings or plays music but is not part of a group, e.g. Beyoncé, Jay-Z, etc.",
         "Famous groups/bands are The Arctic Monkeys, U2, etc."
       ],
-      "number": 122
+      "number": 127
     },
     {
       "id": "unit44-d",
@@ -2099,7 +2224,7 @@
         "Then, when the album comes out, it is usually advertised in the media.",
         "Many people download their favourite tracks or albums from the Internet."
       ],
-      "number": 123
+      "number": 128
     },
     {
       "id": "unit45-a",
@@ -2115,7 +2240,7 @@
         "After that a large number of boats parade around the harbour.",
         "Finally, at midnight, there is a spectacular fireworks display for almost fifteen minutes in which more than 4,000 kilograms of fireworks light up the night sky."
       ],
-      "number": 124
+      "number": 129
     },
     {
       "id": "unit45-b",
@@ -2129,7 +2254,7 @@
         "It consists of at least six different festivals which take place in the city and last for almost six weeks during August and early September.",
         "The most popular festival is The Fringe, which has up to 500 daily performances in dance, music, drama and comedy in 180 places across the city."
       ],
-      "number": 125
+      "number": 130
     },
     {
       "id": "unit45-c",
@@ -2145,7 +2270,24 @@
         "The next day, many people dress up, and children receive money from their parents in red envelopes to bring them luck.",
         "Another popular custom is to put two-line poems on the gates outside each home."
       ],
-      "number": 126
+      "number": 131
+    },
+    {
+      "unit": 46,
+      "letter": "A",
+      "title": "Unit 46A - Types of holidays",
+      "sentences": [
+        "Adventure holiday.",
+        "Skiing holiday.",
+        "Family holiday.",
+        "Beach holiday.",
+        "Go on a cruise.",
+        "City break."
+      ],
+      "id": "unit46-a",
+      "audio": "/audio/unit_46/U_046.A.mp3",
+      "audioLabel": "46A",
+      "number": 132
     },
     {
       "id": "unit46-b",
@@ -2163,7 +2305,7 @@
         "A popular option for a weekend break is to rent an apartment in an interesting city.",
         "But if you want to make life easy, you might like a package holiday, which includes the flight, hotel room and sometimes meals."
       ],
-      "number": 127
+      "number": 133
     },
     {
       "id": "unit46-c",
@@ -2186,7 +2328,7 @@
         "And can you recommend a nearby restaurant for dinner?",
         "Somewhere cheap would be great!"
       ],
-      "number": 128
+      "number": 134
     },
     {
       "id": "unit47-a",
@@ -2196,7 +2338,7 @@
       "audio": "/audio/unit_47/U_047.A.mp3",
       "audioLabel": "47A",
       "sentences": [
-        "When you arrive at an airport, the departures board will show you the flight numbers, departure times, and destinations.",
+        "When you arrive at an airport, the departures board will show you the flight numbers, for example BA735, departure times, for example 08.40, and destinations.",
         "At check-in / the check-in desk, someone will check your ticket and weigh your luggage.",
         "If it is more than, for example, 20 kilograms, you will have to pay excess baggage.",
         "You can take your hand luggage with you on the aircraft.",
@@ -2206,7 +2348,7 @@
         "You then have to fasten your seat belt.",
         "If there are no delays, the plane moves slowly to the runway, then it takes off."
       ],
-      "number": 129
+      "number": 135
     },
     {
       "id": "unit47-b",
@@ -2220,7 +2362,7 @@
         "Then you get off the plane and walk through the terminal building to passport control.",
         "When you’ve got your luggage from baggage reclaim, you go through customs and leave the airport."
       ],
-      "number": 130
+      "number": 136
     },
     {
       "id": "unit48-a",
@@ -2235,7 +2377,7 @@
         "Our choice of single, double or twin rooms are all equipped with satellite TV, air conditioning, direct-dial telephone, mini-bar, and personal safe.",
         "Bathrooms come with a bath or shower and hair dryer."
       ],
-      "number": 131
+      "number": 137
     },
     {
       "id": "unit48-b",
@@ -2248,7 +2390,7 @@
         "Rooms are often available during the week, but many hotels are fully booked at weekends or during the holidays, so you may need to book a room in advance.",
         "When you arrive, you check in at reception; at the end of your stay, you check out."
       ],
-      "number": 132
+      "number": 138
     },
     {
       "id": "unit48-c",
@@ -2263,7 +2405,7 @@
         "Prices sometimes include 10% service as well.",
         "If service isn’t included, it’s normal to leave a tip."
       ],
-      "number": 133
+      "number": 139
     },
     {
       "id": "unit48-d",
@@ -2283,7 +2425,26 @@
         "WAITER: Still or sparkling?",
         "CUSTOMER: Er, sparkling."
       ],
-      "number": 134
+      "number": 140
+    },
+    {
+      "unit": 49,
+      "letter": "A",
+      "title": "Unit 49A - Drinks",
+      "sentences": [
+        "Cappuccino.",
+        "Latte.",
+        "Black coffee.",
+        "Hot chocolate.",
+        "Milkshake.",
+        "Herbal tea.",
+        "Smoothie.",
+        "Decaf tea, decaf coffee."
+      ],
+      "id": "unit49-a",
+      "audio": "/audio/unit_49/U_049.A.mp3",
+      "audioLabel": "49A",
+      "number": 141
     },
     {
       "id": "unit49-b",
@@ -2297,7 +2458,7 @@
         "Crisps are thin slices of fried potatoes sold in bags.",
         "In the USA, chips refer to thin pieces of fried potatoes sold in bags."
       ],
-      "number": 135
+      "number": 142
     },
     {
       "id": "unit49-c",
@@ -2324,7 +2485,26 @@
         "A: Do you have a tray please?",
         "B: Yes, here you go."
       ],
-      "number": 136
+      "number": 143
+    },
+    {
+      "unit": 50,
+      "letter": "A",
+      "title": "Unit 50A - Things to see",
+      "sentences": [
+        "Palace.",
+        "Fountain.",
+        "Mosque.",
+        "Cathedral.",
+        "Market.",
+        "Castle.",
+        "Temple.",
+        "Statue."
+      ],
+      "id": "unit50-a",
+      "audio": "/audio/unit_50/U_050.A.mp3",
+      "audioLabel": "50A",
+      "number": 144
     },
     {
       "id": "unit50-b",
@@ -2345,7 +2525,7 @@
         "They had a lovely time in Venice.",
         "We bought some dolls as souvenirs."
       ],
-      "number": 137
+      "number": 145
     },
     {
       "id": "unit50-c",
@@ -2361,7 +2541,7 @@
         "St Petersburg has lots of historic monuments but the Hermitage Museum was the main attraction for me.",
         "If you go to Poland, it’s definitely worth visiting Kraków."
       ],
-      "number": 138
+      "number": 146
     },
     {
       "id": "unit51-a",
@@ -2375,7 +2555,7 @@
         "Generally people prefer beaches that are sandy, where you can go for a stroll along the shore in the sunshine.",
         "On the beach, you also sometimes get a breeze that blows off the sea."
       ],
-      "number": 139
+      "number": 147
     },
     {
       "id": "unit51-b",
@@ -2385,6 +2565,7 @@
       "audio": "/audio/unit_51/U_051.B.mp3",
       "audioLabel": "51B",
       "sentences": [
+        "Surfing, windsurfing, diving, playing volleyball, sunbathing.",
         "Volleyball is a popular beach game and some people enjoy water sports such as surfing, windsurfing or diving.",
         "If the sea is calm, you can go for a swim, but a lot of people just want to lie on the beach and sunbathe and get a nice suntan.",
         "However, there are now worries about the dangers of sunbathing.",
@@ -2392,7 +2573,7 @@
         "Doctors now recommend that people do not sit in the sun without using sunscreen.",
         "It may be safer just to sit in the shade."
       ],
-      "number": 140
+      "number": 148
     },
     {
       "id": "unit52-a",
@@ -2408,7 +2589,7 @@
         "You can also get mobile editions.",
         "Magazines are usually weekly or monthly."
       ],
-      "number": 141
+      "number": 149
     },
     {
       "id": "unit52-b",
@@ -2424,7 +2605,7 @@
         "Reviews, pieces of writing giving an opinion, for example a review of a new book.",
         "Advertisements or adverts, words and pictures about a product, to make people buy it, for example an advert for shampoo."
       ],
-      "number": 142
+      "number": 150
     },
     {
       "id": "unit52-c",
@@ -2445,7 +2626,7 @@
         "Reality TV shows, programmes which follow ordinary people or celebrities through a number of situations or challenges.",
         "Well-known examples include Pop Idol, The X Factor and Strictly Come Dancing."
       ],
-      "number": 143
+      "number": 151
     },
     {
       "id": "unit52-d",
@@ -2462,7 +2643,7 @@
         "It said in The Times that the plane crashed in the sea.",
         "According to the news on TV last night, the plane crashed in the sea."
       ],
-      "number": 144
+      "number": 152
     },
     {
       "id": "unit53-a",
@@ -2487,7 +2668,7 @@
         "Mrs Gordon?",
         "Speaking."
       ],
-      "number": 145
+      "number": 153
     },
     {
       "id": "unit53-b",
@@ -2503,7 +2684,7 @@
         "I gave her a ring this morning, but I couldn't get through.",
         "The line was engaged."
       ],
-      "number": 146
+      "number": 154
     },
     {
       "id": "unit53-c",
@@ -2522,7 +2703,7 @@
         "What's the dialling code for the UK when you are phoning from Hungary?",
         "0044."
       ],
-      "number": 147
+      "number": 155
     },
     {
       "id": "unit53-d",
@@ -2550,7 +2731,29 @@
         "PLS means please.",
         "X means kiss."
       ],
-      "number": 148
+      "number": 156
+    },
+    {
+      "unit": 54,
+      "letter": "A",
+      "title": "Unit 54A - The computer",
+      "sentences": [
+        "Webcam.",
+        "Screen.",
+        "Printer.",
+        "Microphone.",
+        "Escape key.",
+        "Spacebar.",
+        "Keyboard.",
+        "Mouse mat.",
+        "Mouse.",
+        "Memory stick.",
+        "CD-ROM."
+      ],
+      "id": "unit54-a",
+      "audio": "/audio/unit_54/U_054.A.mp3",
+      "audioLabel": "54A",
+      "number": 157
     },
     {
       "id": "unit54-b",
@@ -2569,7 +2772,7 @@
         "It is also important to save the document in case the computer crashes.",
         "Press the Escape key to exit."
       ],
-      "number": 149
+      "number": 158
     },
     {
       "id": "unit54-c",
@@ -2594,7 +2797,7 @@
         "A virus is a program put on a computer to destroy or steal the information on it.",
         "Anti-virus software is a program to stop a virus entering your computer."
       ],
-      "number": 150
+      "number": 159
     },
     {
       "id": "unit55-a",
@@ -2616,7 +2819,7 @@
         "Have you got anti-virus software?",
         "How often do you send or receive attachments?"
       ],
-      "number": 151
+      "number": 160
     },
     {
       "id": "unit55-b",
@@ -2631,7 +2834,7 @@
         "You do this using a browser such as Internet Explorer or Firefox.",
         "Many websites also have links: if you click on a link, it will take you to a different website, or move you from one part of the website to another."
       ],
-      "number": 152
+      "number": 161
     },
     {
       "id": "unit55-c",
@@ -2655,7 +2858,7 @@
         "On these sites people post comments to their friends.",
         "Some people do a lot of instant messaging."
       ],
-      "number": 153
+      "number": 162
     },
     {
       "id": "unit56-a",
@@ -2678,7 +2881,7 @@
         "Our flat was burgled, but they only took money.",
         "Do they know who murdered the boy?"
       ],
-      "number": 154
+      "number": 163
     },
     {
       "id": "unit56-b",
@@ -2694,7 +2897,7 @@
         "Police say the two men hit him in the face several times, then took his money and escaped through Bushy Park.",
         "Detectives arrested a man this morning in connection with the murder of shop assistant, Tracey Miles."
       ],
-      "number": 155
+      "number": 164
     },
     {
       "id": "unit56-c",
@@ -2708,7 +2911,7 @@
         "For minor offences, the punishment may only be a fine, but for serious crimes, you will have to go to court.",
         "If you are found guilty, you may be sent to prison."
       ],
-      "number": 156
+      "number": 165
     },
     {
       "id": "unit57-a",
@@ -2723,10 +2926,9 @@
         "These elections are held at least every five years.",
         "Each constituency elects one person from one political party.",
         "That person then becomes the MP, Member of Parliament, for that area, and the political party with the most MPs, there are 650 at the moment, forms the next government.",
-        "The leader of the party in power is the Prime Minister.",
-        "Power, powerful."
+        "The leader of the party in power is the Prime Minister."
       ],
-      "number": 157
+      "number": 166
     },
     {
       "id": "unit57-b",
@@ -2741,10 +2943,9 @@
         "We will provide more care and support for elderly people.",
         "We will reduce unemployment.",
         "We will create a fair tax system.",
-        "Above all, we will treat people as equal.",
-        "Reduce, reduction."
+        "Above all, we will treat people as equal."
       ],
-      "number": 158
+      "number": 167
     },
     {
       "id": "unit58-a",
@@ -2762,7 +2963,7 @@
         "Summers are getting hotter and winters are getting wetter, so drought and floods are becoming more common.",
         "With it, animal and plant life is suffering, some species will disappear altogether, and certain illnesses, for example hay fever, asthma and skin cancer, are becoming more common."
       ],
-      "number": 159
+      "number": 168
     },
     {
       "id": "unit58-b",
@@ -2782,7 +2983,7 @@
         "Plant trees because trees reduce the amount of carbon dioxide in the atmosphere, and so reduce greenhouse gases.",
         "To stop global warming from destroying our environment, we need to act now."
       ],
-      "number": 160
+      "number": 169
     },
     {
       "id": "unit59-a",
@@ -2797,7 +2998,7 @@
         "Sometimes this means they have to fight the enemy.",
         "A long period of fighting is called a war, for example the First World War, 1914 to 1918, and during a war there will be a number of battles."
       ],
-      "number": 161
+      "number": 170
     },
     {
       "id": "unit59-b",
@@ -2813,11 +3014,9 @@
         "Most of the attackers escaped, but the army believe they may still be hiding in other parts of the city.",
         "During the attack, one soldier was shot and later died.",
         "It also appears that another soldier is missing.",
-        "The number of deaths is expected to rise.",
-        "He can't escape.",
-        "There is no escape."
+        "The number of deaths is expected to rise."
       ],
-      "number": 162
+      "number": 171
     },
     {
       "id": "unit60-a",
@@ -2835,7 +3034,7 @@
         "The weather was wonderful the last time we were there.",
         "Sophie and I arrived at the same time, 9 o'clock exactly."
       ],
-      "number": 163
+      "number": 172
     },
     {
       "id": "unit60-b",
@@ -2853,7 +3052,7 @@
         "I worked on a farm for a month.",
         "I'm going back to Brazil in ten days' time."
       ],
-      "number": 164
+      "number": 173
     },
     {
       "id": "unit60-c",
@@ -2872,7 +3071,7 @@
         "This dictionary's fine for the time being.",
         "I'm sure I'll go to America one day."
       ],
-      "number": 165
+      "number": 174
     },
     {
       "id": "unit60-d",
@@ -2891,7 +3090,7 @@
         "There are 10 years in a decade.",
         "There are 100 years in a century."
       ],
-      "number": 166
+      "number": 175
     },
     {
       "id": "unit60-e",
@@ -2909,7 +3108,7 @@
         "How long does the film last?",
         "The battery in my camera didn't last long."
       ],
-      "number": 167
+      "number": 176
     },
     {
       "id": "unit61-a",
@@ -2926,7 +3125,7 @@
         "Two million.",
         "Three billion."
       ],
-      "number": 168
+      "number": 177
     },
     {
       "id": "unit61-b",
@@ -2942,7 +3141,7 @@
         "Nineteen ninety-seven.",
         "Two thousand and sixteen, or twenty sixteen."
       ],
-      "number": 169
+      "number": 178
     },
     {
       "id": "unit61-c",
@@ -2959,7 +3158,7 @@
         "One and three quarters.",
         "One point seven five."
       ],
-      "number": 170
+      "number": 179
     },
     {
       "id": "unit61-d",
@@ -2973,7 +3172,7 @@
         "More than 50% of something is the majority of it, less than 50% of something is the minority.",
         "The vast majority of the students, for example 95%, agreed with the new plan, only a small minority, for example 5%, were unhappy."
       ],
-      "number": 171
+      "number": 180
     },
     {
       "id": "unit61-e",
@@ -2992,7 +3191,7 @@
         "Some people are not very good at adding up numbers, and often get stuck if they have to work out something quite difficult.",
         "The easiest way is to use a calculator."
       ],
-      "number": 172
+      "number": 181
     },
     {
       "id": "unit61-f",
@@ -3007,7 +3206,7 @@
         "In mathematics, 0.7 is nought point seven, and 6.02 is six point oh two or six point nought two.",
         "For temperature, minus 10 degrees is ten degrees below zero, or minus ten degrees."
       ],
-      "number": 173
+      "number": 182
     },
     {
       "id": "unit62-a",
@@ -3032,7 +3231,7 @@
         "Is it far?",
         "Yes, it's quite a long way."
       ],
-      "number": 174
+      "number": 183
     },
     {
       "id": "unit62-b",
@@ -3056,7 +3255,7 @@
         "How deep is the pool?",
         "It's three metres deep."
       ],
-      "number": 175
+      "number": 184
     },
     {
       "id": "unit62-c",
@@ -3072,7 +3271,7 @@
         "We caught a giant crab.",
         "It was a very narrow road for a bus."
       ],
-      "number": 176
+      "number": 185
     },
     {
       "id": "unit63-a",
@@ -3094,7 +3293,7 @@
         "A tissue, paper, a soft piece of paper that you use for cleaning your nose.",
         "A bucket, plastic, used to clean floors."
       ],
-      "number": 177
+      "number": 186
     },
     {
       "id": "unit63-b",
@@ -3113,7 +3312,7 @@
         "A square box.",
         "Shoes with pointed toes."
       ],
-      "number": 178
+      "number": 187
     },
     {
       "id": "unit64-a",
@@ -3140,7 +3339,7 @@
         "A tin usually has something we eat inside it.",
         "A can has something we drink."
       ],
-      "number": 179
+      "number": 188
     },
     {
       "id": "unit64-b",
@@ -3168,7 +3367,7 @@
         "We've got plenty of time.",
         "The company is now making the toys in large quantities."
       ],
-      "number": 180
+      "number": 189
     },
     {
       "id": "unit65-a",
@@ -3200,7 +3399,7 @@
         "We use this phrase when we have to leave a room or go somewhere.",
         "This is a more formal apology, and it is often used in business letters."
       ],
-      "number": 181
+      "number": 190
     },
     {
       "id": "unit65-b",
@@ -3218,7 +3417,7 @@
         "I'm sorry I'm late for class – my train was cancelled, and I had to wait half an hour for the next one.",
         "I'm sorry I'm late for class – I overslept."
       ],
-      "number": 182
+      "number": 191
     },
     {
       "id": "unit65-c",
@@ -3237,7 +3436,7 @@
         "I'll post those letters for you.",
         "Oh, thank you. That's very kind of you."
       ],
-      "number": 183
+      "number": 192
     },
     {
       "id": "unit66-a",
@@ -3256,7 +3455,7 @@
         "I was wondering if you could lend me some money until tomorrow.",
         "No, I'm afraid I can't."
       ],
-      "number": 184
+      "number": 193
     },
     {
       "id": "unit66-b",
@@ -3271,7 +3470,7 @@
         "Sure, go ahead.",
         "No, go ahead."
       ],
-      "number": 185
+      "number": 194
     },
     {
       "id": "unit66-c",
@@ -3296,7 +3495,7 @@
         "Yeah, I don't mind.",
         "Mm, I'd rather do something else."
       ],
-      "number": 186
+      "number": 195
     },
     {
       "id": "unit67-a",
@@ -3310,7 +3509,7 @@
         "What do you think about global warming?",
         "How do you feel about working with the others?"
       ],
-      "number": 187
+      "number": 196
     },
     {
       "id": "unit67-b",
@@ -3325,7 +3524,7 @@
         "In my opinion, we need to change the direction of the company.",
         "My view is that we need to wait a bit longer."
       ],
-      "number": 188
+      "number": 197
     },
     {
       "id": "unit67-c",
@@ -3338,7 +3537,7 @@
         "The newspaper says that his death was not an accident.",
         "According to the paper, the government didn't know about it."
       ],
-      "number": 189
+      "number": 198
     },
     {
       "id": "unit67-d",
@@ -3358,7 +3557,7 @@
         "I think that's a good point.",
         "I take your point."
       ],
-      "number": 190
+      "number": 199
     },
     {
       "id": "unit67-e",
@@ -3375,7 +3574,7 @@
         "I don't agree at all.",
         "I disagree completely."
       ],
-      "number": 191
+      "number": 200
     },
     {
       "id": "unit68-a",
@@ -3407,7 +3606,7 @@
         "Really? I quite like it.",
         "I hate opera."
       ],
-      "number": 192
+      "number": 201
     },
     {
       "id": "unit68-b",
@@ -3427,7 +3626,7 @@
         "I didn't like my new glasses at first, but now I've got used to them.",
         "I found the winters very cold at first, but you get used to it."
       ],
-      "number": 193
+      "number": 202
     },
     {
       "id": "unit68-c",
@@ -3443,7 +3642,7 @@
         "Tonight, we can go to the cinema or the theatre.",
         "Which would you prefer?"
       ],
-      "number": 194
+      "number": 203
     },
     {
       "id": "unit69-a",
@@ -3463,7 +3662,7 @@
         "Hi. How's it going?",
         "Not so bad, thanks. And you?"
       ],
-      "number": 195
+      "number": 204
     },
     {
       "id": "unit69-b",
@@ -3478,7 +3677,7 @@
         "Have a nice weekend.",
         "Yeah, same to you."
       ],
-      "number": 196
+      "number": 205
     },
     {
       "id": "unit69-c",
@@ -3499,7 +3698,7 @@
         "Thanks.",
         "Cheers."
       ],
-      "number": 197
+      "number": 206
     },
     {
       "id": "unit70-a",
@@ -3521,7 +3720,7 @@
         "I got eight answers right, but two were incorrect.",
         "It's illegal in the UK to ride a motorbike without a helmet."
       ],
-      "number": 198
+      "number": 207
     },
     {
       "id": "unit70-b",
@@ -3543,10 +3742,9 @@
         "I'm very unfit.",
         "Declan played well, and I thought he was unlucky to lose.",
         "They're unlikely to get here before midday.",
-        "The test was unfair because some of the students had more time to do it than others.",
-        "It's unbelievable."
+        "The test was unfair because some of the students had more time to do it than others."
       ],
-      "number": 199
+      "number": 208
     },
     {
       "id": "unit70-c",
@@ -3569,7 +3767,7 @@
         "I thought she said Rita, not Brita.",
         "The teacher has asked me to rewrite my essay."
       ],
-      "number": 200
+      "number": 209
     },
     {
       "id": "unit71-a",
@@ -3597,7 +3795,7 @@
         "We had a discussion about politics.",
         "We need an improvement in the weather."
       ],
-      "number": 201
+      "number": 210
     },
     {
       "id": "unit71-b",
@@ -3623,7 +3821,7 @@
         "I'm frustrated by my inability to use computers.",
         "Her happiness is all that matters to me."
       ],
-      "number": 202
+      "number": 211
     },
     {
       "id": "unit71-c",
@@ -3643,10 +3841,9 @@
         "Economist.",
         "Professional footballer.",
         "Film actor.",
-        "Scientist.",
-        "Adding a suffix to a verb, adjective or noun may change the position of the main stress, for example relax – relaxation, stupid – stupidity, economics – economist."
+        "Scientist."
       ],
-      "number": 203
+      "number": 212
     },
     {
       "id": "unit72-a",
@@ -3665,7 +3862,7 @@
         "Now it is quite normal for children to wear western-style clothes at this ceremony.",
         "The children visit a shrine and are then given special sweets called Chitose-Ame by their parents."
       ],
-      "number": 204
+      "number": 213
     },
     {
       "id": "unit72-b",
@@ -3688,7 +3885,7 @@
         "An unforgettable experience.",
         "An unbelievable story."
       ],
-      "number": 205
+      "number": 214
     },
     {
       "id": "unit72-c",
@@ -3706,7 +3903,7 @@
         "A painful injection.",
         "A careful driver."
       ],
-      "number": 206
+      "number": 215
     },
     {
       "id": "unit73-a",
@@ -3741,7 +3938,7 @@
         "Toothbrush.",
         "Earrings."
       ],
-      "number": 207
+      "number": 216
     },
     {
       "id": "unit73-b",
@@ -3756,7 +3953,7 @@
         "Many are written as two words, for example credit card, bus stop.",
         "Use a dictionary to check if necessary."
       ],
-      "number": 208
+      "number": 217
     },
     {
       "id": "unit73-c",
@@ -3769,7 +3966,7 @@
         "The main stress is usually on the first part, for example haircut or income tax, but sometimes it is on the second part, for example public transport, full stop.",
         "Use a dictionary to check if necessary."
       ],
-      "number": 209
+      "number": 218
     },
     {
       "id": "unit73-d",
@@ -3790,7 +3987,7 @@
         "Bus station.",
         "Birthday card."
       ],
-      "number": 210
+      "number": 219
     },
     {
       "id": "unit74-a",
@@ -3810,7 +4007,7 @@
         "It's quite likely that we'll stay here.",
         "It depends on my parents."
       ],
-      "number": 211
+      "number": 220
     },
     {
       "id": "unit74-b",
@@ -3830,7 +4027,7 @@
         "They fell in love and got married.",
         "Now Emily is expecting a baby."
       ],
-      "number": 212
+      "number": 221
     },
     {
       "id": "unit74-c",
@@ -3851,7 +4048,7 @@
         "We went to a party last night and it was great fun.",
         "There was heavy traffic on the motorway going out of town."
       ],
-      "number": 213
+      "number": 222
     },
     {
       "id": "unit74-d",
@@ -3868,7 +4065,7 @@
         "It's vitally important that we get the right person for the job.",
         "Ava is fast asleep, but the other two are still wide awake."
       ],
-      "number": 214
+      "number": 223
     },
     {
       "id": "unit75-a",
@@ -3890,7 +4087,7 @@
         "She was very upset.",
         "Everyone was there apart from Yasmine."
       ],
-      "number": 215
+      "number": 224
     },
     {
       "id": "unit75-b",
@@ -3906,7 +4103,7 @@
         "I rang our local doctor and fortunately she was able to come at once.",
         "He's so busy at work; he comes home late night after night."
       ],
-      "number": 216
+      "number": 225
     },
     {
       "id": "unit75-c",
@@ -3924,7 +4121,7 @@
         "I've been to Paris once or twice.",
         "I'll finish this report sooner or later."
       ],
-      "number": 217
+      "number": 226
     },
     {
       "id": "unit75-d",
@@ -3943,7 +4140,7 @@
         "By the way, what time does the train leave?",
         "To be honest, I didn't like her boyfriend very much."
       ],
-      "number": 218
+      "number": 227
     },
     {
       "id": "unit76-a",
@@ -3977,7 +4174,7 @@
         "Eli got top marks.",
         "I don't believe it!"
       ],
-      "number": 219
+      "number": 228
     },
     {
       "id": "unit76-b",
@@ -4005,7 +4202,7 @@
         "I think it'll be OK.",
         "Well, if you change your mind, come and see me again, and I'll arrange for one of them to be moved to another class."
       ],
-      "number": 220
+      "number": 229
     },
     {
       "id": "unit77-a",
@@ -4028,7 +4225,7 @@
         "We can rely on this photocopier.",
         "I may go but it depends on the weather."
       ],
-      "number": 221
+      "number": 230
     },
     {
       "id": "unit77-b",
@@ -4043,7 +4240,7 @@
         "He threw the ball to me.",
         "He threw the ball at me."
       ],
-      "number": 222
+      "number": 231
     },
     {
       "id": "unit77-c",
@@ -4064,7 +4261,7 @@
         "We're short of coffee at the moment.",
         "There's something wrong with this TV."
       ],
-      "number": 223
+      "number": 232
     },
     {
       "id": "unit78-a",
@@ -4089,7 +4286,7 @@
         "She won't make that mistake again in future.",
         "The poor little girl was in tears."
       ],
-      "number": 224
+      "number": 233
     },
     {
       "id": "unit78-b",
@@ -4111,7 +4308,7 @@
         "I'll see you in a moment.",
         "I can't speak to you at the moment."
       ],
-      "number": 225
+      "number": 234
     },
     {
       "id": "unit79-a",
@@ -4129,7 +4326,7 @@
         "Who's going to sort out the problem?",
         "He doesn't get on with his parents."
       ],
-      "number": 226
+      "number": 235
     },
     {
       "id": "unit79-b",
@@ -4145,7 +4342,7 @@
         "Hurry up or we'll be late.",
         "I went to lie down on the bed."
       ],
-      "number": 227
+      "number": 236
     },
     {
       "id": "unit79-c",
@@ -4173,7 +4370,7 @@
         "Could you put the light on?",
         "I put on my best suit."
       ],
-      "number": 228
+      "number": 237
     },
     {
       "id": "unit80-a",
@@ -4191,7 +4388,7 @@
         "I'll call for them at 8 o'clock.",
         "We set off about 7.30."
       ],
-      "number": 229
+      "number": 238
     },
     {
       "id": "unit80-b",
@@ -4217,7 +4414,7 @@
         "I will look after the children for you.",
         "How did the two men break into the shop?"
       ],
-      "number": 230
+      "number": 239
     },
     {
       "id": "unit80-c",
@@ -4235,7 +4432,7 @@
         "To begin to feel better after being unhappy or ill.",
         "It took her months to get over the shock of Richard leaving."
       ],
-      "number": 231
+      "number": 240
     },
     {
       "id": "unit80-d",
@@ -4253,7 +4450,7 @@
         "They put the game off till Friday.",
         "I offered her a job but she turned it down."
       ],
-      "number": 232
+      "number": 241
     },
     {
       "id": "unit81-a",
@@ -4278,7 +4475,7 @@
         "I don't do/take much exercise.",
         "We must make/take a decision."
       ],
-      "number": 233
+      "number": 242
     },
     {
       "id": "unit81-b",
@@ -4299,7 +4496,7 @@
         "If you make up your mind, you decide something.",
         "He's made up his mind to leave work at the end of next month."
       ],
-      "number": 234
+      "number": 243
     },
     {
       "id": "unit81-c",
@@ -4317,7 +4514,7 @@
         "If you do your best, you try as hard as possible.",
         "I'm not a good student, but I always do my best."
       ],
-      "number": 235
+      "number": 244
     },
     {
       "id": "unit81-d",
@@ -4339,7 +4536,7 @@
         "If you take a break, you stop work and rest for a short period.",
         "Let's take a ten-minute break."
       ],
-      "number": 236
+      "number": 245
     },
     {
       "id": "unit82-a",
@@ -4362,7 +4559,7 @@
         "She gave me a hug.",
         "He gave the car a push."
       ],
-      "number": 237
+      "number": 246
     },
     {
       "id": "unit82-b",
@@ -4389,7 +4586,7 @@
         "You're working hard and your English is improving.",
         "That's good - keep it up."
       ],
-      "number": 238
+      "number": 247
     },
     {
       "id": "unit82-c",
@@ -4409,7 +4606,7 @@
         "If you miss something, you manage to avoid it or not experience it.",
         "I left home early in order to miss the rush hour."
       ],
-      "number": 239
+      "number": 248
     },
     {
       "id": "unit83-a",
@@ -4438,7 +4635,7 @@
         "I'll never get this essay finished; it's too difficult.",
         "I got my watch repaired today."
       ],
-      "number": 240
+      "number": 249
     },
     {
       "id": "unit83-b",
@@ -4456,7 +4653,7 @@
         "I'd like to get rid of my old CDs.",
         "I got to know lots of Americans when I stayed in San Francisco."
       ],
-      "number": 241
+      "number": 250
     },
     {
       "id": "unit83-c",
@@ -4472,7 +4669,7 @@
         "Our train should get in around midnight.",
         "What time did you get up this morning?"
       ],
-      "number": 242
+      "number": 251
     },
     {
       "id": "unit84-a",
@@ -4498,7 +4695,7 @@
         "Go and get means fetch.",
         "You stay here, and I'll go and get the bags from the car."
       ],
-      "number": 243
+      "number": 252
     },
     {
       "id": "unit84-b",
@@ -4525,7 +4722,7 @@
         "Not bad.",
         "And you?"
       ],
-      "number": 244
+      "number": 253
     },
     {
       "id": "unit85-a",
@@ -4535,9 +4732,10 @@
       "audio": "/audio/unit_85/U_085.A.mp3",
       "audioLabel": "85A",
       "sentences": [
+        "Sight, hearing, taste, smell, touch.",
         "To express it another way, the ability to see, hear, taste, smell and feel."
       ],
-      "number": 245
+      "number": 254
     },
     {
       "id": "unit85-b",
@@ -4553,7 +4751,7 @@
         "Fresh bread smells wonderful.",
         "This shirt feels damp."
       ],
-      "number": 246
+      "number": 255
     },
     {
       "id": "unit85-c",
@@ -4580,7 +4778,7 @@
         "The shop appears/seems to be very busy.",
         "Amelia said she wanted to travel a bit, which seems like a good idea."
       ],
-      "number": 247
+      "number": 256
     },
     {
       "id": "unit85-d",
@@ -4601,7 +4799,7 @@
         "Just feel my feet.",
         "Aren't they cold?"
       ],
-      "number": 248
+      "number": 257
     },
     {
       "id": "unit86-a",
@@ -4626,7 +4824,7 @@
         "Would anyone like some more toast?",
         "The children's behaviour was terrible: they were climbing all over the furniture and making a lot of noise."
       ],
-      "number": 249
+      "number": 258
     },
     {
       "id": "unit86-b",
@@ -4643,7 +4841,7 @@
         "Lotto is a game of chance.",
         "He's had several chances to go abroad, but he's just not interested."
       ],
-      "number": 250
+      "number": 259
     },
     {
       "id": "unit86-c",
@@ -4654,9 +4852,13 @@
       "audioLabel": "86C",
       "sentences": [
         "You can make some uncountable nouns singular.",
-        "Sometimes we do this with a word like piece (for advice, equipment, toast, furniture, news), but in spoken English we often use a bit with most uncountable nouns."
+        "Sometimes we do this with a word like piece (for advice, equipment, toast, furniture, news), but in spoken English we often use a bit with most uncountable nouns.",
+        "A good piece of advice.",
+        "An interesting bit of news.",
+        "Another piece of toast.",
+        "Just a bit of rubbish."
       ],
-      "number": 251
+      "number": 260
     },
     {
       "id": "unit87-a",
@@ -4684,7 +4886,7 @@
         "If so, would you suggest going at a particular time of the year?",
         "Yes, I would, and I would suggest going in spring or autumn."
       ],
-      "number": 252
+      "number": 261
     },
     {
       "id": "unit87-b",
@@ -4702,7 +4904,7 @@
         "I promised to bring her book back.",
         "The shop assistant was very rude, so I demanded to see the manager."
       ],
-      "number": 253
+      "number": 262
     },
     {
       "id": "unit87-c",
@@ -4719,7 +4921,7 @@
         "That was their fault.",
         "They insisted on going in the summer when it was far too hot."
       ],
-      "number": 254
+      "number": 263
     },
     {
       "id": "unit88-a",
@@ -4743,7 +4945,7 @@
         "She warned me not to go.",
         "He reminded me to post the letter."
       ],
-      "number": 255
+      "number": 264
     },
     {
       "id": "unit88-b",
@@ -4770,7 +4972,7 @@
         "She helped me write the report.",
         "My parents encouraged me to read."
       ],
-      "number": 256
+      "number": 265
     },
     {
       "id": "unit89-a",
@@ -4794,7 +4996,7 @@
         "The food was absolutely marvellous.",
         "We can use absolutely or really before extreme adjectives, e.g. absolutely awful, really terrific, but we can't use very."
       ],
-      "number": 257
+      "number": 266
     },
     {
       "id": "unit89-b",
@@ -4817,7 +5019,7 @@
         "The map he gave us was very confusing.",
         "We were shocked by the violence in the film."
       ],
-      "number": 258
+      "number": 267
     },
     {
       "id": "unit90-a",
@@ -4836,7 +5038,7 @@
         "She lives in Warsaw/Poland.",
         "The knife's in the top drawer."
       ],
-      "number": 259
+      "number": 268
     },
     {
       "id": "unit90-b",
@@ -4855,7 +5057,7 @@
         "Their office is above the shop.",
         "You can just see the top of the building among the trees."
       ],
-      "number": 260
+      "number": 269
     },
     {
       "id": "unit90-c",
@@ -4870,7 +5072,7 @@
         "The woman came after us, but we managed to climb into the back of my dad's van.",
         "Fortunately she went past the van and didn't see us."
       ],
-      "number": 261
+      "number": 270
     },
     {
       "id": "unit91-a",
@@ -4887,7 +5089,7 @@
         "We see them quite frequently.",
         "I have never been to America."
       ],
-      "number": 262
+      "number": 271
     },
     {
       "id": "unit91-b",
@@ -4913,7 +5115,7 @@
         "We had an extremely interesting trip.",
         "It's an incredibly good book."
       ],
-      "number": 263
+      "number": 272
     },
     {
       "id": "unit91-c",
@@ -4931,7 +5133,7 @@
         "I spoke to Charles briefly this morning.",
         "I asked him very politely if he could work an extra hour this evening, but he reacted quite angrily and walked off."
       ],
-      "number": 264
+      "number": 273
     },
     {
       "id": "unit92-a",
@@ -4945,7 +5147,7 @@
         "I'll phone my uncle when / as soon as I get home.",
         "As soon as / When you've finished this exercise, you can go home."
       ],
-      "number": 265
+      "number": 274
     },
     {
       "id": "unit92-b",
@@ -4959,7 +5161,7 @@
         "The accident happened while I was on my way to work.",
         "I saw him just as I came out of the office."
       ],
-      "number": 266
+      "number": 275
     },
     {
       "id": "unit92-c",
@@ -4975,7 +5177,7 @@
         "After my visit to New York, I decided to have a rest.",
         "We had something to eat before going out."
       ],
-      "number": 267
+      "number": 276
     },
     {
       "id": "unit92-d",
@@ -4990,7 +5192,7 @@
         "After that / Then we drove down the coast and stayed in Portofino for a week.",
         "Finally, we went back to Switzerland to stay with my uncle."
       ],
-      "number": 268
+      "number": 277
     },
     {
       "id": "unit92-e",
@@ -5004,7 +5206,7 @@
         "But after a while, they started arguing about various things, and eventually Lauren walked out and found a new place.",
         "At first I enjoyed the classes, but after a while it got a bit boring, and in the end I left."
       ],
-      "number": 269
+      "number": 278
     },
     {
       "id": "unit92-f",
@@ -5020,7 +5222,7 @@
         "Why can't we go out tonight?",
         "Well, for one thing / for a start, I've got a lot of work – and besides/anyway, I can't afford it."
       ],
-      "number": 270
+      "number": 279
     },
     {
       "id": "unit93-a",
@@ -5042,7 +5244,7 @@
         "In addition to the new food department, they're also planning to open a café.",
         "Besides being a mum with four children, she's also a successful designer."
       ],
-      "number": 271
+      "number": 280
     },
     {
       "id": "unit93-b",
@@ -5061,7 +5263,7 @@
         "They got there on time in spite of the delay.",
         "In spite of all the problems, we still enjoyed the trip."
       ],
-      "number": 272
+      "number": 281
     },
     {
       "id": "unit93-c",
@@ -5087,7 +5289,7 @@
         "They told us the shop was next to the station.",
         "We never found it, though."
       ],
-      "number": 273
+      "number": 282
     },
     {
       "id": "unit93-d",
@@ -5103,7 +5305,7 @@
         "The speed limit on this road is 80kph, whereas it's 130kph on the motorway.",
         "I was very keen on the film, whereas Christoph didn't like it at all."
       ],
-      "number": 274
+      "number": 283
     },
     {
       "id": "unit94-a",
@@ -5123,7 +5325,7 @@
         "Due to means the same as because of, and is often used to explain the reason for a problem.",
         "The plane was late due to bad weather."
       ],
-      "number": 275
+      "number": 284
     },
     {
       "id": "unit94-b",
@@ -5141,7 +5343,7 @@
         "We moved house so that we could send our children to this school.",
         "She went into town in order to do some shopping."
       ],
-      "number": 276
+      "number": 285
     },
     {
       "id": "unit94-c",
@@ -5158,7 +5360,7 @@
         "I forgot to send the email.",
         "As a result, no one knew about the meeting."
       ],
-      "number": 277
+      "number": 286
     },
     {
       "id": "unit94-d",
@@ -5180,7 +5382,7 @@
         "I'm taking my umbrella in case it rains.",
         "Take some money in case you need to get a taxi."
       ],
-      "number": 278
+      "number": 287
     },
     {
       "id": "unit95-a",
@@ -5200,7 +5402,7 @@
         "Will passengers for Miami please proceed to gate 36.",
         "We are not in a position to grant you a visa to this country."
       ],
-      "number": 279
+      "number": 288
     },
     {
       "id": "unit95-b",
@@ -5230,7 +5432,7 @@
         "I've heard it's great.",
         "Really, my brother saw it and said it was a load of rubbish."
       ],
-      "number": 280
+      "number": 289
     },
     {
       "id": "unit96-a",
@@ -5245,7 +5447,7 @@
         "A landing card, for people from some countries when they enter the UK.",
         "A visa application form, when you make an official request to enter or leave some countries."
       ],
-      "number": 281
+      "number": 290
     },
     {
       "id": "unit96-b",
@@ -5265,7 +5467,7 @@
         "Date of departure, when are you leaving, or when did you leave?",
         "Signed, write your signature."
       ],
-      "number": 282
+      "number": 291
     },
     {
       "id": "unit96-c",
@@ -5285,7 +5487,7 @@
         "Names of people who will give you a reference, a letter written by someone who knows you which says if you are suitable for a particular job.",
         "If you apply to university, they require a personal statement in which you must explain why you want to go to this university; why you want to follow this particular course; details of your educational background; your skills; your interests."
       ],
-      "number": 283
+      "number": 292
     },
     {
       "id": "unit96-d",
@@ -5306,7 +5508,7 @@
         "Make sure the information you give is relevant.",
         "For example, if you are going to be working on your own, don't say that you are good at working in a team."
       ],
-      "number": 284
+      "number": 293
     },
     {
       "id": "unit97-a",
@@ -5320,7 +5522,7 @@
         "It is also important to show that you understand both sides of an argument.",
         "This means you need to understand and use different link words and phrases such as in addition, however, etc."
       ],
-      "number": 285
+      "number": 294
     },
     {
       "id": "unit97-b",
@@ -5333,7 +5535,7 @@
         "Some people believe that no one should be sent to prison under the age of 18.",
         "There is an argument that everyone should have a university education."
       ],
-      "number": 286
+      "number": 295
     },
     {
       "id": "unit97-c",
@@ -5348,7 +5550,7 @@
         "On the one hand, computers can do so many things faster than human beings.",
         "On the other hand, some people are becoming dependent on them, which is not a good thing."
       ],
-      "number": 287
+      "number": 296
     },
     {
       "id": "unit97-d",
@@ -5364,7 +5566,7 @@
         "Most parts of the developed world have become richer in the last thirty years.",
         "In contrast, many countries in Africa have become much poorer."
       ],
-      "number": 288
+      "number": 297
     },
     {
       "id": "unit97-e",
@@ -5379,7 +5581,7 @@
         "In general, Japanese society is more focused on groups than individuals.",
         "Teenagers tend to have more freedom than in the past."
       ],
-      "number": 289
+      "number": 298
     },
     {
       "id": "unit97-f",
@@ -5394,7 +5596,7 @@
         "People don't eat the right food or get enough exercise, and consequently they put on weight.",
         "Poor diet can cause obesity, and this can have a bad effect on people's health."
       ],
-      "number": 290
+      "number": 299
     },
     {
       "id": "unit98-a",
@@ -5409,7 +5611,7 @@
         "I am available for interview at any time.",
         "I look forward to hearing from you."
       ],
-      "number": 291
+      "number": 300
     },
     {
       "id": "unit98-b",
@@ -5429,7 +5631,7 @@
         "Please accept our apologies for the delay.",
         "I enclose a cheque for £100."
       ],
-      "number": 292
+      "number": 301
     },
     {
       "id": "unit99-a",
@@ -5447,7 +5649,7 @@
         "Give my regards to Conrad when he gets back from Poland, and once again, thanks for last night.",
         "Love, Sophie."
       ],
-      "number": 293
+      "number": 302
     },
     {
       "id": "unit99-b",
@@ -5469,7 +5671,7 @@
         "Anyway, better get back to work.",
         "See you soon!"
       ],
-      "number": 294
+      "number": 303
     },
     {
       "id": "unit100-a",
@@ -5490,10 +5692,9 @@
         "PC, personal computer.",
         "CV, curriculum vitae.",
         "ISP, Internet Service Provider.",
-        "Occasionally abbreviations are spoken as words, e.g. AIDS and PIN.",
-        "European Union."
+        "Occasionally abbreviations are spoken as words, e.g. AIDS and PIN."
       ],
-      "number": 295
+      "number": 304
     },
     {
       "id": "unit100-b",
@@ -5510,7 +5711,7 @@
         "Dean St, Dean Street.",
         "Dr Chapman, doctor Chapman."
       ],
-      "number": 296
+      "number": 305
     },
     {
       "id": "unit100-c",
@@ -5525,7 +5726,7 @@
         "Exempli gratia, e.g., for example.",
         "Id est, i.e., that's to say, or in other words."
       ],
-      "number": 297
+      "number": 306
     },
     {
       "id": "unit100-d",
@@ -5555,7 +5756,7 @@
         "Vet, veterinary surgeon.",
         "Paper, newspaper."
       ],
-      "number": 298
+      "number": 307
     }
   ]
 }

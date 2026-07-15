@@ -560,6 +560,23 @@ body {
   line-height: 1.5;
 }
 
+/* Trecho "(unit N-x)" no h1 da tela de exercício: link isolado que abre a
+   unit correspondente na Vocabulary — span (não <a>, o h1 não tem <a> pai
+   aqui, mas mantém o mesmo padrão) — display:inline explícito pra nunca
+   herdar algum "span { display:block }" de around e quebrar o parêntese
+   pra linha própria. Removido da lista de exercícios (accidental-click). */
+.listening-unit-link {
+  display: inline;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.listening-unit-link:hover,
+.listening-unit-link:focus-visible {
+  color: #8b5cf6;
+}
+
 /* Tela "Courses" sobre o fundo claro (.landing-page--courses): mesmo ajuste
    de cores já feito em .landing-panel.vocabulary-page, texto branco original
    ficava ilegível — só cores, layout intacto. */
@@ -857,6 +874,39 @@ body {
 
 .listening-panel .upload-button {
   margin-bottom: 20px;
+}
+
+/* Barra de busca (unit ou número do exercício) + botão "Hide 100% score" da
+   tela "Choose an exercise" — lado a lado, quebrando pra 2 linhas em telas
+   estreitas. */
+.listening-tracks-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.listening-tracks-controls .unit-search-box {
+  flex: 1;
+  min-width: 220px;
+  margin-bottom: 20px;
+}
+
+.listening-hide-mastered-toggle {
+  margin-bottom: 20px;
+  white-space: nowrap;
+}
+
+/* .upload-button já é um gradiente roxo com borda 0 — pro estado "ativo"
+   (filtro ligado) precisa de uma cor bem diferente pra ficar óbvio que é um
+   toggle, não só outro botão de ação. */
+.listening-hide-mastered-toggle.is-active {
+  background: #2fa86b;
+  box-shadow: 0 14px 30px rgba(47, 168, 107, 0.32);
+}
+
+.listening-hide-mastered-toggle.is-active:hover {
+  box-shadow: 0 18px 36px rgba(47, 168, 107, 0.4);
 }
 
 /* Linha com "‹ Back to Exercises" + "Next Listening" (tela do exercício) —
