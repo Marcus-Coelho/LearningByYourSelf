@@ -1663,6 +1663,16 @@ function App() {
     setActivePage('listening-exercise');
   };
 
+  // "Next Listening": pula pro próximo exercício da MESMA fonte (a ordem de
+  // `tracks` no JSON já é a ordem "number" exibida), sem passar pela lista.
+  const handleNextListeningTrack = () => {
+    const source = LISTENING_SOURCES.find((item) => item.id === selectedListeningSource);
+    const tracks = source?.tracks || [];
+    const index = tracks.findIndex((item) => item.id === selectedListeningTrack);
+    if (index === -1 || index >= tracks.length - 1) return;
+    setSelectedListeningTrack(tracks[index + 1].id);
+  };
+
   const handleBackToListeningHub = () => {
     setActivePage('listening');
     setSelectedListeningSource(null);
@@ -3694,13 +3704,23 @@ function App() {
         );
       })() : activePage === 'listening-exercise' ? (() => {
         const source = LISTENING_SOURCES.find((item) => item.id === selectedListeningSource);
-        const track = (source?.tracks || []).find((item) => item.id === selectedListeningTrack);
+        const tracks = source?.tracks || [];
+        const track = tracks.find((item) => item.id === selectedListeningTrack);
+        const trackIndex = tracks.findIndex((item) => item.id === selectedListeningTrack);
+        const hasNextTrack = trackIndex !== -1 && trackIndex < tracks.length - 1;
         return (
           <main className="landing-page landing-page--courses vocabulary-mode listening-mode">
             <div className="landing-panel course-links-panel listening-panel listening-exercise-panel">
-              <button type="button" className="upload-button" onClick={handleBackToListeningTracks}>
-                ‹ Back to Exercises
-              </button>
+              <div className="listening-exercise-nav">
+                <button type="button" className="upload-button" onClick={handleBackToListeningTracks}>
+                  ‹ Back to Exercises
+                </button>
+                {hasNextTrack && (
+                  <button type="button" className="upload-button" onClick={handleNextListeningTrack}>
+                    Next Listening
+                  </button>
+                )}
+              </div>
               <p className="eyebrow">{source?.title || 'Listening'}</p>
               <h1>{track ? `Listening Exercise n. ${track.number}` : 'Exercise'}</h1>
               {track ? (
@@ -5323,8 +5343,16 @@ function ListeningClozeExercise({ track, userName }) {
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.code !== 'Space') return;
+      // Dentro de um campo de resposta (ou botão focado), o Space sozinho
+      // precisa continuar digitando um espaço normal (respostas de mais de
+      // uma palavra) — só Ctrl+Space pausa/toca ali. Fora de campo de
+      // texto, o Space sozinho já basta, sem precisar do Ctrl.
+      // (Alt+Space foi tentado antes, mas no Windows o Alt sozinho já ativa
+      // o menu do navegador antes do evento chegar aqui — Ctrl não tem esse
+      // problema.)
       const tag = document.activeElement?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'BUTTON') return;
+      const blocksPlainSpace = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'BUTTON';
+      if (!event.ctrlKey && blocksPlainSpace) return;
       const audio = audioBarRef.current?.querySelector('audio');
       if (!audio) return;
       event.preventDefault();
@@ -5372,8 +5400,8 @@ function ListeningClozeExercise({ track, userName }) {
       <div className="listening-audio-bar" ref={audioBarRef}>
         <SimpleAudioPlayer src={track.audio} label={track.audioLabel || `${track.cd.replace(/^CD/i, '')}-${track.track}`} />
         <p className="listening-instructions">
-          Listen to the audio and type the missing word(s) in each sentence — press the Space key
-          to pause/play the audio, then press Check answers.
+          Listen to the audio and type the missing word(s) in each sentence — press Space (or
+          Ctrl+Space while typing in a blank) to pause/play the audio, then press Check answers.
         </p>
       </div>
       <ol className="listening-sentences">

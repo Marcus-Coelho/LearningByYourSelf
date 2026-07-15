@@ -67,7 +67,7 @@
   width: 44px;
   height: 36px;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--purple-500), var(--purple-300));
+  background: #e1dfe5;
   color: #fff;
   font-size: 13px;
   letter-spacing: 0;
@@ -857,6 +857,19 @@ body {
 
 .listening-panel .upload-button {
   margin-bottom: 20px;
+}
+
+/* Linha com "‹ Back to Exercises" + "Next Listening" (tela do exercício) —
+   a margem inferior fica só na linha, não em cada botão (senão dobraria,
+   já que cada .upload-button já tem margin-bottom:20px da regra acima). */
+.listening-exercise-nav {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.listening-exercise-nav .upload-button {
+  margin-bottom: 0;
 }
 
 /* Linha "Done 2× · Last score: 83%" dentro do card do exercício — só
