@@ -1201,6 +1201,12 @@ function App() {
     }));
   };
 
+  const handleUpdateWordMeaning = (id, meaning) => {
+    persistWordbook(wordbookEntries.map((entry) => (
+      entry.id === id ? { ...entry, meaning } : entry
+    )));
+  };
+
   const wordbookDueCount = wordbookEntries.filter((entry) => (entry.due ?? 0) <= Date.now()).length;
 
   useEffect(() => {
@@ -3890,6 +3896,7 @@ function App() {
             onAdd={handleAddWord}
             onDelete={handleDeleteWord}
             onGrade={handleGradeWord}
+            onUpdateMeaning={handleUpdateWordMeaning}
           />
         </main>
       ) : activePage === 'profile' ? (
@@ -4538,7 +4545,7 @@ function ImageDropZone({ image, onChange, compact }) {
 //   invertido de propósito (pedido do usuário): força o aluno a olhar a
 //   imagem, ler o significado, e tentar lembrar/reconhecer a palavra em
 //   inglês antes de revelar, em vez de só reconhecer a tradução.
-function WordbookPage({ entries, onAdd, onDelete, onGrade }) {
+function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
   const [word, setWord] = useState('');
   const [meaning, setMeaning] = useState('');
   const [example, setExample] = useState('');
@@ -4547,6 +4554,8 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade }) {
   const [practiceIndex, setPracticeIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [editingMeaning, setEditingMeaning] = useState(false);
+  const [meaningDraft, setMeaningDraft] = useState('');
 
   const now = Date.now();
   const dueEntries = entries.filter((entry) => (entry.due ?? 0) <= now);
@@ -4581,6 +4590,7 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade }) {
     setPracticeIndex(0);
     setFlipped(false);
     setFinished(false);
+    setEditingMeaning(false);
   };
 
   const practicing = Array.isArray(practiceIds) && practiceIds.length > 0 && !finished;
@@ -4590,6 +4600,7 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade }) {
     if (!currentCard) return;
     onGrade(currentCard.id, grade);
     setFlipped(false);
+    setEditingMeaning(false);
     if (practiceIndex < practiceIds.length - 1) {
       setPracticeIndex(practiceIndex + 1);
     } else {
@@ -4598,11 +4609,53 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade }) {
     }
   };
 
+  const startEditingMeaning = () => {
+    if (!currentCard) return;
+    setMeaningDraft(currentCard.meaning || '');
+    setEditingMeaning(true);
+  };
+
+  const saveMeaningDraft = () => {
+    if (currentCard && onUpdateMeaning) {
+      onUpdateMeaning(currentCard.id, meaningDraft.trim());
+    }
+    setEditingMeaning(false);
+  };
+
   const formatDue = (entry) => {
     const due = entry.due ?? 0;
     if (due <= now) return 'review now';
     const days = Math.ceil((due - now) / DAY_MS);
     return `review in ${days} day${days === 1 ? '' : 's'}`;
+  };
+
+  // Bloco do significado no flashcard: texto clicavel (vira input on click)
+  // que salva no blur/Enter, ou cancela no Escape. Reaproveitado nos dois
+  // layouts do flashcard (com imagem e sem imagem, ver hasImage abaixo).
+  const renderMeaningBlock = (extraClassName) => {
+    const className = extraClassName ? `flashcard-meaning ${extraClassName}` : 'flashcard-meaning';
+    if (editingMeaning) {
+      return (
+        <input
+          type="text"
+          className="flashcard-meaning-input"
+          value={meaningDraft}
+          onChange={(event) => setMeaningDraft(event.target.value)}
+          onBlur={saveMeaningDraft}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') saveMeaningDraft();
+            if (event.key === 'Escape') setEditingMeaning(false);
+          }}
+          autoFocus
+          placeholder="Type the meaning..."
+        />
+      );
+    }
+    return (
+      <p className={`${className} flashcard-meaning-clickable`} onClick={startEditingMeaning}>
+        {currentCard.meaning || '(click to add meaning)'}
+      </p>
+    );
   };
 
   const sortedEntries = [...entries].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
@@ -4652,9 +4705,7 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade }) {
                     em vez de só reconhecer a tradução (ver comentário acima
                     do componente). */}
                 <img src={currentCard.image} alt="" className="flashcard-image" />
-                <p className="flashcard-meaning flashcard-meaning--prompt">
-                  {currentCard.meaning || '(no meaning saved)'}
-                </p>
+                {renderMeaningBlock('flashcard-meaning--prompt')}
                 {currentCard.context && <p className="flashcard-context">from {currentCard.context}</p>}
                 {flipped ? (
                   <div className="flashcard-back">
@@ -4676,7 +4727,7 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade }) {
                 {currentCard.context && <p className="flashcard-context">from {currentCard.context}</p>}
                 {flipped ? (
                   <div className="flashcard-back">
-                    <p className="flashcard-meaning">{currentCard.meaning || '(no meaning saved)'}</p>
+                    {renderMeaningBlock()}
                     {currentCard.example && <p className="flashcard-example">“{currentCard.example}”</p>}
                     {gradeButtons}
                   </div>

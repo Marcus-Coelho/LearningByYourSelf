@@ -3106,6 +3106,38 @@ body {
   color: #1b3a5e;
 }
 
+/* "Click to add meaning": texto clicavel no flashcard, sublinhado tracejado
+   pra dar a dica visual de que e editavel sem parecer um link de verdade;
+   vira um input (.flashcard-meaning-input) ao clicar (ver renderMeaningBlock
+   em WordbookPage), que salva no blur/Enter. */
+.flashcard .flashcard-meaning-clickable {
+  cursor: pointer;
+  border-bottom: 1px dashed rgba(27, 58, 94, 0.35);
+  display: inline-block;
+}
+
+.flashcard .flashcard-meaning-clickable:hover {
+  color: var(--purple-700);
+  border-bottom-color: var(--purple-500);
+}
+
+.flashcard .flashcard-meaning-input {
+  width: 100%;
+  max-width: 320px;
+  padding: 8px 12px;
+  font-size: 1.15rem;
+  font-family: inherit;
+  color: #1b3a5e;
+  border: 2px solid var(--purple-500);
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.flashcard .flashcard-meaning-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
 /* Imagem-mnemônica na frente do card (junto com o significado, palavra
    escondida — ver comentário sobre a direção invertida em WordbookPage). */
 .flashcard-image {
