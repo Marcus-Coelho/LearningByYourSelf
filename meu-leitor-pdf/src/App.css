@@ -601,6 +601,53 @@ body {
   color: rgba(27, 58, 94, 0.68);
 }
 
+/* Busca unificada (tela Courses): resultados das 3 grades de unit juntos,
+   reaproveitando .vocabulary-list/.vocabulary-link (ver UnitSearchBox e
+   unitSearchNormalized em App.js) — mesmo tratamento de cor claro que
+   .landing-panel.vocabulary-page já aplica nessas classes, porque aqui
+   .vocabulary-link fica dentro de .course-links-panel, não de
+   .vocabulary-page. */
+.landing-panel.course-links-panel .vocabulary-link {
+  color: #1b3a5e;
+  background: rgba(27, 58, 94, 0.05);
+  border-color: rgba(27, 58, 94, 0.12);
+}
+
+.landing-panel.course-links-panel .vocabulary-link:hover,
+.landing-panel.course-links-panel .vocabulary-link:focus-visible {
+  background: rgba(27, 58, 94, 0.1);
+  border-color: rgba(139, 92, 246, 0.5);
+}
+
+.landing-panel.course-links-panel .vocabulary-link small {
+  color: rgba(27, 58, 94, 0.68);
+}
+
+.unified-search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 8px 0 4px;
+}
+
+.unified-search-group-title {
+  margin: 0 0 12px;
+  color: #1b3a5e;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+/* As 3 listas ficam empilhadas na mesma tela — deixa cada uma crescer com
+   o conteúdo e a página inteira rolar (mesmo motivo/solução do
+   .grammar-elem-landing-panel .vocabulary-list, ver comentário acima:
+   sem isso cada lista rolaria por conta própria dentro de uma altura fixa,
+   junto com a rolagem externa da página, duas barras ao mesmo tempo). */
+.unified-search-results .vocabulary-list {
+  flex: none;
+  max-height: none;
+  overflow: visible;
+}
+
 /* Página "My Profile" — lista de botões de reset (dados locais, sem conta
    nem servidor: cada um só apaga um pedaço específico do localStorage).
    Fica sobre o fundo claro (.landing-page.vocabulary-mode), então ganha as

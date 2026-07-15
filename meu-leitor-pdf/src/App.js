@@ -2830,56 +2830,134 @@ function App() {
                 embedded
               />
             )}
-            <div className="course-links">
-              <div className="course-link-row">
-                <a className="course-link" href="#link-vocabulary" onClick={handleVocabulary}>
-                  <span>{courses.vocabulary.title}</span>
-                  <small>{courses.vocabulary.description}</small>
-                </a>
-                {lastVisitedByCourse.vocabulary && (
-                  <button
-                    type="button"
-                    className="continue-cta course-continue-cta"
-                    onClick={() => openLastVisitedEntry('vocabulary', lastVisitedByCourse.vocabulary)}
-                  >
-                    Continue where you left off
-                    <small>{formatLastVisitedLabel('vocabulary', lastVisitedByCourse.vocabulary)}</small>
-                  </button>
+            <UnitSearchBox
+              value={unitSearchQuery}
+              onChange={setUnitSearchQuery}
+              placeholder="Search all courses... (e.g. phrasal verbs)"
+            />
+            {unitSearchNormalized ? (
+              <div className="unified-search-results">
+                {filteredUnitItems.length === 0 && filteredAmerican1UnitNumbers.length === 0 && filteredGrammarElemUnitNumbers.length === 0 ? (
+                  <p className="unit-search-empty">No units match "{unitSearchQuery}" in any course.</p>
+                ) : (
+                  <>
+                    {filteredUnitItems.length > 0 && (
+                      <section className="unified-search-group">
+                        <h3 className="unified-search-group-title">{courses.vocabulary.title}</h3>
+                        <div className="vocabulary-list" role="list">
+                          {filteredUnitItems.map((unit) => (
+                            <a
+                              key={`vocabulary-${unit.number}`}
+                              className="vocabulary-link"
+                              href={`#unit-${unit.number}`}
+                              onClick={(event) => { event.preventDefault(); openVocabularyUnit(unit.number); }}
+                            >
+                              <UnitBadgeDot status={getVocabularyUnitBadgeStatus(unit.number, Boolean(visitedUnits[unit.number]), exerciseRatings)} />
+                              <span>Unit {unit.number}</span>
+                              <small>{unit.label}</small>
+                            </a>
+                          ))}
+                        </div>
+                      </section>
+                    )}
+                    {filteredAmerican1UnitNumbers.length > 0 && (
+                      <section className="unified-search-group">
+                        <h3 className="unified-search-group-title">{courses.american1.title}</h3>
+                        <div className="vocabulary-list" role="list">
+                          {filteredAmerican1UnitNumbers.map((unit) => {
+                            const sections = american1SectionsByUnit[unit] || [];
+                            const theme = sections.find((section) => section.section === 'A')?.title || sections[0]?.title || '';
+                            const visited = Object.keys(american1VisitedSections).some((key) => key.startsWith(`${unit}|`));
+                            return (
+                              <a
+                                key={`american1-${unit}`}
+                                className="vocabulary-link"
+                                href={`#american1-unit-${unit}`}
+                                onClick={(event) => { event.preventDefault(); openAmerican1Section(unit, sections[0]?.section ?? null); }}
+                              >
+                                <UnitBadgeDot status={getUnitBadgeStatus(visited, american1UnitRatings[unit] || 0)} />
+                                <span>Unit {unit}</span>
+                                <small>{theme}</small>
+                              </a>
+                            );
+                          })}
+                        </div>
+                      </section>
+                    )}
+                    {filteredGrammarElemUnitNumbers.length > 0 && (
+                      <section className="unified-search-group">
+                        <h3 className="unified-search-group-title">{courses.grammarElem.title}</h3>
+                        <div className="vocabulary-list" role="list">
+                          {filteredGrammarElemUnitNumbers.map((unit) => (
+                            <a
+                              key={`grammarElem-${unit}`}
+                              className="vocabulary-link"
+                              href={`#grammarElem-unit-${unit}`}
+                              onClick={(event) => { event.preventDefault(); openGrammarElemUnit(unit); }}
+                            >
+                              <UnitBadgeDot status={getUnitBadgeStatus(Boolean(grammarElemVisitedUnits[unit]), grammarElemUnitRatings[unit] || 0)} />
+                              <span>Unit {unit}</span>
+                              <small>{getGrammarElemUnitTitle(unit)}</small>
+                            </a>
+                          ))}
+                        </div>
+                      </section>
+                    )}
+                  </>
                 )}
               </div>
-              <div className="course-link-row">
-                <a className="course-link" href="#link-american1" onClick={handleAmerican1}>
-                  <span>{courses.american1.title}</span>
-                  <small>{courses.american1.description}</small>
-                </a>
-                {lastVisitedByCourse.american1 && (
-                  <button
-                    type="button"
-                    className="continue-cta course-continue-cta"
-                    onClick={() => openLastVisitedEntry('american1', lastVisitedByCourse.american1)}
-                  >
-                    Continue where you left off
-                    <small>{formatLastVisitedLabel('american1', lastVisitedByCourse.american1)}</small>
-                  </button>
-                )}
+            ) : (
+              <div className="course-links">
+                <div className="course-link-row">
+                  <a className="course-link" href="#link-vocabulary" onClick={handleVocabulary}>
+                    <span>{courses.vocabulary.title}</span>
+                    <small>{courses.vocabulary.description}</small>
+                  </a>
+                  {lastVisitedByCourse.vocabulary && (
+                    <button
+                      type="button"
+                      className="continue-cta course-continue-cta"
+                      onClick={() => openLastVisitedEntry('vocabulary', lastVisitedByCourse.vocabulary)}
+                    >
+                      Continue where you left off
+                      <small>{formatLastVisitedLabel('vocabulary', lastVisitedByCourse.vocabulary)}</small>
+                    </button>
+                  )}
+                </div>
+                <div className="course-link-row">
+                  <a className="course-link" href="#link-american1" onClick={handleAmerican1}>
+                    <span>{courses.american1.title}</span>
+                    <small>{courses.american1.description}</small>
+                  </a>
+                  {lastVisitedByCourse.american1 && (
+                    <button
+                      type="button"
+                      className="continue-cta course-continue-cta"
+                      onClick={() => openLastVisitedEntry('american1', lastVisitedByCourse.american1)}
+                    >
+                      Continue where you left off
+                      <small>{formatLastVisitedLabel('american1', lastVisitedByCourse.american1)}</small>
+                    </button>
+                  )}
+                </div>
+                <div className="course-link-row">
+                  <a className="course-link" href="#link-grammarElem" onClick={handleGrammarElem}>
+                    <span>{courses.grammarElem.title}</span>
+                    <small>{courses.grammarElem.description}</small>
+                  </a>
+                  {lastVisitedByCourse.grammarElem && (
+                    <button
+                      type="button"
+                      className="continue-cta course-continue-cta"
+                      onClick={() => openLastVisitedEntry('grammarElem', lastVisitedByCourse.grammarElem)}
+                    >
+                      Continue where you left off
+                      <small>{formatLastVisitedLabel('grammarElem', lastVisitedByCourse.grammarElem)}</small>
+                    </button>
+                  )}
+                </div>
               </div>
-              <div className="course-link-row">
-                <a className="course-link" href="#link-grammarElem" onClick={handleGrammarElem}>
-                  <span>{courses.grammarElem.title}</span>
-                  <small>{courses.grammarElem.description}</small>
-                </a>
-                {lastVisitedByCourse.grammarElem && (
-                  <button
-                    type="button"
-                    className="continue-cta course-continue-cta"
-                    onClick={() => openLastVisitedEntry('grammarElem', lastVisitedByCourse.grammarElem)}
-                  >
-                    Continue where you left off
-                    <small>{formatLastVisitedLabel('grammarElem', lastVisitedByCourse.grammarElem)}</small>
-                  </button>
-                )}
-              </div>
-            </div>
+            )}
           </div>
         </main>
       ) : activePage === 'american1' ? (
