@@ -722,6 +722,14 @@ function App() {
   // handleOpenListeningSource) pra não começar filtrada sem o usuário saber.
   const [listeningSearchQuery, setListeningSearchQuery] = useState('');
   const [hideMasteredListening, setHideMasteredListening] = useState(false);
+  // Navegação da tela "Dictation" (menu principal): hub -> fonte -> track —
+  // mesmo padrão de selectedListeningSource/Track, mas em variáveis
+  // separadas (reaproveita LISTENING_SOURCES só como fonte de dados —
+  // mesmos tracks/audio — sem tocar em nenhum estado/handler do Listening).
+  const [selectedDictationSource, setSelectedDictationSource] = useState(null);
+  const [selectedDictationTrack, setSelectedDictationTrack] = useState(null);
+  const [dictationSearchQuery, setDictationSearchQuery] = useState('');
+  const [hideMasteredDictation, setHideMasteredDictation] = useState(false);
   // Largura inicial = RIGHT_PANEL_WIDTH_RATIO da janela (ver comentário na
   // constante), com piso em MIN_RIGHT_WIDTH e teto no espaço realmente
   // disponível — numa tablet mais estreita (~820px), MIN_CENTER_WIDTH(420) +
@@ -1713,6 +1721,47 @@ function App() {
     setSelectedListeningTrack(null);
   };
 
+  // Tela "Dictation" do menu principal: hub -> fonte -> track, igual ao
+  // Listening (mesmos LISTENING_SOURCES) mas com estado/handlers totalmente
+  // separados — abrir/fechar o Dictation nunca mexe no que o usuário estava
+  // fazendo no Listening, e vice-versa.
+  const handleOpenDictation = (event) => {
+    event.preventDefault();
+    setActivePage('dictation');
+    setActiveCourseId(null);
+  };
+
+  const handleOpenDictationSource = (source) => {
+    setSelectedDictationSource(source.id);
+    setActivePage('dictation-tracks');
+    setDictationSearchQuery('');
+    setHideMasteredDictation(false);
+  };
+
+  const handleOpenDictationTrack = (track) => {
+    setSelectedDictationTrack(track.id);
+    setActivePage('dictation-exercise');
+  };
+
+  const handleNextDictationTrack = () => {
+    const source = LISTENING_SOURCES.find((item) => item.id === selectedDictationSource);
+    const tracks = source?.tracks || [];
+    const index = tracks.findIndex((item) => item.id === selectedDictationTrack);
+    if (index === -1 || index >= tracks.length - 1) return;
+    setSelectedDictationTrack(tracks[index + 1].id);
+  };
+
+  const handleBackToDictationHub = () => {
+    setActivePage('dictation');
+    setSelectedDictationSource(null);
+    setSelectedDictationTrack(null);
+  };
+
+  const handleBackToDictationTracks = () => {
+    setActivePage('dictation-tracks');
+    setSelectedDictationTrack(null);
+  };
+
   // Abre um item vencido do "Today's Review" direto na tela onde ele é
   // estudado (e reavaliado — é a reavaliação que agenda a próxima repetição).
   const handleOpenReviewItem = (item) => {
@@ -2574,7 +2623,10 @@ function App() {
             : '';
 
   return (
-    <div className={`app-shell${['vocabulary', 'american1', 'grammarElem', 'courses'].includes(activePage) ? ' app-shell--allow-grow' : ''}`}>
+    <div
+      className={`app-shell${['vocabulary', 'american1', 'grammarElem', 'courses'].includes(activePage) ? ' app-shell--allow-grow' : ''}`}
+      style={{ '--page-hero-bg': `url(${process.env.PUBLIC_URL}/openCourse.png)` }}
+    >
       <header className="app-header">
         {/* Left slide menu: o botão hambúrguer abre um painel deslizando da
             esquerda (.side-drawer), com um ícone por item — substitui o
@@ -2617,6 +2669,7 @@ function App() {
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleCourses(event); setMobileMenuOpen(false); }}><IconCourses /><span>Courses</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenWordbook(event); setMobileMenuOpen(false); }}><IconWords /><span>My Words</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenListening(event); setMobileMenuOpen(false); }}><IconHeadphones /><span>Listening</span></a></li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenDictation(event); setMobileMenuOpen(false); }}><IconText /><span>Dictation</span></a></li>
             <li className="side-drawer-item"><a href="#link-3" onClick={() => setMobileMenuOpen(false)}><IconMic /><span>Speaking</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenAmerican1SoundBank(event); setMobileMenuOpen(false); }}><IconSound /><span>Sound Bank</span></a></li>
             <li className="side-drawer-divider" role="separator" />
@@ -3780,8 +3833,8 @@ function App() {
           );
         });
         return (
-          <main className="landing-page landing-page--courses vocabulary-mode listening-mode">
-            <div className="landing-panel course-links-panel listening-panel">
+          <main className="landing-page landing-page--courses vocabulary-mode listening-mode listening-tracks-mode">
+            <div className="landing-panel course-links-panel listening-panel listening-tracks-mode">
               <button type="button" className="upload-button" onClick={handleBackToListeningHub}>
                 ‹ Back to Listening
               </button>
@@ -3889,8 +3942,140 @@ function App() {
             </div>
           </main>
         );
+      })() : activePage === 'dictation' ? (
+        <main className="landing-page landing-page--courses vocabulary-mode listening-mode dictation-mode">
+          <div className="landing-panel course-links-panel listening-panel">
+            <p className="eyebrow">Dictation</p>
+            <h1>Choose a dictation source</h1>
+            <p className="listening-instructions">
+              Listen to the audio without reading the text first, then type what you hear.
+            </p>
+            <div className="course-links">
+              {LISTENING_SOURCES.map((source) => (
+                <div className="course-link-row" key={source.id}>
+                  <a
+                    className="course-link"
+                    href="#0"
+                    onClick={(event) => { event.preventDefault(); handleOpenDictationSource(source); }}
+                  >
+                    {/* Mesmo LISTENING_SOURCES do Listening (mesmos tracks/áudio), mas o
+                        título/descrição aqui são só de exibição — nunca escritos de volta
+                        no JSON, então a tela do Listening continua com o texto original. */}
+                    <span>{source.title.replace(/^Listening/, 'Dictation')}</span>
+                    <small>Same audio as Listening, without the text — you type what you hear.</small>
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        </main>
+      ) : activePage === 'dictation-tracks' ? (() => {
+        const source = LISTENING_SOURCES.find((item) => item.id === selectedDictationSource);
+        const dictationSearchNormalized = dictationSearchQuery.trim().toLowerCase();
+        const allDictationTracks = (source?.tracks || []).map((track) => ({
+          track,
+          stats: loadDictationStats(userName, track.id),
+        }));
+        const visibleDictationTracks = allDictationTracks.filter(({ track, stats }) => {
+          if (hideMasteredDictation && stats?.lastScorePercent === 100) return false;
+          if (!dictationSearchNormalized) return true;
+          return (
+            listeningTrackLabel(track).toLowerCase().includes(dictationSearchNormalized)
+            || String(track.number).includes(dictationSearchNormalized)
+          );
+        });
+        return (
+          <main className="landing-page landing-page--courses vocabulary-mode listening-mode listening-tracks-mode dictation-mode">
+            <div className="landing-panel course-links-panel listening-panel listening-tracks-mode">
+              <button type="button" className="upload-button" onClick={handleBackToDictationHub}>
+                ‹ Back to Dictation
+              </button>
+              <p className="eyebrow">{source ? source.title.replace(/^Listening/, 'Dictation') : 'Dictation'}</p>
+              <h1>Choose an exercise</h1>
+              <div className="listening-tracks-controls">
+                <UnitSearchBox
+                  value={dictationSearchQuery}
+                  onChange={setDictationSearchQuery}
+                  placeholder="Search by unit or exercise number..."
+                />
+                <button
+                  type="button"
+                  className={`upload-button listening-hide-mastered-toggle${hideMasteredDictation ? ' is-active' : ''}`}
+                  onClick={() => setHideMasteredDictation((current) => !current)}
+                >
+                  {hideMasteredDictation ? '✓ Hiding 100% score' : 'Hide 100% score'}
+                </button>
+              </div>
+              {visibleDictationTracks.length === 0 && (
+                <p className="unit-search-empty">No exercises match your filters.</p>
+              )}
+              <div className="course-links">
+                {visibleDictationTracks.map(({ track, stats }) => {
+                  return (
+                    <div className="course-link-row" key={track.id}>
+                      <a
+                        className="course-link"
+                        href="#0"
+                        onClick={(event) => { event.preventDefault(); handleOpenDictationTrack(track); }}
+                      >
+                        <span>Dictation Exercise n. {track.number} ({listeningTrackLabel(track)})</span>
+                        <small>{track.sentences.length} sentences · type what you hear</small>
+                        {stats && (
+                          <small className="listening-track-stats">
+                            Done {stats.attempts}× · Last score: {stats.lastScorePercent}%
+                          </small>
+                        )}
+                      </a>
+                      {stats && (
+                        <button
+                          type="button"
+                          className="continue-cta course-continue-cta"
+                          onClick={() => handleOpenDictationTrack(track)}
+                        >
+                          Try again
+                          <small>Last score: {stats.lastScorePercent}%</small>
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </main>
+        );
+      })() : activePage === 'dictation-exercise' ? (() => {
+        const source = LISTENING_SOURCES.find((item) => item.id === selectedDictationSource);
+        const tracks = source?.tracks || [];
+        const track = tracks.find((item) => item.id === selectedDictationTrack);
+        const trackIndex = tracks.findIndex((item) => item.id === selectedDictationTrack);
+        const hasNextTrack = trackIndex !== -1 && trackIndex < tracks.length - 1;
+        return (
+          <main className="landing-page landing-page--courses vocabulary-mode listening-mode dictation-mode">
+            <div className="landing-panel course-links-panel listening-panel listening-exercise-panel">
+              <div className="listening-exercise-nav">
+                <button type="button" className="upload-button" onClick={handleBackToDictationTracks}>
+                  ‹ Back to Exercises
+                </button>
+                {hasNextTrack && (
+                  <button type="button" className="upload-button" onClick={handleNextDictationTrack}>
+                    Next Dictation
+                  </button>
+                )}
+              </div>
+              <p className="eyebrow">{source ? source.title.replace(/^Listening/, 'Dictation') : 'Dictation'}</p>
+              <h1>
+                {track ? `Dictation Exercise n. ${track.number} (${listeningTrackLabel(track)})` : 'Exercise'}
+              </h1>
+              {track ? (
+                <DictationExercise key={track.id} track={track} userName={userName} />
+              ) : (
+                <p>Exercise not found.</p>
+              )}
+            </div>
+          </main>
+        );
       })() : activePage === 'wordbook' ? (
-        <main className="landing-page vocabulary-mode">
+        <main className="landing-page vocabulary-mode wordbook-mode">
           <WordbookPage
             entries={wordbookEntries}
             onAdd={handleAddWord}
@@ -3900,7 +4085,7 @@ function App() {
           />
         </main>
       ) : activePage === 'profile' ? (
-        <main className="landing-page vocabulary-mode">
+        <main className="landing-page vocabulary-mode profile-mode">
           <div className="landing-panel profile-panel">
             <p className="eyebrow">My Profile</p>
             <h1>{userName}</h1>
@@ -4556,6 +4741,27 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
   const [finished, setFinished] = useState(false);
   const [editingMeaning, setEditingMeaning] = useState(false);
   const [meaningDraft, setMeaningDraft] = useState('');
+  const meaningInputRef = useRef(null);
+
+  // Focar o input do significado manualmente (em vez de autoFocus): abrir o
+  // dicionario externo (ver startEditingMeaning) tira o foco da JANELA pra
+  // trocar de aba. Se a janela ja tem foco quando esse efeito roda, foca
+  // direto; senao (caso comum, a aba do dicionario ja abriu antes do commit),
+  // espera o usuario voltar pra essa aba (evento "focus" da window) pra so
+  // entao focar o input — ver tambem handleMeaningInputBlur, que ignora o
+  // blur "espurio" que a propria troca de aba dispara no input.
+  useEffect(() => {
+    if (!editingMeaning) return undefined;
+    if (document.hasFocus()) {
+      meaningInputRef.current?.focus();
+      return undefined;
+    }
+    const focusInputOnReturn = () => {
+      meaningInputRef.current?.focus();
+    };
+    window.addEventListener('focus', focusInputOnReturn, { once: true });
+    return () => window.removeEventListener('focus', focusInputOnReturn);
+  }, [editingMeaning]);
 
   const now = Date.now();
   const dueEntries = entries.filter((entry) => (entry.due ?? 0) <= now);
@@ -4613,6 +4819,15 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
     if (!currentCard) return;
     setMeaningDraft(currentCard.meaning || '');
     setEditingMeaning(true);
+    const normalizedWord = encodeURIComponent(currentCard.word.trim().toLowerCase());
+    const dictionaryUrl = `https://dictionary.cambridge.org/dictionary/english/${normalizedWord}`;
+    const pronunciationUrl = `https://youglish.com/pronounce/${normalizedWord}/english/us`;
+    // Dois window.open seguidos: alguns navegadores bloqueiam o segundo
+    // popup se nao acharem que ainda faz parte do mesmo gesto do usuario —
+    // por isso os dois ficam aqui dentro do handler de click, sincronos,
+    // sem nenhum await/setTimeout no meio.
+    window.open(dictionaryUrl, '_blank', 'noopener,noreferrer');
+    window.open(pronunciationUrl, '_blank', 'noopener,noreferrer');
   };
 
   const saveMeaningDraft = () => {
@@ -4620,6 +4835,20 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
       onUpdateMeaning(currentCard.id, meaningDraft.trim());
     }
     setEditingMeaning(false);
+  };
+
+  // O onBlur do input dispara nao so quando o usuario clica em outro lugar
+  // da pagina, mas tambem quando a JANELA inteira perde o foco — e e
+  // exatamente isso que acontece ao abrir o dicionario numa aba nova (ver
+  // startEditingMeaning): o input "perde o foco" na hora, o onBlur salva
+  // (vazio) e fecha a caixa antes do usuario digitar qualquer coisa. Ignora
+  // esse blur "espurio" checando se o documento ainda tem foco — se nao tem,
+  // e porque a janela toda perdeu o foco (nova aba), entao mantem a caixa
+  // aberta; o useEffect de foco cuida de focar o input de novo quando o
+  // usuario voltar pra essa aba.
+  const handleMeaningInputBlur = () => {
+    if (!document.hasFocus()) return;
+    saveMeaningDraft();
   };
 
   const formatDue = (entry) => {
@@ -4637,38 +4866,51 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
     if (editingMeaning) {
       return (
         <input
+          ref={meaningInputRef}
           type="text"
           className="flashcard-meaning-input"
           value={meaningDraft}
           onChange={(event) => setMeaningDraft(event.target.value)}
-          onBlur={saveMeaningDraft}
+          onBlur={handleMeaningInputBlur}
           onKeyDown={(event) => {
             if (event.key === 'Enter') saveMeaningDraft();
             if (event.key === 'Escape') setEditingMeaning(false);
           }}
-          autoFocus
           placeholder="Type the meaning..."
         />
       );
     }
+    // So fica clicavel (abre dicionario + campo de edicao) quando ainda
+    // NAO tem significado salvo — depois de preenchido, o texto e so uma
+    // exibicao estatica, sem parecer link (pedido explicito do usuario).
+    if (currentCard.meaning) {
+      return <p className={className}>{currentCard.meaning}</p>;
+    }
     return (
       <p className={`${className} flashcard-meaning-clickable`} onClick={startEditingMeaning}>
-        {currentCard.meaning || '(click to add meaning)'}
+        (click to add meaning)
       </p>
     );
   };
 
   const sortedEntries = [...entries].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
+  // Reaproveitado nos dois estados (praticando/nao praticando) — ver
+  // .wordbook-sticky-top no CSS: o titulo fica fixo junto com o resto do
+  // topo (Practice Words + formulario) so quando NAO praticando, porque so
+  // ai existe uma lista longa por baixo pra rolar; no modo flashcard nao ha
+  // lista, entao o titulo fica simples, sem position:sticky.
+  const wordbookHeadEl = (
+    <div className="wordbook-head">
+      <h2 className="vocabulary-title">My Words</h2>
+      <span className="wordbook-count">
+        {entries.length} word{entries.length === 1 ? '' : 's'} saved
+      </span>
+    </div>
+  );
+
   return (
     <div className="landing-panel vocabulary-page wordbook-panel">
-      <div className="wordbook-head">
-        <h2 className="vocabulary-title">My Words</h2>
-        <span className="wordbook-count">
-          {entries.length} word{entries.length === 1 ? '' : 's'} saved
-        </span>
-      </div>
-
       {practicing && currentCard ? (() => {
         const hasImage = Boolean(currentCard.image);
         const gradeButtons = (
@@ -4693,10 +4935,12 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
         );
 
         return (
-          <div className="flashcard">
-            <p className="flashcard-progress">
-              Card {practiceIndex + 1} of {practiceIds.length}
-            </p>
+          <>
+            {wordbookHeadEl}
+            <div className="flashcard">
+              <p className="flashcard-progress">
+                Card {practiceIndex + 1} of {practiceIds.length}
+              </p>
 
             {hasImage ? (
               <>
@@ -4753,37 +4997,41 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
                 Stop practicing
               </button>
             </div>
-          </div>
+            </div>
+          </>
         );
       })() : (
         <>
-          {finished && (
-            <div className="flashcard flashcard--done">
-              <p className="flashcard-word">Session complete! 🎉</p>
-              <p className="flashcard-context">
-                Every reviewed word was rescheduled — come back when they are due again.
-              </p>
+          <div className="wordbook-sticky-top">
+            {wordbookHeadEl}
+
+            {finished && (
+              <div className="flashcard flashcard--done">
+                <p className="flashcard-word">Session complete! 🎉</p>
+                <p className="flashcard-context">
+                  Every reviewed word was rescheduled — come back when they are due again.
+                </p>
+              </div>
+            )}
+
+            <div className="wordbook-practice-row">
+              <button
+                type="button"
+                className="show-answers-btn"
+                onClick={startPractice}
+                disabled={dueEntries.length === 0}
+                title={dueEntries.length === 0 ? 'No words due for review right now' : ''}
+              >
+                Practice {dueEntries.length > 0 ? `${dueEntries.length} word${dueEntries.length === 1 ? '' : 's'}` : 'words'}
+              </button>
+              <span className="wordbook-practice-hint">
+                {dueEntries.length > 0
+                  ? 'These words are due for review today.'
+                  : 'Nothing due right now — add new words or come back later.'}
+              </span>
             </div>
-          )}
 
-          <div className="wordbook-practice-row">
-            <button
-              type="button"
-              className="show-answers-btn"
-              onClick={startPractice}
-              disabled={dueEntries.length === 0}
-              title={dueEntries.length === 0 ? 'No words due for review right now' : ''}
-            >
-              Practice {dueEntries.length > 0 ? `${dueEntries.length} word${dueEntries.length === 1 ? '' : 's'}` : 'words'}
-            </button>
-            <span className="wordbook-practice-hint">
-              {dueEntries.length > 0
-                ? 'These words are due for review today.'
-                : 'Nothing due right now — add new words or come back later.'}
-            </span>
-          </div>
-
-          <form className="wordbook-form" onSubmit={handleSubmit} onPaste={handleFormPaste}>
+            <form className="wordbook-form" onSubmit={handleSubmit} onPaste={handleFormPaste}>
             <input
               type="text"
               className="wordbook-input"
@@ -4809,7 +5057,8 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
             <button type="submit" className="show-answers-btn" disabled={!word.trim()}>
               Add word
             </button>
-          </form>
+            </form>
+          </div>
 
           <div className="wordbook-list">
             {sortedEntries.length === 0 ? (
@@ -5403,6 +5652,112 @@ function SimpleAudioPlayer({ src, label }) {
   );
 }
 
+// Tela do exercício de Dictation: mesmo áudio/track do Listening, mas sem
+// mostrar o texto antes — o usuário ouve (com play/pause/repetir A-B/
+// velocidade, reaproveitando AudioPlayerControls) e digita tudo numa caixa
+// só. "Check" compara com o texto completo (todas as sentences do track
+// juntas) via LCS palavra-a-palavra (ver scoreDictationAnswer) e destaca
+// cada palavra esperada em verde (acertou, apareceu na ordem certa) ou
+// vermelho (errou/faltou), sem nunca alterar nada do ListeningClozeExercise.
+function DictationExercise({ track, userName }) {
+  const [typedText, setTypedText] = useState('');
+  const [checked, setChecked] = useState(false);
+  const [result, setResult] = useState(null);
+  const audioBarRef = useRef(null);
+
+  const fullText = track.sentences.join(' ');
+
+  const handleCheck = () => {
+    if (!typedText.trim()) return;
+    const scored = scoreDictationAnswer(typedText, fullText);
+    setResult(scored);
+    setChecked(true);
+    saveDictationAttempt(userName, track.id, scored.scorePercent);
+  };
+
+  const handleTryAgain = () => {
+    setTypedText('');
+    setChecked(false);
+    setResult(null);
+  };
+
+  // Mesmo atalho do Listening (ver ListeningClozeExercise): Ctrl+Space
+  // pausa/toca o áudio sem sair do textarea — aqui é ainda mais necessário,
+  // já que o usuário fica o tempo todo digitando (Space sozinho precisa
+  // continuar sendo um espaço normal no texto).
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.code !== 'Space') return;
+      const tag = document.activeElement?.tagName;
+      const blocksPlainSpace = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'BUTTON';
+      if (!event.ctrlKey && blocksPlainSpace) return;
+      const audio = audioBarRef.current?.querySelector('audio');
+      if (!audio) return;
+      event.preventDefault();
+      if (audio.paused) {
+        audio.play();
+      } else {
+        audio.pause();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  return (
+    <div className="dictation-exercise">
+      <div className="listening-audio-bar" ref={audioBarRef}>
+        <SimpleAudioPlayer src={track.audio} label={track.audioLabel} />
+      </div>
+      <p className="listening-instructions">
+        Listen carefully (replay as many times as you need) and type everything you hear below.
+        Punctuation and capitalization don't matter. Press Ctrl+Space to pause/play the audio
+        without leaving the text box.
+      </p>
+      <textarea
+        className="dictation-textarea"
+        value={typedText}
+        onChange={(event) => setTypedText(event.target.value)}
+        placeholder="Type what you hear here..."
+        rows={7}
+        disabled={checked}
+      />
+      {!checked ? (
+        <button
+          type="button"
+          className="show-answers-btn"
+          onClick={handleCheck}
+          disabled={!typedText.trim()}
+        >
+          Check my answer
+        </button>
+      ) : (
+        <div className="dictation-result">
+          <p className="dictation-score">
+            Score: <strong>{result.scorePercent}%</strong>
+          </p>
+          <p className="dictation-score-hint">
+            Green = you got that word right. Red = wrong or missing.
+          </p>
+          <p className="dictation-correct-text">
+            {result.wordResults.map((wordResult, index) => (
+              <span
+                key={index}
+                className={wordResult.correct ? 'dictation-word-correct' : 'dictation-word-wrong'}
+              >
+                {wordResult.word}{' '}
+              </span>
+            ))}
+          </p>
+          <button type="button" className="show-answers-btn" onClick={handleTryAgain}>
+            Try again
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Palavras curtas/funcionais que não viram lacuna (artigo, pronome, verbo
 // auxiliar...) — a ideia é sortear palavras de conteúdo (substantivos,
 // verbos, números "grandes"), como no exemplo original ("cheese" em vez de
@@ -5511,6 +5866,89 @@ function saveListeningAttempt(userName, trackId, scorePercent) {
   } catch (error) {
     // Armazenamento indisponível — segue funcionando, só sem estatística.
   }
+}
+
+// Mesmo padrão de estatísticas do Listening (ver acima), mas em namespace
+// próprio ("dictation:" em vez de "listening:") — os dois exercícios usam
+// os mesmos tracks/áudio como fonte, mas são atividades diferentes (Listening
+// é "preencha a lacuna vendo o texto", Dictation é "escreva tudo só de
+// ouvido"), então cada um guarda o próprio histórico de tentativas.
+const dictationStatsKey = (userName, trackId) => userKey(userName, `dictation:${trackId}:stats`);
+
+function loadDictationStats(userName, trackId) {
+  if (!userName) return null;
+  try {
+    const raw = window.localStorage.getItem(dictationStatsKey(userName, trackId));
+    return raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function saveDictationAttempt(userName, trackId, scorePercent) {
+  if (!userName) return;
+  try {
+    const prev = loadDictationStats(userName, trackId);
+    const next = {
+      attempts: (prev?.attempts || 0) + 1,
+      lastScorePercent: scorePercent,
+      lastAttemptAt: new Date().toISOString(),
+    };
+    window.localStorage.setItem(dictationStatsKey(userName, trackId), JSON.stringify(next));
+  } catch (error) {
+    // Armazenamento indisponível — segue funcionando, só sem estatística.
+  }
+}
+
+// Compara o texto digitado com o texto correto palavra por palavra (LCS —
+// maior subsequência comum — em vez de comparar índice a índice, pra não
+// penalizar o resto da frase inteira só porque uma palavra foi pulada ou
+// adicionada no meio). Cada palavra é normalizada (minúsculas, sem
+// pontuação) antes de comparar. Retorna o score em % e a lista de palavras
+// esperadas marcadas como certas/erradas, pra destacar visualmente.
+function normalizeDictationWord(word) {
+  return word.toLowerCase().replace(/[.,!?"'’;:()]/g, '');
+}
+
+function scoreDictationAnswer(typedText, correctText) {
+  const typedWords = typedText.trim().split(/\s+/).filter(Boolean).map(normalizeDictationWord);
+  const correctWords = correctText.trim().split(/\s+/).filter(Boolean);
+  const correctNormalized = correctWords.map(normalizeDictationWord);
+
+  // Programação dinâmica clássica de LCS entre as duas listas de palavras.
+  const n = typedWords.length;
+  const m = correctNormalized.length;
+  const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = 1; i <= n; i += 1) {
+    for (let j = 1; j <= m; j += 1) {
+      if (typedWords[i - 1] === correctNormalized[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1] + 1;
+      } else {
+        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+      }
+    }
+  }
+
+  // Percorre a matriz de trás pra frente marcando quais palavras corretas
+  // fazem parte da maior subsequência em comum (as "acertadas").
+  const matched = new Array(m).fill(false);
+  let i = n;
+  let j = m;
+  while (i > 0 && j > 0) {
+    if (typedWords[i - 1] === correctNormalized[j - 1]) {
+      matched[j - 1] = true;
+      i -= 1;
+      j -= 1;
+    } else if (dp[i - 1][j] >= dp[i][j - 1]) {
+      i -= 1;
+    } else {
+      j -= 1;
+    }
+  }
+
+  const wordResults = correctWords.map((word, index) => ({ word, correct: matched[index] }));
+  const scorePercent = m === 0 ? 100 : Math.round((dp[n][m] / m) * 100);
+  return { scorePercent, wordResults };
 }
 
 // Tela do exercício de um track (ex.: CD1 Track 13): player de áudio no topo

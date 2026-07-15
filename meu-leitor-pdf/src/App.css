@@ -15,6 +15,46 @@
 
 .app-shell { display: flex; flex-direction: column; height: 100vh; }
 
+/* Fundo translúcido/desfocado (a mesma imagem da Home, openCourse.png) nas
+   telas Courses hub, Listening (source+exercícios, mesma classe --courses),
+   My Words e My Profile. position:fixed (não absolute) pra não "rolar
+   junto" quando a lista interna de alguma dessas telas tem scroll próprio
+   (ex.: .wordbook-list, .course-links em "Choose an exercise") — sempre
+   cobre a viewport visível, parado, como um pano de fundo. z-index:0 fica
+   atrás do conteúdo normal (painéis já são brancos ~75% opacos, então o
+   fundo aparece sutilmente atrás/ao redor deles). pointer-events:none pra
+   nunca atrapalhar cliques. */
+.landing-page.landing-page--courses,
+.landing-page.vocabulary-mode.wordbook-mode,
+.landing-page.vocabulary-mode.profile-mode {
+  position: relative;
+}
+
+.landing-page.landing-page--courses::before,
+.landing-page.vocabulary-mode.wordbook-mode::before,
+.landing-page.vocabulary-mode.profile-mode::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  /* --page-hero-bg é setada via inline style em .app-shell (App.js) — CSS
+     url() com caminho literal do public/ não é resolvido pelo css-loader
+     do CRA (só funciona em atributos JSX tipo src="/openCourse.png"). */
+  background-image: var(--page-hero-bg);
+  background-size: cover;
+  background-position: center;
+  filter: blur(3px);
+  opacity: 0.16;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.landing-panel.course-links-panel,
+.landing-panel.wordbook-panel,
+.landing-panel.profile-panel {
+  position: relative;
+  z-index: 1;
+}
+
 /* Exceção pras 3 grades de units (Vocabulary/American1/Grammar English A1 —
    classe aplicada via JS só nessas telas, ver App.js): elas deixam de
    propósito a lista de units (e, no caso do Grammar English A1, também
@@ -267,9 +307,38 @@ body {
   background: var(--landing-light-gradient);
 }
 
+/* "My Words": nada de calc(100vh - Npx) manual (era impreciso e deixava a
+   página "quase" cabendo, criando uma barra de rolagem externa indesejada
+   que arrastava até o topo fixo junto). align-items:stretch faz o painel
+   esticar pra ocupar exatamente a altura disponível dessa página (calculada
+   pelo próprio flexbox, sem contas na mão), e overflow:hidden garante que
+   essa página em si NUNCA vira scroll container — só a lista de palavras
+   (.wordbook-list) rola, dentro do painel. min-height:0 derruba o
+   min-height:calc(100vh - 72px) herdado de .landing-page — esse valor (72px)
+   não bate com a altura real do .app-header (81px) e, somado ao padding,
+   forçava uma altura mínima maior que o espaço disponível de verdade,
+   estourando o app-shell e criando a barra de rolagem externa indesejada. */
+.landing-page.vocabulary-mode.wordbook-mode {
+  padding-top: 16px;
+  align-items: stretch;
+  overflow: hidden;
+  min-height: 0;
+}
+
 .landing-page.landing-page--home,
 .landing-page.landing-page--courses {
   background: var(--landing-light-gradient);
+}
+
+/* min-height:calc(100vh - 72px) da regra base .landing-page assume um
+   header de 72px — o real (.app-header) tem 81px, e a diferença (9px),
+   somada ao padding-bottom (40px, content-box = soma por fora), força uma
+   altura mínima maior que o espaço realmente disponível e cria overflow/
+   scroll na página mesmo com conteúdo que já caberia (mesma causa raiz
+   corrigida em .landing-page.vocabulary-mode.wordbook-mode). min-height:0
+   deixa o flex encolher pro tamanho real disponível. */
+.landing-page.landing-page--home {
+  min-height: 0;
 }
 
 /* Tela "Courses": sem isso, o align-items:center padrão de .landing-page
@@ -284,6 +353,8 @@ body {
   align-items: flex-start;
   padding-top: 130px;
   overflow: auto;
+  /* mesmo fix de min-height que .landing-page--home — ver comentário ali. */
+  min-height: 0;
 }
 
 .home-hero {
@@ -295,9 +366,17 @@ body {
   width: 100%;
 }
 
+/* max-height (em vh, acompanha a altura da tela do usuário) evita que a
+   Home precise rolar — com o TodayPlanCard visível (usuário logado), a
+   imagem em largura total (630px numa tela de 900px) empurrava o conteúdo
+   pra além da viewport. width/height:auto (em vez do antigo width:100%;
+   height:auto) deixa a imagem encolher proporcionalmente pelo lado que
+   for mais restritivo (largura OU altura, o que "estourar" primeiro). */
 .home-hero-image {
-  width: 100%;
+  width: auto;
   height: auto;
+  max-width: 100%;
+  max-height: 42vh;
   display: block;
   border-radius: 28px;
   box-shadow: 0 32px 80px rgba(30, 58, 95, 0.18);
@@ -397,8 +476,9 @@ body {
      ficam sobre o fundo claro (.landing-page.vocabulary-mode) em vez do
      roxo escuro — o texto branco original ficava ilegível, então só as
      cores da caixa mudam aqui pra um esquema claro; layout/estrutura
-     continuam os mesmos. */
-  background: rgba(255, 255, 255, 0.75);
+     continuam os mesmos. Opaco (não translúcido) — em My Words (também usa
+     essa classe) esse painel fica sobre o fundo desfocado --page-hero-bg. */
+  background: #fbfcfd;
   border: 1px solid rgba(27, 58, 94, 0.1);
 }
 
@@ -596,19 +676,22 @@ body {
    de cores já feito em .landing-panel.vocabulary-page, texto branco original
    ficava ilegível — só cores, layout intacto. */
 .landing-panel.course-links-panel {
-  background: rgba(255, 255, 255, 0.75);
+  background: #fbfcfd;
   border: 1px solid rgba(27, 58, 94, 0.1);
 }
 
 .landing-panel.course-links-panel .course-link {
   color: #1b3a5e;
-  background: rgba(27, 58, 94, 0.05);
+  /* Opaco (não rgba translúcido) — essa tela tem o fundo desfocado
+     (--page-hero-bg, ver .landing-page--courses::before) atrás do painel,
+     e um fundo translúcido deixava a imagem vazar através dos cartões. */
+  background: #f3f5f7;
   border-color: rgba(27, 58, 94, 0.12);
 }
 
 .landing-panel.course-links-panel .course-link:hover,
 .landing-panel.course-links-panel .course-link:focus-visible {
-  background: rgba(27, 58, 94, 0.1);
+  background: #e9edf2;
   border-color: rgba(139, 92, 246, 0.5);
 }
 
@@ -624,7 +707,7 @@ body {
    .vocabulary-page. */
 .landing-panel.course-links-panel .vocabulary-link {
   color: #1b3a5e;
-  background: rgba(27, 58, 94, 0.05);
+  background: #f3f5f7;
   border-color: rgba(27, 58, 94, 0.12);
 }
 
@@ -670,7 +753,7 @@ body {
    branco original (herdado de .landing-panel) ficava ilegível. Layout e
    estrutura continuam os mesmos. */
 .landing-panel.profile-panel {
-  background: rgba(255, 255, 255, 0.75);
+  background: #fbfcfd;
   border: 1px solid rgba(27, 58, 94, 0.1);
 }
 
@@ -838,16 +921,16 @@ body {
 
 .profile-panel .profile-course-toggle {
   border-color: rgba(27, 58, 94, 0.25);
-  background: rgba(27, 58, 94, 0.05);
+  background: #f3f5f7;
   color: #1b3a5e;
 }
 
 .profile-panel .profile-course-toggle:hover {
-  background: rgba(27, 58, 94, 0.12);
+  background: #e9edf2;
 }
 
 .profile-panel .profile-reset-btn {
-  background: rgba(27, 58, 94, 0.05);
+  background: #f3f5f7;
   border-color: rgba(27, 58, 94, 0.12);
   color: #1b3a5e;
 }
@@ -925,6 +1008,36 @@ body {
    própria E a página rolava por fora ao mesmo tempo — duas barras. */
 .landing-page.vocabulary-mode.listening-mode {
   overflow: visible;
+}
+
+/* "Choose an exercise" (300+ tracks): mesmo motivo/tratamento do painel
+   fixo + lista com scroll próprio de "My Words" (.wordbook-panel/-list) —
+   overflow:visible acima (que empurra a rolagem pro app-shell) some pra
+   essa tela específica, porque 'listening-tracks' não está na lista de
+   app-shell--allow-grow (nunca precisou crescer sem limite; o certo aqui é
+   um painel do tamanho da tela com só a lista de exercícios rolando dentro
+   dele, não a página inteira virando uma barra de rolagem gigante).
+   align-items:stretch faz o painel esticar pra altura disponível (calculada
+   pelo flexbox, sem calc(100vh-Npx) manual — ver .landing-page--home). */
+.landing-page.vocabulary-mode.listening-mode.listening-tracks-mode {
+  overflow: hidden;
+  align-items: stretch;
+}
+
+.landing-panel.listening-tracks-mode {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Título, botão "Back", busca e filtro ficam no tamanho natural deles
+   (flex:none, o padrão pra filhos flex sem flex-grow); só a lista de
+   exercícios cresce e ganha scroll próprio. */
+.listening-tracks-mode .course-links {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 /* .landing-panel p (a regra base, branca) tem mais especificidade que uma
@@ -1023,6 +1136,79 @@ body {
   margin: 0;
   color: rgba(27, 58, 94, 0.75);
   font-size: 14px;
+}
+
+/* ==== Dictation (ouve sem ver o texto, digita o que ouviu) ==== */
+
+.dictation-exercise {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dictation-textarea {
+  width: 100%;
+  min-height: 160px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(27, 58, 94, 0.18);
+  background: #fff;
+  color: #1b3a5e;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.6;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.dictation-textarea:focus {
+  outline: none;
+  border-color: var(--purple-500);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);
+}
+
+.dictation-textarea:disabled {
+  background: #f3f5f7;
+  color: rgba(27, 58, 94, 0.7);
+}
+
+.dictation-result {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dictation-score {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #1b3a5e;
+}
+
+.dictation-score-hint {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(27, 58, 94, 0.6);
+}
+
+.dictation-correct-text {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #f3f5f7;
+  border: 1px solid rgba(27, 58, 94, 0.12);
+  line-height: 1.8;
+}
+
+.dictation-word-correct {
+  color: #1a7a3d;
+  font-weight: 600;
+}
+
+.dictation-word-wrong {
+  color: #c0392b;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: rgba(192, 57, 43, 0.5);
 }
 
 .listening-sentences {
@@ -1328,7 +1514,7 @@ body {
   margin: 0 0 16px;
   padding: 0 12px;
   border-radius: 12px;
-  background: rgba(27, 58, 94, 0.05);
+  background: #f3f5f7;
   border: 1px solid rgba(27, 58, 94, 0.12);
   color: rgba(27, 58, 94, 0.55);
 }
@@ -2752,7 +2938,7 @@ body {
   padding: 10px 14px;
   border-radius: 12px;
   border: 1px solid rgba(27, 58, 94, 0.12);
-  background: rgba(27, 58, 94, 0.05);
+  background: #f3f5f7;
   color: #1b3a5e;
   font: inherit;
   text-align: left;
@@ -2805,10 +2991,30 @@ body {
 }
 
 /* ==== "My Words" (caderno de vocabulário + flashcards) ==== */
+/* A distância até o header é controlada pelo padding-top de
+   .landing-page.vocabulary-mode.wordbook-mode (16px). A altura do painel
+   NÃO usa calc(100vh - Npx) manual (impreciso, sobrava/faltava 1px e virava
+   scrollbar externa indesejada) — em vez disso, align-items:stretch nessa
+   página (ver .wordbook-mode) faz o painel esticar pra altura disponível
+   calculada pelo próprio flexbox; max-height:none aqui derruba o
+   max-height:calc(...) herdado da regra base .landing-panel.vocabulary-page.
+   overflow:hidden (também herdado) mantém o painel em si sem scroll — só a
+   lista dentro dele (.wordbook-list) ganha barra de rolagem própria. */
+.landing-panel.wordbook-panel {
+  max-height: none;
+}
 
 .wordbook-panel {
   max-width: 900px;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.wordbook-sticky-top {
+  flex: none;
+  background: rgba(255, 255, 255, 0.97);
+  padding-bottom: 18px;
+  margin-bottom: 4px;
 }
 
 .wordbook-head {
@@ -2842,7 +3048,7 @@ body {
   gap: 10px;
   padding: 14px 16px;
   border-radius: 14px;
-  background: rgba(27, 58, 94, 0.05);
+  background: #f3f5f7;
   border: 1px solid rgba(27, 58, 94, 0.12);
 }
 
@@ -2982,9 +3188,16 @@ body {
   max-height: 100px;
 }
 
+/* A lista rola só dentro do painel fixo (.wordbook-panel fica sticky em
+   top:160px com max-height limitada). Usa flex:1 pra crescer até encher o
+   espaço disponível, depois ganha barra de rolagem própria. */
 .wordbook-list {
   display: grid;
   gap: 10px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .wordbook-panel .wordbook-empty {
@@ -3000,7 +3213,7 @@ body {
   gap: 14px;
   padding: 12px 16px;
   border-radius: 14px;
-  background: rgba(27, 58, 94, 0.05);
+  background: #f3f5f7;
   border: 1px solid rgba(27, 58, 94, 0.12);
 }
 
