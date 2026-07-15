@@ -26,6 +26,22 @@ import './App.css';
 // (ex.: um listening da Grammar Elementary) sem precisar remodelar nada.
 const LISTENING_SOURCES = [listeningAmerican1, listeningVocabulary];
 
+// Rótulo curto de origem mostrado ao lado do número do exercício (ex.:
+// "unit 7-c") — tracks do Vocabulary têm unit/letter próprios; tracks do
+// American1 não têm esses campos, então cai no audioLabel (ex.: "1-13").
+const listeningTrackLabel = (track) => {
+  if (track.unit && track.letter) {
+    return `unit ${track.unit}-${track.letter.toLowerCase()}`;
+  }
+  if (track.audioLabel) {
+    return track.audioLabel.toLowerCase();
+  }
+  if (track.cd && track.track) {
+    return `${track.cd.replace(/^CD/i, '')}-${track.track}`.toLowerCase();
+  }
+  return '';
+};
+
 // URL do gabarito único (multipágina), servido por src/setupProxy.js.
 const ANSWERS_KEY_URL = '/answers-key.pdf';
 
@@ -3677,7 +3693,7 @@ function App() {
                         href="#0"
                         onClick={(event) => { event.preventDefault(); handleOpenListeningTrack(track); }}
                       >
-                        <span>Listening Exercise n. {track.number}</span>
+                        <span>Listening Exercise n. {track.number} ({listeningTrackLabel(track)})</span>
                         <small>{track.sentences.length} sentences · fill in the blank</small>
                         {stats && (
                           <small className="listening-track-stats">
@@ -3722,7 +3738,7 @@ function App() {
                 )}
               </div>
               <p className="eyebrow">{source?.title || 'Listening'}</p>
-              <h1>{track ? `Listening Exercise n. ${track.number}` : 'Exercise'}</h1>
+              <h1>{track ? `Listening Exercise n. ${track.number} (${listeningTrackLabel(track)})` : 'Exercise'}</h1>
               {track ? (
                 <ListeningClozeExercise key={track.id} track={track} userName={userName} />
               ) : (
