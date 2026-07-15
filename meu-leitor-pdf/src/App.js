@@ -2568,7 +2568,7 @@ function App() {
             : '';
 
   return (
-    <div className={`app-shell${['vocabulary', 'american1', 'grammarElem'].includes(activePage) ? ' app-shell--allow-grow' : ''}`}>
+    <div className={`app-shell${['vocabulary', 'american1', 'grammarElem', 'courses'].includes(activePage) ? ' app-shell--allow-grow' : ''}`}>
       <header className="app-header">
         {/* Left slide menu: o botão hambúrguer abre um painel deslizando da
             esquerda (.side-drawer), com um ícone por item — substitui o

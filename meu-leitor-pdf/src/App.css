@@ -272,6 +272,20 @@ body {
   background: var(--landing-light-gradient);
 }
 
+/* Tela "Courses": sem isso, o align-items:center padrão de .landing-page
+   centraliza verticalmente o conteúdo — inofensivo com só os 3 cartões de
+   curso, mas quando a busca unificada traz muitos resultados e o conteúdo
+   fica mais alto que a viewport, centralizar empurra o topo pra cima e por
+   trás do header (position:sticky), que "perde a referência" (mesmo motivo
+   documentado em .app-shell--allow-grow). Mesmo tratamento (align-items:
+   flex-start + padding-top + overflow:auto) que .landing-page.vocabulary-mode
+   já usa nas 3 grades de units. */
+.landing-page.landing-page--courses {
+  align-items: flex-start;
+  padding-top: 130px;
+  overflow: auto;
+}
+
 .home-hero {
   display: flex;
   flex-direction: column;
