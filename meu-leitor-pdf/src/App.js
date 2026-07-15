@@ -3876,7 +3876,7 @@ function App() {
                 ) : 'Exercise'}
               </h1>
               {track ? (
-                <ListeningClozeExercise key={track.id} track={track} userName={userName} />
+                <ListeningClozeExercise key={track.id} track={track} userName={userName} onAddWord={handleAddWord} />
               ) : (
                 <p>Exercise not found.</p>
               )}
@@ -5468,7 +5468,7 @@ function saveListeningAttempt(userName, trackId, scorePercent) {
 // corrigidas todas de uma vez pelo botão "Check answers" no final. A barra de
 // espaço toca/pausa o áudio sempre que o foco não estiver num campo de texto
 // (senão digitar um espaço dentro de uma resposta pausaria o áudio).
-function ListeningClozeExercise({ track, userName }) {
+function ListeningClozeExercise({ track, userName, onAddWord }) {
   // regenerateKey só existe pra forçar o useMemo a sortear de novo — não
   // representa nenhum dado real, só entra na dependência pra invalidar o
   // cache quando o usuário pede "Do it again with other words".
@@ -5480,6 +5480,7 @@ function ListeningClozeExercise({ track, userName }) {
   const [answers, setAnswers] = useState({});
   const [checked, setChecked] = useState(false);
   const [showAnswers, setShowAnswers] = useState(false);
+  const [addedWordsCount, setAddedWordsCount] = useState(0);
   const audioBarRef = useRef(null);
 
   useEffect(() => {
@@ -5527,6 +5528,7 @@ function ListeningClozeExercise({ track, userName }) {
     setChecked(true);
     let total = 0;
     let correct = 0;
+    const missedWords = [];
     sentenceModels.forEach((model, sentenceIndex) => {
       let blankIdx = -1;
       model.parts.forEach((part) => {
@@ -5536,11 +5538,24 @@ function ListeningClozeExercise({ track, userName }) {
         const value = answers[`${sentenceIndex}:${blankIdx}`] || '';
         if (value.trim() && normalizeListeningAnswer(value) === normalizeListeningAnswer(part.word)) {
           correct += 1;
+        } else if (value.trim()) {
+          // Usuário respondeu algo, mas errou — capturar pro caderno de erros
+          const sentenceFull = model.label + model.parts.map((p) => (p.type === 'blank' ? p.word : p.value)).join('');
+          missedWords.push({ word: part.word, context: sentenceFull });
         }
       });
     });
     if (total > 0) {
       saveListeningAttempt(userName, track.id, Math.round((correct / total) * 100));
+    }
+    // Adicionar palavras erradas ao My Words
+    if (missedWords.length > 0 && onAddWord) {
+      const uniqueMissed = Array.from(new Map(missedWords.map((w) => [normalizeListeningAnswer(w.word), w])).values());
+      uniqueMissed.forEach(({ word, context }) => {
+        onAddWord({ word, meaning: '', example: '', context });
+      });
+      setAddedWordsCount(uniqueMissed.length);
+      setTimeout(() => setAddedWordsCount(0), 4000);
     }
   };
 
@@ -5629,6 +5644,9 @@ function ListeningClozeExercise({ track, userName }) {
           <span className="listening-check-summary">
             {correctBlanks} / {totalBlanks} correct
           </span>
+        )}
+        {addedWordsCount > 0 && (
+          <span className="listening-words-added">✓ Added {addedWordsCount} word{addedWordsCount !== 1 ? 's' : ''} to My Words</span>
         )}
       </div>
     </div>

@@ -1122,6 +1122,22 @@ body {
   color: #1b3a5e;
 }
 
+/* Feedback quando palavras erradas são adicionadas ao My Words — aparece
+   por 4 segundos e desaparece, reforçando que o erro foi capturado. */
+.listening-words-added {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2fa86b;
+  animation: fadeInOut 4s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 /* Palavra certa exibida ao lado da lacuna quando "Show answers" está ativo
    — não mexe no que o usuário digitou, só mostra a resposta ao lado. */
 .listening-answer-hint {
