@@ -148,110 +148,345 @@ Cada palavra pode opcionalmente ter uma imagem, pra reforçar a memória visual 
 - Lista de palavras (`WordbookPage`) mostra uma thumbnail 48×48 (`.wordbook-entry-thumb`) ao lado de cada palavra que tem imagem; sem imagem, nenhuma thumbnail (regressão testada).
 - Verificado via Playwright (21 checks): upload real de arquivo (`setInputFiles`), drag&drop simulado via `DataTransfer` sintético + `dispatchEvent`, paste simulado via `ClipboardEvent` sintético (não é o mesmo canal que um Ctrl+V real do SO, mas exercita o mesmíssimo código do `handlePaste` — confirmado funcionando em teste isolado), thumbnail na lista, dropzone resetando após salvar, botão de remover antes de salvar, persistência como data URL JPEG em localStorage, e a inversão completa do flashcard (frente sem palavra, botão "Show word", verso revelando a palavra) comparada lado a lado com uma carta sem imagem no mesmo baralho de prática.
 
-## Atualizações 2026-07-09 a 2026-07-16 (resumo, menos exaustivo que as seções acima)
+## Atualizações 2026-07-09 a 2026-07-16
 
-As seções abaixo cobrem tudo adicionado depois de 2026-07-07 até esta atualização. São mais
-concisas que os blocos acima (que têm o histórico completo de decisões/testes de cada feature)
-— para detalhes finos de qualquer uma delas, ver as memórias de sessão correspondentes
-(`american1-*`, `panel-toggle-feature`, `left-slide-menu-feature`, `backup-restore-feature`,
-`grammar-elem-unit-titles`, etc.).
+Tudo adicionado depois do "Atualizações 2026-07-07" acima, no mesmo nível de detalhe do resto
+deste documento. Fontes: memórias de sessão (`american1-*`, `panel-toggle-feature`,
+`left-slide-menu-feature`, `backup-restore-feature`, `grammar-elem-unit-titles`,
+`course-rename-and-grid-scroll-fix`, `tablet-responsive-fixes`, `unit-grid-badges-continue-feature`,
+`reader-title-bar-feature`, `all-units-toolbar-link`, `soundbank-*`, `notes-panel-width-ratio`) e
+o próprio código-fonte atual.
 
 ### Terceiro curso: Grammar English A1 (Grammar Elementary)
-"Essential Grammar in Use, unit by unit — reading, exercises and audio": 115 units + Appendixes
-(índice próprio, `grammar_elem_appendix_index.json`) + 35 Additional Exercises
+"Essential Grammar in Use, unit by unit — reading, exercises and audio": **115 units**
+(`GRAMMAR_ELEM_UNIT_COUNT`), mais **7 Appendixes** (índice próprio,
+`grammar_elem_appendix_index.json`) e **35 Additional Exercises**
 (`GRAMMAR_ELEM_ADDITIONAL_COUNT`). Cada unit tem um par de PDFs de página única (leitura +
-exercícios) e um punhado de áudios curtos, tocados inline ao lado da letra da seção (não
-ancorado sobre o PDF como nos outros dois cursos). Títulos das 115 units + 7 apêndices foram
-extraídos via font-size/posição no PDF (não ordem de texto — ver memória
-`grammar-elem-unit-titles`, inclui um gotcha de mojibake `sys.stdin`/cp1252 no Windows).
+exercícios, mesmo padrão `_L`/`_E` do curso Vocabulary) e um punhado de áudios curtos
+(`grammar_elem_audio.json`), tocados **inline ao lado da letra da seção** (não ancorado
+sobre o PDF em overlay, diferente dos outros dois cursos — os PDFs desse curso não têm o
+mesmo tipo de âncora visual/textual que os outros exploram).
 
-### American English A1 — recursos adicionais
-- **Reference links**: cada seção A/B/C ganhou botões pra Grammar Bank/Vocabulary
-  Bank/Communication/Writing — merge de 2 páginas (GB/SB) ou botão de página única
-  (VB/C/W), com notas isoladas por página (`american1_references.json`, dados derivados
-  de `pages_others.txt`).
-- **Reference audio anchors**: áudio ancorado também nas páginas de Grammar/Vocabulary Bank
-  (`american1_reference_audio_anchors.json`), mesmo padrão de detecção do áudio ancorado
-  original das units.
-- **Practical English (vídeos)**: link de vídeo mp4 por episódio (abre em nova aba),
-  `american1_videos.json` — todos os 6 episódios cobertos.
-- **Transcrições** (`american1_transcriptions_audio_anchors.json`): áudio ancorado nas
-  páginas de transcrição também.
-- **Sound Bank standalone** (link no menu principal, fora de qualquer unit): abre direto as
-  páginas 166-167 (pronúncia de palavras), reaproveitando a tela de referência do American1;
-  47 âncoras de áudio próprias, extraídas com PyMuPDF + ajuste manual de posição (ferramenta de
-  drag-to-position usada uma vez e depois removida). Um bug real foi corrigido aqui: a barra de
-  carregamento ficava girando pra sempre em páginas sem nenhuma âncora de áudio (nunca tinha
-  a chance de resolver) — corrigido gateando no `pagesNeeded.length > 0`.
-- **Reorganização de pastas** (2026-07-09): `pdfs/` foi dividido em `pdfs/` e
-  `videos/StudentBook`+`teacher_book`, com `setupProxy.js` atualizado pros novos caminhos — essa
-  árvore é editada manualmente pelo usuário, então releia a árvore ao vivo antes de confiar em
-  caminhos antigos.
+- **Extração dos títulos (2026-07-11)**: até essa data o curso não tinha nenhum
+  título/tópico em lugar nenhum (a grade só mostrava "Unit 1".."Unit 115", e a busca por
+  palavra-chave só batia no número). Extraídos via PyMuPDF, **só do PDF `_L`** (o `_E` é
+  só exercícios, nunca tem o título de verdade). Uma primeira tentativa por ordem de leitura
+  do texto quebrou em ~6 units onde o PDF lista as letras de seção "A"/"B"/"C" **antes** do
+  título na ordem interna do texto, mesmo elas aparecendo visualmente abaixo dele (artefato de
+  como esse livro específico foi diagramado em colunas) — corrigido usando a **posição** (y)
+  do primeiro span de texto exatamente `"A"` em fonte 21-25pt como corte: tudo acima disso
+  (exceto o rótulo "Unit N") é o título. Duas units (110, 114) não têm nenhuma subseção A/B/C
+  (prosa contínua) — o corte cai simplesmente abaixo do bloco de título (≥36pt) nesses casos.
+  Um segundo gotcha: a unit 82 tem uma ilustração com um "?" gigante em fonte **91** (gráfico
+  tipo diagrama de Venn de "both/either/neither") que uma heurística ingênua de "maior fonte da
+  página" pegava por engano — o corte por posição evita isso de graça, já que o "?" gigante
+  fica bem abaixo da letra "A".
+  - **Gotcha de encoding (Windows)**: um passo de "reordenar chaves" via
+    `cat file | python -c "... json.load(sys.stdin) ..."` corrompeu silenciosamente apóstrofos/
+    reticências (`don't` → `donâ€™t`) porque `sys.stdin` do Python decodifica como cp1252 por
+    padrão nesse setup, mesmo recebendo bytes UTF-8 por pipe — a corrupção era invisível no
+    terminal Bash/git-bash (que também exibe mal esses bytes, então um `cat`/`print()` de
+    conferência parecia igualmente "correto" nos dois casos) e só apareceu num screenshot
+    Playwright da grade renderizada. Lição: nunca fazer um texto extraído passar por
+    `sys.stdin` do Python via pipe nesse Windows — escrever direto do dicionário em memória com
+    `open(path, "w", encoding="utf-8")`, e conferir conteúdo não-ASCII com a ferramenta `Read`
+    (que lida com UTF-8 corretamente), nunca confiando em `cat`/`print` do terminal pra provar
+    corretude OU corrupção.
+  - Dados em `grammar_elem_index.json` (`{"1": "am/is/are", ...}`, títulos multi-linha do livro
+    unidos com `" / "`), lidos via `getGrammarElemUnitTitle(unit)`. Os 7 apêndices seguiram o
+    mesmo método (extraídos de `appendix <n> p1.pdf`, nunca p2), com uma armadilha própria: o
+    rótulo "Appendix N" aparece **duplicado** na página (uma cópia "fantasma" mais fraca atrás
+    da real, ambas ≥36pt) — precisou excluir explicitamente spans com texto exatamente
+    `"Appendix N"` antes de escolher o bloco de título.
+  - Títulos das units (não dos apêndices/additional, que ficaram fora de escopo dessa busca)
+    entraram na busca por palavra-chave da grade — confirmado "phrasal verbs" → exatamente as
+    units 114/115.
+
+### American English A1 — recursos de referência adicionais
+- **Reference links (2026-07-04)**: cada seção A/B/C (nunca Practical English/Review and
+  Check) ganhou botões pequenos e coloridos por tipo, abrindo a(s) página(s) de apêndice que o
+  livro referencia — Grammar Bank, Vocabulary Bank, Sound Bank, Communication, Writing.
+  Fonte dos dados: `pages_others.txt` (raiz do projeto, verificado manualmente página a página),
+  cruzado com `american1_index.json` e codificado em `american1_references.json`
+  (`{unit, section, refs:[{type, pages:[...]}]}`).
+  - **Regra de pareamento**: Grammar Bank e Sound Bank são sempre um par de 2 páginas
+    consecutivas (mesclado em memória, igual às seções normais — número impresso é a primeira
+    da dupla). Vocabulary Bank, Communication e Writing são sempre página única — quando
+    Communication lista dois números (ex.: "A p.101 B p.106"), são **dois botões separados**,
+    não um par pra mesclar (confirmado inspecionando o PDF: as duas páginas não são
+    relacionadas entre si).
+  - **PDFs fonte**: pastas irmãs (`grammar_bank/`, `Vocabulary_bank/`, `sound_bank/` — só
+    páginas 166-167 no total, um spread único referenciado por muitas units —, `comunication/`
+    com esse nome mesmo, sem o segundo "m", `writing/`), hoje sob
+    `American English Level 1/pdfs and videos/StudentBook/` (ver reorganização de pastas
+    abaixo). Duas delas foram renomeadas manualmente (2026-07-09): `Vocabulary_bank` para
+    `p<page> <título>.pdf`, `grammar_bank` para `grammar bank L p<page>.pdf`/
+    `grammar bank E p<page>.pdf` — `setupProxy.js` resolve cada convenção de nome
+    (`naming: 'legacy'|'page-prefix'|'page-suffix'`) escaneando o diretório com regex em vez
+    de montar o caminho direto, já que o resto do nome do arquivo não é derivável só do número
+    da página.
+  - **Notas isoladas por página de referência**, não por seção — `notes:american1-ref:<type>:<page>`
+    (ex.: Grammar Bank p.130 tem uma nota só, compartilhada pelas 3 seções 4A/4B/4C que
+    apontam pra ela), exigência explícita do usuário.
+  - **"Show Answers" nas páginas de referência (2026-07-09)**: ganharam a mesma faixa de
+    respostas do Teacher's Book que a tela de seção já tinha (reaproveita `ref.unit`/
+    `ref.section` da própria seção que abriu a referência). Nessa mesma passada, tanto a faixa
+    de respostas da seção quanto a da referência foram trocadas de um `<iframe>` cru pra um
+    `PdfWorkspace` completo (zoom/navegação/busca próprios), com um novo prop `initialTool`
+    (`'hand'` nas faixas de resposta, por pedido explícito — abre já pronto pra arrastar em vez
+    de selecionar texto) — exigiu adicionar `@react-pdf-viewer/selection-mode` como dependência
+    explícita do `package.json` (já vinha como transitiva do `default-layout`). `.section-answers-strip`
+    aumentada de 25%→42% de altura nessa passada (depois reduzida pra 34%, ver "Painel toggle" abaixo).
+- **Reference audio anchors (2026-07-04)**: as páginas de Grammar/Vocabulary Bank também
+  ganharam áudio ancorado (`american1_reference_audio_anchors.json`, chave
+  `` `${type}:${page}` `` já que páginas de referência são compartilhadas entre units, não
+  pertencem a uma só). Reaproveita o mesmíssimo componente `American1AudioReader` das páginas
+  de seção normal, só trocando o array de âncoras. **Lição de posicionamento** que valeu a pena
+  registrar: as coordenadas iniciais foram estimadas "de olho" numa imagem estática — cerca de
+  90% ficaram certas, mas 5 ficaram flutuando sobre o conteúdo errado (confirmado pelo usuário
+  visualmente). O jeito confiável que resolveu de vez: abrir a página ao vivo via Playwright,
+  pegar a `boundingBox()` real da camada de página pra calcular a escala, e medir a posição do
+  selo com um screenshot **recortado bem justo** ao redor dele (não a página inteira) — ler o
+  centro de um selo pequeno numa imagem grande é impreciso, num recorte apertado é confiável.
+  Um segundo lote de erros reportados pelo usuário revelou uma falha diferente: páginas/selos
+  **inteiramente pulados** na primeira passada (não só malposicionados) — uma página com zero
+  âncoras, ou com só 2 de 3 selos capturados porque o terceiro estava numa subseção mais abaixo.
+  Lição: ao povoar âncoras de uma página, não parar de procurar assim que "parecer" ter achado
+  o esperado — contar os selos da página inteira de forma independente e comparar com o JSON.
+- **Practical English (vídeos, 2026-07-05)**: cada "Practical English Episode N" ganhou uma
+  pasta de vídeos `.mp4` (`American1_videos.json`, array de
+  `{unit, section, folder, videos:[{label, file}]}`), servida por `setupProxy.js` via
+  `express.static` num mount `/american1-video/<slug>` por episódio. Links renderizados como
+  `<a target="_blank">` de verdade (não `window.open` via JS) — exigência explícita de abrir
+  em nova aba, resolvida de forma mais robusta que JS puro (funciona com ctrl-click, botão
+  direito, etc). Só o episódio 1 tinha vídeos na época; hoje (ver reorganização abaixo) os 6
+  episódios estão populados.
+- **Sound Bank standalone (2026-07-11)**: link no menu principal (fora de qualquer unit) que
+  abre direto as páginas 166-167, reaproveitando inteiramente a tela `american1-reference`
+  já existente — `handleOpenAmerican1SoundBank` chama o mesmo `setSelectedAmerican1Reference`
+  mas **sem** `unit`/`section`; a ausência de `ref.unit` é o sinal que a tela usa pra trocar o
+  botão "‹ Back to Unit X Y" por um rótulo estático "Sound Bank" (pedido explícito, com
+  screenshot). Nenhuma rota/tela nova precisou ser criada.
+  - **Bug real corrigido na mesma sessão**: a barra de carregamento roxa do
+    `American1AudioReader` girava pra sempre em páginas **sem nenhuma âncora de áudio**
+    (`pagesNeeded.length === 0`) — o efeito que populava `revealedPages` tinha um retorno
+    antecipado nesse caso, então a barra (gateada só em `!anyPageRevealed`) nunca tinha chance
+    de resolver. Corrigido gateando também em `pagesNeeded.length > 0`.
+  - **Áudio de pronúncia de palavras (mesma sessão)**: Sound Bank ganhou 46 players de áudio
+    (`Sound Bank Audio/<word>.mp3|wav`, nova rota `/american1-soundbank-audio`), posicionados
+    exatamente sobre cada rótulo "au `<word>`" das 2 páginas — extraído via PyMuPDF localizando
+    o token `"au"` e pegando o próximo token como a palavra, casado (case-insensitive) contra
+    os arquivos reais em disco antes de criar a âncora (44 de 46 arquivos batem no padrão
+    "au X"; `computer`/`leg` não aparecem nesse padrão nas 2 páginas mas têm áudio, então
+    ganharam âncoras inseridas manualmente depois). Os dados vivem na mesma
+    `american1_reference_audio_anchors.json`, chave `"sound:166"` — como a tela standalone e a
+    versão dentro-de-unit resolvem pro mesmíssimo `ref`, implementar uma vez cobriu as duas
+    entradas automaticamente. **Ferramenta temporária de arraste** (drag-to-position, com botão
+    "Copy positions (JSON)" e persistência de rascunho em localStorage) foi construída, usada
+    uma vez pelo usuário pra ajustar as 46 posições à mão, e **completamente removida** depois —
+    se precisar recalibrar de novo, o padrão está descrito na memória `soundbank-audio-anchors`
+    mas não deve ficar no código permanentemente. Um bug real de chave de render colidindo
+    (`${anchor.cd}-${anchor.track}`, `track` reinicia por página) foi encontrado e corrigido
+    durante esse processo (chave final: `${anchor.page}:${anchor.track}`).
+- **Reorganização de pastas (2026-07-09)**: o usuário reorganizou `American English Level 1/`
+  manualmente (não via script) para "melhor organização dos arquivos". Layout novo:
+  `American English Level 1/pdfs and videos/`, dividido em `StudentBook/` (mesmas 8 subpastas
+  de antes, um nível mais fundo) e `teacher_book/` (unidades de resposta, Practical English
+  answer-keys, Grammar/Vocabulary Extra Activities, e mais pastas ainda não referenciadas por
+  código nenhum: Communicative Extra Activities, Songs Activities, Workbook Answer Key, etc.).
+  Dois novos irmãos de topo: `Practical Englihs videos/` (o typo "Englihs" é literal, existe
+  em disco — agora com os 6 episódios completos) e `On the street videos/` (conteúdo novo,
+  ainda **não vinculado** a nenhuma rota/UI do app). `audio_files_1` a `audio_files_5` (áudio
+  de CD) ficaram no lugar, na raiz de `American English Level 1/`, intocados.
+  `setupProxy.js` foi atualizado com constantes de raiz por sub-árvore
+  (`american1StudentBookRoot`/`american1TeacherBookRoot`/etc.) e as rotas de vídeo passaram a
+  carregar `{root, dir}` em vez de só um nome de pasta. **Essa árvore é editada à mão
+  periodicamente pelo usuário — sempre reconferir com uma listagem ao vivo antes de confiar em
+  caminhos antigos, inclusive os deste próprio resumo.**
 
 ### Listening (novo, fora dos 3 cursos)
-Tela própria no menu principal (`Choose a listening source` → `Choose an exercise` →
-exercício): "fill in the blank" ouvindo o áudio, reaproveitando os mesmos tracks/áudio dos
-cursos, agrupados em `LISTENING_SOURCES` (`listening_vocabulary.json`/`listening_american1.json`).
-Cada track tem lacunas sorteadas a cada visita (não decorável), atalho `Ctrl+Space` pra
-pausar/tocar o áudio sem sair do campo de resposta, e estatísticas por track
-(`listening:<trackId>:stats`).
+Tela própria acessível pelo menu principal (`activePage: 'listening'` → `'listening-tracks'` →
+`'listening-exercise'`): exercício de "fill in the blank" ouvindo áudio, reaproveitando os
+mesmos tracks/áudio já usados nos cursos, agrupados em `LISTENING_SOURCES` (array de fontes,
+hoje `listening_vocabulary.json` e `listening_american1.json`, cada uma com `{id, title,
+description, tracks:[{id, unit, letter, title, audio, audioLabel, sentences, number}]}`).
+
+- Cada track tem lacunas sorteadas **a cada visita** (palavras de conteúdo, não
+  artigos/pronomes/etc., via uma lista de stopwords) — não é decorável de uma sessão pra outra.
+- Atalho `Ctrl+Space` pausa/toca o áudio sem sair do campo de resposta (o Space sozinho
+  continua digitando um espaço normal enquanto o foco está num input/textarea/button — só
+  Ctrl+Space intercepta nesses casos; fora de campo de texto, Space sozinho já basta).
+- Estatísticas por track em `u:<nome>:listening:<trackId>:stats` (`{attempts,
+  lastScorePercent, lastAttemptAt}`), mostradas na lista "Choose an exercise" (com filtro
+  "Hide 100% score" e busca por unit/número).
+- Qualquer palavra respondida errado ao clicar "Check answers" é **automaticamente adicionada
+  ao My Words** (com a frase de contexto completa), com uma mensagem de feedback temporária
+  ("✓ Added N words to My Words", desaparece em 4s) — ponte direta entre "errou aqui" e "vira
+  flashcard pra revisar depois", sem o aluno precisar copiar a palavra manualmente.
 
 ### Dictation ("Modo Ditado", 2026-07-16)
-Segunda tela reaproveitando os mesmos `LISTENING_SOURCES`/tracks do Listening, mas o aluno
-**não vê o texto antes** — ouve e digita tudo numa caixa só, com o mesmo atalho `Ctrl+Space`.
-"Check" compara o texto digitado com o correto via LCS (maior subsequência comum) palavra-a-
-palavra, destacando cada palavra esperada em verde (certa, na ordem certa) ou vermelho
-(errada/faltando), com score em %. Estado, handlers e estatísticas
-(`dictation:<trackId>:stats`) são **completamente separados** do Listening — implementado sem
-alterar uma linha do `ListeningClozeExercise`.
+Segunda tela reaproveitando os mesmos `LISTENING_SOURCES`/tracks do Listening (hub → lista de
+exercícios → exercício, mesmo padrão de 3 telas), mas o aluno **não vê o texto antes** — ouve
+(mesmo player completo, com `Ctrl+Space` pra pausar/tocar) e digita tudo numa caixa de texto só.
+
+- **"Check my answer"** compara o texto digitado com o texto correto (todas as `sentences` do
+  track concatenadas) via **LCS** (maior subsequência comum) palavra-a-palavra — não
+  comparação posição-a-posição, pra não penalizar a frase inteira só porque uma palavra foi
+  pulada ou uma extra foi digitada no meio. Cada palavra esperada é destacada em **verde**
+  (apareceu na ordem certa) ou **vermelho sublinhado** (errada/faltando), com o score final em
+  %.
+- **Estado, handlers e estatísticas totalmente separados do Listening**: `selectedDictationSource`/
+  `selectedDictationTrack` (variáveis próprias, não reaproveitando as do Listening),
+  `u:<nome>:dictation:<trackId>:stats` (namespace `dictation:`, nunca `listening:`) — implementado
+  sem alterar uma linha do `ListeningClozeExercise` existente, só lendo os mesmos dados de
+  tracks/áudio.
+- Rótulos de exibição (`source.title`/`eyebrow`) trocam "Listening" por "Dictation" só na
+  camada de apresentação (`.replace(/^Listening/, 'Dictation')`), sem tocar no JSON de origem
+  (que continua dizendo "Listening from..." porque é dado compartilhado com a tela de
+  Listening de verdade).
 
 ### Progress Dashboard ("Progress", 2026-07-16)
-Tela só-leitura no menu principal: cartões de estatística (palavras aprendidas/devidas,
-revisões pendentes, units dominadas somando os 3 cursos, exercícios de Listening/Dictation
-praticados), atalho "Continue where you left off", e uma barra de progresso por curso
-(não-visitado/visitado/avaliado/dominado) construída em cima da mesma lógica que as 3 grades
-de unit já usam (`getUnitBadgeStatus`/`getVocabularyUnitBadgeStatus`) — nunca diverge do que as
-grades mostram porque não duplica a lógica, só reaproveita. Não escreve nada em `localStorage`,
-só lê o que as outras features já persistem.
+Tela só-leitura, acessível pelo menu principal: cartões de estatística (palavras aprendidas,
+palavras devidas pra revisão, itens da revisão espaçada devidos, units dominadas somando os 3
+cursos, exercícios de Listening/Dictation praticados — os 3 primeiros são atalhos clicáveis pra
+My Words/Courses), uma faixa "Continue where you left off" (reaproveita
+`mostRecentLastVisited`/`handleContinueLastVisited` já existentes), e uma seção de progresso
+por curso — barra segmentada não-visitado/visitado/avaliado/dominado + legenda numérica +
+botão "Continue" próprio do curso, para os 3 cursos.
 
-### My Words — melhorias adicionais
-- **Auto-add de palavras erradas**: ao conferir um exercício de Listening, qualquer palavra
-  errada na lacuna é automaticamente adicionada ao My Words (com a frase de contexto completa),
-  com feedback visual temporário ("✓ Added N words").
-- **Click-to-add-meaning**: no flashcard, o texto "(click to add meaning)" é clicável — vira um
-  campo de edição (salva no blur/Enter, cancela no Escape) e, ao clicar, também abre em novas
-  abas o Cambridge Dictionary e o YouGlish (pronúncia em vídeos reais) para aquela palavra.
-- **Layout da tela**: painel fixo (título + Practice Words + formulário) numa posição travada
-  perto do cabeçalho, com só a lista de palavras salvas rolando dentro do próprio painel (não a
-  página inteira) — mesmo tratamento depois replicado no Dashboard.
+- **Nada é reinventado**: a contagem por curso usa a mesma
+  `getUnitBadgeStatus`/`getVocabularyUnitBadgeStatus` que as 3 grades de unit já usam (via um
+  pequeno helper `tallyUnitStatuses`) — o dashboard nunca pode divergir do que as próprias
+  grades mostram, porque não duplica a lógica de "o que conta como dominado", só reaproveita.
+  O total de units do Vocabulary vem de `unitItems.length` (100), o mesmo valor que a própria
+  grade de Vocabulary usa — não é um número hardcoded à parte.
+  Os totais de Listening/Dictation vêm de `LISTENING_SOURCES.flatMap(s => s.tracks)` (359
+  tracks) contra `loadListeningStats`/`loadDictationStats` já existentes.
+- **Só leitura** — não escreve nada em `localStorage`, é inteiramente derivado do que as
+  outras features já persistem.
+- Reaproveita o mesmo tratamento visual/de layout de "My Words" (painel fixo + fundo desfocado
+  `--page-hero-bg`, classe própria `dashboard-mode`), incluindo o mesmo bug de
+  `min-height: calc(100vh - 72px)` (assume um cabeçalho de 72px; o real tem 81px) — corrigido
+  com `min-height: 0` escopado só a essa tela, sem mexer em nenhuma outra.
+
+### My Words — melhorias adicionais (além da revisão espaçada/flashcards originais)
+- **Auto-add de palavras erradas do Listening**: ver seção "Listening" acima.
+- **Click-to-add-meaning**: no verso do flashcard, o texto "(click to add meaning)" (quando
+  ainda não há significado salvo) é clicável — abre um campo de edição inline (salva no
+  blur/Enter, cancela no Escape) e, no mesmo clique, abre em **duas novas abas**
+  `https://dictionary.cambridge.org/dictionary/english/<word>` e
+  `https://youglish.com/pronounce/<word>/english/us` (pronúncia em vídeos reais) pra aquela
+  palavra. Uma vez que a palavra já tem significado salvo, o texto vira estático (sem sublinhado
+  tracejado, sem clique) — só o placeholder vazio é clicável.
+  - **Bug real corrigido durante a implementação**: abrir a nova aba do dicionário no mesmo
+    clique fazia a janela perder o foco no exato instante em que o input de edição estava
+    sendo montado — isso disparava um evento de blur "espúrio" no campo (o navegador tira o
+    foco do elemento ativo sempre que a janela inteira perde foco, não só quando o foco muda
+    pra outro elemento da mesma página), e o `onBlur` salvava (vazio) e fechava a caixa antes do
+    usuário digitar qualquer coisa. Corrigido checando `document.hasFocus()` dentro do handler
+    de blur — se a janela toda perdeu o foco (caso da nova aba), o blur é ignorado e a caixa
+    continua aberta; um `useEffect` com listener de `window.addEventListener('focus', ...)`
+    foca o campo automaticamente quando o usuário volta pra essa aba.
+- **Layout da tela**: o topo (título "My Words" + contador + "Practice Words" + formulário de
+  adicionar palavra) fica numa posição fixa perto do cabeçalho (`position: sticky` não chegou a
+  ser necessário de fato — ver abaixo), e **só a lista de palavras salvas** rola, dentro do
+  próprio painel (não a página inteira) — uma única barra de rolagem vertical, visível por
+  inteiro na tela. Mesmo tratamento depois replicado no Dashboard.
+  - **Causa raiz real de uma sequência de "não mudou nada" reportada pelo usuário**: o painel
+    tinha `max-height` calculada manualmente (`calc(100vh - Npx)`), que nunca batia exatamente
+    com o espaço disponível de verdade (o header real tem 81px, não os 72px que uma regra base
+    antiga assumia) — a diferença criava uma barra de rolagem externa indesejada que arrastava
+    o "topo fixo" junto dela. A correção definitiva trocou o cálculo manual por
+    `align-items: stretch` (o próprio flexbox calcula a altura disponível) + `min-height: 0`
+    pra derrubar a suposição de 72px — sem isso, qualquer ajuste de `top`/posição não tinha
+    efeito visual nenhum, porque a página nunca chegava a rolar de verdade (o "scroll" que
+    parecia mover tudo era, na real, um contêiner diferente do que se imaginava).
 
 ### Navegação e UI geral
-- **Left slide menu**: navegação trocada de menu de topo pra uma gaveta lateral deslizante
-  (hambúrguer sempre visível), substituindo o antigo submenu — ~230 linhas de CSS legado
-  removidas.
-- **Renomeação de cursos** (só o rótulo exibido; pastas em disco continuam com os nomes
-  antigos de propósito): "Vocabulary" → **English Vocabulary B**, "American English Level 1" →
-  **American English A1**, "Grammar Elementary" → **Grammar English A1**.
-- **"All Units" no toolbar**: botão em todas as 9 telas de leitura, pula direto pra grade de
-  unidades do curso atual.
-- **Barra de título do leitor**: linha "curso · unit · conteúdo" no topo das 9 telas de leitura,
-  substituindo o antigo texto "You are in the X Course" do cabeçalho.
-- **Badges de progresso + Continue**: cada unit nas 3 grades ganhou um "dot" colorido de status,
-  mais um atalho "Continue where you left off" e busca por palavra-chave cruzando os 3 cursos
-  (usada também na busca unificada da tela Courses).
-- **Painel de notas mais largo**: "My Notes" (painel direito) passou de largura fixa (650px) pra
-  ~21% da largura da janela, nas 9 telas de leitura.
-- **Toggle de esconder/mostrar o painel direito**: presente nas 8 telas com painel de
-  notas/respostas, com o botão "+ Word" seguindo o mesmo estado.
-- **Ajustes responsivos** (tablet, ~820px): corrigido overflow do cabeçalho/painel de notas
-  nessa faixa de largura — celular continua fora de escopo, por decisão do usuário.
-- **Backup/restore**: export/import completo (JSON) do namespace de um usuário no My Profile —
-  dump genérico de todas as chaves daquele usuário (não uma lista fixa de prefixos), import
-  sempre aplica ao usuário ativo e recarrega a página.
-- **Fundo desfocado/translúcido** (`--page-hero-bg`, reaproveita a imagem `openCourse.png` da
-  Home): aplicado em Courses, My Words, Listening, Dictation, My Profile e Dashboard. Qualquer
-  cartão/retângulo de conteúdo nessas telas precisa de fundo opaco — bug de imagem "vazando"
-  através de fundos translúcidos já apareceu e foi corrigido várias vezes, ver `App.css`.
+- **Left slide menu (2026-07-11)**: navegação trocada de menu inline/dropdown pra uma gaveta
+  lateral deslizante (hambúrguer sempre visível em qualquer largura de tela, não só em telas
+  estreitas — antes só aparecia em mobile), com `overlay`/backdrop escurecido que fecha ao
+  clicar fora. Reaproveitou toda a máquina de estado abrir/fechar já existente (não precisou
+  mudar), só trocou o CSS/marcação do painel em si. ~230 linhas de CSS legado do submenu antigo
+  (grid de colunas, sublinhado animado, breakpoints desktop-inline) foram **completamente
+  removidas** por estarem mortas (confirmado via grep que nenhuma classe era referenciada em
+  `App.js`). "My Profile" foi depois dobrado pra dentro da mesma gaveta (era um link solto no
+  header antes), e a lista de itens foi unificada — não existem mais duas versões diferentes
+  do menu dentro/fora de um curso, é sempre a mesma lista.
+- **Renomeação de cursos (2026-07-11)** — só o rótulo exibido; as pastas em disco continuam
+  com os nomes antigos **de propósito** (o vínculo pasta↔rótulo nunca existiu de fato — a
+  pasta do Vocabulary já se chamava algo diferente do próprio rótulo antigo, então renomear
+  pastas cheias de PDFs/áudios seria risco sem benefício nenhum):
+  - "Vocabulary - English Pre Intermediate" → **English Vocabulary B**
+  - "American English Level 1" → **American English A1**
+  - "Grammar English Elementary" → **Grammar English A1**
+- **Bug de double-scrollbar + sticky header quebrado nas grades (mesma sessão)**: as grades de
+  Vocabulary/American1 tinham duas barras de rolagem simultâneas ativas ao mesmo tempo (a
+  página inteira E a lista de units, cada uma com seu próprio `overflow: auto`). A primeira
+  tentativa de correção (trocar o `overflow` externo pra `hidden`) só escondia a segunda barra
+  mas **cortava conteúdo de verdade** (o painel nunca tinha `box-sizing: border-box`, então seu
+  `max-height` nunca contava o próprio padding). A correção real: reaproveitar o mesmo padrão
+  que o Grammar Elementary já usava pra esse problema (deixar a altura do conteúdo vazar até o
+  documento real, com o **navegador** sendo o único scroller) — isso expôs um segundo bug, o
+  cabeçalho `position: sticky` parava de grudar no topo quando um ancestral tinha altura fixa
+  (`height: 100vh` no `app-shell`) mas o conteúdo vazava por cima dela via `overflow: visible`;
+  corrigido estendendo a classe `app-shell--allow-grow` (que o Grammar Elementary já usava)
+  também pras grades de Vocabulary e American1.
+- **Barra de título do leitor (2026-07-11)**: linha "curso · unit · conteúdo" no topo das 9
+  telas de leitura (reaproveitando a classe `.section-info` já existente em vez de criar um
+  componente novo), substituindo o texto "You are in the X Course" que morava no cabeçalho —
+  esse texto do cabeçalho foi removido de vez (junto com `courses.<id>.headerLabel`, agora
+  sem uso).
+- **"All Units" no toolbar (2026-07-11)**: botão em todas as 9 telas de leitura, chamando
+  diretamente as mesmas funções de navegação de grade que a tela Courses já usava
+  (`handleVocabulary`/`handleAmerican1`/`handleGrammarElem`) — sem estado/rota novos.
+  Explicitamente **não** aparece na tela de Sound Bank aberta fora de contexto de curso (essa
+  tela é só consulta, não faz parte do fluxo de nenhum curso).
+- **Badges de progresso + Continue + busca (2026-07-10/11)**: cada unit nas 3 grades ganhou um
+  "dot" colorido de status (unvisited/visited/rated/mastered — Vocabulary usa uma regra
+  própria já que sua autoavaliação é por exercício, não por unit inteira: só é "mastered" se
+  **todos** os exercícios da unit tiverem nota 5, não uma média), mais um botão único "Continue
+  where you left off" na Home (`lastVisited`, um ponteiro global pra tela inteira, não um por
+  curso) e busca por palavra-chave cruzando título/gramática/vocabulário/pronúncia nas 3
+  grades (usada também na busca unificada da tela Courses). Os títulos do Grammar Elementary
+  (extraídos na mesma leva, ver seção do curso acima) entraram nessa busca no mesmo dia.
+- **Painel de notas mais largo (2026-07-11)**: "My Notes" (painel direito, `rightWidth`,
+  compartilhado pelas 9 telas de leitura) passou de um teto fixo de 650px pra uma proporção de
+  ~21% da largura da janela (`RIGHT_PANEL_WIDTH_RATIO`), calculado no mount — o
+  redimensionamento manual por arraste e o botão de esconder/mostrar continuam funcionando
+  exatamente como antes, só o valor **inicial** mudou.
+- **Toggle de esconder/mostrar o painel direito (2026-07-09)**: botão circular (`›`/`‹`)
+  presente nas 8 telas com painel de notas/respostas (todas exceto `exercises`, que usa um
+  elemento de resposta diferente), colapsando o grid de 3 colunas pra 1 e dando a largura
+  inteira da janela ao leitor de PDF. O botão "+ Word" flutuante passou a seguir esse mesmo
+  estado nessas 8 telas (escondido junto com o painel).
+- **Ajustes responsivos (tablet, ~820px, 2026-07-11)**: dois bugs reais corrigidos (não
+  cosméticos) — o cartão "Your Progress/Your Score" do cabeçalho sobrepunha a toolbar do PDF
+  em ~49px nesse breakpoint (corrigido forçando ele pra sua própria linha via
+  `flex-basis: 100%`), e o painel de notas ultrapassava a borda direita da viewport sem
+  indicação visual nenhuma (corrigido calculando a largura inicial a partir de
+  `window.innerWidth`, com um listener de resize que só encolhe, nunca desfaz um ajuste manual
+  do usuário). **Celular (~390px) continua fora de escopo, por decisão explícita do usuário**
+  — o grid de 2 painéis da tela de leitura sozinho já precisa de ~694px mínimos pra caber.
+- **Backup/restore (2026-07-11)**: seção "Backup & Restore" em My Profile — export/import
+  completo (JSON) do namespace de um usuário. **Dump genérico de toda chave `u:<nome>:*`**
+  (não uma lista fixa de prefixos como o export de notas em `.txt` já existente) — qualquer
+  feature nova que grave uma chave nova fica automaticamente incluída em backups futuros, sem
+  precisar atualizar essa lógica. Import sempre escreve no namespace do usuário **ativo no
+  momento** (não necessariamente o `userName` gravado no arquivo — o fluxo real de recuperação
+  é "navegador perdido → recadastra o mesmo nome → importa"), e recarrega a página inteira
+  depois (`window.location.reload()`) em vez de tentar ressincronizar manualmente os 15+
+  efeitos de carregamento espalhados pelo app.
+- **Fundo desfocado/translúcido (`--page-hero-bg`, 2026-07-16)**: reaproveita a mesma imagem
+  `openCourse.png` da Home, borrada e semi-transparente, atrás de Courses, My Words, Listening,
+  Dictation, My Profile e Dashboard (Home e as 3 grades de unit não usam esse fundo). **Regra
+  de ouro descoberta e corrigida repetidamente**: qualquer "cartão"/retângulo de conteúdo
+  dessas telas precisa de fundo **opaco** (`#f3f5f7`/`#fbfcfd`, não `rgba(...)` translúcido) —
+  um fundo translúcido deixa a imagem borrada vazar através do texto, tornando-o ilegível. Já
+  precisou ser corrigido em `.course-link`/`.vocabulary-link`/`.review-item`/`.unit-search-box`/
+  `.wordbook-form`/`.wordbook-entry`/`.profile-course-toggle`/`.profile-reset-btn` e nos
+  próprios painéis externos (`.landing-panel.course-links-panel`/`.wordbook-panel`/
+  `.profile-panel`, que antes eram ~75% opacos e viraram 100%).
 
 ## Histórico de processamento de conteúdo (pré-processamento, fora do código React)
 
