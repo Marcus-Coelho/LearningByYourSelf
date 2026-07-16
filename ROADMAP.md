@@ -73,3 +73,24 @@ Listening/Dictation (`LISTENING_SOURCES`).
 - A API não existe no Firefox/Safari antigo — a tela deve detectar
   (`window.SpeechRecognition || window.webkitSpeechRecognition`) e mostrar um aviso claro em
   vez de quebrar.
+
+## 5. [ ] Contador de tempo de estudo + streak de dias (Dashboard)
+
+Parte da sugestão original do Dashboard que ficou de fora quando ele foi implementado:
+"sequência de dias (streak), tempo de estudo — motivação visível". O Progress Dashboard
+atual mostra palavras/revisões/units/exercícios, mas **não mede tempo nem dias seguidos**,
+porque o app não tem nenhum registro de atividade diária — essa infraestrutura precisa ser
+criada primeiro (foi deliberadamente pulada na implementação do Dashboard pra não inventar
+logging sem aprovação do dono).
+
+- **O que criar**: um log leve de atividade em `localStorage` (padrão `u:<nome>:<chave>`,
+  ver CLAUDE.md) — ex.: minutos ativos por dia (`activity:<YYYY-MM-DD>` → minutos), gravado
+  de tempos em tempos enquanto o usuário está numa tela de estudo (leitura, exercícios,
+  Listening, Dictation), com detecção de ociosidade (não contar tempo com a aba aberta e o
+  usuário longe — ex.: parar de somar depois de N min sem interação/áudio tocando).
+- **O que mostrar no Dashboard**: tempo de estudo de hoje/da semana e o streak (dias
+  seguidos com pelo menos X min de estudo). Possível cartão extra nos stat tiles existentes.
+- **Decisões em aberto** (perguntar ao dono antes de implementar): cronômetro visível
+  durante o estudo ou registro silencioso que só aparece no Dashboard? Qual o mínimo de
+  minutos pra um dia contar no streak?
+- Como qualquer chave nova `u:<nome>:*`, entra automaticamente no backup/restore existente.

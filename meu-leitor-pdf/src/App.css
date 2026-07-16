@@ -1308,15 +1308,155 @@ body {
   max-width: 780px;
 }
 
+/* Instruções do Listening: fora da barra do player (que fica só com o
+   player, igual ao Dictation), logo abaixo do título — com um respiro até
+   a barra. */
+.listening-exercise > .listening-instructions {
+  margin: 0 0 16px;
+}
+
 .listening-audio-bar {
+  /* Coluna (não linha): o WideAudioPlayer ocupa a largura toda; qualquer
+     conteúdo extra empilha embaixo dele, não espremido ao lado. */
   display: flex;
-  align-items: center;
-  gap: 16px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
   padding: 16px 18px;
   border-radius: 16px;
   background: rgba(27, 58, 94, 0.05);
   border: 1px solid rgba(27, 58, 94, 0.12);
   margin-bottom: 24px;
+}
+
+/* ==== WideAudioPlayer (player amplo do Listening/Dictation) ==== */
+
+.wide-player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.wide-player-label {
+  flex: 0 0 auto;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgb(255, 214, 0);
+  color: #3b2f00;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.wide-player-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(27, 58, 94, 0.2);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--purple-900);
+  cursor: pointer;
+  transition: background 120ms, border-color 120ms, color 120ms;
+}
+
+.wide-player-btn:hover {
+  border-color: var(--purple-500);
+  color: var(--purple-700);
+  background: var(--soft);
+}
+
+.wide-player-btn--main {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--purple-700), var(--purple-500));
+  color: #fff;
+}
+
+.wide-player-btn--main:hover {
+  background: linear-gradient(135deg, var(--purple-700), var(--purple-500));
+  color: #fff;
+  filter: saturate(1.1) brightness(1.05);
+}
+
+.wide-player-btn--text {
+  width: auto;
+  min-width: 36px;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+/* Mesmos estados do A-B do player compacto (ver .ap-btn.ap-btn-ab). */
+.wide-player-btn.is-armed {
+  color: var(--purple-700);
+  outline: 2px solid rgba(109, 66, 216, 0.55);
+}
+
+.wide-player-btn.is-looping {
+  background: rgba(109, 66, 216, 0.22);
+  border-color: rgba(109, 66, 216, 0.55);
+  color: var(--purple-700);
+}
+
+.wide-player-time {
+  flex: 0 0 auto;
+  min-width: 40px;
+  text-align: center;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(27, 58, 94, 0.75);
+}
+
+.wide-player-seek {
+  flex: 1 1 160px;
+  min-width: 120px;
+  accent-color: var(--purple-500);
+  cursor: pointer;
+}
+
+.wide-player-speed {
+  position: relative;
+}
+
+.wide-player-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid rgba(27, 58, 94, 0.18);
+  box-shadow: 0 12px 30px rgba(30, 58, 95, 0.18);
+}
+
+.wide-player-menu-item {
+  border: none;
+  background: transparent;
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--purple-900);
+  cursor: pointer;
+  text-align: center;
+}
+
+.wide-player-menu-item:hover {
+  background: var(--soft);
+}
+
+.wide-player-menu-item.is-active {
+  background: rgba(109, 66, 216, 0.18);
+  color: var(--purple-700);
 }
 
 /* Dentro da barra clara do exercício (não sobre um PDF), a pílula amarela

@@ -32,7 +32,8 @@ const LISTENING_SOURCES = [listeningAmerican1, listeningVocabulary];
 // American1 não têm esses campos, então cai no audioLabel (ex.: "1-13").
 const listeningTrackLabel = (track) => {
   if (track.unit && track.letter) {
-    return `unit ${track.unit}-${track.letter.toLowerCase()}`;
+    // "unit 4A" (não "unit 4-a") — mesmo formato do rótulo impresso no livro.
+    return `unit ${track.unit}${track.letter.toUpperCase()}`;
   }
   if (track.audioLabel) {
     return track.audioLabel.toLowerCase();
@@ -676,6 +677,14 @@ const IconDots = () => (
 const IconBack5 = () => (
   <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
     <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
+    <text x="12" y="16.5" textAnchor="middle" fontSize="7.5" fontWeight="700" stroke="none">5</text>
+  </svg>
+);
+
+// Espelho do IconBack5 — avançar 5 segundos (seta pra direita).
+const IconForward5 = () => (
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
+    <path d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z" />
     <text x="12" y="16.5" textAnchor="middle" fontSize="7.5" fontWeight="700" stroke="none">5</text>
   </svg>
 );
@@ -6023,6 +6032,215 @@ function SimpleAudioPlayer({ src, label }) {
   );
 }
 
+// Player amplo (largura total, horizontal) usado SÓ nas telas de exercício
+// de Listening e Dictation — os players compactos (pílula amarela) foram
+// desenhados pra caber em margens de PDF, mas nessas duas telas o player é a
+// interação principal e há espaço de sobra. Mantém tudo do compacto
+// (play/pause, voltar 5s, stop, repetição A-B, velocidades) e adiciona:
+// avançar 5s, velocidade 0.5x, loop do áudio inteiro ao terminar, barra de
+// progresso arrastável e tempo atual/total. O <audio> continua sendo um
+// elemento real dentro do componente — Ctrl+Space, auto-pause e "Replay
+// last part" (Dictation) o encontram via querySelector('audio') como antes.
+const WIDE_PLAYER_SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+
+function formatPlayerTime(seconds) {
+  if (!Number.isFinite(seconds)) return '0:00';
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function WideAudioPlayer({ src, label }) {
+  const audioRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [rate, setRate] = useState(1);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [loopStart, setLoopStart] = useState(null);
+  const [loopEnd, setLoopEnd] = useState(null);
+  const [loopAll, setLoopAll] = useState(false);
+
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    const closeMenu = () => setMenuOpen(false);
+    document.addEventListener('click', closeMenu);
+    return () => document.removeEventListener('click', closeMenu);
+  }, [menuOpen]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    return () => {
+      audio?.pause();
+    };
+  }, []);
+
+  const togglePlay = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (audio.paused) {
+      audio.play();
+    } else {
+      audio.pause();
+    }
+  };
+
+  const stop = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+    setLoopStart(null);
+    setLoopEnd(null);
+  };
+
+  const skipBy = (delta) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const max = Number.isFinite(audio.duration) ? audio.duration : Infinity;
+    audio.currentTime = Math.min(max, Math.max(0, audio.currentTime + delta));
+  };
+
+  // Mesma máquina de 3 estados do player compacto: 1º clique arma o início
+  // (A), 2º marca o fim (B) e volta pro A tocando em loop, 3º desliga.
+  const cycleLoop = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (loopStart === null) {
+      setLoopStart(audio.currentTime);
+    } else if (loopEnd === null) {
+      if (audio.currentTime > loopStart + 0.5) {
+        setLoopEnd(audio.currentTime);
+        audio.currentTime = loopStart;
+        if (audio.paused) {
+          audio.play();
+        }
+      } else {
+        setLoopStart(null);
+      }
+    } else {
+      setLoopStart(null);
+      setLoopEnd(null);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    setCurrentTime(audio.currentTime);
+    if (loopStart !== null && loopEnd !== null && audio.currentTime >= loopEnd) {
+      audio.currentTime = loopStart;
+    }
+  };
+
+  const handleSeekBar = (event) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.currentTime = Number(event.target.value);
+    setCurrentTime(audio.currentTime);
+  };
+
+  const changeRate = (speed) => {
+    setRate(speed);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = speed;
+    }
+    setMenuOpen(false);
+  };
+
+  const loopTitle = loopStart === null
+    ? 'Repeat a passage: click to mark the start (A)'
+    : loopEnd === null
+      ? 'Click to mark the end (B) and start repeating'
+      : 'Stop repeating this passage';
+
+  return (
+    <div className="wide-player">
+      <audio
+        ref={audioRef}
+        src={src}
+        preload="metadata"
+        loop={loopAll}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)}
+        onEnded={() => setIsPlaying(false)}
+      />
+
+      {label && <span className="wide-player-label">{label}</span>}
+
+      <button type="button" className="wide-player-btn wide-player-btn--main" onClick={togglePlay} title={isPlaying ? 'Pause' : 'Play'}>
+        {isPlaying ? <IconPause /> : <IconPlay />}
+      </button>
+      <button type="button" className="wide-player-btn" onClick={stop} title="Stop">
+        <IconStop />
+      </button>
+      <button type="button" className="wide-player-btn" onClick={() => skipBy(-5)} title="Back 5 seconds">
+        <IconBack5 />
+      </button>
+      <button type="button" className="wide-player-btn" onClick={() => skipBy(5)} title="Forward 5 seconds">
+        <IconForward5 />
+      </button>
+
+      <span className="wide-player-time">{formatPlayerTime(currentTime)}</span>
+      <input
+        type="range"
+        className="wide-player-seek"
+        min={0}
+        max={duration || 0}
+        step={0.1}
+        value={Math.min(currentTime, duration || 0)}
+        onChange={handleSeekBar}
+        aria-label="Audio position"
+      />
+      <span className="wide-player-time">{formatPlayerTime(duration)}</span>
+
+      <button
+        type="button"
+        className={`wide-player-btn wide-player-btn--text${loopEnd !== null ? ' is-looping' : loopStart !== null ? ' is-armed' : ''}`}
+        onClick={cycleLoop}
+        title={loopTitle}
+      >
+        A-B
+      </button>
+      <button
+        type="button"
+        className={`wide-player-btn wide-player-btn--text${loopAll ? ' is-looping' : ''}`}
+        onClick={() => setLoopAll((current) => !current)}
+        title={loopAll ? 'Stop repeating the whole audio' : 'Repeat the whole audio when it ends'}
+      >
+        ⟳
+      </button>
+
+      <div className="wide-player-speed">
+        <button
+          type="button"
+          className="wide-player-btn wide-player-btn--text"
+          onClick={(event) => { event.stopPropagation(); setMenuOpen((current) => !current); }}
+          title="Playback speed"
+        >
+          {rate}×
+        </button>
+        {menuOpen && (
+          <div className="wide-player-menu">
+            {WIDE_PLAYER_SPEEDS.map((speed) => (
+              <button
+                key={speed}
+                type="button"
+                className={`wide-player-menu-item${rate === speed ? ' is-active' : ''}`}
+                onClick={() => changeRate(speed)}
+              >
+                {speed}×
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Tela do exercício de Dictation: mesmo áudio/track do Listening, mas sem
 // mostrar o texto antes — o usuário ouve (com play/pause/repetir A-B/
 // velocidade, reaproveitando AudioPlayerControls) e digita tudo numa caixa
@@ -6046,9 +6264,13 @@ function DictationExercise({ track, userName }) {
   // meio" de "acabou" — a última pausa automática cai perto do fim, e ao dar
   // play de novo o áudio recomeça do zero, o que parecia um bug.
   const [audioEnded, setAudioEnded] = useState(false);
-  // Último ponto em que já pausamos — evita re-pausar no mesmo ponto quando
-  // o usuário dá play de novo (currentTime ainda está "em cima" do ponto).
-  const lastPausedPointRef = useRef(null);
+  // Posição do timeupdate ANTERIOR — a pausa só dispara quando a reprodução
+  // CRUZA um ponto (prev < p <= atual), nunca por simplesmente estar perto
+  // dele. Isso evita o insta-repause ao retomar em cima de um ponto e,
+  // principalmente, ao usar "Replay last part" (que volta exatamente pra um
+  // ponto de pausa — a versão anterior, baseada em janela de proximidade,
+  // re-pausava ali mesmo e o replay parecia não funcionar).
+  const prevTimeRef = useRef(0);
 
   const fullText = track.sentences.join(' ');
 
@@ -6059,7 +6281,6 @@ function DictationExercise({ track, userName }) {
     const handleEnded = () => {
       setIsAutoPaused(false);
       setAudioEnded(true);
-      lastPausedPointRef.current = null;
     };
     const handlePlay = () => setAudioEnded(false);
     audio.addEventListener('ended', handleEnded);
@@ -6076,26 +6297,32 @@ function DictationExercise({ track, userName }) {
     if (!audio) return undefined;
     const pausePoints = dictationPausePoints[track.id] || [];
 
-    // timeupdate dispara ~4x/segundo — a janela de 0.75s garante que nenhum
-    // ponto passe despercebido entre dois eventos (os pontos gerados têm
-    // sempre mais de 1s de distância entre si).
     const handleTimeUpdate = () => {
-      if (audio.paused) return;
       const t = audio.currentTime;
+      const prev = prevTimeRef.current;
+      prevTimeRef.current = t;
+      if (audio.paused) return;
+      // Só um avanço normal de reprodução conta como cruzamento (timeupdate
+      // dispara a cada ~250ms; um delta maior que 2s é um seek, não playback).
+      if (t <= prev || t - prev > 2) return;
       for (const p of pausePoints) {
-        if (t >= p && t < p + 0.75 && lastPausedPointRef.current !== p) {
-          lastPausedPointRef.current = p;
+        if (prev < p && t >= p) {
           audio.pause();
           setIsAutoPaused(true);
           break;
         }
       }
     };
-    // Voltar/arrastar o cursor pra trás reabilita os pontos já usados.
+    // Depois de um seek (arrastar o cursor, Replay last part), o "anterior"
+    // passa a ser a nova posição — senão o próximo timeupdate enxergaria um
+    // falso cruzamento gigante do ponto antigo até aqui.
     const handleSeeked = () => {
-      lastPausedPointRef.current = null;
+      prevTimeRef.current = audio.currentTime;
     };
-    const handlePlay = () => setIsAutoPaused(false);
+    const handlePlay = () => {
+      prevTimeRef.current = audio.currentTime;
+      setIsAutoPaused(false);
+    };
 
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('seeked', handleSeeked);
@@ -6115,10 +6342,27 @@ function DictationExercise({ track, userName }) {
     saveDictationAttempt(userName, track.id, scored.scorePercent);
   };
 
+  // "Try again" NÃO apaga mais o texto — o usuário continua de onde parou
+  // e melhora a transcrição; recomeçar do zero é deletar o texto por conta
+  // própria (pedido explícito do usuário).
   const handleTryAgain = () => {
-    setTypedText('');
     setChecked(false);
     setResult(null);
+  };
+
+  // "Replay last part": volta pro início do trecho atual (o ponto de pausa
+  // anterior à posição de agora, ou o começo do áudio) e toca de novo — o
+  // auto-pause pausa outra vez no mesmo lugar, então dá pra reouvir o mesmo
+  // trecho quantas vezes precisar. O filtro "< t - 1.0" exclui o próprio
+  // ponto em que o áudio está pausado agora (currentTime fica praticamente
+  // em cima dele; os pontos gerados distam sempre mais de 1s entre si).
+  const handleReplayLastSegment = () => {
+    const audio = audioBarRef.current?.querySelector('audio');
+    if (!audio) return;
+    const points = dictationPausePoints[track.id] || [];
+    const before = points.filter((p) => p < audio.currentTime - 1.0);
+    audio.currentTime = before.length > 0 ? before[before.length - 1] : 0;
+    audio.play();
   };
 
   // Mesmo atalho do Listening (ver ListeningClozeExercise): Ctrl+Space
@@ -6147,12 +6391,15 @@ function DictationExercise({ track, userName }) {
   return (
     <div className="dictation-exercise">
       <div className="listening-audio-bar" ref={audioBarRef}>
-        <SimpleAudioPlayer src={track.audio} label={track.audioLabel} />
+        <WideAudioPlayer src={track.audio} />
       </div>
       <p className="listening-instructions">
         Listen carefully (replay as many times as you need) and type everything you hear below.
         Punctuation and capitalization don't matter. Press Ctrl+Space to pause/play the audio
         without leaving the text box.
+      </p>
+      <p className="listening-instructions">
+        If you hear "for example", type "e.g.".
       </p>
       {hasAutoPause && (
         <div className="dictation-autopause-row">
@@ -6162,6 +6409,14 @@ function DictationExercise({ track, userName }) {
             onClick={() => setAutoPauseEnabled((current) => !current)}
           >
             {autoPauseEnabled ? '✓ Auto-pause on' : 'Auto-pause off'}
+          </button>
+          <button
+            type="button"
+            className="upload-button"
+            onClick={handleReplayLastSegment}
+            title="Listen to the current part again, from the previous pause"
+          >
+            ↺ Replay last part
           </button>
           <span
             className={`dictation-autopause-hint${audioEnded
@@ -6381,39 +6636,47 @@ function scoreDictationAnswer(typedText, correctText) {
   const correctWords = correctText.trim().split(/\s+/).filter(Boolean);
   const correctNormalized = correctWords.map(normalizeDictationWord);
 
-  // Programação dinâmica clássica de LCS entre as duas listas de palavras.
+  // LCS por programação dinâmica, com dp[i][j] = LCS de typedWords[i:] com
+  // correctNormalized[j:] (SUFIXOS, não prefixos) — permite recuperar os
+  // casamentos andando PRA FRENTE, casando cada palavra digitada com a
+  // ocorrência mais CEDO possível no texto correto. A versão anterior
+  // (prefixos + caminhada de trás pra frente) casava com a ocorrência mais
+  // tardia: uma palavra repetida no texto (ex.: "nouns", que aparece várias
+  // vezes) "pulava" pra um trecho lá do fim em vez de ficar verde ao lado
+  // das vizinhas que o usuário realmente digitou. O score é idêntico nos
+  // dois casos (mesmo comprimento de LCS); só a atribuição visual muda.
   const n = typedWords.length;
   const m = correctNormalized.length;
   const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
-  for (let i = 1; i <= n; i += 1) {
-    for (let j = 1; j <= m; j += 1) {
-      if (typedWords[i - 1] === correctNormalized[j - 1]) {
-        dp[i][j] = dp[i - 1][j - 1] + 1;
+  for (let i = n - 1; i >= 0; i -= 1) {
+    for (let j = m - 1; j >= 0; j -= 1) {
+      if (typedWords[i] === correctNormalized[j]) {
+        dp[i][j] = dp[i + 1][j + 1] + 1;
       } else {
-        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+        dp[i][j] = Math.max(dp[i + 1][j], dp[i][j + 1]);
       }
     }
   }
 
-  // Percorre a matriz de trás pra frente marcando quais palavras corretas
-  // fazem parte da maior subsequência em comum (as "acertadas").
   const matched = new Array(m).fill(false);
-  let i = n;
-  let j = m;
-  while (i > 0 && j > 0) {
-    if (typedWords[i - 1] === correctNormalized[j - 1]) {
-      matched[j - 1] = true;
-      i -= 1;
-      j -= 1;
-    } else if (dp[i - 1][j] >= dp[i][j - 1]) {
-      i -= 1;
+  let i = 0;
+  let j = 0;
+  while (i < n && j < m) {
+    if (typedWords[i] === correctNormalized[j]) {
+      matched[j] = true;
+      i += 1;
+      j += 1;
+    } else if (dp[i + 1][j] >= dp[i][j + 1]) {
+      // Descartar a palavra digitada (extra/errada) preserva o LCS — anda
+      // no texto do usuário sem "queimar" palavras corretas ainda casáveis.
+      i += 1;
     } else {
-      j -= 1;
+      j += 1;
     }
   }
 
   const wordResults = correctWords.map((word, index) => ({ word, correct: matched[index] }));
-  const scorePercent = m === 0 ? 100 : Math.round((dp[n][m] / m) * 100);
+  const scorePercent = m === 0 ? 100 : Math.round((dp[0][0] / m) * 100);
   return { scorePercent, wordResults };
 }
 
@@ -6519,12 +6782,15 @@ function ListeningClozeExercise({ track, userName, onAddWord }) {
 
   return (
     <div className="listening-exercise">
+      {/* Instruções logo abaixo do título (o componente renderiza logo
+          depois do h1), FORA da barra do player — mesma disposição limpa
+          do Dictation, onde a barra cinza tem só o player. */}
+      <p className="listening-instructions">
+        Listen to the audio and type the missing word(s) in each sentence — press Space (or
+        Ctrl+Space while typing in a blank) to pause/play the audio, then press Check answers.
+      </p>
       <div className="listening-audio-bar" ref={audioBarRef}>
-        <SimpleAudioPlayer src={track.audio} label={track.audioLabel || `${track.cd.replace(/^CD/i, '')}-${track.track}`} />
-        <p className="listening-instructions">
-          Listen to the audio and type the missing word(s) in each sentence — press Space (or
-          Ctrl+Space while typing in a blank) to pause/play the audio, then press Check answers.
-        </p>
+        <WideAudioPlayer src={track.audio} />
       </div>
       <ol className="listening-sentences">
         {sentenceModels.map((model, sentenceIndex) => {
