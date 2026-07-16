@@ -26,13 +26,15 @@
    nunca atrapalhar cliques. */
 .landing-page.landing-page--courses,
 .landing-page.vocabulary-mode.wordbook-mode,
-.landing-page.vocabulary-mode.profile-mode {
+.landing-page.vocabulary-mode.profile-mode,
+.landing-page.vocabulary-mode.dashboard-mode {
   position: relative;
 }
 
 .landing-page.landing-page--courses::before,
 .landing-page.vocabulary-mode.wordbook-mode::before,
-.landing-page.vocabulary-mode.profile-mode::before {
+.landing-page.vocabulary-mode.profile-mode::before,
+.landing-page.vocabulary-mode.dashboard-mode::before {
   content: '';
   position: fixed;
   inset: 0;
@@ -50,7 +52,8 @@
 
 .landing-panel.course-links-panel,
 .landing-panel.wordbook-panel,
-.landing-panel.profile-panel {
+.landing-panel.profile-panel,
+.landing-panel.dashboard-panel {
   position: relative;
   z-index: 1;
 }
@@ -969,6 +972,184 @@ body {
 .profile-panel .profile-reset-btn.primary:hover {
   background: rgba(139, 92, 246, 0.22);
   border-color: rgba(139, 92, 246, 0.6);
+}
+
+/* Tela "Progress" (Dashboard de progresso) — mesmo tratamento de fundo claro
+   do Profile/My Words (fica sobre o --page-hero-bg desfocado, ver seletores
+   compartilhados no topo do arquivo), só que mais larga (como
+   .vocabulary-page) pra caber a grade de stat tiles sem apertar. Sempre
+   opaco (#fbfcfd/#f3f5f7), nunca rgba translúcido — a mesma armadilha já
+   corrigida em course-links-panel/vocabulary-page (fundo translúcido deixa
+   a imagem desfocada vazar e o card fica ilegível). */
+.landing-panel.dashboard-panel {
+  max-width: 1040px;
+  width: 100%;
+  text-align: left;
+  padding: 32px 36px 40px;
+  background: #fbfcfd;
+  border: 1px solid rgba(27, 58, 94, 0.1);
+}
+
+.landing-panel.dashboard-panel .eyebrow {
+  color: var(--purple-700);
+}
+
+.landing-panel.dashboard-panel h1 {
+  margin: 0 0 10px;
+  font-size: clamp(1.8rem, 2.6vw, 2.4rem);
+  color: #1b3a5e;
+}
+
+.landing-panel.dashboard-panel > p {
+  color: rgba(27, 58, 94, 0.75);
+  max-width: 640px;
+}
+
+.dashboard-hero-continue {
+  margin: 18px 0 4px;
+}
+
+/* Grade de KPIs (My Words/revisões/prática) — auto-fit encolhe pra 2-3
+   colunas em telas menores sem precisar de media query manual. Os 3 tiles
+   clicáveis (Words learned/due, Reviews due) são <button>; os 3 estáticos
+   (Units mastered, Listening, Dictation) são <div> — mesma classe base,
+   .dashboard-stat-tile--static só remove o cursor/hover de botão. */
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px;
+  margin: 24px 0 8px;
+}
+
+.dashboard-stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: #f3f5f7;
+  border: 1px solid rgba(27, 58, 94, 0.12);
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+}
+
+.dashboard-stat-tile:hover {
+  transform: translateY(-2px);
+  background: rgba(27, 58, 94, 0.1);
+  border-color: rgba(139, 92, 246, 0.5);
+}
+
+.dashboard-stat-tile--static {
+  cursor: default;
+}
+
+.dashboard-stat-tile--static:hover {
+  transform: none;
+  background: #f3f5f7;
+  border-color: rgba(27, 58, 94, 0.12);
+}
+
+.dashboard-stat-value {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #1b3a5e;
+}
+
+.dashboard-stat-label {
+  font-size: 12.5px;
+  color: rgba(27, 58, 94, 0.68);
+}
+
+.dashboard-section-title {
+  margin: 28px 0 14px;
+  font-size: 1.1rem;
+  color: #1b3a5e;
+}
+
+.dashboard-courses {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dashboard-course-row {
+  padding: 18px 20px;
+  border-radius: 16px;
+  background: #f3f5f7;
+  border: 1px solid rgba(27, 58, 94, 0.12);
+}
+
+.dashboard-course-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.dashboard-course-head h3 {
+  margin: 0;
+  font-size: 15px;
+  color: #1b3a5e;
+}
+
+.dashboard-course-count {
+  font-size: 12.5px;
+  color: rgba(27, 58, 94, 0.65);
+}
+
+/* Trilha cinza opaca = "not started" implícito (mesma ideia de
+   unit-badge-dot--unvisited ser transparente/sem cor própria); os segmentos
+   coloridos (visited/rated/mastered, mesmas cores de UnitBadgeDot) cobrem só
+   a fatia proporcional do que já avançou. gap:2px separa os segmentos entre
+   si (nunca dois tons colados sem respiro, mesmo quando as duas fatias têm
+   cor parecida). */
+.dashboard-progress-bar {
+  display: flex;
+  gap: 2px;
+  height: 14px;
+  margin: 12px 0 10px;
+  border-radius: 999px;
+  background: #e4e8ec;
+  overflow: hidden;
+}
+
+.dashboard-progress-segment {
+  height: 100%;
+}
+
+.dashboard-progress-segment--visited { background: #4a90d9; }
+.dashboard-progress-segment--rated { background: var(--purple-500); }
+.dashboard-progress-segment--mastered { background: #2fa86b; }
+
+.dashboard-course-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12.5px;
+  color: rgba(27, 58, 94, 0.72);
+}
+
+.dashboard-course-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dashboard-course-legend-item .unit-badge-dot {
+  position: static;
+  width: 11px;
+  height: 11px;
+}
+
+.dashboard-course-legend-item strong {
+  color: #1b3a5e;
+}
+
+.dashboard-continue-cta {
+  margin-top: 14px;
 }
 
 /* Tela "Listening" do menu principal: hub -> fonte -> track -> exercício de
