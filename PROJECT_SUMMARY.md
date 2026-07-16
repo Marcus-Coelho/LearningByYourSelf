@@ -585,6 +585,84 @@ conectado no Vocabulary. Implementado:
   `unit-rating:<unit>` após reload, e **não** vaza pra `rating:<unit>` (confirmado lendo as duas
   chaves separadamente).
 
+## Dictation/Listening — auto-pause (piloto), player amplo e correções (2026-07-16)
+
+Rodada implementando o item 1 do ROADMAP.md (criado nesta mesma data, com as 5 próximas
+implementações aprovadas pelo dono) mais uma leva de correções e melhorias nas telas de
+exercício de Listening/Dictation. Commits `788db9d` e `6d28319`.
+
+### Auto-pause por detecção de silêncio (piloto: 2 tracks do Dictation)
+O áudio pausa sozinho nos silêncios reais entre frases, dando tempo de escrever;
+`Ctrl+Space` retoma. O dono rejeitou explicitamente a alternativa mais simples de pausar a
+cada N segundos ("para o usuário não faz sentido... o intervalo entre frases pode se
+confundir com intervalo de tempo entre palavras") — a solução é análise offline dos MP3s.
+
+- **Detecção (Python, offline)**: `soundfile` + `numpy` (sem ffmpeg — o pydub instalado está
+  quebrado no Python 3.14 local, `pyaudioop` ausente). RMS em janelas de 20ms; silêncio =
+  abaixo de -35dB relativo ao pico do arquivo; **pausa de frase = silêncio ≥ 0.85s** (a
+  distribuição real das durações é um contínuo 0.3-1.5s, sem corte limpo — 0.85 foi calibrado
+  olhando a distribuição e validado de ouvido pelo dono).
+- **Regra secundária**: trechos com mais de 15s sem pausa são divididos recursivamente na
+  maior pausa interna ≥ 0.4s — a frase gigante da unit 4A (as listas de "pronoun; nouns;
+  verbs...") ficava com 36s corridos sem nenhum silêncio ≥ 0.85s.
+- **Regra específica dos áudios do Vocabulary**: a primeira pausa detectada é descartada —
+  esses áudios abrem com um cabeçalho falado ("A... Parts of speech") que não faz parte do
+  texto do ditado; o áudio fica intacto, só não pausamos ali. American1 terá outra dinâmica
+  (sem esse cabeçalho) — recalibrar quando chegar a vez.
+- Dados em `dictation_pause_points.json` (segundos por trackId; piloto: `unit4-a` 15 pontos,
+  `unit4-b` 7). Script gerador no scratchpad da sessão, não persistido (política padrão dos
+  geradores); parâmetros documentados aqui e no ROADMAP.
+- **Bug real corrigido — gatilho por proximidade → por cruzamento**: a 1ª versão pausava
+  quando `currentTime` estava numa janela de 0.75s após um ponto. O botão "↺ Replay last
+  part" (abaixo) volta o cursor EXATAMENTE pra cima de um ponto — o primeiro `timeupdate`
+  re-pausava ali mesmo e o replay parecia morto. Agora só pausa quando a reprodução CRUZA um
+  ponto (posição anterior < ponto ≤ atual, com avanço contínuo — saltos de seek > 2s não
+  contam), o que elimina o insta-repause por construção.
+- **UI**: toggle "✓ Auto-pause on/off"; pílula roxa pulsante "⏸ Paused — press Ctrl+Space to
+  continue" (grande — o usuário está de cabeça baixa digitando); pílula verde com anel "🏁
+  End of audio..." quando o áudio termina (sem ela, a última pausa automática era
+  indistinguível do fim — o usuário dava play achando que havia mais e o áudio recomeçava do
+  zero, parecendo bug); botão "↺ Replay last part" que volta pro início do trecho atual e
+  re-pausa no mesmo lugar, pra reouvir quantas vezes precisar.
+- **Estado do Dictation entrou no mecanismo de restauração de posição** (sessionStorage +
+  History API): F5 na tela do exercício mostrava "Exercise not found" porque
+  `selectedDictationSource/Track` não eram restaurados (o Listening já era). 4 pontos de
+  integração: estado inicial, objeto position, deps e o handler de popstate.
+
+### WideAudioPlayer (player amplo, só Listening/Dictation)
+Os players compactos (pílula amarela) foram desenhados pra margens de PDF; nas telas de
+exercício o player é a interação principal e havia espaço de sobra. Componente novo,
+horizontal, largura total: play/pause, voltar/avançar 5s (`IconForward5` criado espelhando o
+`IconBack5`), stop, repetição A-B (mesma máquina de 3 estados do compacto), velocidades
+0.5x-2x (0.5x é novo), **loop do áudio inteiro** ao terminar (atributo `loop` nativo), barra
+de progresso arrastável e tempo atual/total. O `<audio>` continua um elemento real dentro do
+componente — `Ctrl+Space`, auto-pause e Replay o acham via `querySelector('audio')` sem
+mudança. Selo amarelo de unit removido dessas telas; rótulos normalizados para o formato do
+livro ("unit 4A", não "unit 4-a") via `listeningTrackLabel` — propaga pra títulos, listas e
+busca; instruções do Listening movidas de dentro da barra do player pra baixo do título
+(mesma disposição do Dictation). **Nenhuma outra tela trocou de player.**
+
+### Correção do casamento de palavras (LCS) na correção do Dictation
+O score estava certo, mas o destaque verde podia atribuir uma palavra repetida (ex.:
+"nouns", que aparece 3+ vezes no texto da unit 4B) a uma ocorrência lá do fim — o backtrace
+clássico (prefixos, de trás pra frente) casa cada palavra digitada com a ocorrência mais
+TARDIA possível. Reescrito com DP de SUFIXOS + caminhada pra FRENTE: cada palavra casa com a
+ocorrência mais cedo, o score é idêntico (mesmo comprimento de LCS) e os verdes ficam
+colados no contexto que o usuário realmente ditou. Validado com o exemplo exato reportado
+pelo dono (o "nouns" final voltou pro "are all nouns" e o do "Elephant and zoo" ficou
+vermelho). Também na apresentação: o espaço saiu de DENTRO dos spans sublinhados (virava uma
+fita vermelha contínua atravessando os espaços, "espalhando" as palavras) e o peso da fonte
+voltou ao normal — a correção lê como prosa corrida colorida.
+
+### Ajustes menores da mesma rodada
+- "Try again" do Dictation **preserva o texto digitado** (recomeçar do zero = apagar
+  manualmente); um botão "Save progress" foi implementado e depois removido a pedido.
+- Dica "If you hear \"for example\", type \"e.g.\"." nas instruções do Dictation (o locutor
+  fala "for example", o texto de correção tem "e.g." — sem a dica, pontos perdidos injustos).
+- ROADMAP.md ganhou o item 5 (contador de tempo de estudo + streak no Dashboard — parte da
+  sugestão original do Dashboard que ficou de fora por exigir infraestrutura de log de
+  atividade que ainda não existe).
+
 ## Histórico de processamento de conteúdo (pré-processamento, fora do código React)
 
 - PDFs originais `EVIU_PI-X.pdf` foram divididos em duas páginas cada (`_L` e `_E`) com `pypdf` (script `split_pdfs.py`, já removido do repositório).

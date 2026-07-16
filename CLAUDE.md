@@ -39,6 +39,8 @@ meu-leitor-pdf/
 │   ├── grammar_elem_index.json / grammar_elem_appendix_index.json / grammar_elem_audio.json
 │   │   (Grammar English A1)
 │   ├── listening_vocabulary.json / listening_american1.json (tracks de Listening/Dictation)
+│   ├── dictation_pause_points.json (pontos de auto-pause do Dictation, por trackId —
+│   │   gerado por detecção de silêncio em Python; piloto: só unit4-a/b)
 │   └── (todos os "*_coords*.json"/"*_index*.json"/"*_anchors*.json" são índices GERADOS —
 │         não editar à mão, ver "Dados Gerados" abaixo)
 ├── package.json
@@ -80,6 +82,9 @@ meu-leitor-pdf/
   reaproveita os mesmos tracks/áudio dos cursos (`listening_vocabulary.json`/
   `listening_american1.json`, agrupados em `LISTENING_SOURCES`)
 - Exercício de "fill in the blank": mostra o texto com lacunas sorteadas, ouve e completa
+- Player: `WideAudioPlayer` (largura total — play/pause, ±5s, stop, A-B, loop do áudio
+  inteiro, velocidades 0.5x-2x, barra de progresso). Usado SÓ aqui e no Dictation; o resto
+  do app continua com os players compactos (pílula amarela)
 
 ### Dictation (menu principal, "Modo Ditado")
 - Mesmíssimos `LISTENING_SOURCES`/tracks do Listening, mas **sem mostrar o texto antes** —
@@ -87,6 +92,14 @@ meu-leitor-pdf/
   destaque verde (certo)/vermelho (errado) e score em %
 - Estado/handlers/estatísticas (`localStorage` sob `dictation:<trackId>:stats`) **totalmente
   separados** do Listening (`listening:<trackId>:stats`) — nunca alterar um mexendo no outro
+- **Auto-pause (piloto)**: pausa sozinho nos silêncios entre frases
+  (`dictation_pause_points.json`, só unit4-a/b por ora — ver ROADMAP item 1), com detecção
+  por CRUZAMENTO do ponto (nunca por proximidade — proximidade re-pausava em cima do ponto
+  ao usar "Replay last part"), toggle on/off, pílulas de estado (pausado/fim do áudio) e
+  botão "↺ Replay last part". `Ctrl+Space` retoma
+- A recuperação do casamento LCS é por DP de SUFIXOS + caminhada pra frente (palavra casa
+  com a ocorrência mais CEDO no texto) — a versão prefixos+trás casava palavra repetida com
+  uma ocorrência lá do fim, deixando o verde longe do contexto digitado; não regredir
 
 ### Progress Dashboard ("Progress", menu principal)
 - Tela só-leitura: cartões de estatística (palavras aprendidas/devidas, revisões pendentes,
@@ -157,6 +170,9 @@ Estes arquivos **não devem ser editados manualmente** (todos gerados por script
 - `listening_vocabulary.json`, `listening_american1.json` — tracks de Listening/Dictation (esses
   dois foram escritos/ajustados manualmente ao longo do tempo, mas continuam sendo dados, não
   lógica — tratar como fonte de verdade dos tracks, editar com cuidado)
+- `dictation_pause_points.json` — pontos de auto-pause do Dictation (segundos, por trackId),
+  gerados por detecção de silêncio (Python `soundfile`+`numpy`; parâmetros documentados no
+  ROADMAP item 1 e no PROJECT_SUMMARY) — regenerar rodando o detector, nunca editar à mão
 
 Se os PDFs/áudios de origem mudarem, os índices precisam ser regenerados.
 
