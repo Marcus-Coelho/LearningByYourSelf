@@ -241,6 +241,19 @@ const getVocabularyUnitBadgeStatus = (unitNumber, visited, exerciseRatings) => {
   return allMastered ? 'mastered' : 'rated';
 };
 
+// Conta quantas units caem em cada status (unvisited/visited/rated/mastered)
+// — usado só pelo Dashboard de progresso pra desenhar a barra por curso.
+// Recebe a lista de status JÁ calculada por getUnitBadgeStatus/
+// getVocabularyUnitBadgeStatus (nunca recalcula o status por conta própria,
+// pra nunca divergir do que as 3 grades de unit mostram).
+const tallyUnitStatuses = (statuses) => {
+  const tally = { unvisited: 0, visited: 0, rated: 0, mastered: 0 };
+  statuses.forEach((status) => {
+    tally[status] = (tally[status] || 0) + 1;
+  });
+  return tally;
+};
+
 const unitTable = {
   1: 'Learning vocabulary',
   2: 'Keeping a vocabulary notebook',
@@ -570,6 +583,17 @@ const IconLanguage = () => (
     <path d="M7 9h10" />
     <path d="M7 12h10" />
     <path d="M7 15h6" />
+  </svg>
+);
+
+// Ícone do menu "Progress" (Dashboard de progresso) — barras de um gráfico
+// simples, mesmo estilo de traço dos outros ícones do drawer.
+const IconDashboard = () => (
+  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 20V11" />
+    <path d="M10.5 20V4" />
+    <path d="M17 20v-6.5" />
+    <path d="M3 20h18" />
   </svg>
 );
 
@@ -1852,6 +1876,26 @@ function App() {
     setActiveCourseId(null);
   };
 
+  // Tela "Progress" (Dashboard de progresso) — resumo só-leitura de tudo,
+  // mesma trava de acesso e mesma limpeza de seleção que Wordbook/Profile
+  // (não é uma tela "dentro" de um curso, então nunca deixa insideCourse
+  // preso em true por causa de uma unit/section aberta antes).
+  const handleOpenDashboard = (event) => {
+    event.preventDefault();
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
+    setActivePage('dashboard');
+    setSelectedUnit(null);
+    setSelectedAmerican1Unit(null);
+    setSelectedAmerican1Section(null);
+    setSelectedGrammarElemUnit(null);
+    setSelectedGrammarElemAppendix(null);
+    setSelectedGrammarElemAdditional(null);
+    setActiveCourseId(null);
+  };
+
   // Cadastro é só-nome, sem senha: se o nome digitado já existe na lista
   // (case-insensitive), reaproveita o cadastro existente (== "login") em vez
   // de criar um duplicado — é assim que dá pra "trocar" para um usuário já
@@ -2672,6 +2716,7 @@ function App() {
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenDictation(event); setMobileMenuOpen(false); }}><IconText /><span>Dictation</span></a></li>
             <li className="side-drawer-item"><a href="#link-3" onClick={() => setMobileMenuOpen(false)}><IconMic /><span>Speaking</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenAmerican1SoundBank(event); setMobileMenuOpen(false); }}><IconSound /><span>Sound Bank</span></a></li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenDashboard(event); setMobileMenuOpen(false); }}><IconDashboard /><span>Progress</span></a></li>
             <li className="side-drawer-divider" role="separator" />
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenProfile(event); setMobileMenuOpen(false); }}><IconProfile /><span>My Profile</span></a></li>
           </ol>
@@ -4270,7 +4315,61 @@ function App() {
             )}
           </div>
         </main>
-      ) : activePage === 'register' ? (
+      ) : activePage === 'dashboard' ? (() => {
+        // Progress Dashboard: resumo só-leitura, lido na hora do render (não
+        // memoizado) — mesmo estilo do resto do arquivo (ratingValues,
+        // unvisitedCandidates etc. também recalculam a cada render). Fica
+        // dentro de uma IIFE (mesmo padrão de american1-unit/listening-tracks
+        // logo abaixo) só pra poder calcular essas listas locais antes do
+        // JSX, sem virar mais um punhado de consts soltos no corpo de App().
+        const listeningTracks = LISTENING_SOURCES.flatMap((source) => source.tracks);
+        const listeningAttempted = listeningTracks.filter((track) => Boolean(loadListeningStats(userName, track.id))).length;
+        const dictationAttempted = listeningTracks.filter((track) => Boolean(loadDictationStats(userName, track.id))).length;
+
+        // Mesma lógica de status das 3 grades de unit (getUnitBadgeStatus/
+        // getVocabularyUnitBadgeStatus) — nunca reinventada aqui, só somada
+        // por status via tallyUnitStatuses.
+        const vocabularyStatuses = unitItems.map((unit) => (
+          getVocabularyUnitBadgeStatus(unit.number, Boolean(visitedUnits[unit.number]), exerciseRatings)
+        ));
+        const american1Statuses = american1UnitNumbers.map((unit) => {
+          const visited = Object.keys(american1VisitedSections).some((key) => key.startsWith(`${unit}|`));
+          return getUnitBadgeStatus(visited, american1UnitRatings[unit] || 0);
+        });
+        const grammarElemStatuses = grammarElemUnitNumbers.map((unit) => (
+          getUnitBadgeStatus(Boolean(grammarElemVisitedUnits[unit]), grammarElemUnitRatings[unit] || 0)
+        ));
+
+        const courseProgress = [
+          { id: 'vocabulary', title: courses.vocabulary.title, total: unitItems.length, tally: tallyUnitStatuses(vocabularyStatuses) },
+          { id: 'american1', title: courses.american1.title, total: american1UnitNumbers.length, tally: tallyUnitStatuses(american1Statuses) },
+          { id: 'grammarElem', title: courses.grammarElem.title, total: GRAMMAR_ELEM_UNIT_COUNT, tally: tallyUnitStatuses(grammarElemStatuses) },
+        ];
+
+        return (
+          <main className="landing-page vocabulary-mode dashboard-mode">
+            <DashboardPage
+              userName={userName}
+              wordbookCount={wordbookEntries.length}
+              wordbookDueCount={wordbookDueCount}
+              reviewQueueCount={reviewQueue.length}
+              courseProgress={courseProgress}
+              listeningAttempted={listeningAttempted}
+              listeningTotal={listeningTracks.length}
+              dictationAttempted={dictationAttempted}
+              dictationTotal={listeningTracks.length}
+              lastVisitedByCourse={lastVisitedByCourse}
+              onOpenLastVisited={openLastVisitedEntry}
+              formatLastVisitedLabel={formatLastVisitedLabel}
+              mostRecentLastVisited={mostRecentLastVisited}
+              lastVisitedLabel={lastVisitedLabel}
+              onContinueLastVisited={handleContinueLastVisited}
+              onOpenWordbook={handleOpenWordbook}
+              onOpenCourses={handleCourses}
+            />
+          </main>
+        );
+      })() : activePage === 'register' ? (
         <main className="landing-page">
           <div className="landing-panel register-panel">
             <p className="eyebrow">Welcome</p>
@@ -4611,6 +4710,150 @@ function ReviewCard({ items, dueWordsCount, onOpenItem, onOpenWords, embedded })
         <p className="review-more">…and {hiddenCount} more waiting after these.</p>
       )}
     </section>
+  );
+}
+
+// Barra de progresso de 1 curso no Dashboard — segmentos coloridos (mesmas
+// cores de UnitBadgeDot: visited azul, rated roxo, mastered verde) por cima
+// de uma trilha cinza que representa o restante "not started" (mesma ideia
+// de unit-badge-dot--unvisited ser "transparente": não tem segmento próprio,
+// é só o que sobra da trilha). Números por status ficam escritos por baixo
+// (não só a cor) — reaproveita UnitBadgeDot/UNIT_BADGE_LABELS já usados nas
+// 3 grades de unit, em vez de inventar uma legenda nova.
+const DASHBOARD_BAR_SEGMENTS = ['visited', 'rated', 'mastered'];
+const DASHBOARD_LEGEND_ORDER = ['unvisited', 'visited', 'rated', 'mastered'];
+
+function DashboardCourseRow({ title, total, tally, continueEntry, continueLabel, onContinue }) {
+  const safeTotal = total || 1;
+  return (
+    <div className="dashboard-course-row">
+      <div className="dashboard-course-head">
+        <h3>{title}</h3>
+        <span className="dashboard-course-count">{total - tally.unvisited}/{total} units started</span>
+      </div>
+      <div
+        className="dashboard-progress-bar"
+        role="img"
+        aria-label={`${title}: ${tally.mastered} mastered, ${tally.rated} rated, ${tally.visited} visited, ${tally.unvisited} not started, out of ${total} units`}
+      >
+        {DASHBOARD_BAR_SEGMENTS.map((status) => (
+          tally[status] > 0 ? (
+            <span
+              key={status}
+              className={`dashboard-progress-segment dashboard-progress-segment--${status}`}
+              style={{ width: `${(tally[status] / safeTotal) * 100}%` }}
+            />
+          ) : null
+        ))}
+      </div>
+      <div className="dashboard-course-legend">
+        {DASHBOARD_LEGEND_ORDER.map((status) => (
+          <span key={status} className="dashboard-course-legend-item">
+            <UnitBadgeDot status={status} />
+            {UNIT_BADGE_LABELS[status]}: <strong>{tally[status]}</strong>
+          </span>
+        ))}
+      </div>
+      {continueEntry && (
+        <button type="button" className="course-continue-cta dashboard-continue-cta" onClick={onContinue}>
+          Continue where you left off
+          <small>{continueLabel}</small>
+        </button>
+      )}
+    </div>
+  );
+}
+
+// Tela "Progress" (menu lateral) — resumo só-leitura de tudo que o app já
+// grava em outro lugar: My Words (wordbookEntries), revisões espaçadas
+// (reviewQueue), progresso das 3 grades de unit (mesmo status de
+// getUnitBadgeStatus/getVocabularyUnitBadgeStatus) e prática de Listening/
+// Dictation (loadListeningStats/loadDictationStats). Não escreve em nada —
+// só lê e mostra; os tiles de "Words due"/"Reviews due" só navegam pras
+// telas que já existem (My Words/Courses) em vez de duplicar a lista.
+function DashboardPage({
+  userName,
+  wordbookCount,
+  wordbookDueCount,
+  reviewQueueCount,
+  courseProgress,
+  listeningAttempted,
+  listeningTotal,
+  dictationAttempted,
+  dictationTotal,
+  lastVisitedByCourse,
+  onOpenLastVisited,
+  formatLastVisitedLabel,
+  mostRecentLastVisited,
+  lastVisitedLabel,
+  onContinueLastVisited,
+  onOpenWordbook,
+  onOpenCourses,
+}) {
+  const masteredTotal = courseProgress.reduce((sum, course) => sum + course.tally.mastered, 0);
+  const unitsTotal = courseProgress.reduce((sum, course) => sum + course.total, 0);
+
+  return (
+    <div className="landing-panel dashboard-panel">
+      <p className="eyebrow">Progress</p>
+      <h1>{userName ? `${userName}'s Progress` : 'Your Progress'}</h1>
+      <p>
+        A snapshot of everything you've studied so far — units, My Words, spaced review,
+        Listening and Dictation, all in one place.
+      </p>
+
+      {mostRecentLastVisited && (
+        <button type="button" className="landing-cta continue-cta dashboard-hero-continue" onClick={onContinueLastVisited}>
+          Continue where you left off
+          <small>{lastVisitedLabel}</small>
+        </button>
+      )}
+
+      <div className="dashboard-stats">
+        <button type="button" className="dashboard-stat-tile" onClick={onOpenWordbook}>
+          <span className="dashboard-stat-value">{wordbookCount}</span>
+          <span className="dashboard-stat-label">Words learned</span>
+        </button>
+        <button type="button" className="dashboard-stat-tile" onClick={onOpenWordbook}>
+          <span className="dashboard-stat-value">{wordbookDueCount}</span>
+          <span className="dashboard-stat-label">Words due for review</span>
+        </button>
+        <button type="button" className="dashboard-stat-tile" onClick={onOpenCourses}>
+          <span className="dashboard-stat-value">{reviewQueueCount}</span>
+          <span className="dashboard-stat-label">Reviews due</span>
+        </button>
+        <div className="dashboard-stat-tile dashboard-stat-tile--static">
+          <span className="dashboard-stat-value">{masteredTotal}/{unitsTotal}</span>
+          <span className="dashboard-stat-label">Units mastered (all courses)</span>
+        </div>
+        <div className="dashboard-stat-tile dashboard-stat-tile--static">
+          <span className="dashboard-stat-value">{listeningAttempted}/{listeningTotal}</span>
+          <span className="dashboard-stat-label">Listening exercises practiced</span>
+        </div>
+        <div className="dashboard-stat-tile dashboard-stat-tile--static">
+          <span className="dashboard-stat-value">{dictationAttempted}/{dictationTotal}</span>
+          <span className="dashboard-stat-label">Dictation exercises practiced</span>
+        </div>
+      </div>
+
+      <h2 className="dashboard-section-title">Progress by course</h2>
+      <div className="dashboard-courses">
+        {courseProgress.map((course) => {
+          const entry = lastVisitedByCourse[course.id];
+          return (
+            <DashboardCourseRow
+              key={course.id}
+              title={course.title}
+              total={course.total}
+              tally={course.tally}
+              continueEntry={entry}
+              continueLabel={entry ? formatLastVisitedLabel(course.id, entry) : ''}
+              onContinue={() => onOpenLastVisited(course.id, entry)}
+            />
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
