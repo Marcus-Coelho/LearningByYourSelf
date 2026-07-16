@@ -7,7 +7,7 @@ Aplicação web para estudo de inglês ("Let's Learn English") que combina um le
 ## Estrutura do projeto
 
 - `meu-leitor-pdf/`
-  - Aplicação React (Create React App), todo o código-fonte em `src/App.js` (arquivo único, ~940 linhas, sem componentes separados em arquivos próprios).
+  - Aplicação React (Create React App), todo o código-fonte em `src/App.js` (arquivo único, ~7000 linhas — cresceu bastante desde a v1 inicial de ~940 linhas —, sem componentes separados em arquivos próprios) + `src/App.css` (~3700 linhas, também um arquivo só). `npm run build` compila normalmente e é usado como checagem de erros ao longo do desenvolvimento — não há build de produção *hospedado*, mas o comando em si funciona (ver "Como usar" abaixo).
   - Dependências principais:
     - `react` ^19.2.7, `react-dom` ^19.2.7, `react-scripts` 5.0.1
     - `@react-pdf-viewer/core`, `@react-pdf-viewer/default-layout`, `@react-pdf-viewer/highlight` (leitor de PDF)
@@ -42,17 +42,19 @@ Aplicação web para estudo de inglês ("Let's Learn English") que combina um le
 ## Funcionalidade do app (`src/App.js`)
 
 ### Navegação
-Estado `activePage` controla as "páginas" renderizadas condicionalmente (sem router):
-- **home** — landing page com texto motivacional de boas-vindas. Acessível sem cadastro. Com usuário logado, mostra também o card "Today's Plan" (ver seção própria abaixo).
-- **register** — cadastro/"login" só de nome (ver "Cadastro de usuário e score" abaixo). Gate de acesso: é para aqui que `handleCourses`/`handleOpenProfile` redirecionam se ainda não há usuário ativo.
-- **courses** — lista de cursos disponíveis (hoje: "Vocabulary - English Pre Intermediate" + "American English Level 1"). Só alcançável com usuário cadastrado/ativo.
-- **vocabulary** — grade com os 100 links de unidade (`unitTable`, mapeando número → tema, ex.: "1: Learning vocabulary", "24: Food", "100: Abbreviations").
-- **unit** — tela de estudo de uma unidade específica do curso Vocabulary (layout de 2 painéis).
-- **exercises** — estudo por exercício do curso Vocabulary (ver seção própria abaixo).
-- **american1** — grade com as units do curso "American English Level 1" (ver seção própria abaixo).
-- **american1-unit** — tela de estudo de uma unidade específica desse curso (seções A/B/C/-, mesmo layout de 2 painéis).
-- **profile** — "My Profile": nome do usuário ativo, score, exportar notas e botões de reset (ver abaixo).
-- **wordbook** — "My Words": caderno de vocabulário pessoal + flashcards (ver "Revisão espaçada, My Words e controles de listening" abaixo). Link no menu do header (dentro e fora de curso), com a mesma trava de cadastro de Courses/Profile.
+Estado `activePage` controla as "páginas" renderizadas condicionalmente (sem router). Lista completa atual (nomes de exibição foram renomeados desde a criação — ver "Atualizações 2026-07-09 a 2026-07-16" mais abaixo — mas os valores de `activePage` continuam com os nomes antigos internamente):
+- **home** — landing page com imagem + texto motivacional. Acessível sem cadastro. Com usuário logado, mostra também o card "Today's Plan" e o link "Continue where you left off".
+- **register** — cadastro/"login" só de nome. Gate de acesso: é para aqui que `handleCourses`/`handleOpenProfile`/etc. redirecionam se ainda não há usuário ativo.
+- **courses** — lista dos 3 cursos disponíveis (rótulos atuais: "English Vocabulary B", "American English A1", "Grammar English A1") + busca unificada por palavra-chave cruzando os 3. Só alcançável com usuário cadastrado/ativo.
+- **vocabulary** — grade das 100 units do curso Vocabulary, com badge de status por unit e busca.
+- **unit** / **exercises** — tela de leitura / estudo por exercício do curso Vocabulary (layout de 2 painéis).
+- **american1** / **american1-unit** / **american1-reference** / **american1-transcriptions** — grade de units, leitura por seção, e as duas telas de referência/transcrição do curso American English A1 (ver seções próprias abaixo).
+- **grammarElem** / **grammarElem-unit** / **grammarElem-exercise** / **grammarElem-appendix** / **grammarElem-additional** — grade de units, leitura, exercícios, apêndices e "additional exercises" do curso Grammar English A1 (115 units — ver "Atualizações" abaixo, curso adicionado depois deste resumo original).
+- **listening** / **listening-tracks** / **listening-exercise** — hub → lista de tracks → exercício de "fill in the blank" ouvindo áudio (fora dos 3 cursos, ver "Atualizações" abaixo).
+- **dictation** / **dictation-tracks** / **dictation-exercise** — mesmo hub/tracks do Listening, mas o exercício é "ouça e digite tudo sem ver o texto" (ver "Atualizações" abaixo).
+- **dashboard** — "Progress Dashboard", tela só-leitura com estatísticas gerais e progresso por curso (ver "Atualizações" abaixo).
+- **profile** — "My Profile": nome do usuário ativo, score, exportar/importar backup e botões de reset.
+- **wordbook** — "My Words": caderno de vocabulário pessoal + flashcards. Link no menu (gaveta lateral esquerda, ver "Atualizações"), com a mesma trava de cadastro de Courses/Profile.
 
 ### Tela de unidade (layout de 2 painéis redimensionáveis)
 - Painel central: leitor de PDF (`PdfWorkspace`, envolvido por `UnitAudioReader` — ver "Áudio ancorado" abaixo). Ao entrar na Unit N, carrega automaticamente `/materials/unit_N/EVIU_PI-N_L.pdf` (o arquivo terminado em `_L`, confirmado presente nas 100 unidades). O usuário ainda pode trocar por um PDF local via upload (`URL.createObjectURL`) — o auto-load só é reaplicado ao trocar de unidade/reentrar na página. Toolbar customizada (zoom, navegação de página, busca, alternância texto/mão, fullscreen, download, print) e plugin de highlight por seleção de texto.
@@ -145,6 +147,111 @@ Cada palavra pode opcionalmente ter uma imagem, pra reforçar a memória visual 
 - **Direção do flashcard inverte quando a palavra tem imagem** (pedido explícito do usuário, é o ponto central da feature): sem imagem, o card continua como antes (frente = palavra, verso = significado + exemplo — recall L2→L1). Com imagem, a frente mostra a **imagem e o significado juntos**, com a palavra escondida — o aluno precisa olhar a imagem, ler a tradução, e tentar lembrar da palavra em inglês antes de revelar ("Show word" em vez de "Show meaning"); o verso então mostra a palavra + exemplo. É a mesma escada de Again/Good/Easy dos dois lados, só a ordem de exibição muda.
 - Lista de palavras (`WordbookPage`) mostra uma thumbnail 48×48 (`.wordbook-entry-thumb`) ao lado de cada palavra que tem imagem; sem imagem, nenhuma thumbnail (regressão testada).
 - Verificado via Playwright (21 checks): upload real de arquivo (`setInputFiles`), drag&drop simulado via `DataTransfer` sintético + `dispatchEvent`, paste simulado via `ClipboardEvent` sintético (não é o mesmo canal que um Ctrl+V real do SO, mas exercita o mesmíssimo código do `handlePaste` — confirmado funcionando em teste isolado), thumbnail na lista, dropzone resetando após salvar, botão de remover antes de salvar, persistência como data URL JPEG em localStorage, e a inversão completa do flashcard (frente sem palavra, botão "Show word", verso revelando a palavra) comparada lado a lado com uma carta sem imagem no mesmo baralho de prática.
+
+## Atualizações 2026-07-09 a 2026-07-16 (resumo, menos exaustivo que as seções acima)
+
+As seções abaixo cobrem tudo adicionado depois de 2026-07-07 até esta atualização. São mais
+concisas que os blocos acima (que têm o histórico completo de decisões/testes de cada feature)
+— para detalhes finos de qualquer uma delas, ver as memórias de sessão correspondentes
+(`american1-*`, `panel-toggle-feature`, `left-slide-menu-feature`, `backup-restore-feature`,
+`grammar-elem-unit-titles`, etc.).
+
+### Terceiro curso: Grammar English A1 (Grammar Elementary)
+"Essential Grammar in Use, unit by unit — reading, exercises and audio": 115 units + Appendixes
+(índice próprio, `grammar_elem_appendix_index.json`) + 35 Additional Exercises
+(`GRAMMAR_ELEM_ADDITIONAL_COUNT`). Cada unit tem um par de PDFs de página única (leitura +
+exercícios) e um punhado de áudios curtos, tocados inline ao lado da letra da seção (não
+ancorado sobre o PDF como nos outros dois cursos). Títulos das 115 units + 7 apêndices foram
+extraídos via font-size/posição no PDF (não ordem de texto — ver memória
+`grammar-elem-unit-titles`, inclui um gotcha de mojibake `sys.stdin`/cp1252 no Windows).
+
+### American English A1 — recursos adicionais
+- **Reference links**: cada seção A/B/C ganhou botões pra Grammar Bank/Vocabulary
+  Bank/Communication/Writing — merge de 2 páginas (GB/SB) ou botão de página única
+  (VB/C/W), com notas isoladas por página (`american1_references.json`, dados derivados
+  de `pages_others.txt`).
+- **Reference audio anchors**: áudio ancorado também nas páginas de Grammar/Vocabulary Bank
+  (`american1_reference_audio_anchors.json`), mesmo padrão de detecção do áudio ancorado
+  original das units.
+- **Practical English (vídeos)**: link de vídeo mp4 por episódio (abre em nova aba),
+  `american1_videos.json` — todos os 6 episódios cobertos.
+- **Transcrições** (`american1_transcriptions_audio_anchors.json`): áudio ancorado nas
+  páginas de transcrição também.
+- **Sound Bank standalone** (link no menu principal, fora de qualquer unit): abre direto as
+  páginas 166-167 (pronúncia de palavras), reaproveitando a tela de referência do American1;
+  47 âncoras de áudio próprias, extraídas com PyMuPDF + ajuste manual de posição (ferramenta de
+  drag-to-position usada uma vez e depois removida). Um bug real foi corrigido aqui: a barra de
+  carregamento ficava girando pra sempre em páginas sem nenhuma âncora de áudio (nunca tinha
+  a chance de resolver) — corrigido gateando no `pagesNeeded.length > 0`.
+- **Reorganização de pastas** (2026-07-09): `pdfs/` foi dividido em `pdfs/` e
+  `videos/StudentBook`+`teacher_book`, com `setupProxy.js` atualizado pros novos caminhos — essa
+  árvore é editada manualmente pelo usuário, então releia a árvore ao vivo antes de confiar em
+  caminhos antigos.
+
+### Listening (novo, fora dos 3 cursos)
+Tela própria no menu principal (`Choose a listening source` → `Choose an exercise` →
+exercício): "fill in the blank" ouvindo o áudio, reaproveitando os mesmos tracks/áudio dos
+cursos, agrupados em `LISTENING_SOURCES` (`listening_vocabulary.json`/`listening_american1.json`).
+Cada track tem lacunas sorteadas a cada visita (não decorável), atalho `Ctrl+Space` pra
+pausar/tocar o áudio sem sair do campo de resposta, e estatísticas por track
+(`listening:<trackId>:stats`).
+
+### Dictation ("Modo Ditado", 2026-07-16)
+Segunda tela reaproveitando os mesmos `LISTENING_SOURCES`/tracks do Listening, mas o aluno
+**não vê o texto antes** — ouve e digita tudo numa caixa só, com o mesmo atalho `Ctrl+Space`.
+"Check" compara o texto digitado com o correto via LCS (maior subsequência comum) palavra-a-
+palavra, destacando cada palavra esperada em verde (certa, na ordem certa) ou vermelho
+(errada/faltando), com score em %. Estado, handlers e estatísticas
+(`dictation:<trackId>:stats`) são **completamente separados** do Listening — implementado sem
+alterar uma linha do `ListeningClozeExercise`.
+
+### Progress Dashboard ("Progress", 2026-07-16)
+Tela só-leitura no menu principal: cartões de estatística (palavras aprendidas/devidas,
+revisões pendentes, units dominadas somando os 3 cursos, exercícios de Listening/Dictation
+praticados), atalho "Continue where you left off", e uma barra de progresso por curso
+(não-visitado/visitado/avaliado/dominado) construída em cima da mesma lógica que as 3 grades
+de unit já usam (`getUnitBadgeStatus`/`getVocabularyUnitBadgeStatus`) — nunca diverge do que as
+grades mostram porque não duplica a lógica, só reaproveita. Não escreve nada em `localStorage`,
+só lê o que as outras features já persistem.
+
+### My Words — melhorias adicionais
+- **Auto-add de palavras erradas**: ao conferir um exercício de Listening, qualquer palavra
+  errada na lacuna é automaticamente adicionada ao My Words (com a frase de contexto completa),
+  com feedback visual temporário ("✓ Added N words").
+- **Click-to-add-meaning**: no flashcard, o texto "(click to add meaning)" é clicável — vira um
+  campo de edição (salva no blur/Enter, cancela no Escape) e, ao clicar, também abre em novas
+  abas o Cambridge Dictionary e o YouGlish (pronúncia em vídeos reais) para aquela palavra.
+- **Layout da tela**: painel fixo (título + Practice Words + formulário) numa posição travada
+  perto do cabeçalho, com só a lista de palavras salvas rolando dentro do próprio painel (não a
+  página inteira) — mesmo tratamento depois replicado no Dashboard.
+
+### Navegação e UI geral
+- **Left slide menu**: navegação trocada de menu de topo pra uma gaveta lateral deslizante
+  (hambúrguer sempre visível), substituindo o antigo submenu — ~230 linhas de CSS legado
+  removidas.
+- **Renomeação de cursos** (só o rótulo exibido; pastas em disco continuam com os nomes
+  antigos de propósito): "Vocabulary" → **English Vocabulary B**, "American English Level 1" →
+  **American English A1**, "Grammar Elementary" → **Grammar English A1**.
+- **"All Units" no toolbar**: botão em todas as 9 telas de leitura, pula direto pra grade de
+  unidades do curso atual.
+- **Barra de título do leitor**: linha "curso · unit · conteúdo" no topo das 9 telas de leitura,
+  substituindo o antigo texto "You are in the X Course" do cabeçalho.
+- **Badges de progresso + Continue**: cada unit nas 3 grades ganhou um "dot" colorido de status,
+  mais um atalho "Continue where you left off" e busca por palavra-chave cruzando os 3 cursos
+  (usada também na busca unificada da tela Courses).
+- **Painel de notas mais largo**: "My Notes" (painel direito) passou de largura fixa (650px) pra
+  ~21% da largura da janela, nas 9 telas de leitura.
+- **Toggle de esconder/mostrar o painel direito**: presente nas 8 telas com painel de
+  notas/respostas, com o botão "+ Word" seguindo o mesmo estado.
+- **Ajustes responsivos** (tablet, ~820px): corrigido overflow do cabeçalho/painel de notas
+  nessa faixa de largura — celular continua fora de escopo, por decisão do usuário.
+- **Backup/restore**: export/import completo (JSON) do namespace de um usuário no My Profile —
+  dump genérico de todas as chaves daquele usuário (não uma lista fixa de prefixos), import
+  sempre aplica ao usuário ativo e recarrega a página.
+- **Fundo desfocado/translúcido** (`--page-hero-bg`, reaproveita a imagem `openCourse.png` da
+  Home): aplicado em Courses, My Words, Listening, Dictation, My Profile e Dashboard. Qualquer
+  cartão/retângulo de conteúdo nessas telas precisa de fundo opaco — bug de imagem "vazando"
+  através de fundos translúcidos já apareceu e foi corrigido várias vezes, ver `App.css`.
 
 ## Histórico de processamento de conteúdo (pré-processamento, fora do código React)
 
