@@ -791,6 +791,12 @@ function App() {
   // (não existe em telas de grade de units, home, etc.).
   const PAGES_WITH_SIDE_PANEL = ['exercises', 'unit', 'grammarElem-unit', 'grammarElem-exercise', 'grammarElem-appendix', 'grammarElem-additional', 'american1-unit', 'american1-reference', 'american1-transcriptions'];
   const [exerciseRatings, setExerciseRatings] = useState({});
+  // Autoavaliação da UNIT inteira (tela de leitura, "_L.pdf") — separada de
+  // exerciseRatings (por exercício, tela "exercises"). Chave própria
+  // ("unit-rating:", nunca "rating:") pra não ser varrida junto com as
+  // notas de exercício no load de exerciseRatings nem contaminar o cálculo
+  // de "Your Score" (que é só a média das notas de exercício).
+  const [vocabularyUnitRatings, setVocabularyUnitRatings] = useState({});
   const [visitedUnits, setVisitedUnits] = useState({});
   const [american1UnitRatings, setAmerican1UnitRatings] = useState({});
   const [american1VisitedSections, setAmerican1VisitedSections] = useState({});
@@ -928,6 +934,31 @@ function App() {
     }
   }, [userName]);
 
+  // Mesmo carregamento acima, mas pra autoavaliação por UNIT inteira (chave
+  // "unit-rating:", não "rating:" — ver comentário na declaração do state).
+  useEffect(() => {
+    if (!userName) {
+      setVocabularyUnitRatings({});
+      return;
+    }
+    try {
+      const prefix = userKey(userName, 'unit-rating:');
+      const loaded = {};
+      for (let i = 0; i < window.localStorage.length; i += 1) {
+        const key = window.localStorage.key(i);
+        if (key && key.startsWith(prefix)) {
+          const value = Number(window.localStorage.getItem(key));
+          if (value >= 1 && value <= 5) {
+            loaded[key.slice(prefix.length)] = value;
+          }
+        }
+      }
+      setVocabularyUnitRatings(loaded);
+    } catch (error) {
+      setVocabularyUnitRatings({});
+    }
+  }, [userName]);
+
   // Carrega as units já visitadas pelo usuário ativo em qualquer sessão
   // anterior. "Your Progress" conta essas units (não a posição da unit
   // atual) — assim, se o aluno pular direto pra Unit 70 sem ter visto as
@@ -1025,6 +1056,21 @@ function App() {
       // Armazenamento indisponível — a nota fica só nesta sessão.
     }
     scheduleReview('vocabulary', exerciseId, value);
+  };
+
+  // Autoavaliação da UNIT inteira (tela de leitura) — "vocabulary-unit" (não
+  // "vocabulary") como curso do scheduleReview, pra não colidir com a
+  // revisão espaçada por exercício: handleOpenReviewItem trata os dois
+  // separadamente (um navega pra "exercises", o outro pra "unit").
+  const handleRateVocabularyUnit = (unit, value) => {
+    if (!unit || !userName) return;
+    setVocabularyUnitRatings((prev) => ({ ...prev, [unit]: value }));
+    try {
+      window.localStorage.setItem(userKey(userName, `unit-rating:${unit}`), String(value));
+    } catch (error) {
+      // Armazenamento indisponível — a nota fica só nesta sessão.
+    }
+    scheduleReview('vocabulary-unit', unit, value);
   };
 
   const ratingValues = Object.values(exerciseRatings);
@@ -1817,6 +1863,12 @@ function App() {
       setShowGrammarElemAnswers(false);
       setActiveCourseId('grammarElem');
       setActivePage('grammarElem-unit');
+    } else if (item.course === 'vocabulary-unit') {
+      const unit = Number(item.id);
+      if (!unit || !unitTable[unit]) return;
+      setSelectedUnit(unit);
+      setActiveCourseId('vocabulary');
+      setActivePage('unit');
     }
   };
 
@@ -2314,8 +2366,11 @@ function App() {
       return;
     }
     setExerciseRatings({});
+    setVocabularyUnitRatings({});
     removeLocalStorageKeysWithPrefix('rating:');
+    removeLocalStorageKeysWithPrefix('unit-rating:');
     removeLocalStorageKeysWithPrefix('review:vocabulary:');
+    removeLocalStorageKeysWithPrefix('review:vocabulary-unit:');
   };
 
   const handleResetLessonNotes = () => {
@@ -2340,6 +2395,7 @@ function App() {
     }
     setVisitedUnits({});
     setExerciseRatings({});
+    setVocabularyUnitRatings({});
     clearLastVisitedForCourse('vocabulary');
     try {
       window.localStorage.removeItem(userKey(userName, 'visitedUnits'));
@@ -2347,7 +2403,9 @@ function App() {
       // Armazenamento indisponível.
     }
     removeLocalStorageKeysWithPrefix('rating:');
+    removeLocalStorageKeysWithPrefix('unit-rating:');
     removeLocalStorageKeysWithPrefix('review:vocabulary:');
+    removeLocalStorageKeysWithPrefix('review:vocabulary-unit:');
     removeLocalStorageKeysWithPrefix('notes:', ['american1', 'grammarElem']);
     removeLocalStorageKeysWithPrefix('answers:');
   };
@@ -2761,36 +2819,6 @@ function App() {
 
       {activePage === 'exercises' ? (
         <main className="study-page">
-          <div className="study-bar">
-            <div className="study-bar-left">
-              <button type="button" className="ghost-button" onClick={handleBackToUnit}>
-                ‹ Back to Unit
-              </button>
-              <button type="button" className="ghost-button all-units-link" onClick={handleVocabulary}>
-                All Units
-              </button>
-              <span className="study-unit-label">
-                {courses.vocabulary.title} · Unit {selectedUnit}
-                {unitTable[selectedUnit] ? ` - ${unitTable[selectedUnit]}` : null}
-              </span>
-            </div>
-
-            <div className="exercise-tabs" role="tablist" aria-label="Unit exercises">
-              {unitExercises.map((id) => (
-                <button
-                  key={id}
-                  type="button"
-                  role="tab"
-                  aria-selected={id === activeExerciseId}
-                  className={`exercise-tab${id === activeExerciseId ? ' is-active' : ''}`}
-                  onClick={() => setSelectedExercise(id)}
-                >
-                  {id}
-                </button>
-              ))}
-            </div>
-          </div>
-
           <div
             className="study-columns"
             ref={layoutRef}
@@ -2801,6 +2829,46 @@ function App() {
             }}
           >
             <div className="study-left">
+              {/* Barra de botões + título ficam DENTRO da coluna esquerda
+                  (mesmo padrão de .pdf-panel no Grammar/American1: toolbar +
+                  section-info dentro do painel do leitor) — não fora do
+                  grid inteiro. Assim o painel direito (.study-answers) é
+                  irmão de .study-left na mesma linha do grid e começa lá em
+                  cima, no topo, igual ao .side-panel.right-panel do Grammar,
+                  em vez de só começar depois dessas duas barras. */}
+              <div className="study-bar">
+                <div className="study-bar-left">
+                  <button type="button" className="upload-button" onClick={handleBackToUnit}>
+                    ‹ Back to Unit
+                  </button>
+                  <button type="button" className="upload-button all-units-link" onClick={handleVocabulary}>
+                    All Units
+                  </button>
+                </div>
+
+                <div className="exercise-tabs" role="tablist" aria-label="Unit exercises">
+                  {unitExercises.map((id) => (
+                    <button
+                      key={id}
+                      type="button"
+                      role="tab"
+                      aria-selected={id === activeExerciseId}
+                      className={`exercise-tab${id === activeExerciseId ? ' is-active' : ''}`}
+                      onClick={() => setSelectedExercise(id)}
+                    >
+                      {id}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="section-info">
+                <strong>
+                  {courses.vocabulary.title}
+                  {unitTable[selectedUnit] ? ` - ${unitTable[selectedUnit]}` : null}
+                </strong>
+              </div>
+
               <section className="study-reader">
                 {activeCoords ? (
                   <CroppedExerciseViewer
@@ -2884,7 +2952,7 @@ function App() {
           }}
         >
           <section className="pdf-panel">
-            <div className="pdf-toolbar">
+            <div className="pdf-toolbar pdf-toolbar-left">
               {pdfFileName ? (
                 <div className="pdf-toolbar-nav">
                   <button type="button" className="upload-button all-units-link" onClick={handleVocabulary}>
@@ -2947,7 +3015,13 @@ function App() {
 
           <aside className={`side-panel right-panel${sidePanelVisible ? '' : ' is-hidden'}`}>
             <div className="panel-content related-panel">
-              <UnitNotes key={selectedUnit} unit={selectedUnit} userName={userName} />
+              <UnitNotes
+                key={selectedUnit}
+                unit={selectedUnit}
+                userName={userName}
+                rating={vocabularyUnitRatings[selectedUnit] || 0}
+                onRate={(value) => handleRateVocabularyUnit(selectedUnit, value)}
+              />
             </div>
           </aside>
         </main>
@@ -3316,7 +3390,6 @@ function App() {
                   <button type="button" className="upload-button all-units-link" onClick={handleGrammarElem}>
                     All Units
                   </button>
-                  <span className="study-unit-label">Unit {unit}</span>
                 </div>
               </div>
 
@@ -3339,22 +3412,23 @@ function App() {
               )}
 
               {showGrammarElemAnswers && answersUrl && (
-                <div className="section-answers-strip">
-                  <div className="section-answers-strip-head">
-                    <span>Answer key</span>
-                    <button
-                      type="button"
-                      className="section-answers-strip-close"
-                      onClick={() => setShowGrammarElemAnswers(false)}
-                      aria-label="Close answers"
-                    >
-                      ✕
-                    </button>
+                <>
+                  <button
+                    type="button"
+                    className="study-answers-resize-handle"
+                    aria-label="Resize answers area"
+                    onPointerDown={startAnswersResize}
+                  />
+
+                  <div
+                    className="section-answers-strip"
+                    style={answersPanelHeight ? { height: answersPanelHeight, maxHeight: answersPanelHeight, flex: '0 0 auto' } : undefined}
+                  >
+                    <div className="section-answers-strip-frame">
+                      <PdfWorkspace key={answersUrl} fileUrl={answersUrl} initialTool="hand" />
+                    </div>
                   </div>
-                  <div className="section-answers-strip-frame">
-                    <PdfWorkspace key={answersUrl} fileUrl={answersUrl} initialTool="hand" />
-                  </div>
-                </div>
+                </>
               )}
             </section>
 

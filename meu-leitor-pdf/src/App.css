@@ -2526,7 +2526,13 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 10px 18px;
+  /* min-height:38px = mesmo valor de .pdf-toolbar (Grammar/American1) — sem
+     isso, essa barra ficava mais baixa (só a altura do conteúdo), já que
+     .pdf-toolbar tem esse chão explícito e .study-bar não tinha nenhum. */
+  min-height: 38px;
+  /* padding horizontal 14px (não 18px) = mesmo valor de .pdf-toolbar —
+     sem isso, os botões começavam 4px mais à direita que no Grammar. */
+  padding: 6px 14px;
   background: #fff;
   border-bottom: 1px solid var(--line);
   flex-wrap: wrap;
@@ -2535,7 +2541,18 @@ body {
 .study-bar-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  /* gap:10px (não 12px) = mesmo valor de .pdf-toolbar-nav (Grammar) — sem
+     isso, "All Units" começava 2px mais à direita que no Grammar. */
+  gap: 10px;
+}
+
+/* Mesmo tamanho compacto do .pdf-toolbar-nav .upload-button (Grammar/
+   American1) — sem isso, os botões ficavam no tamanho padrão maior
+   (min-height:42px) por não terem esse mesmo scoping. */
+.study-bar-left .upload-button {
+  min-height: 28px;
+  padding: 0 14px;
+  font-size: 13px;
 }
 
 .study-unit-label {
@@ -2679,8 +2696,13 @@ body {
 .study-columns {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 500px;
-  gap: 16px;
-  padding: 16px;
+  /* Sem gap (igual a .main-panels, usado nas outras 8 telas de leitura) — a
+     própria coluna do .resize-handle (14px) já é o espaçamento entre os
+     painéis. Com gap:16px aqui, a divisória visual desta tela ficava bem
+     mais larga (16+14+16=46px) que a das outras telas (só 14px). */
+  /* Sem padding nenhum — igual a .main-panels — pra ficar totalmente colado
+     nas bordas (topo/base/laterais), sem os painéis parecerem cards
+     flutuando com margem, como as outras telas de leitura já são. */
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
@@ -2689,7 +2711,11 @@ body {
 .study-left {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  /* Sem gap — igual a .pdf-panel (Grammar/American1), que também não tem.
+     Com gap:16px aqui, o fundo lavanda de .study-page (--soft) aparecia
+     como uma faixa fina entre .study-bar/.section-info/.study-reader,
+     já que esse gap agora fica ENTRE elas (antes de mover pra dentro de
+     .study-left, essas duas barras nem existiam aqui). */
   min-width: 0;
   min-height: 0;
 }
@@ -2713,10 +2739,10 @@ body {
      necessário de verdade.
   */
   overflow: hidden;
+  /* Sem borda/sombra/cantos arredondados — igual ao .pdf-panel (Grammar/
+     American1/unit do Vocabulary), que é liso, colado nas bordas, sem
+     "flutuar" como um card separado. */
   background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  box-shadow: var(--shadow);
 }
 
 /* Área para exibir o PDF do gabarito (recortado) ao clicar em "Show answers". */
@@ -2773,12 +2799,14 @@ body {
 }
 
 .study-answers {
+  /* Mesmo visual liso/colado do .side-panel.right-panel (Grammar/American1/
+     unit do Vocabulary) — sem borda/sombra/cantos arredondados nos 4 lados
+     (só arredonda o canto direito, igual .right-panel), pra ficar
+     idêntico entre os cursos, não um card flutuante separado. */
   min-height: 0;
   overflow: hidden;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  box-shadow: var(--shadow);
+  background: #f9f9f9;
+  border-radius: 0 14px 14px 0;
 }
 
 .study-answers.is-hidden { display: none; }
