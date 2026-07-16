@@ -1339,6 +1339,60 @@ body {
   gap: 16px;
 }
 
+/* Linha do auto-pause (toggle + dica) — só aparece nos tracks que têm
+   pontos de pausa gerados (dictation_pause_points.json). */
+.dictation-autopause-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Zera o margin-bottom herdado de ".listening-panel .upload-button" (20px)
+   — sem isso, o botão fica deslocado pra cima em relação à dica/pílula de
+   pausa, que está centralizada verticalmente na linha. */
+.dictation-autopause-row .upload-button {
+  margin-bottom: 0;
+}
+
+.dictation-autopause-hint {
+  font-size: 13px;
+  color: rgba(27, 58, 94, 0.65);
+}
+
+/* Estado "pausado agora": bem mais chamativo que a dica normal — o usuário
+   está de cabeça baixa digitando quando o áudio para sozinho, a mensagem
+   precisa saltar aos olhos pra ele saber o que fazer (Ctrl+Space). */
+.dictation-autopause-hint--paused {
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, var(--purple-700), var(--purple-500));
+  padding: 8px 16px;
+  border-radius: 999px;
+  animation: dictation-paused-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes dictation-paused-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.45); }
+  50% { box-shadow: 0 0 0 8px rgba(139, 92, 246, 0); }
+}
+
+/* Fim do áudio: verde vivo com anel de contraste — precisa ser
+   inconfundível em relação à pílula roxa de pausa (o usuário reportou que
+   as duas pareciam iguais). Sem pulsar: é estado final, não pede ação
+   urgente. */
+.dictation-autopause-hint--ended {
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, #0e9f4e, #19c964);
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 2px solid #0a6b35;
+  box-shadow: 0 0 0 3px rgba(25, 201, 100, 0.3);
+}
+
 .dictation-textarea {
   width: 100%;
   min-height: 160px;
@@ -1392,16 +1446,18 @@ body {
   line-height: 1.8;
 }
 
+/* Peso normal (não 600) e sublinhado afastado da linha de base — o texto
+   da correção deve ler como prosa corrida colorida, não como uma sequência
+   de fichas destacadas palavra por palavra. */
 .dictation-word-correct {
   color: #1a7a3d;
-  font-weight: 600;
 }
 
 .dictation-word-wrong {
   color: #c0392b;
-  font-weight: 600;
   text-decoration: underline;
-  text-decoration-color: rgba(192, 57, 43, 0.5);
+  text-decoration-color: rgba(192, 57, 43, 0.45);
+  text-underline-offset: 3px;
 }
 
 .listening-sentences {

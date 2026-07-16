@@ -19,6 +19,7 @@ import grammarElemIndex from './grammar_elem_index.json';
 import grammarElemAppendixIndex from './grammar_elem_appendix_index.json';
 import listeningAmerican1 from './listening_american1.json';
 import listeningVocabulary from './listening_vocabulary.json';
+import dictationPausePoints from './dictation_pause_points.json';
 import './App.css';
 
 // Fontes de Listening disponíveis na tela "Listening" do menu principal —
@@ -750,8 +751,8 @@ function App() {
   // mesmo padrão de selectedListeningSource/Track, mas em variáveis
   // separadas (reaproveita LISTENING_SOURCES só como fonte de dados —
   // mesmos tracks/audio — sem tocar em nenhum estado/handler do Listening).
-  const [selectedDictationSource, setSelectedDictationSource] = useState(null);
-  const [selectedDictationTrack, setSelectedDictationTrack] = useState(null);
+  const [selectedDictationSource, setSelectedDictationSource] = useState(RESTORED_POSITION?.selectedDictationSource ?? null);
+  const [selectedDictationTrack, setSelectedDictationTrack] = useState(RESTORED_POSITION?.selectedDictationTrack ?? null);
   const [dictationSearchQuery, setDictationSearchQuery] = useState('');
   const [hideMasteredDictation, setHideMasteredDictation] = useState(false);
   // Largura inicial = RIGHT_PANEL_WIDTH_RATIO da janela (ver comentário na
@@ -1445,6 +1446,8 @@ function App() {
       selectedGrammarElemAdditional,
       selectedListeningSource,
       selectedListeningTrack,
+      selectedDictationSource,
+      selectedDictationTrack,
     };
     try {
       window.sessionStorage.setItem(SESSION_POSITION_KEY, JSON.stringify(position));
@@ -1480,6 +1483,8 @@ function App() {
     selectedGrammarElemAdditional,
     selectedListeningSource,
     selectedListeningTrack,
+    selectedDictationSource,
+    selectedDictationTrack,
     userName,
   ]);
 
@@ -1513,6 +1518,8 @@ function App() {
       setSelectedGrammarElemAdditional(state.selectedGrammarElemAdditional ?? null);
       setSelectedListeningSource(state.selectedListeningSource ?? null);
       setSelectedListeningTrack(state.selectedListeningTrack ?? null);
+      setSelectedDictationSource(state.selectedDictationSource ?? null);
+      setSelectedDictationTrack(state.selectedDictationTrack ?? null);
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -6028,8 +6035,77 @@ function DictationExercise({ track, userName }) {
   const [checked, setChecked] = useState(false);
   const [result, setResult] = useState(null);
   const audioBarRef = useRef(null);
+  // Auto-pause: pontos (em segundos) onde o áudio pausa sozinho pra dar
+  // tempo de escrever — detectados por análise de silêncio dos MP3s (script
+  // Python offline, ver dictation_pause_points.json; piloto: só 2 tracks).
+  // Ctrl+Space (atalho que já existia) retoma do ponto onde parou.
+  const hasAutoPause = (dictationPausePoints[track.id] || []).length > 0;
+  const [autoPauseEnabled, setAutoPauseEnabled] = useState(true);
+  const [isAutoPaused, setIsAutoPaused] = useState(false);
+  // Fim do áudio: sem esse aviso o usuário não distingue "pausou sozinho no
+  // meio" de "acabou" — a última pausa automática cai perto do fim, e ao dar
+  // play de novo o áudio recomeça do zero, o que parecia um bug.
+  const [audioEnded, setAudioEnded] = useState(false);
+  // Último ponto em que já pausamos — evita re-pausar no mesmo ponto quando
+  // o usuário dá play de novo (currentTime ainda está "em cima" do ponto).
+  const lastPausedPointRef = useRef(null);
 
   const fullText = track.sentences.join(' ');
+
+  // Sinaliza o fim do áudio (independente do auto-pause estar ligado).
+  useEffect(() => {
+    const audio = audioBarRef.current?.querySelector('audio');
+    if (!audio) return undefined;
+    const handleEnded = () => {
+      setIsAutoPaused(false);
+      setAudioEnded(true);
+      lastPausedPointRef.current = null;
+    };
+    const handlePlay = () => setAudioEnded(false);
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('play', handlePlay);
+    return () => {
+      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('play', handlePlay);
+    };
+  }, [track.id]);
+
+  useEffect(() => {
+    if (!hasAutoPause || !autoPauseEnabled) return undefined;
+    const audio = audioBarRef.current?.querySelector('audio');
+    if (!audio) return undefined;
+    const pausePoints = dictationPausePoints[track.id] || [];
+
+    // timeupdate dispara ~4x/segundo — a janela de 0.75s garante que nenhum
+    // ponto passe despercebido entre dois eventos (os pontos gerados têm
+    // sempre mais de 1s de distância entre si).
+    const handleTimeUpdate = () => {
+      if (audio.paused) return;
+      const t = audio.currentTime;
+      for (const p of pausePoints) {
+        if (t >= p && t < p + 0.75 && lastPausedPointRef.current !== p) {
+          lastPausedPointRef.current = p;
+          audio.pause();
+          setIsAutoPaused(true);
+          break;
+        }
+      }
+    };
+    // Voltar/arrastar o cursor pra trás reabilita os pontos já usados.
+    const handleSeeked = () => {
+      lastPausedPointRef.current = null;
+    };
+    const handlePlay = () => setIsAutoPaused(false);
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('seeked', handleSeeked);
+    audio.addEventListener('play', handlePlay);
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('seeked', handleSeeked);
+      audio.removeEventListener('play', handlePlay);
+    };
+  }, [hasAutoPause, autoPauseEnabled, track.id]);
 
   const handleCheck = () => {
     if (!typedText.trim()) return;
@@ -6078,6 +6154,28 @@ function DictationExercise({ track, userName }) {
         Punctuation and capitalization don't matter. Press Ctrl+Space to pause/play the audio
         without leaving the text box.
       </p>
+      {hasAutoPause && (
+        <div className="dictation-autopause-row">
+          <button
+            type="button"
+            className={`upload-button listening-hide-mastered-toggle${autoPauseEnabled ? ' is-active' : ''}`}
+            onClick={() => setAutoPauseEnabled((current) => !current)}
+          >
+            {autoPauseEnabled ? '✓ Auto-pause on' : 'Auto-pause off'}
+          </button>
+          <span
+            className={`dictation-autopause-hint${audioEnded
+              ? ' dictation-autopause-hint--ended'
+              : isAutoPaused && autoPauseEnabled ? ' dictation-autopause-hint--paused' : ''}`}
+          >
+            {audioEnded
+              ? '🏁 End of audio — Ctrl+Space plays it again from the start'
+              : isAutoPaused && autoPauseEnabled
+                ? '⏸ Paused — press Ctrl+Space to continue'
+                : 'The audio pauses by itself at natural breaks so you can write.'}
+          </span>
+        </div>
+      )}
       <textarea
         className="dictation-textarea"
         value={typedText}
@@ -6104,14 +6202,18 @@ function DictationExercise({ track, userName }) {
             Green = you got that word right. Red = wrong or missing.
           </p>
           <p className="dictation-correct-text">
-            {result.wordResults.map((wordResult, index) => (
+            {/* O espaço fica FORA do span — dentro dele, o sublinhado dos
+                erros virava uma fita contínua atravessando os espaços, e o
+                texto parecia "espalhado" em vez de prosa corrida. */}
+            {result.wordResults.map((wordResult, index) => [
+              index > 0 ? ' ' : null,
               <span
                 key={index}
                 className={wordResult.correct ? 'dictation-word-correct' : 'dictation-word-wrong'}
               >
-                {wordResult.word}{' '}
-              </span>
-            ))}
+                {wordResult.word}
+              </span>,
+            ])}
           </p>
           <button type="button" className="show-answers-btn" onClick={handleTryAgain}>
             Try again
