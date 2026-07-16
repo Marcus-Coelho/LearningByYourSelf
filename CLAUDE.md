@@ -107,7 +107,11 @@ Todas as chaves por usuário: `u:<nome>:<chave-base>` (`userKey(name, base)`)
 u:<nome>:visitedUnits              — array de unit numbers
 u:<nome>:notes:<unit>              — string, notas da unit
 u:<nome>:answers:<exerciseId>      — string, resposta do user
-u:<nome>:rating:<exerciseId>       — número 1-5, autoavaliação
+u:<nome>:rating:<exerciseId>       — número 1-5, autoavaliação por EXERCÍCIO (tela "exercises")
+u:<nome>:unit-rating:<unit>        — número 1-5, autoavaliação da UNIT inteira (tela de leitura,
+                                      "Self-evaluation for this unit") — namespace separado de
+                                      rating:, nunca usar o mesmo prefixo (contaminaria o
+                                      cálculo de "Your Score", que é só a média por exercício)
 
 # American English A1
 u:<nome>:american1-visitedUnits    — array de "<unit>|<section>"
@@ -218,6 +222,18 @@ Não há testes unitários automatizados (`npm test` funciona mas CRA cria um es
 - `.landing-panel p { color: rgba(255,255,255,0.75) }` (herdado do tema roxo escuro original)
   vence por especificidade — textos novos dentro de um painel claro precisam de seletor mais
   específico + `color` explícito
+- **Padrão das 9 telas de leitura (grid de 2 colunas)**: a barra de botões (`.pdf-toolbar`) e a
+  linha de título (`.section-info`) devem ficar **dentro** da coluna esquerda (`.pdf-panel`/
+  `.study-left`), nunca como irmãs full-width por fora do grid — senão o painel direito
+  (`.side-panel.right-panel`/`.study-answers`) só começa a renderizar depois dessas barras,
+  em vez de começar no topo, alinhado com a coluna esquerda (mesma linha do grid). A tela
+  "exercises" do Vocabulary já caiu nesse erro uma vez (barras full-width, corrigido movendo
+  pra dentro de `.study-left`) — qualquer tela nova nesse padrão deve seguir a estrutura de
+  `.pdf-panel` (Grammar/American1), não replicar o erro.
+- Containers flex com `gap` (`.study-left`, etc.) que ganham novos filhos com fundo branco
+  (`.study-bar`/`.section-info`) podem revelar o fundo do ancestral (`--soft`, lavanda) como
+  faixas finas entre eles — se dois blocos brancos devem ficar colados (só separados por
+  `border-bottom`), o container pai não pode ter `gap` nenhum ali.
 
 ---
 

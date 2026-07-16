@@ -488,6 +488,103 @@ botão "Continue" próprio do curso, para os 3 cursos.
   próprios painéis externos (`.landing-panel.course-links-panel`/`.wordbook-panel`/
   `.profile-panel`, que antes eram ~75% opacos e viraram 100%).
 
+## Padronização Vocabulary ↔ Grammar (tela "exercises") + Self-evaluation (2026-07-16)
+
+Sessão de ajustes finos pedida pelo usuário comparando screenshot a screenshot a tela de
+exercícios do English Vocabulary B com a do Grammar English A1, até ficarem visualmente e
+estruturalmente idênticas — mais uma feature nova que essa comparação acabou revelando faltar.
+
+### Bug real: foco errado ao abrir "Show Answers" no Vocabulary
+A área de respostas usava `CroppedExerciseViewer` (mesmo mecanismo do exercício em si — força
+`scroller.scrollTop` pra uma banda específica da página via coordenadas). Isso competia com a
+navegação assíncrona interna do `react-pdf-viewer` pra `initialPage`: se essa navegação da lib
+terminasse *depois* do nosso ajuste de scroll, ela resetava a posição de volta pro topo da
+página — e como isso é só um scroll (não uma mutação de DOM), o `MutationObserver` que reaplicava
+a banda nunca disparava de novo pra corrigir. Sintoma relatado: a resposta certa nunca aparecia,
+sempre "focava" na primeira resposta da página em vez da resposta do exercício aberto. **Corrigido
+eliminando o crop inteiramente** pro painel de respostas — vira um `PdfWorkspace` normal, pulando
+só pra página certa via `initialPage` (sem scroll forçado, sem corrida de condição possível). O
+crop do *exercício em si* (não das respostas) foi mantido como estava, sem o mesmo problema.
+
+### Unificação de interface do PDF de respostas (Grammar ↔ Vocabulary)
+Descoberto durante a investigação: a tela de exercícios do Grammar ainda mostrava o gabarito num
+`<iframe src={answersUrl}>` cru — o visualizador (com ferramentas de "Desenhar", imprimir, salvar)
+que aparecia ali era o **visualizador nativo do navegador** (Edge/Chrome), não algo construído
+pelo app. Trocado por `PdfWorkspace` (o mesmo componente customizado usado em todo o resto do
+app), que **nunca teve botões de salvar/imprimir** — a toolbar customizada (`renderToolbar` em
+`PdfWorkspace`) só inclui busca, navegação de página, zoom, ferramenta texto/mão e um "maximizar"
+próprio, então trocar o iframe resolveu "remover salvar/imprimir" só por ser o componente certo.
+
+### Divisória arrastável na área de respostas (ambos os cursos)
+Novo handle horizontal (`.study-answers-resize-handle`, mesmo visual do `.resize-handle` vertical
+já existente, só deitado) entre o conteúdo principal e a área de respostas — arrastar pra cima
+aumenta a área de respostas (150-900px), reaproveitando o mesmo estado (`answersPanelHeight`) e
+os mesmos handlers de pointer nos dois cursos. Alturas padrão também foram reduzidas (Vocabulary
+50%→38%, Grammar/American1 34%→26%) depois que o usuário notou os botões da área de respostas
+sobrepondo o botão flutuante "+Word" em telas mais baixas.
+
+### Padronização visual pixel-a-pixel
+Depois de vários screenshots comparativos anotados pelo usuário (círculos coloridos apontando
+discrepâncias), corrigido um a um, sempre **medindo com Playwright** em vez de confiar só no
+olho (mesma lição já aprendida em `tablet-responsive-fixes`/`course-rename-and-grid-scroll-fix`):
+- **"FUTURE AREA TO SHOW ANSWERS"** (caixa vazia sempre visível no Vocabulary) removida — a área
+  de respostas só é renderizada quando `showAnswers` está ativo, igual ao Grammar.
+- **Textos redundantes removidos**: "Unit 4"/"Unit 5" apareciam soltos na barra de botões,
+  duplicando a informação já presente na linha de título abaixo — removidos dos dois cursos.
+- **Abas de exercício movidas pra barra superior** (Vocabulary): antes ficavam na linha do
+  título; usuário pediu pra ficarem ao lado de "Back to Unit"/"All Units", como um grupo único.
+- **Estilo dos botões igualado**: Vocabulary usava `.ghost-button` (branco, fino, 13px) onde o
+  Grammar usa `.upload-button` (gradiente roxo). Trocada a classe, e adicionado um scoping
+  (`.study-bar-left .upload-button`) espelhando `.pdf-toolbar-nav .upload-button` pra bater
+  exatamente em altura (28px)/padding/fonte — inclusive o `gap` entre os dois botões (10px, não
+  12px) precisou ser ajustado pra "All Units" cair no MESMO x exato do Grammar (medido via
+  XPath/computed style a pedido do usuário, batendo em todas as propriedades).
+- **Altura da barra de botões igualada** (`.study-bar` ganhou o mesmo `min-height:38px` que
+  `.pdf-toolbar` já tinha) e o **padding horizontal** também (14px, não 18px).
+- **Bug estrutural real, a causa de tudo isso parecer "não alinhado" apesar dos ajustes CSS
+  anteriores**: no Grammar, a barra de botões + linha de título ficam **dentro** da coluna
+  esquerda (`.pdf-panel`), não soltas por fora do grid de 2 colunas — por isso o painel direito
+  (`.side-panel.right-panel`) começa bem no topo da tela, alinhado com a coluna esquerda. No
+  Vocabulary, essas duas barras tinham sido colocadas *fora* de `.study-columns`, ocupando a
+  largura toda — empurrando o painel de respostas pra baixo, bem mais que no Grammar (confirmado
+  via medição: painéis começando em `y=147` vs `y=81`). Corrigido restruturando o JSX pra mover
+  `.study-bar` e `.section-info` pra **dentro** de `.study-left`, replicando exatamente o padrão
+  do Grammar — depois da mudança, os dois painéis passaram a começar exatamente na mesma
+  coordenada Y (81px, logo abaixo do header).
+  - **Efeito colateral dessa mudança**: `.study-left` tinha `gap:16px` entre seus filhos —
+    valendo a pena pros filhos originais (leitor + área de respostas), mas criando uma faixa fina
+    do fundo lavanda da página (`--soft`) vazando entre `.study-bar`/`.section-info`/`.study-reader`
+    assim que essas duas barras (brancas) passaram a ser filhas desse mesmo container com gap.
+    Removido o `gap` de `.study-left` inteiramente (igual ao `.pdf-panel`, que nunca teve gap
+    nenhum) — os elementos ficam colados, com só `border-bottom` separando visualmente, sem
+    frestas revelando o fundo.
+- **"Answer key" (faixa de título da área de respostas no Grammar) removida**: o usuário já tem
+  o botão "Hide Answers" no painel direito fazendo a mesma coisa que o antigo botão "✕" dessa
+  faixa — mantê-la era redundante depois que o resto já bate com o Vocabulary.
+
+### Self-evaluation por UNIT no Vocabulary (feature nova, não um ajuste)
+American English A1 e Grammar English A1 já tinham "Self-evaluation for this unit" na própria
+tela de leitura (não só por exercício) — o componente `UnitNotes` já suportava isso via props
+`rating`/`onRate` (`{onRate && (<div className="rating-field">...)}`), só nunca tinha sido
+conectado no Vocabulary. Implementado:
+- Novo estado `vocabularyUnitRatings`, chave **própria** `u:<nome>:unit-rating:<unit>` — nunca
+  reaproveitar o prefixo `rating:` (já usado por `exerciseRatings`, por exercício): usar o mesmo
+  prefixo faria essa nova nota "vazar" pro cálculo de `overallScorePercent`/"Your Score" (que deve
+  ser só a média por exercício), contaminando o valor mostrado no header/perfil.
+- `scheduleReview('vocabulary-unit', unit, value)` — curso **distinto** de `'vocabulary'` (usado
+  pelas notas de exercício) na revisão espaçada, porque `handleOpenReviewItem` tinha uma
+  suposição hardcoded de que todo item `course === 'vocabulary'` tem um `id` de exercício
+  (`item.id.split('.')[0]`, `exerciseCoords[item.id]`) — um id de unit bare (sem ponto, ex. "4")
+  falharia esse check e o clique no card de revisão não navegaria pra lugar nenhum. Adicionado um
+  branch novo (`item.course === 'vocabulary-unit'`) que navega pra `activePage: 'unit'` em vez de
+  `'exercises'`.
+- `handleResetSelfEvaluation`/`handleResetAll` (Profile) atualizados pra também limpar
+  `unit-rating:`/`review:vocabulary-unit:`, senão um reset "completo" deixaria essas notas pra
+  trás.
+- Verificado via Playwright: estrela aparece e funciona na tela de leitura, persiste em
+  `unit-rating:<unit>` após reload, e **não** vaza pra `rating:<unit>` (confirmado lendo as duas
+  chaves separadamente).
+
 ## Histórico de processamento de conteúdo (pré-processamento, fora do código React)
 
 - PDFs originais `EVIU_PI-X.pdf` foram divididos em duas páginas cada (`_L` e `_E`) com `pypdf` (script `split_pdfs.py`, já removido do repositório).
