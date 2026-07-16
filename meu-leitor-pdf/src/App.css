@@ -990,6 +990,18 @@ body {
   border: 1px solid rgba(27, 58, 94, 0.1);
 }
 
+/* Mesmo fix de min-height que .landing-page--home/.landing-page.vocabulary-
+   mode.wordbook-mode (ver comentários lá): a regra base .landing-page assume
+   um header de 72px, mas o real (.app-header) tem 81px — sem isso, essa
+   diferença + o padding força uma altura mínima maior que o espaço
+   disponível de verdade e cria um scroll duplo (o da página inteira, por
+   cima do overflow:auto que .vocabulary-mode já dá à própria .landing-page).
+   Profile (que usa a mesma estrutura) nunca ganhou esse fix; aplicado aqui
+   só para dashboard-mode, sem tocar na tela de Profile já existente. */
+.landing-page.vocabulary-mode.dashboard-mode {
+  min-height: 0;
+}
+
 .landing-panel.dashboard-panel .eyebrow {
   color: var(--purple-700);
 }
