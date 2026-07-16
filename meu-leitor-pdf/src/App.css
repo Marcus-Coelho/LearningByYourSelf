@@ -2133,8 +2133,10 @@ body {
    ocupando cerca de 1/4 da altura do painel principal, sem substituir o
    leitor da seção acima (que fica com flex:1 e encolhe pra abrir espaço). */
 .section-answers-strip {
-  flex: 0 0 34%;
-  min-height: 224px;
+  /* Reduzido de 34%/224px — podia crescer o suficiente pra sobrepor o botão
+     flutuante "+Word" (fixed, canto inferior) em telas mais baixas. */
+  flex: 0 0 26%;
+  min-height: 180px;
   display: flex;
   flex-direction: column;
   border-top: 2px solid var(--purple-300);
@@ -2390,6 +2392,50 @@ body {
 }
 
 .resize-handle.is-hidden { display: none; }
+
+/* Linha entre o exercício e a área de respostas (tela "exercises" do
+   Vocabulary) — mesmo visual do .resize-handle vertical (linha + pílula),
+   só que deitado, arrastando pra cima aumenta a área de respostas em vez de
+   redimensionar colunas horizontais. */
+.study-answers-resize-handle {
+  position: relative;
+  height: 14px;
+  cursor: row-resize;
+  background: transparent;
+  border: none;
+  padding: 0;
+  flex: 0 0 auto;
+}
+
+.study-answers-resize-handle::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  transform: translateY(-50%);
+  background: rgba(27, 58, 94, 0.18);
+  transition: height 140ms, background 140ms;
+}
+
+.study-answers-resize-handle::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 6px;
+  width: 32px;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(72, 39, 130, 0.28);
+}
+
+.study-answers-resize-handle:hover::after {
+  height: 4px;
+  background: rgba(109, 66, 216, 0.5);
+}
 
 /* Container do viewer PDF */
 .pdf-viewer-stage {
@@ -2691,14 +2737,29 @@ body {
 }
 
 .study-future-pdf.has-pdf {
-  display: block;
+  /* display:flex (não "block") + o PdfWorkspace filho com flex:1/min-height:0
+     é o mesmo padrão de .section-answers-strip-frame — deixa o Viewer
+     controlar a própria rolagem interna. overflow:hidden (não "auto") aqui
+     fora evita duas barras de rolagem verticais ao mesmo tempo (mesmo bug já
+     corrigido nas grades de unit, ver comentário em .app-shell--allow-grow). */
+  display: flex;
+  flex-direction: column;
   flex: 0 0 auto;
-  max-height: 50%;
-  overflow: auto;
+  /* Reduzido de 50% — numa tela mais baixa a área de respostas conseguia
+     ficar alta o suficiente pra sobrepor o botão flutuante "+Word" (fixed,
+     canto inferior). Ajustável pra cima via .study-answers-resize-handle,
+     que sobrescreve com uma altura em px explícita. */
+  max-height: 38%;
+  overflow: hidden;
   padding: 0;
   border-style: solid;
   text-transform: none;
   letter-spacing: normal;
+}
+
+.study-future-pdf.has-pdf .section-answers-strip-frame {
+  flex: 1;
+  min-height: 0;
 }
 
 .crop-shell {

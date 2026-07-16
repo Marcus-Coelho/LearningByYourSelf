@@ -813,6 +813,11 @@ function App() {
   const [panelCenterY, setPanelCenterY] = useState(null);
   const layoutRef = useRef(null);
   const startDragRef = useRef(null);
+  // Altura (px) da área de respostas na tela "exercises" do Vocabulary,
+  // ajustável arrastando .study-answers-resize-handle — null até o usuário
+  // arrastar pela 1ª vez, aí usa o padrão do CSS (max-height: 50%).
+  const [answersPanelHeight, setAnswersPanelHeight] = useState(null);
+  const answersResizeRef = useRef(null);
   // Controla a integração com o botão Voltar/Avançar do navegador (History
   // API) — ver o efeito "Restaurar posição" abaixo. hasPushedHistoryRef
   // decide replaceState (1ª vez, não empilha entrada nova) vs pushState
@@ -2485,6 +2490,37 @@ function App() {
     window.removeEventListener('pointerup', stopPanelResize);
   };
 
+  // Arrastar a linha entre o exercício e a área de respostas (tela de
+  // "exercises" do Vocabulary) pra cima, aumentando a área de respostas —
+  // mesmo padrão de pointerdown/pointermove/pointerup do resize-handle
+  // esquerda/direita acima, só que no eixo vertical. `null` = ainda não
+  // arrastado, usa a altura padrão (`max-height: 50%` do CSS); depois do
+  // primeiro arraste, uma altura em px explícita assume o controle.
+  const startAnswersResize = (event) => {
+    event.preventDefault();
+    const currentHeight = answersPanelHeight
+      ?? event.currentTarget.parentElement?.querySelector('.study-future-pdf')?.getBoundingClientRect().height
+      ?? 300;
+    answersResizeRef.current = { startY: event.clientY, startHeight: currentHeight };
+    window.addEventListener('pointermove', resizeAnswersPanel);
+    window.addEventListener('pointerup', stopAnswersResize);
+  };
+
+  const resizeAnswersPanel = (event) => {
+    const drag = answersResizeRef.current;
+    if (!drag) return;
+    // Arrastar pra CIMA (deltaY negativo) deve AUMENTAR a área de respostas.
+    const deltaY = event.clientY - drag.startY;
+    const next = drag.startHeight - deltaY;
+    setAnswersPanelHeight(Math.min(Math.max(next, 150), 900));
+  };
+
+  const stopAnswersResize = () => {
+    answersResizeRef.current = null;
+    window.removeEventListener('pointermove', resizeAnswersPanel);
+    window.removeEventListener('pointerup', stopAnswersResize);
+  };
+
   const unitExercises = selectedUnit ? exercisesByUnit[selectedUnit] || [] : [];
   const activeExerciseId =
     selectedExercise && unitExercises.includes(selectedExercise)
@@ -2781,17 +2817,31 @@ function App() {
                 )}
               </section>
 
-              <section className={`study-future-pdf${showAnswers && answerCoords ? ' has-pdf' : ''}`}>
-                {showAnswers && answerCoords ? (
-                  <CroppedExerciseViewer
-                    key={`answers-${activeExerciseId}`}
-                    fileUrl={ANSWERS_KEY_URL}
-                    coords={answerCoords}
+              {showAnswers && answerCoords && (
+                <>
+                  <button
+                    type="button"
+                    className="study-answers-resize-handle"
+                    aria-label="Resize answers area"
+                    onPointerDown={startAnswersResize}
                   />
-                ) : (
-                  <span>FUTURE AREA TO SHOW ANSWERS</span>
-                )}
-              </section>
+
+                  <section
+                    className="study-future-pdf has-pdf"
+                    style={answersPanelHeight ? { height: answersPanelHeight, maxHeight: answersPanelHeight } : undefined}
+                  >
+                    <div className="section-answers-strip-frame">
+                      <PdfWorkspace
+                        key={`answers-${activeExerciseId}`}
+                        fileUrl={ANSWERS_KEY_URL}
+                        defaultScale={SpecialZoomLevel.PageWidth}
+                        initialPage={answerCoords.page || 0}
+                        initialTool="hand"
+                      />
+                    </div>
+                  </section>
+                </>
+              )}
             </div>
 
             <button
@@ -3301,12 +3351,9 @@ function App() {
                       ✕
                     </button>
                   </div>
-                  <iframe
-                    key={answersUrl}
-                    src={answersUrl}
-                    title="Answer key"
-                    className="section-answers-strip-frame"
-                  />
+                  <div className="section-answers-strip-frame">
+                    <PdfWorkspace key={answersUrl} fileUrl={answersUrl} initialTool="hand" />
+                  </div>
                 </div>
               )}
             </section>
