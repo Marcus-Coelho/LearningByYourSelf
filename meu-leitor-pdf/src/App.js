@@ -3772,22 +3772,23 @@ function App() {
               )}
 
               {showAmerican1Answers && answersUrl && (
-                <div className="section-answers-strip">
-                  <div className="section-answers-strip-head">
-                    <span>Teacher's Book answers</span>
-                    <button
-                      type="button"
-                      className="section-answers-strip-close"
-                      onClick={() => setShowAmerican1Answers(false)}
-                      aria-label="Close answers"
-                    >
-                      ✕
-                    </button>
+                <>
+                  <button
+                    type="button"
+                    className="study-answers-resize-handle"
+                    aria-label="Resize answers area"
+                    onPointerDown={startAnswersResize}
+                  />
+
+                  <div
+                    className="section-answers-strip section-answers-strip--resizable"
+                    style={answersPanelHeight ? { height: answersPanelHeight, maxHeight: answersPanelHeight, flex: '0 0 auto' } : undefined}
+                  >
+                    <div className="section-answers-strip-frame">
+                      <PdfWorkspace key={answersUrl} fileUrl={answersUrl} initialTool="hand" />
+                    </div>
                   </div>
-                  <div className="section-answers-strip-frame">
-                    <PdfWorkspace key={answersUrl} fileUrl={answersUrl} initialTool="hand" />
-                  </div>
-                </div>
+                </>
               )}
             </section>
 
@@ -6424,7 +6425,7 @@ function DictationExercise({ track, userName }) {
               : isAutoPaused && autoPauseEnabled ? ' dictation-autopause-hint--paused' : ''}`}
           >
             {audioEnded
-              ? '🏁 End of audio — Ctrl+Space plays it again from the start'
+              ? '🏁 End of audio — Ctrl+Space to plays it again'
               : isAutoPaused && autoPauseEnabled
                 ? '⏸ Paused — press Ctrl+Space to continue'
                 : 'The audio pauses by itself at natural breaks so you can write.'}

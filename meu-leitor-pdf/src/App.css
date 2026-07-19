@@ -2339,6 +2339,14 @@ body {
   background: #fff;
 }
 
+/* American English A1 (tela de unit): a área de respostas já ganha um
+   .study-answers-resize-handle (linha fina + pílula de arraste) logo acima —
+   a borda grossa fixa de .section-answers-strip ficaria como uma segunda
+   linha redundante, então essa variante zera a borda e deixa só o handle. */
+.section-answers-strip--resizable {
+  border-top: none;
+}
+
 .section-answers-strip-head {
   display: flex;
   align-items: center;
