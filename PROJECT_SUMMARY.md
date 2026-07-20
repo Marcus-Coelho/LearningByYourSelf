@@ -753,6 +753,45 @@ o cabeçalho local era redundante.
 - Texto da pílula de fim de áudio no Dictation: "Ctrl+Space plays it again from the start" →
   "Ctrl+Space to plays it again" (pedido do dono).
 
+## Listening: toggle "Only Unit Words / Random Words" — item 2 do ROADMAP (2026-07-19)
+
+`buildListeningSentenceModel` sorteava lacunas totalmente aleatórias (evitando só
+`LISTENING_STOPWORDS`), sem saber qual vocabulário a unit ensina. Implementado como toggle na
+tela de exercício (`ListeningClozeExercise`), **só no English Vocabulary B**:
+`isVocabularyTrack = Boolean(track.unit)` — American1 não tem `unit` no track (usa
+`cd`/`track`) e ainda não tem palavras-alvo extraídas (não há bold/negrito diferenciado
+naquele PDF do jeito que há no Vocabulary), então o toggle não renderiza lá, sem mudança de
+comportamento.
+
+- **Extração das palavras-alvo** (`vocabulary_target_words.json`, um array por unit 1-100):
+  PyMuPDF nos 100 `_L.pdf` de leitura, pegando spans em negrito (`Bold`/`Black` no nome da
+  fonte) — só que "negrito" sozinho pega demais: também pega a letra da seção (A/B/C..., 16.6
+  pt), o título da seção ("Parts of speech", 17.3pt) e o cabeçalho gigante do número da unit
+  (31.8-51.1pt). Inspecionado o PDF de várias units com `size`/`bbox` pra achar o corte: corpo
+  do texto em negrito nunca passa de ~15.2pt nas ~10 units amostradas, enquanto os elementos
+  de layout começam em 16.6pt — usado `size < 16` como filtro. Também descartadas frases de
+  mais de 4 palavras (uns poucos spans são instruções inteiras em negrito, não vocabulário,
+  ex. "Correct the spelling mistakes. Use a dictionary...") e aplicado o mesmo
+  `LISTENING_STOPWORDS` do runtime (duplicado no script Python — sem import compartilhado
+  entre o gerador e o `App.js`).
+- **"Only Unit Words" blanka TODA ocorrência**, não um subconjunto sorteado — o objetivo aqui
+  é treinar o vocabulário da unit, não variar a dificuldade; uma fala sem nenhuma palavra-alvo
+  fica com zero lacunas (ex. exemplos genéricos tipo "It was a cold night..."), e a fala que é
+  literalmente a lista de definições da unit pode ficar com 8+ lacunas na mesma frase — os
+  dois são o comportamento esperado, não bugs.
+- **Fallback de singular/plural**: o PDF marca a palavra em negrito só na primeira aparição
+  (ex. "chair, window... are all **nouns**", plural), mas a mesma unit costuma reusar a forma
+  singular num exemplo seguinte ("night is a **noun**"). Casamento exato perdia esse segundo
+  caso — adicionado fallback simples (±"s", sem lematização de verdade) que resolveu sem
+  precisar reprocessar os dados.
+- Verificado via Playwright ad-hoc (script no scratchpad, não persistido): logado, navegado
+  até Listening → English Vocabulary B → unit 4A; toggle visível, "Only Unit Words" gera 26
+  lacunas nas 7 falas, todas revelando (via "Show answers") palavras-alvo reais da unit
+  (pronoun, nouns, verbs, adjectives, adverb, prepositions, article, conjunction, link word);
+  "Random Words" volta a se comportar como antes (24 lacunas aleatórias). No American1, sem
+  toggle e sem regressão nos blanks aleatórios. Zero erros no console em qualquer um dos dois
+  cursos.
+
 ## Histórico de processamento de conteúdo (pré-processamento, fora do código React)
 
 - PDFs originais `EVIU_PI-X.pdf` foram divididos em duas páginas cada (`_L` e `_E`) com `pypdf` (script `split_pdfs.py`, já removido do repositório).

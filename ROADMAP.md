@@ -38,20 +38,32 @@ pros 52 tracks do American English A1 no Dictation** (piloto original aprovado p
   ainda não ouvido track a track pelo dono.
 - Decidir se o Listening também ganha auto-pause (a infraestrutura de pontos serve igual).
 
-## 2. [ ] Sorteio de lacunas do Listening priorizando as palavras-alvo da unit
+## 2. [x] Sorteio de lacunas do Listening priorizando as palavras-alvo da unit — 2026-07-19
 
-Hoje o sorteio de lacunas (`buildListeningSentenceModel` em `App.js`) evita stopwords
-(`LISTENING_STOPWORDS`) mas não sabe qual é o vocabulário que a unit ensina — pode apagar uma
-palavra qualquer em vez da palavra-alvo (ex.: na unit de Food, apagar algo genérico em vez de
-"aubergine").
+Implementado como um toggle **"Only Unit Words" / "Random Words"** na tela de exercício do
+Listening (`ListeningClozeExercise`, `App.js`) — só aparece no English Vocabulary B
+(`isVocabularyTrack = Boolean(track.unit)`; American1 não tem `unit` no track e ainda não tem
+palavras-alvo extraídas, então o toggle simplesmente não renderiza lá, comportamento igual a
+antes). "Random Words" é o sorteio antigo, inalterado; "Only Unit Words" blanka TODA palavra
+da fala que estiver em destaque/negrito no PDF `_L` da unit (não um subconjunto sorteado) —
+pode dar zero lacunas numa fala sem vocabulário-alvo, ou várias numa fala que é a própria
+lista de definições da unit (esperado nos dois casos).
 
-- Objetivo: as lacunas devem cair preferencialmente nas palavras-alvo da unit (o vocabulário
-  em destaque/negrito no PDF da unit), com as demais palavras como fallback.
-- Provável necessidade de um novo índice de dados: lista de palavras-alvo por unit (extraível
-  dos PDFs `_L` via PyMuPDF, pelo estilo/negrito da fonte — mesmo tipo de extração já feita em
-  `grammar_elem_index.json`), cruzada com as `sentences` de cada track na hora de sortear.
-- Não alterar o formato dos JSONs de tracks existentes sem necessidade — um arquivo novo de
-  "palavras-alvo por unit" é menos invasivo.
+- **Dados**: `vocabulary_target_words.json`, um array de palavras por unit (1-100), extraído
+  via PyMuPDF dos 100 `_L.pdf` — bold/black com `size < 16` (abaixo das abas de seção A-E,
+  títulos de seção e do cabeçalho gigante do número da unit, todos ≥ 16.6), frases de até 4
+  palavras (acima disso normalmente é uma instrução em negrito, não vocabulário), sem
+  stopwords (mesma lista de `LISTENING_STOPWORDS`, duplicada no script por não ter import
+  compartilhado). Script no scratchpad da sessão (mesma política dos outros geradores).
+- **Casamento**: exato primeiro, com fallback simples de singular/plural (±"s") — o PDF marca
+  a palavra em negrito só na primeira aparição (ex. "nouns", plural), mas a mesma fala às
+  vezes reusa a forma singular num exemplo seguinte ("night is a **noun**"); sem esse
+  fallback esses casos ficavam sem lacuna.
+- Verificado via Playwright ad-hoc: toggle aparece só no Vocabulary, `unit4-a` em "Only Unit
+  Words" gera 26 lacunas nas 7 falas (todas palavras-alvo reais: pronoun, nouns, verbs,
+  adjectives, adverb, prepositions, article, conjunction, link word — confirmado revelando
+  "Show answers"), volta a 24 aleatórias em "Random Words"; American1 sem o toggle, sem
+  regressão nos blanks aleatórios; zero erros no console.
 
 ## 3. [ ] Trilha de estudo (resolver "não existe trilha, só biblioteca")
 

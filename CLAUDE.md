@@ -83,6 +83,11 @@ meu-leitor-pdf/
   reaproveita os mesmos tracks/áudio dos cursos (`listening_vocabulary.json`/
   `listening_american1.json`, agrupados em `LISTENING_SOURCES`)
 - Exercício de "fill in the blank": mostra o texto com lacunas sorteadas, ouve e completa
+- **"Only Unit Words" / "Random Words"** (toggle, só no Vocabulary — `isVocabularyTrack =
+  Boolean(track.unit)`, American1 não tem esse campo nem palavras-alvo extraídas): "Only Unit
+  Words" blanka toda ocorrência das palavras em destaque/negrito da unit
+  (`vocabulary_target_words.json`, extraído dos `_L.pdf` via PyMuPDF); "Random Words" é o
+  sorteio original, inalterado. Ver ROADMAP item 2
 - Player: `WideAudioPlayer` (largura total — play/pause, ±5s, stop, A-B, loop do áudio
   inteiro, velocidades 0.5x-2x, barra de progresso). Usado SÓ aqui e no Dictation; o resto
   do app continua com os players compactos (pílula amarela)
@@ -172,6 +177,9 @@ Primeiro cadastro neste navegador herda automaticamente progresso solto (sem nam
 
 Estes arquivos **não devem ser editados manualmente** (todos gerados por scripts Python já removidos do repo — ainda disponíveis no histórico do git se precisar reconstruir):
 - `exercises_coords.json`, `answers_coords.json`, `audio_anchors_coords.json` — Vocabulary
+- `vocabulary_target_words.json` — palavras em destaque/negrito por unit (1-100) do
+  Vocabulary, extraídas via PyMuPDF dos `_L.pdf` de leitura; alimenta o toggle "Only Unit
+  Words" do Listening (ver ROADMAP item 2) — regenerar rodando o extrator, nunca editar à mão
 - `american1_index.json`, `american1_audio_anchors.json`, `american1_references.json`,
   `american1_reference_audio_anchors.json`, `american1_transcriptions_audio_anchors.json`,
   `american1_videos.json` — American English A1

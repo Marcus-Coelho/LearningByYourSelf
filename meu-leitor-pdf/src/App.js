@@ -20,6 +20,7 @@ import grammarElemAppendixIndex from './grammar_elem_appendix_index.json';
 import listeningAmerican1 from './listening_american1.json';
 import listeningVocabulary from './listening_vocabulary.json';
 import dictationPausePoints from './dictation_pause_points.json';
+import vocabularyTargetWords from './vocabulary_target_words.json';
 import './App.css';
 
 // Fontes de Listening disponíveis na tela "Listening" do menu principal —
@@ -6512,8 +6513,12 @@ function tokenizeListeningText(text) {
   return text.split(/(\s+)/).filter((token) => token.length > 0);
 }
 
+function stripListeningTokenPunctuation(token) {
+  return token.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
+}
+
 function isListeningBlankCandidate(token) {
-  const stripped = token.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
+  const stripped = stripListeningTokenPunctuation(token);
   if (stripped.length < 3) return false;
   return /^\d+$/.test(stripped) || !LISTENING_STOPWORDS.has(stripped.toLowerCase());
 }
@@ -6529,13 +6534,30 @@ function pickRandomIndices(candidates, count) {
   return picked.sort((a, b) => a - b);
 }
 
+// A extração de palavras-alvo (vocabulary_target_words.json) guarda a forma
+// EXATA como a palavra aparece em negrito no PDF ("nouns", plural) — mas a
+// mesma fala às vezes reusa a palavra no singular noutro exemplo ("night is
+// a noun"). Casamento exato perdia esses casos; esse fallback tenta
+// singular/plural (só ±"s", sem lematização de verdade) antes de desistir.
+function listeningWordMatchesTarget(word, targetWords) {
+  if (targetWords.has(word)) return true;
+  if (word.endsWith('s') && targetWords.has(word.slice(0, -1))) return true;
+  if (targetWords.has(`${word}s`)) return true;
+  return false;
+}
+
 // Monta o modelo de uma fala: quantas lacunas ela ganha depende do tamanho
 // (falas curtas — menos de 10 palavras — ganham 1; falas mais longas ganham
 // mais, cerca de 1 a cada 6 palavras) e QUAIS palavras viram lacuna é
 // sorteado toda vez que a função roda — chamada de dentro de um useMemo sem
 // dependência persistida, então cada visita à tela sorteia palavras
 // diferentes, evitando que o usuário decore a resposta certa.
-function buildListeningSentenceModel(text) {
+// `targetWords` (Set, só existe no Vocabulary — ver vocabulary_target_words.json)
+// muda esse sorteio: em vez de aleatório, a lacuna cai em TODA palavra da
+// fala que estiver em destaque/negrito no PDF da unit (pode dar zero lacunas
+// numa fala sem nenhuma palavra-alvo, ou várias numa fala que é literalmente
+// a lista de definições da unit — ambos os casos são esperados).
+function buildListeningSentenceModel(text, targetWords = null) {
   const { label, rest } = splitListeningSpeakerLabel(text);
   const tokens = tokenizeListeningText(rest);
   const wordIndices = [];
@@ -6546,11 +6568,18 @@ function buildListeningSentenceModel(text) {
   let candidates = wordIndices.filter((i) => isListeningBlankCandidate(tokens[i]));
   if (candidates.length === 0) candidates = wordIndices;
 
-  const blankCount = Math.max(
-    1,
-    Math.min(candidates.length, wordIndices.length < 10 ? 1 : Math.ceil(wordIndices.length / 6))
-  );
-  const blankTokenIndices = new Set(pickRandomIndices(candidates, blankCount));
+  let blankTokenIndices;
+  if (targetWords) {
+    blankTokenIndices = new Set(
+      candidates.filter((i) => listeningWordMatchesTarget(stripListeningTokenPunctuation(tokens[i]).toLowerCase(), targetWords))
+    );
+  } else {
+    const blankCount = Math.max(
+      1,
+      Math.min(candidates.length, wordIndices.length < 10 ? 1 : Math.ceil(wordIndices.length / 6))
+    );
+    blankTokenIndices = new Set(pickRandomIndices(candidates, blankCount));
+  }
 
   const parts = tokens.map((token, i) => {
     if (!blankTokenIndices.has(i)) return { type: 'text', value: token };
@@ -6722,13 +6751,24 @@ function scoreDictationAnswer(typedText, correctText) {
 // espaço toca/pausa o áudio sempre que o foco não estiver num campo de texto
 // (senão digitar um espaço dentro de uma resposta pausaria o áudio).
 function ListeningClozeExercise({ track, userName, onAddWord }) {
+  // Só o Vocabulary tem `unit` no track (American1 usa cd/track) — e só o
+  // Vocabulary tem palavras-alvo extraídas (vocabulary_target_words.json,
+  // negrito do PDF de leitura da unit); American1 ainda não tem esse dado,
+  // então o toggle "Only Unit Words" nem aparece lá.
+  const isVocabularyTrack = Boolean(track.unit);
   // regenerateKey só existe pra forçar o useMemo a sortear de novo — não
   // representa nenhum dado real, só entra na dependência pra invalidar o
   // cache quando o usuário pede "Do it again with other words".
   const [regenerateKey, setRegenerateKey] = useState(0);
+  const [wordMode, setWordMode] = useState('random'); // 'random' | 'unitWords'
+  const targetWordSet = useMemo(() => {
+    if (!isVocabularyTrack || wordMode !== 'unitWords') return null;
+    const words = vocabularyTargetWords[String(track.unit)];
+    return words ? new Set(words) : null;
+  }, [isVocabularyTrack, wordMode, track.unit]);
   const sentenceModels = useMemo(
-    () => track.sentences.map((text) => buildListeningSentenceModel(text)),
-    [track.id, regenerateKey]
+    () => track.sentences.map((text) => buildListeningSentenceModel(text, targetWordSet)),
+    [track.id, regenerateKey, targetWordSet]
   );
   const [answers, setAnswers] = useState({});
   const [checked, setChecked] = useState(false);
@@ -6740,7 +6780,7 @@ function ListeningClozeExercise({ track, userName, onAddWord }) {
     setAnswers({});
     setChecked(false);
     setShowAnswers(false);
-  }, [track.id, regenerateKey]);
+  }, [track.id, regenerateKey, wordMode]);
 
   const handleRegenerate = () => {
     setRegenerateKey((key) => key + 1);
@@ -6824,6 +6864,28 @@ function ListeningClozeExercise({ track, userName, onAddWord }) {
         Listen to the audio and type the missing word(s) in each sentence — press Space (or
         Ctrl+Space while typing in a blank) to pause/play the audio, then press Check answers.
       </p>
+      {isVocabularyTrack && (
+        <div className="exercise-tabs listening-word-mode-tabs" role="tablist" aria-label="Which words become blanks">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={wordMode === 'unitWords'}
+            className={`exercise-tab${wordMode === 'unitWords' ? ' is-active' : ''}`}
+            onClick={() => setWordMode('unitWords')}
+          >
+            Only Unit Words
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={wordMode === 'random'}
+            className={`exercise-tab${wordMode === 'random' ? ' is-active' : ''}`}
+            onClick={() => setWordMode('random')}
+          >
+            Random Words
+          </button>
+        </div>
+      )}
       <div className="listening-audio-bar" ref={audioBarRef}>
         <WideAudioPlayer src={track.audio} />
       </div>

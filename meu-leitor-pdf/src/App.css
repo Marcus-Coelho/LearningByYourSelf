@@ -1315,6 +1315,15 @@ body {
   margin: 0 0 16px;
 }
 
+/* Toggle "Only Unit Words / Random Words" (só aparece pro Vocabulary — ver
+   isVocabularyTrack em ListeningClozeExercise). Reaproveita .exercise-tab/
+   .exercise-tabs (mesmo visual das abas de seção do American1), mas essas
+   nascem pensadas pra ficar dentro de uma toolbar (margin-left: 24px) — aqui
+   é um bloco próprio antes da barra do player, então zera essa margem. */
+.listening-word-mode-tabs {
+  margin: 0 0 16px;
+}
+
 .listening-audio-bar {
   /* Coluna (não linha): o WideAudioPlayer ocupa a largura toda; qualquer
      conteúdo extra empilha embaixo dele, não espremido ao lado. */
