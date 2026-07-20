@@ -4,30 +4,38 @@ Lista do que o dono do projeto decidiu implementar, em ordem. Só entra aqui o q
 explicitamente aprovado — críticas/sugestões não aceitas ficam de fora de propósito.
 Ao concluir um item, marcar `[x]` e anotar a data/commit.
 
-## 1. [~] Auto-pause nos áudios (Listening e Dictation) — PILOTO IMPLEMENTADO
+## 1. [~] Auto-pause nos áudios (Listening e Dictation) — DADOS COMPLETOS, FALTA VALIDAR
 
 Pausar o áudio automaticamente nos silêncios reais entre frases, dando tempo do usuário
 escrever o que ouviu; `Ctrl+Space` retoma de onde parou.
 
-**Status (2026-07-16, commits `788db9d`/`6d28319`): piloto aprovado pelo dono, funcionando
-nos 2 primeiros tracks do Dictation** (`unit4-a`/`unit4-b`, English Vocabulary B). O que já
-existe:
+**Status (2026-07-19): pontos de pausa gerados pros 307 tracks do English Vocabulary B e
+pros 52 tracks do American English A1 no Dictation** (piloto original aprovado pelo dono em
+2026-07-16, commits `788db9d`/`6d28319`, era só `unit4-a`/`unit4-b`). O que já existe:
 - Pontos de pausa detectados offline por análise de silêncio (Python: `soundfile`+`numpy`,
   sem ffmpeg — limiar -35dB relativo ao pico, silêncio ≥ 0.85s = pausa de frase, trechos
-  > 15s divididos na maior pausa interna, primeira pausa descartada por ser o fim do
-  cabeçalho falado "A... Parts of speech" dos áudios do Vocabulary). Dados em
+  > 8s divididos recursivamente na maior pausa interna disponível — reduzido de 15s/0.4s
+  depois que o dono notou trechos longos demais pra escrever de uma vez; American1 usa piso
+  de 0.15s em vez de 0.4s pro corte interno, porque o diálogo é bem mais contínuo, com menos
+  silêncio real entre falas que a leitura do Vocabulary). Descarte do cabeçalho falado do
+  início: Vocabulary descarta até 2 pausas iniciais ("Unit N letra. Título"), American1
+  descarta só 1 (o áudio fala só "CD X Track Y"). Dados em
   `meu-leitor-pdf/src/dictation_pause_points.json`; o script gerador vive no scratchpad da
   sessão (mesma política dos outros geradores — não persiste no repo, os parâmetros estão
   documentados aqui e no PROJECT_SUMMARY.md).
 - No player: pausa por detecção de **cruzamento** do ponto (não proximidade — ver
   PROJECT_SUMMARY, houve um bug real de insta-repause), toggle on/off, pílula roxa pulsante
   "Paused — Ctrl+Space to continue", pílula verde de fim de áudio, botão "↺ Replay last part".
+- Limitação conhecida, sem solução acústica possível: uns 6-7 tracks do American1 (a maioria
+  no CD2, ex. `cd2-track10`) têm trechos com silêncio real zero (diálogo gravado sem
+  intervalo entre falas) — ficam sem divisão extra mesmo no limiar mais sensível; 2 tracks do
+  Vocabulary (`unit15-c`, `unit37-b`) ficam sem nenhum ponto por terem só 2-3 frases curtas
+  sem pausa ≥ 0.85s entre elas. Auto-pause simplesmente não dispara nesses casos — comportamento
+  seguro (áudio toca normal), não um erro.
 
 **Falta para fechar o item**:
-- Gerar pontos para os demais tracks do Vocabulary (rodar o mesmo detector nos ~305 MP3s
-  restantes e validar por amostragem).
-- Definir a dinâmica dos áudios do American1 (estrutura de fala diferente — sem cabeçalho
-  falado "letra+título"; os parâmetros/regras de descarte precisam ser recalibrados).
+- Validar por amostragem os pontos gerados (Vocabulary completo + American1 completo) —
+  ainda não ouvido track a track pelo dono.
 - Decidir se o Listening também ganha auto-pause (a infraestrutura de pontos serve igual).
 
 ## 2. [ ] Sorteio de lacunas do Listening priorizando as palavras-alvo da unit

@@ -6256,7 +6256,12 @@ function DictationExercise({ track, userName }) {
   const audioBarRef = useRef(null);
   // Auto-pause: pontos (em segundos) onde o áudio pausa sozinho pra dar
   // tempo de escrever — detectados por análise de silêncio dos MP3s (script
-  // Python offline, ver dictation_pause_points.json; piloto: só 2 tracks).
+  // Python offline, ver dictation_pause_points.json; cobre todo o English
+  // Vocabulary B e o American English A1 — American1 usa limiares mais
+  // sensíveis pro corte de frases longas, já que o diálogo é mais contínuo,
+  // com menos silêncio real entre falas, e descarta só a 1ª pausa do início
+  // (CD+track falado), não 2 como no cabeçalho "Unit N letra. Título" do
+  // Vocabulary).
   // Ctrl+Space (atalho que já existia) retoma do ponto onde parou.
   const hasAutoPause = (dictationPausePoints[track.id] || []).length > 0;
   const [autoPauseEnabled, setAutoPauseEnabled] = useState(true);
@@ -6273,7 +6278,7 @@ function DictationExercise({ track, userName }) {
   // re-pausava ali mesmo e o replay parecia não funcionar).
   const prevTimeRef = useRef(0);
 
-  const fullText = track.sentences.join(' ');
+  const fullText = track.sentences.map(stripDictationSpeakerLabel).join(' ');
 
   // Sinaliza o fim do áudio (independente do auto-pause estar ligado).
   useEffect(() => {
@@ -6628,6 +6633,35 @@ function saveDictationAttempt(userName, trackId, scorePercent) {
 // adicionada no meio). Cada palavra é normalizada (minúsculas, sem
 // pontuação) antes de comparar. Retorna o score em % e a lista de palavras
 // esperadas marcadas como certas/erradas, pra destacar visualmente.
+// English Vocabulary B e American English A1 às vezes escrevem quem fala
+// cada frase no começo do texto ("A: ...", "Jenny: ...", "Teacher OK...") —
+// é uma convenção de transcrição, a voz do áudio não fala esse nome, então
+// comparar contra ele penalizava o aluno por não digitar o personagem.
+// Removido só do texto usado pra CORRIGIR o Dictation (ver fullText em
+// DictationExercise); o Listening continua usando track.sentences direto,
+// sem mexer.
+const DICTATION_LABEL_COLON_RE = /^[A-Z][A-Za-z0-9 ]{0,24}:\s*/;
+// Rótulos sem dois-pontos (só aparecem no American English A1) — lista
+// fechada, levantada manualmente em listening_american1.json. Não trocar por
+// uma regra genérica tipo "qualquer palavra maiúscula no início": isso
+// apagaria começos de frase legítimos como "JetBlue flight..." ou
+// "Room 11 was...".
+const DICTATION_NO_COLON_LABELS = [
+  'Teacher', 'Student 1', 'Student 2', 'Receptionist', 'Rob', 'Jenny', 'Mom',
+  'Police officer', 'Announcer', 'Announcement', 'David', 'Kate', 'Waiter',
+  'Justin', 'Naomi', 'Amanda', 'Reader', 'Jack', 'Liz', 'Contestant 1', 'Host',
+  'Alan',
+];
+
+function stripDictationSpeakerLabel(sentence) {
+  const colonMatch = sentence.match(DICTATION_LABEL_COLON_RE);
+  if (colonMatch) {
+    return sentence.slice(colonMatch[0].length);
+  }
+  const label = DICTATION_NO_COLON_LABELS.find((name) => sentence.startsWith(`${name} `));
+  return label ? sentence.slice(label.length + 1) : sentence;
+}
+
 function normalizeDictationWord(word) {
   return word.toLowerCase().replace(/[.,!?"'’;:()]/g, '');
 }

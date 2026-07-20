@@ -663,6 +663,96 @@ voltou ao normal — a correção lê como prosa corrida colorida.
   sugestão original do Dashboard que ficou de fora por exigir infraestrutura de log de
   atividade que ainda não existe).
 
+## Auto-pause completo (Vocabulary + American1), rótulos de personagem no Dictation, resize do American1 (2026-07-19)
+
+Continuação do item 1 do ROADMAP.md (a partir do piloto de 2 tracks descrito acima) mais uma
+limpeza no texto de correção do Dictation e um ajuste de UI no American English A1. Sem
+commit de script gerador (mesma política dos outros — script Python fica só no scratchpad da
+sessão, dados persistem em `dictation_pause_points.json`).
+
+### Vocabulary: pontos de pausa pros ~305 tracks restantes + recalibração do limiar de corte
+O script do piloto não estava no repo (política padrão), então foi reconstruído a partir dos
+parâmetros já documentados aqui/ROADMAP e calibrado batendo contra os valores exatos do
+piloto (`unit4-a`/`unit4-b`, já aprovados pelo dono) até reproduzi-los quase perfeitamente:
+- **Offset do ponto dentro do silêncio**: descoberto por engenharia reversa — o ponto de
+  pausa não é o início do silêncio puro, é `início_do_silêncio + 0.3s` (um buffer de
+  segurança, provavelmente pra não cortar em cima da cauda/reverb da última consoante). Sem
+  esse offset, os pontos batiam sistematicamente ~0.3s cedo demais.
+- **Descarte do cabeçalho**: o texto original ("a primeira pausa é descartada") não bate
+  literalmente com os dados — `unit4-a`/`unit4-b` têm CADA UM 2 silêncios no início (cabeçalho
+  falado "Unit N letra" + "Título", cada um com sua própria pausa), não 1. Descartar só a
+  primeira deixava um ponto espúrio sobrando por volta de 2.8s. Corrigido pra descartar até 2
+  pausas iniciais, mas só enquanto cada uma for precedida por um trecho curto (< 3s) — sem
+  esse teto, tracks estilo lista de vocabulário (palavra, pausa, palavra, pausa...) tinham
+  TODOS os pontos apagados, porque cada palavra em si já é um "trecho curto".
+- **Recalibração pedida pelo dono**: depois de rodar os ~305 tracks, o dono notou que os
+  trechos ainda ficavam longos demais pra escrever de cabeça. Simulação mostrou que baixar só
+  o piso do corte interno (0.4s → 0.3s) não mudava NADA (377 trechos > 8s antes e depois —
+  dentro de um trecho > 15s já sempre havia um candidato ≥ 0.4s disponível, então baixar o
+  piso não desbloqueava nada de novo). A alavanca real era o limiar que decide SE um trecho é
+  dividido: baixado de 15s pra **8s** (mantendo o piso do corte interno em 0.4s pro
+  Vocabulary), reduzindo de 377 pra ~125 trechos internos > 8s (média caiu de ~10.7s pra
+  4.17s). `unit4-a`/`unit4-b` foram regenerados junto (não deixados no valor antigo do
+  piloto) porque unit4-a é literalmente o exemplo que motivou essa regra (a lista gigante de
+  "pronoun; nouns; verbs..." de 36s corridos).
+- 2 tracks (`unit15-c`, `unit37-b`) ficam sem nenhum ponto — só 2-3 frases curtas, sem
+  silêncio ≥ 0.85s entre elas; comportamento aceito (auto-pause só não dispara ali).
+
+### American English A1: dinâmica recalibrada (52 tracks do Dictation)
+O dono corrigiu a suposição do ROADMAP de que os áudios do American1 não têm cabeçalho falado
+— eles têm, só que mais curto ("CD X Track Y", não "Unit N letra. Título"), então precisa de
+**só 1** pausa inicial descartada, não 2 (parametrizado via `max_header_pauses`, default 2 pro
+Vocabulary, 1 pro American1).
+- **Diálogo bem mais contínuo que o Vocabulary**: vários tracks (`cd2-track10/11/12`,
+  `cd5-track51`) não tinham NENHUM silêncio ≥ 0.4s em trechos de 40-100s — o corte recursivo
+  não achava onde dividir e o track inteiro ficava com 1 ponto só. Baixar o piso do corte
+  interno pra **0.15s** (só pro American1, Vocabulary continua em 0.4s) resolveu os 4 casos
+  sem piorar a distribuição geral (média de trecho interno foi de 5.33s pra 4.97s). Uns 6-7
+  tracks (a maioria no CD2) continuam com trechos longos (até 38s) mesmo assim — são áudios
+  de diálogo gravados sem NENHUM intervalo de edição entre falas, não tem sinal acústico pra
+  detectar ali, aceito como limitação.
+- **Guarda de silêncio final**: vários tracks têm um silêncio de cauda perto do fim do
+  arquivo (após a última frase, antes do arquivo realmente acabar) que virava um "ponto de
+  pausa" inútil a ~1-3s do fim. Filtro novo: nunca gerar ponto no último 1s do arquivo.
+- Caminho dos arquivos de áudio: `American English Level 1/audio_files_{1..5}/` (CD1..CD5,
+  mesmo mapeamento do `setupProxy.js`), nomes vêm URL-encoded em `listening_american1.json`
+  (precisa `urllib.parse.unquote` no lado do script gerador).
+
+### Rótulos de personagem removidos do texto de correção do Dictation
+O dono notou que o texto usado pra comparar a digitação do aluno incluía quem fala cada frase
+("A: A cheese and tomato sandwich, please." / "B: That's 7 dollars and 20 cents.") — o áudio
+não fala esse rótulo, é só convenção de transcrição, então cobrar isso do aluno penalizava
+injustamente (o rótulo aparecia como palavra "faltando", em vermelho).
+- **Padrão com dois-pontos** ("A: ...", "Jenny: ...", "WAITER: ..."): regex genérica
+  `^[A-Z][A-Za-z0-9 ]{0,24}:\s*`, cobre 690/760 frases do American1 e ~39 do Vocabulary
+  (`unit48-d`, `unit31-c`, etc.) — seguro, sem falso positivo encontrado nos dois cursos.
+- **Padrão sem dois-pontos** (só existe no American1 — "Rob Hi. My name's...", "Teacher OK.
+  Can you be quiet...", "Student 1 What page?"): **não dá** pra generalizar como "qualquer
+  palavra maiúscula no início" — isso apagaria começos de frase legítimos e reais como
+  "JetBlue flight to Los Angeles...", "Room 11 was on the top floor.", "The train waiting at
+  platform 13...". A solução foi revisar as 70 frases sem dois-pontos do American1 uma a uma
+  e montar uma lista fechada de 22 rótulos confirmados (Teacher, Rob, Jenny, Mom, Host,
+  Receptionist, Police officer, Announcer, etc.) — testada contra as 2378 frases do Vocabulary
+  também, zero falso positivo.
+- Só mexe no texto usado pra CORRIGIR (`fullText` em `DictationExercise`) — o Listening
+  continua mostrando `track.sentences` sem essa limpeza, já que lá o rótulo nunca aparecia
+  como "errado" (não tem digitação pra comparar, só lacunas).
+
+### American1: painel de respostas redimensionável, sem a linha/cabeçalho fixos
+A faixa "Show Answers" (Teacher's Book) na tela de unit do American1 tinha uma borda grossa
+fixa separando do leitor e uma altura travada em 26% — diferente do Vocabulary/Grammar Elem,
+que já usavam o padrão `.study-answers-resize-handle` (linha fina + pílula de arraste,
+altura ajustável e persistida em `answersPanelHeight`). Igualado ao mesmo padrão; a borda fixa
+virou uma classe modificadora (`.section-answers-strip--resizable`) que zera a borda só onde
+o handle já provê a linha, sem afetar o Grammar Elem (que usa a mesma classe base sem o
+modificador). Também removida a faixa de cabeçalho "Teacher's Book answers" + botão ✕ — o
+toggle que já existe no painel de notas lateral (`UnitNotes`) continua fechando o painel, então
+o cabeçalho local era redundante.
+
+### Ajuste menor
+- Texto da pílula de fim de áudio no Dictation: "Ctrl+Space plays it again from the start" →
+  "Ctrl+Space to plays it again" (pedido do dono).
+
 ## Histórico de processamento de conteúdo (pré-processamento, fora do código React)
 
 - PDFs originais `EVIU_PI-X.pdf` foram divididos em duas páginas cada (`_L` e `_E`) com `pypdf` (script `split_pdfs.py`, já removido do repositório).

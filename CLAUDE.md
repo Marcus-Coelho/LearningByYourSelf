@@ -40,7 +40,8 @@ meu-leitor-pdf/
 │   │   (Grammar English A1)
 │   ├── listening_vocabulary.json / listening_american1.json (tracks de Listening/Dictation)
 │   ├── dictation_pause_points.json (pontos de auto-pause do Dictation, por trackId —
-│   │   gerado por detecção de silêncio em Python; piloto: só unit4-a/b)
+│   │   gerado por detecção de silêncio em Python; cobre os 307 tracks do English
+│   │   Vocabulary B e os 52 do American English A1)
 │   └── (todos os "*_coords*.json"/"*_index*.json"/"*_anchors*.json" são índices GERADOS —
 │         não editar à mão, ver "Dados Gerados" abaixo)
 ├── package.json
@@ -92,14 +93,23 @@ meu-leitor-pdf/
   destaque verde (certo)/vermelho (errado) e score em %
 - Estado/handlers/estatísticas (`localStorage` sob `dictation:<trackId>:stats`) **totalmente
   separados** do Listening (`listening:<trackId>:stats`) — nunca alterar um mexendo no outro
-- **Auto-pause (piloto)**: pausa sozinho nos silêncios entre frases
-  (`dictation_pause_points.json`, só unit4-a/b por ora — ver ROADMAP item 1), com detecção
-  por CRUZAMENTO do ponto (nunca por proximidade — proximidade re-pausava em cima do ponto
-  ao usar "Replay last part"), toggle on/off, pílulas de estado (pausado/fim do áudio) e
-  botão "↺ Replay last part". `Ctrl+Space` retoma
+- **Auto-pause**: pausa sozinho nos silêncios entre frases (`dictation_pause_points.json`,
+  cobre todo o Vocabulary e o American1 — ver ROADMAP item 1, ainda falta validar por
+  amostragem e decidir se o Listening também ganha), com detecção por CRUZAMENTO do ponto
+  (nunca por proximidade — proximidade re-pausava em cima do ponto ao usar "Replay last
+  part"), toggle on/off, pílulas de estado (pausado/fim do áudio) e botão "↺ Replay last
+  part". `Ctrl+Space` retoma
 - A recuperação do casamento LCS é por DP de SUFIXOS + caminhada pra frente (palavra casa
   com a ocorrência mais CEDO no texto) — a versão prefixos+trás casava palavra repetida com
   uma ocorrência lá do fim, deixando o verde longe do contexto digitado; não regredir
+- **Rótulos de personagem (`A:`, `Jenny:`, `Teacher ...`) são removidos do texto usado pra
+  corrigir** (`stripDictationSpeakerLabel`, `App.js`) — são convenção de transcrição, a voz
+  do áudio não fala esse nome, então cobrar o aluno por não digitá-lo penalizava injustamente.
+  Regra de dois-pontos é genérica; rótulos sem dois-pontos (só existem no American1, ex.
+  "Rob Hi. My name's...") usam uma lista fechada de nomes conhecidos — não generalizar pra
+  "qualquer palavra maiúscula no início", isso apagaria começos de frase legítimos como
+  "JetBlue flight...". Não mexe no texto exibido pelo Listening (`ListeningClozeExercise`
+  usa `track.sentences` direto, sem essa limpeza)
 
 ### Progress Dashboard ("Progress", menu principal)
 - Tela só-leitura: cartões de estatística (palavras aprendidas/devidas, revisões pendentes,
