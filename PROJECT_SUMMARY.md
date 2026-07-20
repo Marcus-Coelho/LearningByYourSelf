@@ -661,7 +661,8 @@ voltou ao normal — a correção lê como prosa corrida colorida.
   fala "for example", o texto de correção tem "e.g." — sem a dica, pontos perdidos injustos).
 - ROADMAP.md ganhou o item 5 (contador de tempo de estudo + streak no Dashboard — parte da
   sugestão original do Dashboard que ficou de fora por exigir infraestrutura de log de
-  atividade que ainda não existe).
+  atividade que ainda não existe). **Descartado pelo dono em 2026-07-20** ("não vou mais
+  implementar isso") — removido do ROADMAP.md, não será feito.
 
 ## Auto-pause completo (Vocabulary + American1), rótulos de personagem no Dictation, resize do American1 (2026-07-19)
 
@@ -1005,6 +1006,128 @@ clique, `aria-expanded`).
 - Verificado via Playwright: 3 botões "i" na tela, clicar em cada um mostra só o popover
   daquele item (nunca mais de 1 aberto ao mesmo tempo), clicar de novo no mesmo fecha. Zero
   erros no console depois da correção do overlap.
+
+## Avaliação de UX + aviso de nível "Beginner"/"Intermediate" (2026-07-20)
+
+Pedido: uma avaliação geral de usabilidade/navegação/aprendizado (feita navegando o app de
+verdade via Playwright, não só lendo código — pegou 2 problemas reais: link "Speaking" morto
+no menu, sem feedback nenhum ao clicar; header sangrando através da foto do hero ao rolar a
+Home, corrigido na mesma hora tornando `.app-header` opaco). A partir dessa avaliação, o dono
+pediu o aviso de nível que ela recomendou como prioridade.
+
+### `courses[id].level` + `COURSE_LEVEL_ORDER`
+American English A1 e Grammar English A1 são "Beginner" (A1 de verdade); English Vocabulary B
+é "Intermediate" (pasta de origem "Pre Intermediate and Intermediate", nível acima, apesar do
+"B" no nome não deixar isso óbvio). Os 2 dados novos vivem em `courses` (App.js) — um `level`
+por curso — e numa constante nova, `COURSE_LEVEL_ORDER = ['american1', 'grammarElem',
+'vocabulary']`, a ordem "por nível" pedida (Beginner antes de Intermediate), usada em 4 lugares:
+- **Courses**: cards agrupados com um rótulo "BEGINNER"/"INTERMEDIATE" acima de cada grupo,
+  reordenados (American → Grammar → Vocabulary, não mais a ordem antiga com Vocabulary
+  primeiro).
+- **Listening/Dictation (hubs)**: mesmo rótulo acima de cada fonte (`LISTENING_SOURCES` já
+  vinha na ordem certa, não precisou reordenar, só rotular).
+- **Progress Dashboard**: `courseProgress` reordenado pra bater com `COURSE_LEVEL_ORDER`
+  (antes seguia a ordem de implementação) + mesmo rótulo acima de cada grupo, aparecendo só na
+  1ª linha de cada nível (`showLevelHeading`, compara com o item anterior no array já
+  ordenado).
+
+### Bug pego no meio do caminho: rótulo quase invisível
+A 1ª versão do rótulo (`<p className="course-level-heading">`) saiu com `color:
+rgba(27, 58, 94, 0.75)` em vez do roxo pretendido — cada painel (`listening-panel`,
+`dashboard-panel`...) tem sua PRÓPRIA regra `.landing-panel.<painel> p` (tema herdado) com
+mais especificidade que uma classe só, e como o rótulo aparece em VÁRIOS painéis, bater a
+especificidade de um não bastava, teria que bater a de todos. Resolvido trocando `<p>` por
+`<span>` (com `display:block`) — essas regras antigas só alvejam `p`, então um elemento
+diferente escapa da armadilha inteira de uma vez, sem precisar de uma guerra de especificidade
+por painel. Documentado no CLAUDE.md como padrão geral pra qualquer texto novo que precise
+aparecer em mais de uma tela.
+
+Verificado via Playwright nas 4 telas: texto e ordem batendo em Courses/Listening/Dictation/
+Dashboard, cor roxa vívida (`var(--purple-700)`) confirmada via `getComputedStyle` depois da
+correção, zero erros no console.
+
+### Ajustes de tamanho pedidos depois
+- "Beginner"/"Intermediate": era 11px/800/uppercase (estilo "eyebrow" pequeno), trocado pro
+  mesmo tamanho/peso do título dos cursos (1.05rem/700, sem uppercase) — o dono achou pequeno
+  demais perto do resto da tela.
+- "Listening"/"Dictation" (eyebrow das 6 telas de Listening+Dictation — hub/tracks/exercício
+  de cada um): mesmo pedido, mas a 1ª tentativa (adicionar `.listening-panel .eyebrow` com
+  1.05rem) não teve efeito NENHUM visualmente — só descoberto quando o dono mandou um
+  screenshot mostrando que continuava pequeno. Causa: já existia uma regra MAIS específica
+  pra essa combinação exata (`.landing-panel.listening-panel .eyebrow`, 3 classes, com
+  `font-size: 14px` fixo) que vencia a minha (2 classes) por especificidade, então minha regra
+  nunca chegava a aplicar — corrigido editando a regra existente direto (removendo a nova, que
+  virou morta) em vez de empilhar mais uma por cima. Depois disso, ainda achou pequeno — settou
+  em 1.4rem (mais perto do h1 "Choose a listening/dictation source", que é
+  `clamp(1.5rem, 2.2vw, 2rem)`).
+
+## Backup automático em pasta local (2026-07-20)
+
+Retomando o ponto "progresso só no navegador local" da avaliação de UX (ver seção acima) — o
+dono queria resolver de verdade, não só documentar o risco. Pediu inicialmente algo com
+e-mail/Gmail ("abrir o Gmail do usuário e anexar o arquivo"); expliquei que isso é
+tecnicamente impossível (nenhum site consegue anexar um arquivo a um compose de e-mail de
+outro domínio — bloqueio de segurança do navegador, não peculiaridade do Gmail) e propus Web
+Share API como alternativa mais próxima. Também descartada uma ideia seguinte de login com o
+Google — geraria uma dependência de OAuth/credenciais de API que não existe em lugar nenhum
+deste projeto (100% local, sem backend). A parte que sobreviveu e virou a solução final foi a
+ideia do próprio dono de "o sistema cria uma pasta no sistema pra salvar" — ele já tinha uma
+pasta pronta, dentro do OneDrive (`.../Projeto_pagina_pdf/progressdata`), o que por acidente
+feliz também dá sincronização em nuvem de graça, sem o app precisar saber disso.
+
+- **File System Access API** (`window.showDirectoryPicker`, só Chrome/Edge — `isBackupFolderSupported`,
+  `App.js`): usuário escolhe a pasta uma vez; o handle retornado não é uma string (não cabe no
+  `localStorage`), guardado num IndexedDB próprio (`lets-learn-english-fs`) que sobrevive a
+  fechar/reabrir o navegador. `queryPermission` (sem gesto do usuário, pode rodar sozinho ao
+  carregar a página) confere se a permissão ainda vale; se não valer mais, UI mostra
+  "Reconnect folder" (que usa `requestPermission`, esse sim exige clique).
+- **Escrita automática a cada 10 min** enquanto a pasta estiver linkada e com permissão válida
+  (`useEffect` com `setInterval`, silencioso — não interrompe o usuário por um save em segundo
+  plano) + botão manual "Save backup now" (esse sim avisa com um alert). "Restore from
+  folder" lê de volta o arquivo daquele usuário específico dentro da pasta.
+- **Uma pasta só pro navegador inteiro** (é permissão de origem, não daria pra ser por usuário
+  cadastrado no app) — dentro dela, um arquivo por nome (`backupFileNameFor`), evitando
+  colisão se mais de um usuário for cadastrado neste navegador.
+- **Refatoração**: a lógica de montar o payload (`buildBackupPayload`) e de validar/aplicar um
+  JSON de backup (`applyBackupJson`) foi extraída do export/import manual que já existia, pra
+  ser reusada tanto pelo fluxo antigo (download/upload) quanto pelo novo (pasta) sem duplicar
+  nada.
+- **Sem suporte** (Firefox, Safari): a seção mostra só um aviso e cai pro export/import manual
+  — que continua existindo e funcionando em qualquer navegador, não foi substituído.
+- **Limite de teste automatizado**: `showDirectoryPicker()` abre um diálogo NATIVO do sistema
+  operacional, fora do DOM — Playwright não consegue clicar através dele. Verificado via
+  Playwright só o que dá pra verificar sem esse diálogo: o botão "Link a backup folder"
+  aparece (confirma `isBackupFolderSupported()` detectando Chromium corretamente) e as duas
+  operações que já existiam (export baixa um JSON válido com os dados certos; import lê esse
+  mesmo arquivo de volta, mostra os dialogs certos, recarrega) continuam funcionando
+  identicamente depois da refatoração — zero erros no console. A escolha da pasta em si
+  (clicar em "Link a backup folder" e navegar o diálogo do Windows) precisa ser conferida à
+  mão pelo dono.
+
+### Descoberta testando: precisava ser oferecido, não escondido (mesmo dia)
+Dono testou (Edge) e reportou "a pasta continua vazia" — perguntando o que ele tinha visto na
+tela, descobriu que nunca tinha clicado em "Link a backup folder" dentro de My Profile: **ele
+esperava que o app pedisse a pasta sozinho logo depois do cadastro**, não que existisse um
+botão pra achar nas configurações. Faz sentido — o problema original era justamente "ninguém
+lembra de fazer backup por conta própria"; enterrar a solução no mesmo lugar não resolve isso.
+- **Nova tela `backup-setup`**, entre o cadastro e a tela Courses — só aparece num cadastro
+  DE VERDADE novo (`handleRegisterSubmit`, ramo `!existing`; nunca ao "continuar como" alguém
+  já cadastrado) e só se nenhuma pasta já estiver linkada (é por navegador, não por nome — um
+  2º cadastro no mesmo navegador não precisa ser perguntado nada, o backup dele já vai
+  funcionar sozinho assim que a pasta existir). 2 botões: "Choose a folder" (mesmo fluxo de
+  My Profile, só que navega pra Courses no final, dê certo ou não) e "Maybe later".
+  `showDirectoryPicker()` exige gesto do usuário — não dava pra abrir o diálogo nativo
+  sozinho ao carregar a página, por isso a tela intermediária pedindo autorização explícita em
+  vez de um diálogo do SO surgindo do nada.
+- **Bug pego na hora de escrever o texto da tela**: 1ª versão dizia "Choose a folder once
+  (Chrome/Edge — you're set, since this is Edge)" — hardcoded assumindo Edge porque foi o
+  navegador do relato, mas essa tela aparece pra QUALQUER navegador suportado (Chrome, Edge,
+  outros Chromium), então a frase estaria errada pra quem não estivesse no Edge. Removida —
+  a tela só é alcançável quando `isBackupFolderSupported()` já é `true`, então nem precisa
+  mencionar navegador nenhum.
+- Verificado via Playwright: cadastro novo cai na tela `backup-setup` (H1 "Back up your
+  progress automatically?"), os 2 botões aparecem, "Maybe later" leva pra Courses
+  corretamente. Zero erros no console.
 
 ## Histórico de processamento de conteúdo (pré-processamento, fora do código React)
 

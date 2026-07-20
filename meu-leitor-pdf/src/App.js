@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { SpecialZoomLevel, Viewer, Worker } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
@@ -194,6 +194,93 @@ const saveUsers = (users) => {
 };
 
 const userKey = (name, base) => `u:${encodeURIComponent(name)}:${base}`;
+
+// Backup automático em pasta local (File System Access API — só Chrome/Edge,
+// ver isBackupFolderSupported) — o dono pediu pra resolver "progresso só no
+// navegador, sem aviso quando o cache é limpo" escolhendo uma pasta local
+// (a dele já sincronizada no OneDrive) em vez de e-mail/login com o Google
+// (rejeitado: exigiria OAuth, credenciais de API e uma conta de
+// desenvolvedor Google — infraestrutura estranha a um app 100% local/sem
+// backend). O handle da pasta não é uma string (não cabe no localStorage),
+// então vive num IndexedDB próprio — sobrevive a fechar/reabrir o
+// navegador sem pedir de novo toda vez (só reconfirma permissão, ver
+// handleReconnectBackupFolder em App()).
+const BACKUP_FOLDER_DB_NAME = 'lets-learn-english-fs';
+const BACKUP_FOLDER_STORE_NAME = 'handles';
+const BACKUP_FOLDER_HANDLE_KEY = 'backupFolder';
+
+const isBackupFolderSupported = () => typeof window !== 'undefined' && 'showDirectoryPicker' in window;
+
+const openBackupFolderDb = () => new Promise((resolve, reject) => {
+  const request = window.indexedDB.open(BACKUP_FOLDER_DB_NAME, 1);
+  request.onupgradeneeded = () => {
+    request.result.createObjectStore(BACKUP_FOLDER_STORE_NAME);
+  };
+  request.onsuccess = () => resolve(request.result);
+  request.onerror = () => reject(request.error);
+});
+
+const saveBackupFolderHandle = async (handle) => {
+  const db = await openBackupFolderDb();
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(BACKUP_FOLDER_STORE_NAME, 'readwrite');
+    tx.objectStore(BACKUP_FOLDER_STORE_NAME).put(handle, BACKUP_FOLDER_HANDLE_KEY);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+  db.close();
+};
+
+const loadBackupFolderHandle = async () => {
+  const db = await openBackupFolderDb();
+  const handle = await new Promise((resolve, reject) => {
+    const tx = db.transaction(BACKUP_FOLDER_STORE_NAME, 'readonly');
+    const request = tx.objectStore(BACKUP_FOLDER_STORE_NAME).get(BACKUP_FOLDER_HANDLE_KEY);
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = () => reject(request.error);
+  });
+  db.close();
+  return handle;
+};
+
+const clearBackupFolderHandle = async () => {
+  const db = await openBackupFolderDb();
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(BACKUP_FOLDER_STORE_NAME, 'readwrite');
+    tx.objectStore(BACKUP_FOLDER_STORE_NAME).delete(BACKUP_FOLDER_HANDLE_KEY);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+  db.close();
+};
+
+// Nome de arquivo por usuário dentro da pasta vinculada — a pasta é UMA só
+// (permissão do File System Access é por origem, não por usuário do app),
+// então cada nome cadastrado neste navegador ganha seu próprio arquivo lá
+// dentro, em vez de brigar por um nome fixo.
+const backupFileNameFor = (name) => `lets-learn-english-backup-${name.replace(/[^a-z0-9_-]+/gi, '_')}.json`;
+
+// Mesmo formato do backup manual (handleExportBackup) — dump 1:1 de todo o
+// namespace "u:<nome>:*" do localStorage. Função pura (não depende de
+// estado do componente) pra poder ser reusada tanto pelo download manual
+// quanto pelo save automático na pasta vinculada.
+const buildBackupPayload = (name) => {
+  const prefix = userKey(name, '');
+  const data = {};
+  for (let i = 0; i < window.localStorage.length; i += 1) {
+    const key = window.localStorage.key(i);
+    if (!key || !key.startsWith(prefix)) continue;
+    data[key.slice(prefix.length)] = window.localStorage.getItem(key);
+  }
+  if (Object.keys(data).length === 0) return null;
+  return {
+    app: 'lets-learn-english-backup',
+    version: 1,
+    userName: name,
+    exportedAt: new Date().toISOString(),
+    data,
+  };
+};
 
 // Chaves de progresso usadas antes de existir cadastro de usuário. Migradas
 // uma única vez para o primeiro nome cadastrado neste navegador, para não
@@ -494,20 +581,36 @@ const AMERICAN1_REFERENCE_LABELS = {
 
 // Cursos listados na página "Courses". title também é usado no topo do
 // leitor (reader-title-bar) enquanto o usuário está dentro de uma unit.
+// `level` é só um rótulo de orientação (não muda nada de conteúdo/lógica) —
+// American English A1 e Grammar English A1 são CEFR A1 de verdade
+// ("Beginner"); English Vocabulary B é Pré-Intermediário/Intermediário
+// (pasta de origem do material se chama "Pre Intermediate and
+// Intermediate"), nível acima dos outros dois, apesar do nome "B" não deixar
+// isso óbvio. Sem esse aviso em algum lugar, quem está escolhendo por onde
+// começar não tem como saber que os 3 cursos não estão no mesmo nível.
 const courses = {
   vocabulary: {
     title: 'English Vocabulary B',
     description: 'Explore pre-intermediate vocabulary practice and lessons.',
+    level: 'Intermediate',
   },
   american1: {
     title: 'American English A1',
     description: 'Read through American English File Book 1, unit by unit, section by section.',
+    level: 'Beginner',
   },
   grammarElem: {
     title: 'Grammar English A1',
     description: 'Essential Grammar in Use, unit by unit — reading, exercises and audio.',
+    level: 'Beginner',
   },
 };
+
+// Ordem canônica "por nível" (Beginner antes de Intermediate) usada na tela
+// Courses, no Progress Dashboard e nos hubs de Listening/Dictation — pedido
+// explícito do dono: American → Grammar → Vocabulary, não mais a ordem
+// alfabética/de implementação que existia antes.
+const COURSE_LEVEL_ORDER = ['american1', 'grammarElem', 'vocabulary'];
 
 // Curso "Grammar English A1": 115 units, cada uma com um par de PDFs
 // de página única (Unit-<n>L.pdf de leitura, Unit-<n>E.pdf de exercícios,
@@ -873,6 +976,14 @@ function App() {
   const [lastVisitedByCourse, setLastVisitedByCourse] = useState({});
   const [reviewQueue, setReviewQueue] = useState([]);
   const [wordbookEntries, setWordbookEntries] = useState([]);
+  // Backup automático em pasta local (My Profile → Backup & Restore) — ver
+  // comentário grande em buildBackupPayload (topo do arquivo). O handle NÃO
+  // é por usuário (é uma permissão do navegador pra ESSA origem), então
+  // esse estado é global ao app, carregado uma vez ao abrir (useEffect
+  // abaixo), não por troca de usuário.
+  const [backupFolderHandle, setBackupFolderHandle] = useState(null);
+  const [backupFolderNeedsPermission, setBackupFolderNeedsPermission] = useState(false);
+  const [lastFolderBackupAt, setLastFolderBackupAt] = useState(null);
   // "Today's Goal" (ROADMAP item 3, trilha de estudo) — dailyGoalPrefs é qual
   // dos 3 componentes CONTA pra meta (togglável em DailyGoalCard);
   // dailyGoalToday é o que já foi CUMPRIDO hoje (chave inclui a data — ver
@@ -2114,6 +2225,7 @@ function App() {
 
     const existing = registeredUsers.find((name) => name.toLowerCase() === trimmed.toLowerCase());
     const canonicalName = existing || trimmed;
+    const isNewRegistration = !existing;
 
     if (!existing) {
       const isFirstEverUser = registeredUsers.length === 0;
@@ -2133,7 +2245,16 @@ function App() {
     }
     setRegisterNameInput('');
     setRegisterError('');
-    setActivePage('courses');
+    // Oferece vincular a pasta de backup só num cadastro DE VERDADE novo
+    // (não ao "continuar como" um nome já existente) e só se ainda não tiver
+    // nenhuma pasta linkada (pedido do dono — perguntar de novo pra um 2º
+    // nome cadastrado no mesmo navegador seria redundante, já está
+    // resolvido pro navegador inteiro). Pedir aqui e não silenciosamente no
+    // fundo porque showDirectoryPicker() exige um gesto do usuário — mostrar
+    // uma tela pedindo autorização explícita é mais claro que um diálogo
+    // nativo do SO surgindo do nada logo após digitar o nome.
+    const shouldOfferBackupFolder = isNewRegistration && isBackupFolderSupported() && !backupFolderHandle;
+    setActivePage(shouldOfferBackupFolder ? 'backup-setup' : 'courses');
   };
 
   const handleContinueAs = (name) => {
@@ -2407,24 +2528,11 @@ function App() {
   const handleExportBackup = () => {
     if (!userName) return;
     try {
-      const prefix = userKey(userName, '');
-      const data = {};
-      for (let i = 0; i < window.localStorage.length; i += 1) {
-        const key = window.localStorage.key(i);
-        if (!key || !key.startsWith(prefix)) continue;
-        data[key.slice(prefix.length)] = window.localStorage.getItem(key);
-      }
-      if (Object.keys(data).length === 0) {
+      const backup = buildBackupPayload(userName);
+      if (!backup) {
         window.alert('Nothing to back up yet — no progress saved for this user.');
         return;
       }
-      const backup = {
-        app: 'lets-learn-english-backup',
-        version: 1,
-        userName,
-        exportedAt: new Date().toISOString(),
-        data,
-      };
       const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -2440,60 +2548,225 @@ function App() {
     }
   };
 
-  // Restaura um backup gerado por handleExportBackup — sempre nas chaves do
-  // usuário ATIVO agora (não necessariamente o mesmo "userName" salvo no
-  // arquivo: o cenário típico é reinstalar/trocar de navegador, recadastrar
-  // o mesmo nome ali, e importar por cima). Escreve direto no localStorage
-  // e recarrega a página em vez de tentar sincronizar manualmente cada
-  // pedaço de estado React espalhado pelo app — muito mais simples e sem
-  // risco de esquecer algum setState.
+  // Núcleo compartilhado entre "Import backup (.json)" (upload manual) e
+  // "Restore from folder" (pasta vinculada) — mesma validação/confirmação/
+  // escrita nas duas, só muda de onde o texto do JSON veio. Sempre nas
+  // chaves do usuário ATIVO agora (não necessariamente o mesmo "userName"
+  // salvo no arquivo: o cenário típico é reinstalar/trocar de navegador,
+  // recadastrar o mesmo nome ali, e importar por cima). Escreve direto no
+  // localStorage e recarrega a página em vez de tentar sincronizar
+  // manualmente cada pedaço de estado React espalhado pelo app.
+  const applyBackupJson = (text) => {
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch (error) {
+      window.alert("Could not read this file — make sure it's a backup .json exported from this app.");
+      return;
+    }
+    if (!parsed || typeof parsed.data !== 'object' || parsed.data === null) {
+      window.alert("This file doesn't look like a Let's Learn English backup.");
+      return;
+    }
+    const keys = Object.keys(parsed.data).filter((k) => typeof parsed.data[k] === 'string');
+    if (keys.length === 0) {
+      window.alert('This backup file is empty.');
+      return;
+    }
+    const fromDifferentUser = parsed.userName && parsed.userName !== userName;
+    const warning = fromDifferentUser
+      ? `This backup was exported from "${parsed.userName}". `
+      : '';
+    if (!window.confirm(
+      `${warning}Import ${keys.length} saved item(s) into "${userName}"? This will overwrite any matching progress, notes, answers and ratings already saved for this user on this browser. This cannot be undone.`,
+    )) {
+      return;
+    }
+    try {
+      keys.forEach((relativeKey) => {
+        window.localStorage.setItem(userKey(userName, relativeKey), parsed.data[relativeKey]);
+      });
+    } catch (error) {
+      window.alert('Could not write the backup to this browser (storage may be full or unavailable).');
+      return;
+    }
+    window.alert('Backup imported. The page will reload to apply it.');
+    window.location.reload();
+  };
+
   const handleImportBackupFile = (event) => {
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file || !userName) return;
     const reader = new FileReader();
-    reader.onload = () => {
-      let parsed;
-      try {
-        parsed = JSON.parse(String(reader.result));
-      } catch (error) {
-        window.alert("Could not read this file — make sure it's a backup .json exported from this app.");
-        return;
-      }
-      if (!parsed || typeof parsed.data !== 'object' || parsed.data === null) {
-        window.alert("This file doesn't look like a Let's Learn English backup.");
-        return;
-      }
-      const keys = Object.keys(parsed.data).filter((k) => typeof parsed.data[k] === 'string');
-      if (keys.length === 0) {
-        window.alert('This backup file is empty.');
-        return;
-      }
-      const fromDifferentUser = parsed.userName && parsed.userName !== userName;
-      const warning = fromDifferentUser
-        ? `This backup was exported from "${parsed.userName}". `
-        : '';
-      if (!window.confirm(
-        `${warning}Import ${keys.length} saved item(s) into "${userName}"? This will overwrite any matching progress, notes, answers and ratings already saved for this user on this browser. This cannot be undone.`,
-      )) {
-        return;
-      }
-      try {
-        keys.forEach((relativeKey) => {
-          window.localStorage.setItem(userKey(userName, relativeKey), parsed.data[relativeKey]);
-        });
-      } catch (error) {
-        window.alert('Could not write the backup to this browser (storage may be full or unavailable).');
-        return;
-      }
-      window.alert('Backup imported. The page will reload to apply it.');
-      window.location.reload();
-    };
-    reader.onerror = () => {
-      window.alert('Could not read this file.');
-    };
+    reader.onload = () => applyBackupJson(String(reader.result));
+    reader.onerror = () => window.alert('Could not read this file.');
     reader.readAsText(file);
   };
+
+  // Backup automático em pasta local vinculada (File System Access API) —
+  // ver comentário em buildBackupPayload/isBackupFolderSupported (topo do
+  // arquivo) pro porquê dessa abordagem em vez de e-mail/login Google.
+  const handleChooseBackupFolder = async () => {
+    if (!isBackupFolderSupported()) return;
+    try {
+      const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+      await saveBackupFolderHandle(handle);
+      setBackupFolderHandle(handle);
+      setBackupFolderNeedsPermission(false);
+      await handleSaveBackupToFolder({ handle, silent: false });
+    } catch (error) {
+      // AbortError = usuário cancelou o seletor de pasta, não é erro de verdade.
+      if (error?.name !== 'AbortError') {
+        window.alert('Could not link that folder.');
+      }
+    }
+  };
+
+  // Tela "backup-setup" (logo após um cadastro novo, ver handleRegisterSubmit)
+  // — os dois botões dela sempre seguem pra Courses depois, dê certo,
+  // cancele, ou dê erro escolher a pasta; a diferença de handleChooseBackupFolder
+  // (usado em My Profile) é só essa navegação automática no final.
+  const handleChooseBackupFolderAndContinue = async () => {
+    await handleChooseBackupFolder();
+    setActivePage('courses');
+  };
+
+  const handleSkipBackupSetup = () => {
+    setActivePage('courses');
+  };
+
+  const handleReconnectBackupFolder = async () => {
+    if (!backupFolderHandle) return;
+    try {
+      const permission = await backupFolderHandle.requestPermission({ mode: 'readwrite' });
+      if (permission === 'granted') {
+        setBackupFolderNeedsPermission(false);
+      } else {
+        window.alert('Permission was not granted — the folder stays linked, but backups will not run until you allow access again.');
+      }
+    } catch (error) {
+      window.alert('Could not reconnect to that folder.');
+    }
+  };
+
+  const handleUnlinkBackupFolder = async () => {
+    try {
+      await clearBackupFolderHandle();
+    } catch (error) {
+      // Sem IndexedDB não tem o que desfazer — segue o baile mesmo assim.
+    }
+    setBackupFolderHandle(null);
+    setBackupFolderNeedsPermission(false);
+    setLastFolderBackupAt(null);
+  };
+
+  // `silent` diferencia o autosave periódico (falha calada — não faz
+  // sentido interromper o usuário por causa de um save em segundo plano)
+  // do clique manual em "Save backup now" (sempre avisa o que aconteceu).
+  const handleSaveBackupToFolder = async ({ handle, silent = false } = {}) => {
+    const targetHandle = handle || backupFolderHandle;
+    if (!targetHandle || !userName) return;
+    const payload = buildBackupPayload(userName);
+    if (!payload) {
+      if (!silent) window.alert('Nothing to back up yet — no progress saved for this user.');
+      return;
+    }
+    try {
+      const permission = await targetHandle.queryPermission({ mode: 'readwrite' });
+      if (permission !== 'granted') {
+        setBackupFolderNeedsPermission(true);
+        if (!silent) window.alert('This app needs permission to write to the linked folder again — click "Reconnect folder" below.');
+        return;
+      }
+      const fileHandle = await targetHandle.getFileHandle(backupFileNameFor(userName), { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(JSON.stringify(payload, null, 2));
+      await writable.close();
+      setLastFolderBackupAt(Date.now());
+      if (!silent) window.alert('Saving your progress.');
+    } catch (error) {
+      if (!silent) window.alert('Could not save the backup to the linked folder.');
+    }
+  };
+
+  const handleRestoreFromFolder = async () => {
+    if (!backupFolderHandle || !userName) return;
+    try {
+      const permission = await backupFolderHandle.queryPermission({ mode: 'readwrite' });
+      if (permission !== 'granted') {
+        setBackupFolderNeedsPermission(true);
+        window.alert('This app needs permission to read the linked folder again — click "Reconnect folder" below.');
+        return;
+      }
+      const fileHandle = await backupFolderHandle.getFileHandle(backupFileNameFor(userName));
+      const file = await fileHandle.getFile();
+      const text = await file.text();
+      applyBackupJson(text);
+    } catch (error) {
+      if (error?.name === 'NotFoundError') {
+        window.alert(`No backup file found in the linked folder for "${userName}" yet — click "Save backup now" first.`);
+      } else {
+        window.alert('Could not read the backup from the linked folder.');
+      }
+    }
+  };
+
+  // Recupera a pasta vinculada (se houver) do IndexedDB uma vez, ao abrir o
+  // app — `queryPermission` (ao contrário de `requestPermission`) não
+  // precisa de gesto do usuário, então dá pra checar em silêncio se a
+  // permissão ainda vale. Se não valer mais (navegador reiniciado, por
+  // exemplo), guarda o handle mesmo assim e marca "precisa reconectar" —
+  // some com um clique em "Reconnect folder", sem precisar escolher a
+  // pasta nem perder o vínculo de novo.
+  useEffect(() => {
+    if (!isBackupFolderSupported()) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const handle = await loadBackupFolderHandle();
+        if (!handle || cancelled) return;
+        const permission = await handle.queryPermission({ mode: 'readwrite' });
+        if (cancelled) return;
+        setBackupFolderHandle(handle);
+        setBackupFolderNeedsPermission(permission !== 'granted');
+      } catch (error) {
+        // IndexedDB indisponível ou handle corrompido — trata como não vinculado.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Autosave periódico enquanto uma pasta estiver vinculada e com permissão
+  // válida — 5 minutos é um meio-termo entre "não perder muito trabalho se
+  // o navegador fechar sem aviso" e "não ficar escrevendo no disco toda
+  // hora". Silencioso de propósito (`silent: true`) — não faz sentido
+  // interromper o usuário por causa de um save em segundo plano.
+  useEffect(() => {
+    if (!backupFolderHandle || backupFolderNeedsPermission || !userName) return undefined;
+    const interval = setInterval(() => {
+      handleSaveBackupToFolder({ silent: true });
+    }, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [backupFolderHandle, backupFolderNeedsPermission, userName]);
+
+  // Autosave também ao trocar de unit/seção (não só no timer) — pedido do
+  // dono, pra não depender só dos 5 minutos se o navegador fechar logo
+  // depois de uma sessão curta de estudo. Dispara em QUALQUER troca (não só
+  // a 1ª visita, ao contrário de markDailyGoalDone('newUnit')) porque o que
+  // importa aqui é capturar o que o usuário acabou de fazer (nota, resposta,
+  // avaliação...) antes de sair da tela, mesmo numa unit já visitada antes.
+  // Dependências de propósito só nos seletores de unit/seção — os outros 3
+  // (backupFolderHandle/backupFolderNeedsPermission/userName) mudam bem
+  // menos, então checar seu valor ATUAL dentro do efeito (via closure, sem
+  // precisar deles na lista de deps) evita disparos extras que não vêm de
+  // navegação de verdade.
+  useEffect(() => {
+    if (!backupFolderHandle || backupFolderNeedsPermission || !userName) return;
+    handleSaveBackupToFolder({ silent: true });
+  }, [selectedUnit, selectedAmerican1Unit, selectedAmerican1Section, selectedGrammarElemUnit]);
 
   const handleResetProgress = () => {
     if (!window.confirm('Reset your unit progress? This cannot be undone.')) {
@@ -2805,11 +3078,15 @@ function App() {
   const grammarElemStatuses = grammarElemUnitNumbers.map((unit) => (
     getUnitBadgeStatus(Boolean(grammarElemVisitedUnits[unit]), grammarElemUnitRatings[unit] || 0)
   ));
-  const courseProgress = [
-    { id: 'vocabulary', title: courses.vocabulary.title, total: unitItems.length, tally: tallyUnitStatuses(vocabularyStatuses) },
-    { id: 'american1', title: courses.american1.title, total: american1UnitNumbers.length, tally: tallyUnitStatuses(american1Statuses) },
-    { id: 'grammarElem', title: courses.grammarElem.title, total: GRAMMAR_ELEM_UNIT_COUNT, tally: tallyUnitStatuses(grammarElemStatuses) },
-  ];
+  // Ordem = COURSE_LEVEL_ORDER (Beginner antes de Intermediate — American1,
+  // Grammar Elem, Vocabulary), não mais a ordem de implementação — o
+  // Progress Dashboard lista "Progress by course" direto nessa ordem.
+  const courseProgressById = {
+    vocabulary: { id: 'vocabulary', title: courses.vocabulary.title, level: courses.vocabulary.level, total: unitItems.length, tally: tallyUnitStatuses(vocabularyStatuses) },
+    american1: { id: 'american1', title: courses.american1.title, level: courses.american1.level, total: american1UnitNumbers.length, tally: tallyUnitStatuses(american1Statuses) },
+    grammarElem: { id: 'grammarElem', title: courses.grammarElem.title, level: courses.grammarElem.level, total: GRAMMAR_ELEM_UNIT_COUNT, tally: tallyUnitStatuses(grammarElemStatuses) },
+  };
+  const courseProgress = COURSE_LEVEL_ORDER.map((id) => courseProgressById[id]);
   const overallMasteredTotal = courseProgress.reduce((sum, course) => sum + course.tally.mastered, 0);
   const overallUnitsTotal = courseProgress.reduce((sum, course) => sum + course.total, 0);
   const overallMasteryPercent = overallUnitsTotal > 0 ? Math.round((overallMasteredTotal / overallUnitsTotal) * 100) : 0;
@@ -3368,22 +3645,12 @@ function App() {
               </div>
             ) : (
               <div className="course-links">
-                <div className="course-link-row">
-                  <a className="course-link" href="#link-vocabulary" onClick={handleVocabulary}>
-                    <span>{courses.vocabulary.title}</span>
-                    <small>{courses.vocabulary.description}</small>
-                  </a>
-                  {lastVisitedByCourse.vocabulary && (
-                    <button
-                      type="button"
-                      className="continue-cta course-continue-cta"
-                      onClick={() => openLastVisitedEntry('vocabulary', lastVisitedByCourse.vocabulary)}
-                    >
-                      Continue where you left off
-                      <small>{formatLastVisitedLabel('vocabulary', lastVisitedByCourse.vocabulary)}</small>
-                    </button>
-                  )}
-                </div>
+                {/* Agrupado por nível (Beginner/Intermediate — ver comentário em `courses`
+                    acima) — American English A1 e Grammar English A1 são A1 de verdade;
+                    English Vocabulary B é Pré-Intermediário/Intermediário, apesar do "B" no
+                    nome não deixar isso óbvio. Ordem pedida pelo dono: American, Grammar,
+                    Vocabulary (não mais a ordem antiga, Vocabulary primeiro). */}
+                <span className="course-level-heading">Beginner</span>
                 <div className="course-link-row">
                   <a className="course-link" href="#link-american1" onClick={handleAmerican1}>
                     <span>{courses.american1.title}</span>
@@ -3413,6 +3680,23 @@ function App() {
                     >
                       Continue where you left off
                       <small>{formatLastVisitedLabel('grammarElem', lastVisitedByCourse.grammarElem)}</small>
+                    </button>
+                  )}
+                </div>
+                <span className="course-level-heading">Intermediate</span>
+                <div className="course-link-row">
+                  <a className="course-link" href="#link-vocabulary" onClick={handleVocabulary}>
+                    <span>{courses.vocabulary.title}</span>
+                    <small>{courses.vocabulary.description}</small>
+                  </a>
+                  {lastVisitedByCourse.vocabulary && (
+                    <button
+                      type="button"
+                      className="continue-cta course-continue-cta"
+                      onClick={() => openLastVisitedEntry('vocabulary', lastVisitedByCourse.vocabulary)}
+                    >
+                      Continue where you left off
+                      <small>{formatLastVisitedLabel('vocabulary', lastVisitedByCourse.vocabulary)}</small>
                     </button>
                   )}
                 </div>
@@ -4202,16 +4486,21 @@ function App() {
             <h1>Choose a listening source</h1>
             <div className="course-links">
               {LISTENING_SOURCES.map((source) => (
-                <div className="course-link-row" key={source.id}>
-                  <a
-                    className="course-link"
-                    href="#0"
-                    onClick={(event) => { event.preventDefault(); handleOpenListeningSource(source); }}
-                  >
-                    <span>{source.title}</span>
-                    <small>{source.description}</small>
-                  </a>
-                </div>
+                <Fragment key={source.id}>
+                  {courses[source.id]?.level && (
+                    <span className="course-level-heading">{courses[source.id].level}</span>
+                  )}
+                  <div className="course-link-row">
+                    <a
+                      className="course-link"
+                      href="#0"
+                      onClick={(event) => { event.preventDefault(); handleOpenListeningSource(source); }}
+                    >
+                      <span>{source.title}</span>
+                      <small>{source.description}</small>
+                    </a>
+                  </div>
+                </Fragment>
               ))}
             </div>
           </div>
@@ -4357,19 +4646,24 @@ function App() {
             </p>
             <div className="course-links">
               {LISTENING_SOURCES.map((source) => (
-                <div className="course-link-row" key={source.id}>
-                  <a
-                    className="course-link"
-                    href="#0"
-                    onClick={(event) => { event.preventDefault(); handleOpenDictationSource(source); }}
-                  >
-                    {/* Mesmo LISTENING_SOURCES do Listening (mesmos tracks/áudio), mas o
-                        título/descrição aqui são só de exibição — nunca escritos de volta
-                        no JSON, então a tela do Listening continua com o texto original. */}
-                    <span>{source.title.replace(/^Listening/, 'Dictation')}</span>
-                    <small>Same audio as Listening, without the text — you type what you hear.</small>
-                  </a>
-                </div>
+                <Fragment key={source.id}>
+                  {courses[source.id]?.level && (
+                    <span className="course-level-heading">{courses[source.id].level}</span>
+                  )}
+                  <div className="course-link-row">
+                    <a
+                      className="course-link"
+                      href="#0"
+                      onClick={(event) => { event.preventDefault(); handleOpenDictationSource(source); }}
+                    >
+                      {/* Mesmo LISTENING_SOURCES do Listening (mesmos tracks/áudio), mas o
+                          título/descrição aqui são só de exibição — nunca escritos de volta
+                          no JSON, então a tela do Listening continua com o texto original. */}
+                      <span>{source.title.replace(/^Listening/, 'Dictation')}</span>
+                      <small>Same audio as Listening, without the text — you type what you hear.</small>
+                    </a>
+                  </div>
+                </Fragment>
               ))}
             </div>
           </div>
@@ -4669,6 +4963,54 @@ function App() {
             </p>
             {expandedProfileCourses.backup && (
               <div className="profile-reset-list">
+                {isBackupFolderSupported() ? (
+                  !backupFolderHandle ? (
+                    <button type="button" className="profile-reset-btn primary" onClick={handleChooseBackupFolder}>
+                      <span>Link a backup folder</span>
+                      <small>Choose a folder once (Chrome/Edge) — the app saves a backup there
+                        automatically from now on (every 10 min while linked), and can restore
+                        from it later. Good pick: a folder already synced to the cloud (OneDrive,
+                        Google Drive...), so it survives even if this computer is lost.</small>
+                    </button>
+                  ) : (
+                    <div className="profile-backup-folder">
+                      <p className="landing-meta profile-backup-folder-status">
+                        📁 Backup folder linked
+                        {backupFolderNeedsPermission
+                          ? ' — permission needed again'
+                          : lastFolderBackupAt
+                            ? ` — last saved ${new Date(lastFolderBackupAt).toLocaleString()}`
+                            : ' — not saved yet'}
+                      </p>
+                      {backupFolderNeedsPermission ? (
+                        <button type="button" className="profile-reset-btn primary" onClick={handleReconnectBackupFolder}>
+                          <span>Reconnect folder</span>
+                          <small>The browser needs you to confirm access to the linked folder again
+                            (this can happen after restarting it).</small>
+                        </button>
+                      ) : (
+                        <>
+                          <button type="button" className="profile-reset-btn primary" onClick={() => handleSaveBackupToFolder()}>
+                            <span>Save backup now</span>
+                            <small>Writes the latest backup for "{userName}" to the linked folder right away.</small>
+                          </button>
+                          <button type="button" className="profile-reset-btn primary" onClick={handleRestoreFromFolder}>
+                            <span>Restore from folder</span>
+                            <small>Reads the backup for "{userName}" from the linked folder and imports it here. Overwrites matching data.</small>
+                          </button>
+                        </>
+                      )}
+                      <button type="button" className="profile-reset-btn" onClick={handleUnlinkBackupFolder}>
+                        <span>Unlink folder</span>
+                        <small>Stops automatic saves — doesn't delete the backup file already there.</small>
+                      </button>
+                    </div>
+                  )
+                ) : (
+                  <p className="landing-meta">
+                    Automatic folder backup needs Chrome or Edge — use Export/Import below instead.
+                  </p>
+                )}
                 <button type="button" className="profile-reset-btn primary" onClick={handleExportBackup}>
                   <span>Export full backup (.json)</span>
                   <small>Downloads everything for "{userName}": progress, notes, answers, ratings and My Words.</small>
@@ -4771,6 +5113,31 @@ function App() {
               {registerError && <p className="register-error">{registerError}</p>}
               <button type="submit" className="show-answers-btn">Start learning</button>
             </form>
+          </div>
+        </main>
+      ) : activePage === 'backup-setup' ? (
+        <main className="landing-page">
+          <div className="landing-panel register-panel">
+            <p className="eyebrow">Welcome, {userName}</p>
+            <h1>Back up your progress automatically?</h1>
+            <p className="landing-meta">
+              Everything you do here — units visited, notes, ratings, My Words — lives only in
+              this browser. Clearing the cache, a browser update, or moving to a new computer
+              can erase months of progress without warning.
+            </p>
+            <p className="landing-meta">
+              Choose a folder once and the app saves a backup there by itself from now on.
+              Picking a folder that's already synced to the cloud (OneDrive, Google Drive...)
+              means your progress survives even if this computer is lost.
+            </p>
+            <div className="register-form">
+              <button type="button" className="show-answers-btn" onClick={handleChooseBackupFolderAndContinue}>
+                Choose a folder
+              </button>
+              <button type="button" className="register-reset-all-btn" onClick={handleSkipBackupSetup}>
+                Maybe later — I'll set this up in My Profile
+              </button>
+            </div>
           </div>
         </main>
       ) : (
@@ -5296,18 +5663,26 @@ function DashboardPage({
 
       <h2 className="dashboard-section-title">Progress by course</h2>
       <div className="dashboard-courses">
-        {courseProgress.map((course) => {
+        {courseProgress.map((course, index) => {
           const entry = lastVisitedByCourse[course.id];
+          // Mesmo rótulo "Beginner"/"Intermediate" das telas Courses/
+          // Listening/Dictation — só na 1ª linha de cada grupo (courseProgress
+          // já vem ordenado por nível, ver COURSE_LEVEL_ORDER).
+          const showLevelHeading = index === 0 || courseProgress[index - 1].level !== course.level;
           return (
-            <DashboardCourseRow
-              key={course.id}
-              title={course.title}
-              total={course.total}
-              tally={course.tally}
-              continueEntry={entry}
-              continueLabel={entry ? formatLastVisitedLabel(course.id, entry) : ''}
-              onContinue={() => onOpenLastVisited(course.id, entry)}
-            />
+            <Fragment key={course.id}>
+              {showLevelHeading && course.level && (
+                <span className="course-level-heading">{course.level}</span>
+              )}
+              <DashboardCourseRow
+                title={course.title}
+                total={course.total}
+                tally={course.tally}
+                continueEntry={entry}
+                continueLabel={entry ? formatLastVisitedLabel(course.id, entry) : ''}
+                onContinue={() => onOpenLastVisited(course.id, entry)}
+              />
+            </Fragment>
           );
         })}
       </div>
@@ -5419,6 +5794,19 @@ function ImageDropZone({ image, onChange, compact }) {
   );
 }
 
+// URLs de referência externa pra uma palavra — compartilhadas entre o clique
+// na palavra do flashcard (startEditingMeaning, abre os dois juntos) e os
+// botões "See in Dictionary"/"Spoken in phrases" da lista do WordbookPage
+// (abrem um de cada vez).
+function cambridgeDictionaryUrlFor(word) {
+  const normalizedWord = encodeURIComponent(word.trim().toLowerCase());
+  return `https://dictionary.cambridge.org/dictionary/english/${normalizedWord}`;
+}
+function youglishUrlFor(word) {
+  const normalizedWord = encodeURIComponent(word.trim().toLowerCase());
+  return `https://youglish.com/pronounce/${normalizedWord}/english/us`;
+}
+
 // Página "My Words": caderno de vocabulário pessoal do usuário. Lista as
 // palavras salvas (com significado/exemplo/contexto/imagem), permite
 // adicionar e apagar, e tem o modo de prática por flashcards. Again/Good/Easy
@@ -5520,15 +5908,12 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
     if (!currentCard) return;
     setMeaningDraft(currentCard.meaning || '');
     setEditingMeaning(true);
-    const normalizedWord = encodeURIComponent(currentCard.word.trim().toLowerCase());
-    const dictionaryUrl = `https://dictionary.cambridge.org/dictionary/english/${normalizedWord}`;
-    const pronunciationUrl = `https://youglish.com/pronounce/${normalizedWord}/english/us`;
     // Dois window.open seguidos: alguns navegadores bloqueiam o segundo
     // popup se nao acharem que ainda faz parte do mesmo gesto do usuario —
     // por isso os dois ficam aqui dentro do handler de click, sincronos,
     // sem nenhum await/setTimeout no meio.
-    window.open(dictionaryUrl, '_blank', 'noopener,noreferrer');
-    window.open(pronunciationUrl, '_blank', 'noopener,noreferrer');
+    window.open(cambridgeDictionaryUrlFor(currentCard.word), '_blank', 'noopener,noreferrer');
+    window.open(youglishUrlFor(currentCard.word), '_blank', 'noopener,noreferrer');
   };
 
   const saveMeaningDraft = () => {
@@ -5779,6 +6164,24 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
                       {entry.context ? `${entry.context} · ` : ''}
                       {formatDue(entry)}
                     </p>
+                    <div className="wordbook-entry-links">
+                      <a
+                        href={cambridgeDictionaryUrlFor(entry.word)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="wordbook-entry-link"
+                      >
+                        See in Dictionary
+                      </a>
+                      <a
+                        href={youglishUrlFor(entry.word)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="wordbook-entry-link"
+                      >
+                        Spoken in phrases
+                      </a>
+                    </div>
                   </div>
                   <button
                     type="button"

@@ -61,6 +61,16 @@ meu-leitor-pdf/
 
 ## Cursos & Recursos
 
+**Nível de cada curso** (`courses[id].level`, `App.js`): American English A1 e Grammar
+English A1 são "Beginner" (CEFR A1 de verdade); English Vocabulary B é "Intermediate" (a
+pasta de origem do material se chama "Pre Intermediate and Intermediate" — nível acima dos
+outros dois, apesar do "B" no nome não deixar isso óbvio). Avisado ao usuário (rótulo
+"Beginner"/"Intermediate" padronizado, classe `.course-level-heading`) nas telas Courses,
+Listening, Dictation e Progress Dashboard, sempre na ordem `COURSE_LEVEL_ORDER` (American1,
+Grammar Elem, Vocabulary — não mais a ordem de implementação/alfabética antiga). Adicionar um
+4º curso? Definir o `level` dele em `courses` e incluir o id em `COURSE_LEVEL_ORDER` já basta
+pras 4 telas acima pegarem sozinhas.
+
 ### 1. Vocabulary — "English Vocabulary B" (100 units)
 - Leitura: PDF `_L` (leitura) com áudio ancorado na margem esquerda
 - Exercícios: PDF `_E` (exercícios), recortado unit-por-unit, com gabarito
@@ -220,6 +230,38 @@ u:<nome>:dailyGoalPrefs            — JSON {newUnit, reviews, listening} (bool)
 
 Primeiro cadastro neste navegador herda automaticamente progresso solto (sem namespace). Cadastros seguintes não. Reset completo via "Reset all data on this browser" (link discreto na tela de registro), ou backup/restore (JSON export/import) na tela My Profile.
 
+### Backup automático em pasta local (File System Access API — só Chrome/Edge)
+
+Além do export/import manual (JSON, sempre disponível), My Profile → Backup & Restore tem
+"Link a backup folder": escolhe uma pasta local UMA vez (`window.showDirectoryPicker`), e o
+app salva um backup ali sozinho a cada 10 min enquanto estiver linkado, além de poder
+restaurar de lá. Decisão do dono depois de descartar e-mail/login com o Google (exigiria
+OAuth + credenciais de API, infraestrutura estranha a um app 100% local/sem backend) — pasta
+local resolve o mesmo problema (progresso preso ao cache de um navegador só) sem depender de
+internet nem conta nenhuma.
+- **Handle da pasta vive num IndexedDB próprio** (`lets-learn-english-fs`), não no
+  `localStorage` (não aceita objetos, só string) — sobrevive a fechar/reabrir o navegador;
+  `queryPermission` (sem gesto do usuário) checa se ainda vale ao carregar a página,
+  `requestPermission` (precisa de gesto, ver "Reconnect folder") reconfirma quando não vale
+  mais.
+- **Uma pasta só pro navegador inteiro, não por usuário do app** — é uma permissão da ORIGEM,
+  não teria como ser por nome cadastrado. Dentro da pasta, um arquivo por usuário
+  (`backupFileNameFor`), pra não colidir se houver mais de um nome cadastrado.
+- `buildBackupPayload`/`applyBackupJson` são compartilhados entre o export/import manual (já
+  existia) e o novo fluxo de pasta — nunca duplicar essa lógica se mexer em qualquer um dos
+  dois.
+- Sem suporte no navegador (Firefox, Safari): a seção mostra só uma frase avisando e cai pro
+  export/import manual, que continua funcionando igual em qualquer navegador.
+- **Também oferecido proativamente logo após um cadastro NOVO de verdade** (`activePage ===
+  'backup-setup'`, entre "register" e "courses" em `handleRegisterSubmit`) — só nesse momento,
+  nunca ao "continuar como" um nome já existente, e só se ainda não houver pasta linkada (é por
+  navegador, não por usuário, ver acima — 2º nome cadastrado no mesmo navegador não precisa ser
+  perguntado de novo). Motivo: o dono testou o botão dentro de My Profile e relatou "a pasta
+  está vazia" — só ao perguntar percebeu que nunca tinha clicado nele, porque nada avisava que
+  a feature existia. `showDirectoryPicker()` exige gesto do usuário, então não dá pra abrir o
+  diálogo sozinho ao carregar a página — a tela pede autorização explícita (2 botões: escolher
+  pasta ou pular) antes de disparar o diálogo nativo do SO.
+
 ---
 
 ## Dados Gerados (Índices)
@@ -311,9 +353,20 @@ Não há testes unitários automatizados (`npm test` funciona mas CRA cria um es
   `app-shell--allow-grow`
 - Cartões/retângulos de conteúdo sobre o fundo desfocado (`--page-hero-bg`) precisam de
   background **opaco**, nunca `rgba(...)` translúcido — ver "Decisões Imutáveis" item 7
+- **O próprio `.app-header` também precisa de background opaco** — era `rgba(24, 15, 43, 0.9)`
+  (90%), inofensivo enquanto nada rolava por baixo dele; virou visível (a foto do hero da Home
+  sangrando através da barra sticky) assim que a Home passou a rolar (`app-shell--allow-grow`,
+  ver acima). Mesma regra do item acima, só que descoberta tarde porque o cenário que a expõe
+  (conteúdo de alto contraste passando por baixo de um header sticky) é raro no resto do app
 - `.landing-panel p { color: rgba(255,255,255,0.75) }` (herdado do tema roxo escuro original)
   vence por especificidade — textos novos dentro de um painel claro precisam de seletor mais
-  específico + `color` explícito
+  específico + `color` explícito. **Mas cada painel (`profile-panel`, `dashboard-panel`,
+  `listening-panel`...) tem sua PRÓPRIA variante dessa regra** (`.landing-panel.<painel> p`),
+  então um texto que aparece em vários painéis (ex. `.course-level-heading`, usado em Courses/
+  Listening/Dictation/Dashboard) precisaria vencer a especificidade de TODAS elas — bater uma
+  só não basta. Nesse caso é mais simples usar um elemento que essas regras não alvejam
+  (`<span>` em vez de `<p>`, com `display:block` se precisar ocupar a linha toda) do que entrar
+  numa corrida de especificidade contra N seletores diferentes
 - **Padrão das 9 telas de leitura (grid de 2 colunas)**: a barra de botões (`.pdf-toolbar`) e a
   linha de título (`.section-info`) devem ficar **dentro** da coluna esquerda (`.pdf-panel`/
   `.study-left`), nunca como irmãs full-width por fora do grid — senão o painel direito
@@ -350,7 +403,7 @@ npm install
 
 ## Links Importantes
 
-- **`ROADMAP.md`** (raiz do repo) — próximas implementações aprovadas pelo dono, em ordem: auto-pause nos áudios, lacunas do Listening priorizando palavras-alvo da unit, trilha de estudo (sequência sugerida + meta diária + % de domínio), Speaking via reconhecimento de voz do navegador, contador de tempo de estudo + streak no Dashboard
+- **`ROADMAP.md`** (raiz do repo) — próximas implementações aprovadas pelo dono, em ordem: auto-pause nos áudios, lacunas do Listening priorizando palavras-alvo da unit, trilha de estudo (sequência sugerida + meta diária + % de domínio), Speaking via reconhecimento de voz do navegador (contador de tempo de estudo + streak no Dashboard descartado pelo dono, não será implementado)
 - **Histórico de detalhes**: Ver memórias no repo (`exercise-crop-feature`, `verify-app-runs-on-port-3000`, `american1-*`, `spaced-review-wordbook-listening`, `panel-toggle-feature`, `left-slide-menu-feature`, `backup-restore-feature`, etc.)
 - **`PROJECT_SUMMARY.md`** (raiz do repo) — resumo narrativo mais extenso, com histórico de decisões de UX/dados
 - **Git history**: Scripts geradores removidos ao longo do projeto (ainda disponíveis no histórico)
