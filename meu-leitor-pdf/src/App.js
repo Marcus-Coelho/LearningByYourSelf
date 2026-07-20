@@ -45,6 +45,46 @@ const listeningTrackLabel = (track) => {
   return '';
 };
 
+// Mapa cd+track -> {unit, section} do American1, derivado de
+// american1_audio_anchors.json (cada âncora de áudio já carrega cd/track/
+// section daquele MP3) — o JSON de tracks do Listening/Dictation do
+// American1 (listening_american1.json) não tem campo `unit`/`section` como
+// o do Vocabulary, só cd/track/number, então pro título do Dictation
+// mostrar "Unit 1A" (ver american1TrackUnitLabel abaixo) precisa dessa busca
+// reversa. Computado uma vez, no carregamento do módulo, não por render.
+const AMERICAN1_CD_TRACK_TO_UNIT = {};
+Object.entries(american1AudioAnchors).forEach(([unit, anchors]) => {
+  anchors.forEach((anchor) => {
+    if (anchor.cd && anchor.track != null) {
+      AMERICAN1_CD_TRACK_TO_UNIT[`${anchor.cd.toLowerCase()}:${anchor.track}`] = { unit, section: anchor.section };
+    }
+  });
+});
+// 4 faixas de Dictation sem âncora indexada em american1_audio_anchors.json
+// (vivem só no apêndice/exercício, não no texto de leitura ancorado) —
+// informadas manualmente pelo dono em vez de investigadas, ver ROADMAP/
+// PROJECT_SUMMARY pra contexto.
+Object.assign(AMERICAN1_CD_TRACK_TO_UNIT, {
+  'cd2:11': { unit: '3', section: 'B' },
+  'cd2:35': { unit: '4', section: 'A' },
+  'cd4:7': { unit: '8', section: 'A' },
+  'cd4:8': { unit: '8', section: 'A' },
+});
+
+// "Unit 1A" pro título do Dictation — só pro American1 (Vocabulary já mostra
+// a unit dentro de listeningTrackLabel, ex. "(unit 4A)"; duplicar aqui viraria
+// "... Unit 4 (unit 4A)", redundante). Seção de 1 letra (A/B/C) cola direto
+// no número ("Unit 8A"), igual ao resto do app; seções especiais ("Practical
+// English"/"Review and Check") ficam separadas por espaço. Uma faixa sem
+// âncora nem override manual retorna vazio — o título só fica sem a unit.
+const american1TrackUnitLabel = (track) => {
+  if (track.unit || !track.cd || track.track == null) return '';
+  const found = AMERICAN1_CD_TRACK_TO_UNIT[`${track.cd.toLowerCase()}:${track.track}`];
+  if (!found) return '';
+  const isLetterSection = /^[A-C]$/.test(found.section || '');
+  return isLetterSection ? `Unit ${found.unit}${found.section}` : `Unit ${found.unit} ${found.section || ''}`.trim();
+};
+
 // URL do gabarito único (multipágina), servido por src/setupProxy.js.
 const ANSWERS_KEY_URL = '/answers-key.pdf';
 
@@ -72,6 +112,18 @@ const AUDIO_SPEEDS = [0.75, 1, 1.25, 1.5, 2];
 // o que agenda a próxima repetição.
 const DAY_MS = 24 * 60 * 60 * 1000;
 const REVIEW_INTERVALS_BY_RATING = { 1: 1, 2: 2, 3: 3, 4: 7, 5: 30 };
+
+// Chave do dia local (não UTC — `toISOString` viraria o dia cedo demais/tarde
+// demais dependendo do fuso) usada pra "Today's Goal" (ver DailyGoalCard) —
+// cada dia novo já nasce com a chave `dailyGoal:<data>` inexistente, ou seja,
+// nenhuma meta marcada como feita, sem precisar resetar nada manualmente.
+const todayDateKey = () => {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+};
+
+const DEFAULT_DAILY_GOAL_PREFS = { newUnit: true, reviews: true, listening: true };
 
 // Escada de intervalos (em dias) dos flashcards do "My Words": palavra nova
 // nasce vencida (revisar já); "Again" volta ao primeiro degrau, "Good" sobe
@@ -821,6 +873,16 @@ function App() {
   const [lastVisitedByCourse, setLastVisitedByCourse] = useState({});
   const [reviewQueue, setReviewQueue] = useState([]);
   const [wordbookEntries, setWordbookEntries] = useState([]);
+  // "Today's Goal" (ROADMAP item 3, trilha de estudo) — dailyGoalPrefs é qual
+  // dos 3 componentes CONTA pra meta (togglável em DailyGoalCard);
+  // dailyGoalToday é o que já foi CUMPRIDO hoje (chave inclui a data — ver
+  // todayDateKey — então um dia novo já nasce zerado sem precisar resetar
+  // nada). "reviews" só vira true quando o usuário reavalia um item que
+  // JÁ estava vencido em reviewQueue (ver scheduleReview) — reviewQueue
+  // vazia sozinha não conta como "revisão feita" (dava um check de graça
+  // pra usuário novo, sem nada agendado ainda).
+  const [dailyGoalPrefs, setDailyGoalPrefs] = useState(DEFAULT_DAILY_GOAL_PREFS);
+  const [dailyGoalToday, setDailyGoalToday] = useState({ newUnit: false, listening: false, reviews: false });
   // Centro vertical (em px, relativo à viewport) do container que tem o
   // resize-handle — usado só pelo botão de esconder/mostrar o painel, que é
   // fixed na viewport (não filho do grid) e por isso não pode simplesmente
@@ -999,6 +1061,63 @@ function App() {
     }
   }, [userName]);
 
+  // Carrega as preferências de "Today's Goal" (quais dos 3 componentes
+  // contam) e o que já foi cumprido HOJE — os dois recarregam ao trocar de
+  // usuário; dailyGoalToday também recarrega naturalmente a cada dia porque
+  // a própria chave (`dailyGoal:<data>`) muda, sem precisar de lógica extra
+  // de "virou meia-noite".
+  useEffect(() => {
+    if (!userName) {
+      setDailyGoalPrefs(DEFAULT_DAILY_GOAL_PREFS);
+      setDailyGoalToday({ newUnit: false, listening: false, reviews: false });
+      return;
+    }
+    try {
+      const rawPrefs = window.localStorage.getItem(userKey(userName, 'dailyGoalPrefs'));
+      setDailyGoalPrefs(rawPrefs ? { ...DEFAULT_DAILY_GOAL_PREFS, ...JSON.parse(rawPrefs) } : DEFAULT_DAILY_GOAL_PREFS);
+    } catch (error) {
+      setDailyGoalPrefs(DEFAULT_DAILY_GOAL_PREFS);
+    }
+    try {
+      const rawToday = window.localStorage.getItem(userKey(userName, `dailyGoal:${todayDateKey()}`));
+      setDailyGoalToday(rawToday ? JSON.parse(rawToday) : { newUnit: false, listening: false, reviews: false });
+    } catch (error) {
+      setDailyGoalToday({ newUnit: false, listening: false, reviews: false });
+    }
+  }, [userName]);
+
+  // Marca um componente da meta de hoje como cumprido (chamado ao visitar
+  // uma unit nova pela 1ª vez, ou ao terminar um Listening/Dictation) —
+  // idempotente (não regrava se já estava true) e nunca "desmarca" (a meta
+  // de hoje só volta a zero quando o dia muda, não quando o usuário desfaz
+  // alguma coisa).
+  const markDailyGoalDone = (key) => {
+    if (!userName) return;
+    setDailyGoalToday((prev) => {
+      if (prev[key]) return prev;
+      const next = { ...prev, [key]: true };
+      try {
+        window.localStorage.setItem(userKey(userName, `dailyGoal:${todayDateKey()}`), JSON.stringify(next));
+      } catch (error) {
+        // Armazenamento indisponível — meta de hoje não persiste, tudo bem.
+      }
+      return next;
+    });
+  };
+
+  const handleToggleDailyGoalPref = (key) => {
+    if (!userName) return;
+    setDailyGoalPrefs((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      try {
+        window.localStorage.setItem(userKey(userName, 'dailyGoalPrefs'), JSON.stringify(next));
+      } catch (error) {
+        // Armazenamento indisponível — preferência não persiste, tudo bem.
+      }
+      return next;
+    });
+  };
+
   useEffect(() => {
     if (!userName) {
       setLastVisitedByCourse({});
@@ -1053,6 +1172,14 @@ function App() {
       );
     } catch (error) {
       // Armazenamento indisponível — sem agendamento de revisão.
+    }
+    // "Clear today's reviews" (DailyGoalCard) só conta quando o item
+    // reavaliado JÁ estava vencido em reviewQueue — reavaliar algo que nunca
+    // esteve lá (ex.: 1ª nota de uma unit nova) é estudar conteúdo novo, não
+    // "revisar", então não deve dar o check de graça.
+    const wasDue = reviewQueue.some((item) => item.course === course && String(item.id) === String(id));
+    if (wasDue) {
+      markDailyGoalDone('reviews');
     }
   };
 
@@ -1342,6 +1469,7 @@ function App() {
       } catch (error) {
         // Armazenamento indisponível — progresso não sobrevive a recarregar.
       }
+      markDailyGoalDone('newUnit');
       return next;
     });
   }, [selectedUnit, activePage, userName]);
@@ -1368,6 +1496,7 @@ function App() {
       } catch (error) {
         // Armazenamento indisponível — progresso não sobrevive a recarregar.
       }
+      markDailyGoalDone('newUnit');
       return next;
     });
   }, [selectedAmerican1Unit, selectedAmerican1Section, activePage, userName]);
@@ -1390,6 +1519,7 @@ function App() {
       } catch (error) {
         // Armazenamento indisponível — progresso não sobrevive a recarregar.
       }
+      markDailyGoalDone('newUnit');
       return next;
     });
   }, [selectedGrammarElemUnit, activePage, userName]);
@@ -2654,13 +2784,47 @@ function App() {
     || Boolean(selectedGrammarElemAdditional);
   const visitedUnitsCount = Object.keys(visitedUnits).length;
 
+  // Status por unit dos 3 cursos (mesma lógica das 3 grades de unit e do
+  // Progress Dashboard — getUnitBadgeStatus/getVocabularyUnitBadgeStatus,
+  // somados por tallyUnitStatuses) computado uma vez aqui, ANTES de
+  // findNextUnvisitedByCourse, pra alimentar tanto a ordem "cruzando os 3
+  // cursos" da trilha sugerida (ROADMAP item 3) quanto o "% de domínio
+  // geral" (Dashboard e o resumo em DailyGoalCard) — sem duplicar o cálculo
+  // em cada lugar que precisa dele. NÃO chamar isso de "% do A1": só
+  // American1 e Grammar Elem são A1 de verdade — o Vocabulary (English
+  // Vocabulary B) é Pre-Intermediate/Intermediate, um nível acima (pasta de
+  // origem "Pre Intermediate and Intermediate"), e ele entra nessa soma
+  // também.
+  const vocabularyStatuses = unitItems.map((unit) => (
+    getVocabularyUnitBadgeStatus(unit.number, Boolean(visitedUnits[unit.number]), exerciseRatings)
+  ));
+  const american1Statuses = american1UnitNumbers.map((unit) => {
+    const visited = Object.keys(american1VisitedSections).some((key) => key.startsWith(`${unit}|`));
+    return getUnitBadgeStatus(visited, american1UnitRatings[unit] || 0);
+  });
+  const grammarElemStatuses = grammarElemUnitNumbers.map((unit) => (
+    getUnitBadgeStatus(Boolean(grammarElemVisitedUnits[unit]), grammarElemUnitRatings[unit] || 0)
+  ));
+  const courseProgress = [
+    { id: 'vocabulary', title: courses.vocabulary.title, total: unitItems.length, tally: tallyUnitStatuses(vocabularyStatuses) },
+    { id: 'american1', title: courses.american1.title, total: american1UnitNumbers.length, tally: tallyUnitStatuses(american1Statuses) },
+    { id: 'grammarElem', title: courses.grammarElem.title, total: GRAMMAR_ELEM_UNIT_COUNT, tally: tallyUnitStatuses(grammarElemStatuses) },
+  ];
+  const overallMasteredTotal = courseProgress.reduce((sum, course) => sum + course.tally.mastered, 0);
+  const overallUnitsTotal = courseProgress.reduce((sum, course) => sum + course.total, 0);
+  const overallMasteryPercent = overallUnitsTotal > 0 ? Math.round((overallMasteredTotal / overallUnitsTotal) * 100) : 0;
+
   // "Today's Plan" (Home): um empurrão de "por onde começar" pra quem senta
   // pra estudar sem saber — mistura 1 sugestão de conteúdo novo + até 2
   // revisões vencidas (mesma fonte do ReviewCard) + 1 sugestão de listening.
-  // "Novo" e "listening" apontam pra cursos DIFERENTES quando possível (só
-  // repetem o mesmo curso se os outros dois já estiverem 100% visitados) —
-  // dá pra reaproveitar a mesma busca de "próxima unit não visitada" pros
-  // dois, só pegando o 1º e o 2º candidato da lista.
+  // ROADMAP item 3 ("trilha de estudo"): a sugestão de conteúdo novo não é
+  // mais "sempre Vocabulary primeiro, depois American1, depois Grammar" —
+  // os 3 candidatos (1 por curso, se houver algo não visitado) são
+  // ordenados pelo % de units VISITADAS de cada curso, do mais atrasado pro
+  // mais adiantado, cruzando o progresso dos 3 em vez de tratar cada um
+  // isoladamente. Continua pegando só o 1º candidato pra "Learn something
+  // new" — o 2º slot do plano agora é uma sugestão de Listening de verdade
+  // (ver findUnpracticedListeningTrack), não mais o 2º curso desta lista.
   const findNextUnvisitedByCourse = () => {
     const nextVocabUnit = unitItems.find((unit) => !visitedUnits[unit.number]);
     let nextAmerican1 = null;
@@ -2677,6 +2841,7 @@ function App() {
     const candidates = [];
     if (nextVocabUnit) {
       candidates.push({
+        courseId: 'vocabulary',
         label: `Unit ${nextVocabUnit.number}: ${nextVocabUnit.label}`,
         sublabel: 'English Vocabulary B',
         onOpen: () => openVocabularyUnit(nextVocabUnit.number),
@@ -2690,6 +2855,7 @@ function App() {
       // vira "Unit 2Review and Check: Review and Check 1&2".
       const isLetterSection = /^[A-C]$/.test(nextAmerican1.section);
       candidates.push({
+        courseId: 'american1',
         label: isLetterSection
           ? `Unit ${nextAmerican1.unit}${nextAmerican1.section}: ${nextAmerican1.title}`
           : `Unit ${nextAmerican1.unit}: ${nextAmerican1.title}`,
@@ -2699,12 +2865,47 @@ function App() {
     }
     if (nextGrammarElemUnit) {
       candidates.push({
+        courseId: 'grammarElem',
         label: `Unit ${nextGrammarElemUnit}`,
         sublabel: 'Grammar English A1',
         onOpen: () => openGrammarElemUnit(nextGrammarElemUnit),
       });
     }
+
+    const visitedPercentByCourse = {};
+    courseProgress.forEach((course) => {
+      const visitedCount = course.total - course.tally.unvisited;
+      visitedPercentByCourse[course.id] = course.total > 0 ? visitedCount / course.total : 1;
+    });
+    candidates.sort((a, b) => visitedPercentByCourse[a.courseId] - visitedPercentByCourse[b.courseId]);
+
     return candidates;
+  };
+
+  // 2º slot do "Today's Plan": a primeira faixa de Listening/Dictation (em
+  // QUALQUER dos 2 cursos que têm, na ordem de LISTENING_SOURCES) que o
+  // usuário nunca tentou nem em Listening nem em Dictation — antes esse slot
+  // era só o 2º candidato de findNextUnvisitedByCourse (rotulado "Practice
+  // listening" mas na prática podia ser outra unit de LEITURA de um curso
+  // diferente, não uma faixa de áudio de verdade).
+  const findUnpracticedListeningTrack = () => {
+    if (!userName) return null;
+    for (const source of LISTENING_SOURCES) {
+      const track = source.tracks.find((item) => (
+        !loadListeningStats(userName, item.id) && !loadDictationStats(userName, item.id)
+      ));
+      if (track) {
+        return {
+          label: listeningTrackLabel(track),
+          sublabel: source.title,
+          onOpen: () => {
+            handleOpenListeningSource(source);
+            handleOpenListeningTrack(track);
+          },
+        };
+      }
+    }
+    return null;
   };
 
   // Busca nas 3 grades de unit ("Em qual unit ficava phrasal verbs?"): filtra
@@ -2726,7 +2927,21 @@ function App() {
 
   const unvisitedCandidates = userName ? findNextUnvisitedByCourse() : [];
   const planNewUnit = unvisitedCandidates[0] || null;
-  const planListening = unvisitedCandidates[1] || null;
+  const planListening = userName ? findUnpracticedListeningTrack() : null;
+
+  // "Today's Goal" (ROADMAP item 3): 3 componentes togglináveis
+  // (dailyGoalPrefs), todos marcados permanentemente assim que acontecem
+  // pela 1ª vez no dia (ver markDailyGoalDone) — "reviews" só quando o
+  // usuário reavalia algo que JÁ estava vencido (ver scheduleReview), não
+  // quando a fila simplesmente está vazia (senão usuário novo, sem nada
+  // agendado ainda, ganhava esse item de graça).
+  const dailyGoalAllItems = [
+    { key: 'newUnit', label: 'Learn a new unit', done: dailyGoalToday.newUnit, enabled: dailyGoalPrefs.newUnit },
+    { key: 'reviews', label: "Clear today's reviews", done: dailyGoalToday.reviews, enabled: dailyGoalPrefs.reviews },
+    { key: 'listening', label: 'Practice Listening or Dictation', done: dailyGoalToday.listening, enabled: dailyGoalPrefs.listening },
+  ];
+  const dailyGoalItems = dailyGoalAllItems.filter((item) => item.enabled);
+  const dailyGoalCompletedCount = dailyGoalItems.filter((item) => item.done).length;
 
   // "Continue where you left off": um botão por curso (tela Courses, usa
   // lastVisitedByCourse[courseId] direto) + um só na Home (o curso com o
@@ -2779,7 +2994,7 @@ function App() {
 
   return (
     <div
-      className={`app-shell${['vocabulary', 'american1', 'grammarElem', 'courses'].includes(activePage) ? ' app-shell--allow-grow' : ''}`}
+      className={`app-shell${['vocabulary', 'american1', 'grammarElem', 'courses', 'home'].includes(activePage) ? ' app-shell--allow-grow' : ''}`}
       style={{ '--page-hero-bg': `url(${process.env.PUBLIC_URL}/openCourse.png)` }}
     >
       <header className="app-header">
@@ -4050,7 +4265,7 @@ function App() {
                         href="#0"
                         onClick={(event) => { event.preventDefault(); handleOpenListeningTrack(track); }}
                       >
-                        <span>Listening Exercise n. {track.number} ({listeningTrackLabel(track)})</span>
+                        <span>{`Listening Exercise n. ${track.number}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''} (${listeningTrackLabel(track)})`}</span>
                         <small>{track.sentences.length} sentences · fill in the blank</small>
                         {stats && (
                           <small className="listening-track-stats">
@@ -4098,7 +4313,7 @@ function App() {
               <h1>
                 {track ? (
                   <>
-                    {`Listening Exercise n. ${track.number} (`}
+                    {`Listening Exercise n. ${track.number}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''} (`}
                     {track.unit ? (
                       <span
                         className="listening-unit-link"
@@ -4119,7 +4334,13 @@ function App() {
                 ) : 'Exercise'}
               </h1>
               {track ? (
-                <ListeningClozeExercise key={track.id} track={track} userName={userName} onAddWord={handleAddWord} />
+                <ListeningClozeExercise
+                  key={track.id}
+                  track={track}
+                  userName={userName}
+                  onAddWord={handleAddWord}
+                  onPracticed={() => markDailyGoalDone('listening')}
+                />
               ) : (
                 <p>Exercise not found.</p>
               )}
@@ -4202,7 +4423,7 @@ function App() {
                         href="#0"
                         onClick={(event) => { event.preventDefault(); handleOpenDictationTrack(track); }}
                       >
-                        <span>Dictation Exercise n. {track.number} ({listeningTrackLabel(track)})</span>
+                        <span>{`Dictation Exercise n. ${track.number}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''} (${listeningTrackLabel(track)})`}</span>
                         <small>{track.sentences.length} sentences · type what you hear</small>
                         {stats && (
                           <small className="listening-track-stats">
@@ -4248,10 +4469,17 @@ function App() {
               </div>
               <p className="eyebrow">{source ? source.title.replace(/^Listening/, 'Dictation') : 'Dictation'}</p>
               <h1>
-                {track ? `Dictation Exercise n. ${track.number} (${listeningTrackLabel(track)})` : 'Exercise'}
+                {track
+                  ? `Dictation Exercise n. ${track.number}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''} (${listeningTrackLabel(track)})`
+                  : 'Exercise'}
               </h1>
               {track ? (
-                <DictationExercise key={track.id} track={track} userName={userName} />
+                <DictationExercise
+                  key={track.id}
+                  track={track}
+                  userName={userName}
+                  onPracticed={() => markDailyGoalDone('listening')}
+                />
               ) : (
                 <p>Exercise not found.</p>
               )}
@@ -4461,29 +4689,12 @@ function App() {
         // dentro de uma IIFE (mesmo padrão de american1-unit/listening-tracks
         // logo abaixo) só pra poder calcular essas listas locais antes do
         // JSX, sem virar mais um punhado de consts soltos no corpo de App().
+        // `courseProgress`/`overallMasteryPercent` já vêm computados lá em
+        // cima (compartilhados com o Today's Goal da Home — ver ROADMAP
+        // item 3), não duplicados aqui.
         const listeningTracks = LISTENING_SOURCES.flatMap((source) => source.tracks);
         const listeningAttempted = listeningTracks.filter((track) => Boolean(loadListeningStats(userName, track.id))).length;
         const dictationAttempted = listeningTracks.filter((track) => Boolean(loadDictationStats(userName, track.id))).length;
-
-        // Mesma lógica de status das 3 grades de unit (getUnitBadgeStatus/
-        // getVocabularyUnitBadgeStatus) — nunca reinventada aqui, só somada
-        // por status via tallyUnitStatuses.
-        const vocabularyStatuses = unitItems.map((unit) => (
-          getVocabularyUnitBadgeStatus(unit.number, Boolean(visitedUnits[unit.number]), exerciseRatings)
-        ));
-        const american1Statuses = american1UnitNumbers.map((unit) => {
-          const visited = Object.keys(american1VisitedSections).some((key) => key.startsWith(`${unit}|`));
-          return getUnitBadgeStatus(visited, american1UnitRatings[unit] || 0);
-        });
-        const grammarElemStatuses = grammarElemUnitNumbers.map((unit) => (
-          getUnitBadgeStatus(Boolean(grammarElemVisitedUnits[unit]), grammarElemUnitRatings[unit] || 0)
-        ));
-
-        const courseProgress = [
-          { id: 'vocabulary', title: courses.vocabulary.title, total: unitItems.length, tally: tallyUnitStatuses(vocabularyStatuses) },
-          { id: 'american1', title: courses.american1.title, total: american1UnitNumbers.length, tally: tallyUnitStatuses(american1Statuses) },
-          { id: 'grammarElem', title: courses.grammarElem.title, total: GRAMMAR_ELEM_UNIT_COUNT, tally: tallyUnitStatuses(grammarElemStatuses) },
-        ];
 
         return (
           <main className="landing-page vocabulary-mode dashboard-mode">
@@ -4493,6 +4704,7 @@ function App() {
               wordbookDueCount={wordbookDueCount}
               reviewQueueCount={reviewQueue.length}
               courseProgress={courseProgress}
+              overallMasteryPercent={overallMasteryPercent}
               listeningAttempted={listeningAttempted}
               listeningTotal={listeningTracks.length}
               dictationAttempted={dictationAttempted}
@@ -4592,6 +4804,15 @@ function App() {
                 reviewQueue={reviewQueue}
                 onOpenReviewItem={handleOpenReviewItem}
                 onSeeAllReviews={handleCourses}
+              />
+            )}
+            {userName && (
+              <DailyGoalCard
+                items={dailyGoalItems}
+                completedCount={dailyGoalCompletedCount}
+                allItems={dailyGoalAllItems}
+                onTogglePref={handleToggleDailyGoalPref}
+                overallMasteryPercent={overallMasteryPercent}
               />
             )}
           </div>
@@ -4774,6 +4995,100 @@ function TodayPlanCard({ newUnit, listening, reviewQueue, onOpenReviewItem, onSe
   );
 }
 
+// "Today's Goal" (ROADMAP item 3, trilha de estudo — parte 2 e um resumo da
+// parte 3): meta diária configurável (quais dos 3 componentes contam,
+// togglável aqui mesmo) + "você domina X% do A1", derivado do mesmo
+// courseProgress do Progress Dashboard. `editing` é estado local (não
+// persiste) — só controla se os checkboxes de customização estão à mostra.
+// Explica, por item, o que exatamente marca aquele componente da meta como
+// cumprido — texto tem que casar com a lógica real (markDailyGoalDone e o
+// hook em scheduleReview), senão a explicação engana o usuário.
+const DAILY_GOAL_EXPLANATIONS = {
+  newUnit: 'You get this the first time today that you open a unit you\'ve never visited '
+    + 'before, in any of the 3 courses (English Vocabulary B, American English A1, or '
+    + 'Grammar English A1). Reopening a unit you already visited doesn\'t count.',
+  reviews: 'You get this when you re-rate an item that was already due for spaced review. '
+    + 'Find due items either in the "Review" line of Today\'s Plan above (Home), or in the '
+    + '"Today\'s Review" card at the top of the Courses screen (menu → Courses) — open one '
+    + 'from either place and give it a new star rating. Rating something for the first time '
+    + 'isn\'t a "review", so it doesn\'t count toward this.',
+  listening: 'You get this the first time today that you finish checking a Listening exercise '
+    + '(press "Check answers" after filling in at least one blank) or a Dictation exercise '
+    + '(press "Check my answer").',
+};
+
+function DailyGoalCard({ items, completedCount, allItems, onTogglePref, overallMasteryPercent }) {
+  const [editing, setEditing] = useState(false);
+  const [openInfoKey, setOpenInfoKey] = useState(null);
+
+  if (items.length === 0 && !editing) {
+    return null;
+  }
+
+  const allDone = items.length > 0 && completedCount === items.length;
+
+  return (
+    <section className="daily-goal-card" aria-label="Today's goal">
+      <div className="plan-card-head daily-goal-head">
+        <h2>Today's Goal</h2>
+        {items.length > 0 && (
+          <span className="daily-goal-count">{completedCount}/{items.length} done</span>
+        )}
+      </div>
+      <p className="plan-card-hint">
+        You've mastered <strong>{overallMasteryPercent}%</strong> of your courses so far.
+      </p>
+      {items.length > 0 && (
+        <ul className="daily-goal-items">
+          {items.map((item) => (
+            <li key={item.key} className={`daily-goal-item${item.done ? ' is-done' : ''}`}>
+              <span className={`daily-goal-check${item.done ? ' is-done' : ''}`} aria-hidden="true">{item.done ? '✓' : ''}</span>
+              <span className="daily-goal-item-label">{item.label}</span>
+              <button
+                type="button"
+                className="daily-goal-info-btn"
+                onClick={() => setOpenInfoKey((prev) => (prev === item.key ? null : item.key))}
+                aria-expanded={openInfoKey === item.key}
+                aria-label={`How do I complete "${item.label}"?`}
+              >
+                i
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {/* Um popover só, embaixo da lista inteira (não um por item) — dentro
+          de cada <li> ele ficava perto demais dos vizinhos (só 6px de gap) e
+          cobria o botão "i" do item de baixo, bloqueando o clique nele. */}
+      {openInfoKey && DAILY_GOAL_EXPLANATIONS[openInfoKey] && (
+        <div className="daily-goal-info-popover" role="tooltip">
+          <p>{DAILY_GOAL_EXPLANATIONS[openInfoKey]}</p>
+        </div>
+      )}
+      {allDone && (
+        <p className="daily-goal-complete">🎉 Goal complete for today!</p>
+      )}
+      <button type="button" className="plan-more-link" onClick={() => setEditing((prev) => !prev)}>
+        {editing ? 'Done editing' : 'Customize goal'}
+      </button>
+      {editing && (
+        <div className="daily-goal-edit-options">
+          {allItems.map((item) => (
+            <label key={item.key} className="daily-goal-edit-option">
+              <input
+                type="checkbox"
+                checked={item.enabled}
+                onChange={() => onTogglePref(item.key)}
+              />
+              {item.label}
+            </label>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 // Título/subtítulo de um item da fila "Today's Review", conforme o curso.
 const reviewItemLabel = (item) => {
   if (item.course === 'vocabulary') {
@@ -4916,6 +5231,7 @@ function DashboardPage({
   wordbookDueCount,
   reviewQueueCount,
   courseProgress,
+  overallMasteryPercent,
   listeningAttempted,
   listeningTotal,
   dictationAttempted,
@@ -4962,8 +5278,11 @@ function DashboardPage({
           <span className="dashboard-stat-label">Reviews due</span>
         </button>
         <div className="dashboard-stat-tile dashboard-stat-tile--static">
-          <span className="dashboard-stat-value">{masteredTotal}/{unitsTotal}</span>
-          <span className="dashboard-stat-label">Units mastered (all courses)</span>
+          <span className="dashboard-stat-value">
+            {masteredTotal}/{unitsTotal}
+            <small className="dashboard-stat-subvalue">{overallMasteryPercent}%</small>
+          </span>
+          <span className="dashboard-stat-label">Units mastered (all courses) — overall mastery</span>
         </div>
         <div className="dashboard-stat-tile dashboard-stat-tile--static">
           <span className="dashboard-stat-value">{listeningAttempted}/{listeningTotal}</span>
@@ -6250,7 +6569,7 @@ function WideAudioPlayer({ src, label }) {
 // juntas) via LCS palavra-a-palavra (ver scoreDictationAnswer) e destaca
 // cada palavra esperada em verde (acertou, apareceu na ordem certa) ou
 // vermelho (errou/faltou), sem nunca alterar nada do ListeningClozeExercise.
-function DictationExercise({ track, userName }) {
+function DictationExercise({ track, userName, onPracticed }) {
   const [typedText, setTypedText] = useState('');
   const [checked, setChecked] = useState(false);
   const [result, setResult] = useState(null);
@@ -6347,6 +6666,7 @@ function DictationExercise({ track, userName }) {
     setResult(scored);
     setChecked(true);
     saveDictationAttempt(userName, track.id, scored.scorePercent);
+    if (onPracticed) onPracticed();
   };
 
   // "Try again" NÃO apaga mais o texto — o usuário continua de onde parou
@@ -6471,7 +6791,11 @@ function DictationExercise({ track, userName }) {
               index > 0 ? ' ' : null,
               <span
                 key={index}
-                className={wordResult.correct ? 'dictation-word-correct' : 'dictation-word-wrong'}
+                className={
+                  wordResult.correct === null
+                    ? 'dictation-word-neutral'
+                    : wordResult.correct ? 'dictation-word-correct' : 'dictation-word-wrong'
+                }
               >
                 {wordResult.word}
               </span>,
@@ -6695,10 +7019,29 @@ function normalizeDictationWord(word) {
   return word.toLowerCase().replace(/[.,!?"'’;:()]/g, '');
 }
 
+// Token sem NENHUMA letra/dígito (ex.: um "—" solto entre frases, separado
+// por espaços dos dois lados) — nunca é uma "palavra" que o aluno digitaria,
+// então não deveria contar nem como certo nem como errado. Antes disso, um
+// travessão desses virava um "wordResult" impossível de acertar (o aluno
+// nunca digita "—"), sempre vermelho, contra o próprio aviso do Dictation
+// ("Punctuation and capitalization don't matter").
+const isDictationPunctuationOnlyToken = (word) => !/[a-zA-Z0-9]/.test(word);
+
 function scoreDictationAnswer(typedText, correctText) {
   const typedWords = typedText.trim().split(/\s+/).filter(Boolean).map(normalizeDictationWord);
-  const correctWords = correctText.trim().split(/\s+/).filter(Boolean);
-  const correctNormalized = correctWords.map(normalizeDictationWord);
+  const correctWordsAll = correctText.trim().split(/\s+/).filter(Boolean);
+
+  // Só os tokens com letra/dígito de verdade entram no casamento/na nota —
+  // os demais (pontuação solta) ficam de fora do LCS mas continuam
+  // aparecendo no texto reconstruído abaixo, sem cor (nem verde nem
+  // vermelho — `wordResult.correct === null` no render).
+  const scorableIndices = [];
+  const correctNormalized = [];
+  correctWordsAll.forEach((word, index) => {
+    if (isDictationPunctuationOnlyToken(word)) return;
+    scorableIndices.push(index);
+    correctNormalized.push(normalizeDictationWord(word));
+  });
 
   // LCS por programação dinâmica, com dp[i][j] = LCS de typedWords[i:] com
   // correctNormalized[j:] (SUFIXOS, não prefixos) — permite recuperar os
@@ -6722,12 +7065,12 @@ function scoreDictationAnswer(typedText, correctText) {
     }
   }
 
-  const matched = new Array(m).fill(false);
+  const matchedScorable = new Array(m).fill(false);
   let i = 0;
   let j = 0;
   while (i < n && j < m) {
     if (typedWords[i] === correctNormalized[j]) {
-      matched[j] = true;
+      matchedScorable[j] = true;
       i += 1;
       j += 1;
     } else if (dp[i + 1][j] >= dp[i][j + 1]) {
@@ -6739,7 +7082,14 @@ function scoreDictationAnswer(typedText, correctText) {
     }
   }
 
-  const wordResults = correctWords.map((word, index) => ({ word, correct: matched[index] }));
+  // Remonta pro tamanho de correctWordsAll: `null` = token de pontuação,
+  // fora do casamento (nem verde nem vermelho no render).
+  const matchedByOriginalIndex = new Array(correctWordsAll.length).fill(null);
+  scorableIndices.forEach((originalIndex, k) => {
+    matchedByOriginalIndex[originalIndex] = matchedScorable[k];
+  });
+
+  const wordResults = correctWordsAll.map((word, index) => ({ word, correct: matchedByOriginalIndex[index] }));
   const scorePercent = m === 0 ? 100 : Math.round((dp[0][0] / m) * 100);
   return { scorePercent, wordResults };
 }
@@ -6750,7 +7100,7 @@ function scoreDictationAnswer(typedText, correctText) {
 // corrigidas todas de uma vez pelo botão "Check answers" no final. A barra de
 // espaço toca/pausa o áudio sempre que o foco não estiver num campo de texto
 // (senão digitar um espaço dentro de uma resposta pausaria o áudio).
-function ListeningClozeExercise({ track, userName, onAddWord }) {
+function ListeningClozeExercise({ track, userName, onAddWord, onPracticed }) {
   // Só o Vocabulary tem `unit` no track (American1 usa cd/track) — e só o
   // Vocabulary tem palavras-alvo extraídas (vocabulary_target_words.json,
   // negrito do PDF de leitura da unit); American1 ainda não tem esse dado,
@@ -6840,6 +7190,7 @@ function ListeningClozeExercise({ track, userName, onAddWord }) {
     });
     if (total > 0) {
       saveListeningAttempt(userName, track.id, Math.round((correct / total) * 100));
+      if (onPracticed) onPracticed();
     }
     // Adicionar palavras erradas ao My Words
     if (missedWords.length > 0 && onAddWord) {

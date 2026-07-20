@@ -792,6 +792,220 @@ comportamento.
   toggle e sem regressão nos blanks aleatórios. Zero erros no console em qualquer um dos dois
   cursos.
 
+## Trilha de estudo (Today's Plan mais esperto + Today's Goal + % de domínio) — item 3 do ROADMAP (2026-07-20)
+
+O `TodayPlanCard` já existia (Home), mas era ingênuo: "conteúdo novo" era sempre
+Vocabulary→American1→GrammarElem em ordem fixa (só pulava um curso se ele já estivesse
+100% visitado), e o slot "Practice listening" não tinha nada a ver com Listening de
+verdade — era só o 2º candidato daquela mesma lista fixa, então podia (e costumava) apontar
+pra uma unit de LEITURA de outro curso, rotulada "Practice listening" só por acidente de
+posição no array. Sem meta diária, sem % de domínio visível em lugar nenhum.
+
+### Sequência sugerida cruzando os 3 cursos
+`findNextUnvisitedByCourse` ganhou `courseId` em cada candidato e agora ordena os 3 (quando
+existem) pelo **% de units já visitadas** de cada curso — o mais atrasado vem primeiro. Isso
+exigiu içar o cálculo de `courseProgress` (status por unit dos 3 cursos, via
+`getUnitBadgeStatus`/`getVocabularyUnitBadgeStatus`/`tallyUnitStatuses` — a mesma lógica que
+já alimentava só o Progress Dashboard) pra ANTES da definição da função, no corpo de `App()`,
+onde antes só existia dentro da IIFE de `activePage === 'dashboard'`. A IIFE do Dashboard foi
+simplificada pra reaproveitar esse mesmo `courseProgress` em vez de recalculá-lo — os dois
+lugares (Home e Dashboard) agora leem do mesmo lugar, sem duas fontes de verdade.
+
+Testado ao vivo: usuário novo, os 3 cursos em 0% — 1º candidato é Vocabulary (ordem original,
+empate desfeito pela ordem do array). Depois de visitar a Unit 1 do Vocabulary (agora 1%
+visitado), a sugestão seguinte trocou pro American1 (ainda 0%) automaticamente, sem reload —
+confirma que a "trilha" reage ao progresso real, não é uma ordem fixa disfarçada.
+
+O 2º slot ("Practice listening") ganhou uma função própria, `findUnpracticedListeningTrack`:
+percorre `LISTENING_SOURCES` (American1 primeiro, depois Vocabulary — mesma ordem já
+declarada) e retorna a primeira faixa sem estatística NEM em `loadListeningStats` NEM em
+`loadDictationStats` (ou seja, nunca tentada em nenhum dos 2 modos). Reaproveita
+`handleOpenListeningSource`/`handleOpenListeningTrack` já existentes pra navegar — sem
+duplicar a lógica de abrir uma faixa.
+
+### "Today's Goal" — meta diária configurável (`DailyGoalCard`, novo componente)
+Card novo na Home, logo abaixo do Today's Plan, mesmo visual (`.plan-card`-like, fundo
+translúcido — sem problema aqui porque a Home não usa o `--page-hero-bg` compartilhado das
+telas "leves", só a própria imagem de fundo). 3 componentes, cada um togglável
+independentemente via um link "Customize goal" que revela checkboxes:
+- **"Learn a new unit"** — marcado a primeira vez que uma unit NUNCA visitada é aberta no dia,
+  via um hook novo (`markDailyGoalDone('newUnit')`) dentro dos 3 `useEffect` que já existiam
+  pra marcar `visitedUnits`/`american1VisitedSections`/`grammarElemVisitedUnits` (só no ramo
+  que efetivamente marca `true` pela 1ª vez, não em toda reabertura de uma unit já visitada).
+- **"Clear today's reviews"** — **não tem flag própria**, é derivado ao vivo de
+  `reviewQueue.length === 0`. Decisão deliberada: "revisões do dia" já tem uma fonte de
+  verdade perfeita (a fila em si); inventar um contador separado só daria mais uma coisa pra
+  dessincronizar.
+- **"Practice Listening or Dictation"** — marcado via um `onPracticed` novo, passado como prop
+  pra `ListeningClozeExercise` e `DictationExercise`, chamado depois de `saveListeningAttempt`/
+  `saveDictationAttempt` (só quando há pelo menos 1 lacuna respondida, no caso do Listening).
+
+**Persistência**: `u:<nome>:dailyGoal:<YYYY-MM-DD>` (data LOCAL — `getFullYear`/`getMonth`/
+`getDate`, não `toISOString`, que usa UTC e erraria o dia perto da meia-noite pra fusos não-UTC)
+guarda `{newUnit, listening}` (bool, nunca desmarcado — só "vira false de novo" naturalmente
+quando o dia muda, porque a CHAVE muda, sem precisar de lógica de reset). `u:<nome>:
+dailyGoalPrefs` guarda quais dos 3 componentes contam pra meta, independente do que já foi
+cumprido — os dois recarregam ao trocar de usuário, como todo o resto do padrão `userKey`.
+
+**Checkbox**: a 1ª versão usava emoji (⬜ vazio / ✅ feito) — o ⬜ renderizava como um quadrado
+sólido colorido no Chromium do ambiente de teste (fonte de emoji inconsistente entre
+plataformas). Trocado por um checkbox desenhado em CSS puro (quadradinho com borda, preenche
+de roxo com um "✓" de texto quando feito) — sem depender de fonte de emoji nenhuma.
+
+### % de domínio geral (rótulo original "A1", corrigido no mesmo dia — ver abaixo)
+`overallMasteredTotal`/`overallUnitsTotal`/`overallMasteryPercent` (soma de `mastered`/`total`
+dos 3 `courseProgress`) computados junto com o resto, no corpo de `App()`. Aparece em dois
+lugares sem inventar um 7º stat tile no Dashboard: pendurado como um `<small>` dentro do
+próprio tile "Units mastered (all courses)" (texto "0/227 0%", por exemplo) e como frase no
+`DailyGoalCard` da Home.
+
+Verificado via Playwright ad-hoc (não persistido, script no scratchpad): fluxo completo
+registro→visita de unit→"Learn a new unit" marca✓→Listening completo→"Practice Listening or
+Dictation" marca ✓ e mostra "🎉 Goal complete for today!"→desmarcar "listening" em "Customize
+goal" tira o item da lista→sobrevive a reload (pref e progresso do dia persistem
+corretamente); Dashboard mostrando "0/227 0%" e "0/359" pros tiles de Listening/Dictation
+praticados (307 Vocabulary + 52 American1). Zero erros no console em qualquer etapa.
+
+### Correção — "1/3 de graça" e rótulo "A1" errado (mesmo dia, 2026-07-20)
+O dono testou com um usuário recém-criado (deletou o antigo, recomeçou do zero) e notou 2
+problemas na primeira versão acima:
+
+1. **"Today's Goal" mostrava 1/3 sem o usuário ter feito nada.** Causa: "Clear today's
+   reviews" tinha sido implementado como `done: reviewQueue.length === 0` — "não há nada
+   pendente" contava como "feito". Um usuário novo nunca tem NENHUMA revisão agendada ainda
+   (nada foi avaliado), então a fila nasce vazia e o item aparecia com check de graça no
+   primeiro acesso. Pedido ao dono duas alternativas (esconder o item quando não há nada
+   pendente, vs. só marcar quando o usuário revisar de verdade) — escolheu a segunda.
+   **Correção**: `dailyGoalToday` ganhou uma 3ª flag, `reviews` (antes só `newUnit`/
+   `listening`), marcada dentro de `scheduleReview` — o único ponto por onde passam as 4 telas
+   de autoavaliação (`handleRateExercise`/`handleRateVocabularyUnit`/
+   `handleRateAmerican1Unit`/`handleRateGrammarElemUnit`) — comparando `course`+`id` contra o
+   `reviewQueue` (state) NO MOMENTO da reavaliação: só marca se o item avaliado já estava
+   vencido ali. Reavaliar algo que nunca esteve na fila (ex.: 1ª nota de uma unit nova) não
+   conta como "revisão".
+2. **Rótulo "A1 level mastery" estava errado.** Copiado direto da redação original do ROADMAP
+   ("você domina X% do nível A1") sem verificar se os 3 cursos são realmente A1. Não são: só
+   American English A1 e Grammar English A1 são A1 de verdade — o English Vocabulary B é
+   Pre-Intermediate/Intermediate (a própria pasta de origem do material se chama "Pre
+   Intermediate and Intermediate"), um nível acima. Como o cálculo soma os 3 cursos, chamar o
+   resultado de "% do A1" estava incorreto. Pedido ao dono como corrigir (renomear pra algo
+   genérico, calcular só com os 2 cursos A1, ou mostrar os dois números) — escolheu renomear
+   mantendo a soma dos 3. **Correção**: variáveis renomeadas `levelMastered/Units/Percent` →
+   `overallMastered/Units/Percent` (só nome, conta idêntica); texto do Dashboard "— A1 level
+   mastery" → "— overall mastery"; frase do `DailyGoalCard` "of the A1 level so far" → "of
+   your courses so far".
+
+Verificado via Playwright ad-hoc (script no scratchpad, dev server local): usuário novo agora
+mostra "0/3 done" (antes "1/3") e "You've mastered 0% of your courses so far." (antes "...of
+the A1 level..."); uma revisão vencida injetada via localStorage (simulando o passar do
+tempo, já que o intervalo mínimo real é 1 dia) fica **des**marcada em "Clear today's reviews"
+até o usuário abrir o item pelo "Review" do Today's Plan e reavaliá-lo — só então vira ✓;
+Dashboard mostrando "Units mastered (all courses) — overall mastery". Zero erros no console.
+
+## Home rolável + "Unit X" no título do Dictation (2026-07-20)
+
+### Home não rolava com o 2º card (`DailyGoalCard`) na tela
+`.app-shell` tem `height: 100vh` fixo; telas que precisam crescer além disso usam a classe
+`app-shell--allow-grow` (aplicada via JS, lista de `activePage` em `App.js`) + `align-items:
+flex-start` no seletor da própria tela — sem isso o conteúdo excedente é só CORTADO, sem
+nenhuma barra de rolagem aparecer em lugar nenhum (nem a página, nem nenhum container
+interno). A Home nunca precisou disso até agora — com só o `TodayPlanCard`, o conteúdo quase
+sempre cabia. Adicionar o `DailyGoalCard` embaixo dele mudou isso: em janelas mais baixas (ou
+com os dois cards cheios de itens), a segunda metade do `DailyGoalCard` ficava invisível, sem
+jeito de ver.
+- **Correção**: `'home'` adicionado à lista de `activePage` que ganha `app-shell--allow-grow`
+  (`App.js`); `.landing-page.landing-page--home` ganhou `align-items: flex-start` (era
+  `center`, herdado da regra base — centralizar conteúdo mais alto que a viewport escondia a
+  metade de cima atrás do header `sticky`, mesmo bug já documentado nas outras telas
+  `allow-grow`), `padding-top: 56px` (repõe visualmente o espaço perdido da centralização) e
+  `overflow: auto`.
+- Verificado via Playwright em viewport pequeno (1000×650, força overflow mesmo com pouco
+  conteúdo): `scrollHeight` (1134px) > `clientHeight` (650px) confirma que a página agora É
+  rolável; depois de rolar, `DailyGoalCard` fica totalmente visível e o header continua
+  `sticky` no topo (não "perde a referência"). Testado também sem login e num viewport normal
+  (1440×900) — sem regressão visual em nenhum dos dois.
+
+### "Unit 1A" no título do Dictation (American English A1)
+O título "Dictation Exercise n. 1 (1-13)" não dizia a qual unit aquele CD/track pertence — o
+JSON de tracks do American1 (`listening_american1.json`) só tem `cd`/`track`/`number`, sem
+campo `unit`/`section` (diferente do Vocabulary, que já tem `track.unit`/`track.letter` e por
+isso já mostrava a unit dentro do parêntese, ex. "unit 4A" — não mexido, ficaria redundante).
+- **Fonte do dado**: `american1_audio_anchors.json` já é indexado POR unit e cada âncora
+  carrega `cd`/`track`/`section` do áudio ancorado — bastou inverter esse índice (`cd:track` →
+  `{unit, section}`) uma vez, no carregamento do módulo (`AMERICAN1_CD_TRACK_TO_UNIT`,
+  `App.js`), sem gerar nenhum arquivo novo. Seção de 1 letra (A/B/C) cola direto no número
+  ("Unit 8A", mesmo formato usado no resto do app); seção especial ("Practical
+  English"/"Review and Check") fica separada por espaço.
+- **Correção de formato (mesmo dia)**: a 1ª versão só mostrava "Unit 8" (sem a letra da
+  seção) — o dono pediu "Unit 8A" mesmo.
+- **Cobertura**: 48 dos 52 tracks do American1 acharam a unit automaticamente (verificado em
+  Python antes de implementar). Os 4 restantes (`cd2-track11`, `cd2-track35`, `cd4-track7`,
+  `cd4-track8`) não têm âncora indexada em `american1_audio_anchors.json` (vivem só no
+  apêndice/exercício, não no texto de leitura ancorado) — o dono informou a unit/seção
+  manualmente em vez de investigar, adicionadas como um `Object.assign` de override logo
+  depois do índice invertido: `cd2-track11`→3B, `cd2-track35`→4A, `cd4-track7`/`cd4-track8`→8A.
+  Sem override e sem âncora, a função (`dictationTrackUnitLabel`) só retorna string vazia,
+  sem erro nem crash.
+- Título final: `Dictation Exercise n. 1 Unit 1A (1-13)` — verificado ao vivo (lista de
+  exercícios), incluindo os 4 overrides manuais, todos batendo com o que o dono informou.
+
+## Correção de scoring do Dictation (travessão solto) + "Unit 1A" também no Listening (2026-07-20)
+
+Dono reportou (com um trecho real de texto do American1, cd2-track35 — Unit 4A) que digitar a
+resposta certa ainda dava errado por causa de um "—" isolado no meio do texto ("She's a hair
+stylist — she does my hair for free!"). E pediu 2 ajustes de formato/escopo do que acabou de
+ser implementado em cima: mostrar a letra da seção junto (`dictationTrackUnitLabel`, que só
+tinha "Unit 8" sem a letra — corrigido em `PROJECT_SUMMARY`/`ROADMAP` já na rodada anterior) e
+levar o mesmo "Unit 1A" pro Listening, que tinha ficado de fora de propósito na 1ª versão.
+
+### Travessão solto derrubava o score injustamente
+`correctText.split(/\s+/)` tokeniza por espaço — um "—" cercado de espaços dos dois lados vira
+seu próprio "token", e como `normalizeDictationWord` só tira `.,!?"'’;:()` (sem travessão),
+esse token nunca casava com nada que o aluno digitasse (ninguém digita "—" mesmo) — sempre
+ficava vermelho e contava contra a nota, direto contra o próprio aviso da tela ("Punctuation
+and capitalization don't matter").
+- **Correção**: `scoreDictationAnswer` agora separa os tokens de `correctText` em dois grupos
+  antes do LCS — os que têm pelo menos 1 letra/dígito (`isDictationPunctuationOnlyToken`
+  filtra o resto) entram no casamento e na nota normalmente; os que são só pontuação ficam de
+  fora dos dois, mas continuam aparecendo no texto reconstruído da correção, só que sem cor
+  (`correct: null` no `wordResult`, renderizado com a classe nova `.dictation-word-neutral`
+  em vez de `.dictation-word-correct`/`.dictation-word-wrong`).
+- Verificado ao vivo com o texto exato reportado (cd2-track35, os 2 "—" do trecho): digitando
+  a resposta certa SEM os travessões (do jeito que qualquer aluno digitaria na prática), score
+  vai a 100%, `.dictation-word-wrong` fica vazio, os 2 travessões aparecem em
+  `.dictation-word-neutral`.
+
+### "Unit 1A" também no Listening (American1)
+Mesma função (renomeada de `dictationTrackUnitLabel` pra `american1TrackUnitLabel`, já que
+deixou de ser exclusiva do Dictation) aplicada nos 2 lugares do Listening que montam o título
+("Choose an exercise" e o cabeçalho do exercício, esse último com a lógica extra do link
+clicável só pro Vocabulary — `openVocabularyUnit`). Vocabulary continua sem duplicar (já
+mostra a unit dentro do parêntese) — verificado ao vivo nos 2 cursos, sem regressão.
+
+## Botão "i" explicando cada item do Today's Goal (2026-07-20)
+
+Dono pediu um ícone "i" na frente de cada um dos 3 itens do `DailyGoalCard` (Home), que ao
+clicar mostra como aquele item específico é marcado como feito — reaproveitado o mesmo padrão
+visual/interativo já usado em `UnitBadgeLegend` (botão "i" circular, popover que abre/fecha em
+clique, `aria-expanded`).
+
+- **Bug pego testando**: a 1ª versão punha um popover DENTRO de cada `<li>` (`position:
+  absolute`, relativo ao próprio item) — como os itens ficam colados (6px de gap), o popover
+  do item de cima cobria o botão "i" do item de baixo e travava o clique nele (Playwright
+  reportou "element intercepts pointer events" ao tentar abrir o 2º popover com o 1º ainda
+  aberto). **Correção**: um popover só, fora da lista (`<ul>`), logo abaixo dela — mostra a
+  explicação do item cujo "i" foi clicado por último (`openInfoKey`), empurrando o resto do
+  card pra baixo em vez de flutuar por cima de nada.
+- Texto de cada popover tem que casar com a lógica REAL de quando aquele componente é marcado
+  (não é só documentação solta, é a explicação que o usuário vê) — "Learn a new unit" cita
+  explicitamente os 3 cursos e que reabrir uma unit já visitada não conta; "Clear today's
+  reviews" deixa claro que só reavaliar algo que JÁ estava vencido conta (mesma distinção da
+  correção do item 3 do ROADMAP, ver seção acima); "Practice Listening or Dictation" cita os
+  2 botões que disparam ("Check answers"/"Check my answer").
+- Verificado via Playwright: 3 botões "i" na tela, clicar em cada um mostra só o popover
+  daquele item (nunca mais de 1 aberto ao mesmo tempo), clicar de novo no mesmo fecha. Zero
+  erros no console depois da correção do overlap.
+
 ## Histórico de processamento de conteúdo (pré-processamento, fora do código React)
 
 - PDFs originais `EVIU_PI-X.pdf` foram divididos em duas páginas cada (`_L` e `_E`) com `pypdf` (script `split_pdfs.py`, já removido do repositório).

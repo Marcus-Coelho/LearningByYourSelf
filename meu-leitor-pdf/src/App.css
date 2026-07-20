@@ -339,9 +339,19 @@ body {
    altura mínima maior que o espaço realmente disponível e cria overflow/
    scroll na página mesmo com conteúdo que já caberia (mesma causa raiz
    corrigida em .landing-page.vocabulary-mode.wordbook-mode). min-height:0
-   deixa o flex encolher pro tamanho real disponível. */
+   deixa o flex encolher pro tamanho real disponível.
+   align-items:flex-start (em vez do center herdado de .landing-page) +
+   padding-top + overflow:auto: com o TodayPlanCard/DailyGoalCard visíveis
+   (usuário logado), o conteúdo passou a ficar mais alto que a viewport em
+   telas menores — sem isso, ele só era CORTADO (nunca dava pra rolar pra
+   ver o resto), e ainda por cima align-items:center escondia metade do
+   corte atrás do header sticky (mesmo bug já documentado em
+   .app-shell--allow-grow/.landing-page--courses — mesmo tratamento aqui). */
 .landing-page.landing-page--home {
   min-height: 0;
+  align-items: flex-start;
+  padding-top: 56px;
+  overflow: auto;
 }
 
 /* Tela "Courses": sem isso, o align-items:center padrão de .landing-page
@@ -1069,6 +1079,16 @@ body {
   color: #1b3a5e;
 }
 
+/* "% de domínio geral" (ROADMAP item 3, os 3 cursos somados — não é só o
+   A1, o Vocabulary é Pre-Intermediate/Intermediate) — pendurado junto do
+   valor "X/Y units mastered" em vez de virar um 7º tile próprio. */
+.dashboard-stat-subvalue {
+  margin-left: 6px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--purple-700);
+}
+
 .dashboard-stat-label {
   font-size: 12.5px;
   color: rgba(27, 58, 94, 0.68);
@@ -1600,6 +1620,13 @@ body {
    de fichas destacadas palavra por palavra. */
 .dictation-word-correct {
   color: #1a7a3d;
+}
+
+/* Token de pontuação solta (ex.: um "—" separado por espaços) — não conta
+   pro score (o aluno nunca "digita" isso), então não fica nem verde nem
+   vermelho, só o texto normal. */
+.dictation-word-neutral {
+  color: inherit;
 }
 
 .dictation-word-wrong {
@@ -3364,6 +3391,163 @@ body {
 
 .plan-more-link:hover {
   color: var(--purple-500);
+}
+
+/* ==== "Today's Goal" (ROADMAP item 3, trilha de estudo) — card na Home,
+   logo abaixo de "Today's Plan"; mesmo visual de .plan-card (mesmo
+   contexto: sobre a imagem da Home, sem o problema de fundo translúcido
+   vazando que existe nas telas com --page-hero-bg). ==== */
+
+.daily-goal-card {
+  width: 100%;
+  max-width: 1120px;
+  text-align: left;
+  padding: 22px 24px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(27, 58, 94, 0.1);
+  box-shadow: 0 18px 48px rgba(30, 58, 95, 0.12);
+  margin-top: 16px;
+}
+
+.daily-goal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.daily-goal-count {
+  flex: 0 0 auto;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--purple-700);
+}
+
+.daily-goal-items {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.daily-goal-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(27, 58, 94, 0.05);
+  font-size: 13.5px;
+  color: rgba(27, 58, 94, 0.75);
+}
+
+.daily-goal-item.is-done {
+  color: #1b3a5e;
+  font-weight: 700;
+  background: rgba(139, 92, 246, 0.12);
+}
+
+/* Checkbox desenhado em CSS (não emoji ⬜/✅) — fonte de emoji varia demais
+   entre plataformas/navegadores pro quadrado vazio ficar legível. */
+.daily-goal-check {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid rgba(27, 58, 94, 0.35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+}
+
+.daily-goal-check.is-done {
+  background: var(--purple-700);
+  border-color: var(--purple-700);
+}
+
+.daily-goal-item-label {
+  flex: 1;
+}
+
+/* "i" de explicação por item — mesmo visual do .unit-badge-legend-info-btn,
+   mas SEM popover próprio: com os itens colados (6px de gap), um popover
+   por linha cobria o botão "i" do vizinho de baixo e travava o clique nele
+   (bug real, pego testando). O popover é um só, fora do <li>, embaixo da
+   lista inteira — ver .daily-goal-info-popover mais abaixo. */
+.daily-goal-info-btn {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(27, 58, 94, 0.35);
+  background: transparent;
+  color: rgba(27, 58, 94, 0.65);
+  font-size: 11px;
+  font-style: italic;
+  font-weight: 700;
+  font-family: Georgia, 'Times New Roman', serif;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.daily-goal-info-btn:hover,
+.daily-goal-info-btn[aria-expanded="true"] {
+  border-color: var(--purple-500);
+  color: var(--purple-500);
+}
+
+.daily-goal-info-popover {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid rgba(27, 58, 94, 0.15);
+  box-shadow: 0 4px 16px rgba(27, 58, 94, 0.1);
+  font-size: 12.5px;
+  line-height: 1.5;
+  font-weight: 400;
+  text-align: left;
+}
+
+.daily-goal-info-popover p {
+  margin: 0;
+  /* .landing-panel p (regra global mais antiga) força texto branco — sem
+     isso o popover fica com texto invisível sobre o próprio fundo branco. */
+  color: #1b3a5e;
+}
+
+.daily-goal-complete {
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--purple-700);
+}
+
+.daily-goal-edit-options {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(27, 58, 94, 0.15);
+}
+
+.daily-goal-edit-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: rgba(27, 58, 94, 0.75);
+  cursor: pointer;
 }
 
 /* ==== "Today's Review" (revisão espaçada) — card na Home e no Courses ==== */

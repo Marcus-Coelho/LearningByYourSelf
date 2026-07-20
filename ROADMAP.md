@@ -65,21 +65,63 @@ lista de definições da unit (esperado nos dois casos).
   "Show answers"), volta a 24 aleatórias em "Random Words"; American1 sem o toggle, sem
   regressão nos blanks aleatórios; zero erros no console.
 
-## 3. [ ] Trilha de estudo (resolver "não existe trilha, só biblioteca")
+## 3. [x] Trilha de estudo (resolver "não existe trilha, só biblioteca") — 2026-07-20
 
-O app não responde "o que eu devo estudar hoje e por quê" — não há sequência sugerida, meta
-diária, nem noção de "você domina X% do nível A1".
+As 3 partes implementadas na Home, em cima do que já existia (`TodayPlanCard`) mais um card
+novo (`DailyGoalCard`):
 
-- Objetivo em três partes (podem ser fases separadas):
-  1. **Sequência sugerida**: uma ordem de estudo recomendada cruzando os 3 cursos (não só
-     "próxima unit não visitada" por curso, que é o que o Today's Plan já faz).
-  2. **Meta diária**: alvo configurável (ex.: 1 unit nova + revisões do dia + 1 listening),
-     com indicação visível de "meta de hoje cumprida".
-  3. **% de domínio do nível**: "você domina X% do A1" — derivável do que já existe
-     (`getUnitBadgeStatus`/`tallyUnitStatuses`, usados pelo Progress Dashboard).
-- Pontos de partida no código: `TodayPlanCard` (Home), `findNextUnvisitedByCourse`,
-  Progress Dashboard (`activePage === 'dashboard'`), fila de revisão (`loadDueReviews`).
-- Persistência: seguir o padrão `u:<nome>:<chave>` do `localStorage` (ver CLAUDE.md).
+1. **Sequência sugerida cruzando os 3 cursos**: `findNextUnvisitedByCourse` não sugere mais
+   sempre Vocabulary primeiro — os 3 candidatos (1 por curso, se houver algo não visitado) são
+   ordenados pelo **% de units visitadas** de cada curso, do mais atrasado pro mais
+   adiantado. Verificado ao vivo: depois de visitar a Unit 1 do Vocabulary, a sugestão seguinte
+   já apontou pro American1 (ainda 0% visitado) em vez de continuar no Vocabulary. O 2º slot do
+   plano ("Practice listening") também deixou de ser só o 2º curso da lista — agora é uma
+   busca de verdade (`findUnpracticedListeningTrack`) pela primeira faixa de Listening/Dictation
+   (nos 2 cursos, 359 tracks) que o usuário nunca tentou em nenhum dos dois modos.
+2. **Meta diária configurável** (`DailyGoalCard`, abaixo do Today's Plan): 3 componentes
+   togglináveis via "Customize goal" — aprender uma unit nova, zerar as revisões do dia,
+   praticar Listening/Dictation. Todos os 3 são marcados uma vez e nunca desmarcados dentro do
+   mesmo dia, em `u:<nome>:dailyGoal:<YYYY-MM-DD>` (data LOCAL, não `toISOString`/UTC) — um dia
+   novo já nasce zerado porque a própria chave muda, sem lógica de "virou meia-noite". Marcado
+   automaticamente: ao visitar uma unit NUNCA visitada antes (hook nos 3 `useEffect` que já
+   marcavam `visitedUnits`/`american1VisitedSections`/`grammarElemVisitedUnits`), ao terminar
+   um Listening ou Dictation (`onPracticed`, novo prop em `ListeningClozeExercise`/
+   `DictationExercise`), e ao REAVALIAR um item que já estava vencido em `reviewQueue` (hook
+   dentro de `scheduleReview`, único ponto usado pelas 4 telas de autoavaliação — **não** é
+   `reviewQueue.length === 0`, ver "Correção 2026-07-20" abaixo). Preferência de quais
+   componentes contam fica em `u:<nome>:dailyGoalPrefs`, independente do progresso do dia.
+3. **% de domínio geral**: pendurado no tile "Units mastered (all courses) — overall mastery"
+   do Progress Dashboard (não virou um 7º tile) e repetido como frase no `DailyGoalCard` da
+   Home ("You've mastered X% of your courses so far") — mastered/total somados dos 3
+   `courseProgress` (mesmos `getUnitBadgeStatus`/`getVocabularyUnitBadgeStatus`/
+   `tallyUnitStatuses` de sempre). Esse cálculo foi içado pra cima no corpo de `App()` (antes
+   só existia dentro da IIFE do Dashboard) — agora é compartilhado entre a Home e o Dashboard,
+   sem duplicar a lógica. **Não chamar de "% do A1"** — só American1 e Grammar Elem são A1 de
+   verdade, o Vocabulary (English Vocabulary B) é Pre-Intermediate/Intermediate (pasta de
+   origem "Pre Intermediate and Intermediate") e entra nessa soma também.
+
+**Correção 2026-07-20** (2 problemas que o dono notou testando um usuário recém-criado):
+- "Today's Goal" mostrava 1/3 já no primeiro acesso, sem o usuário ter feito nada — porque
+  "Clear today's reviews" tinha sido implementado como `reviewQueue.length === 0` ("nada
+  pendente" = "feito"), e um usuário novo nunca tem nada agendado, então a fila já nasce
+  vazia. Trocado por uma flag de verdade (`dailyGoalToday.reviews`), marcada só quando o
+  usuário reavalia um item que JÁ estava na fila de vencidos (checado dentro de
+  `scheduleReview`, comparando `course`+`id` contra `reviewQueue` no momento da avaliação) —
+  reavaliar conteúdo novo (nunca esteve na fila) não conta.
+- O rótulo "A1 level mastery" foi copiado direto da redação original deste item ("você domina
+  X% do nível A1") sem checar se os 3 cursos são A1 de verdade — não são (ver item 3 acima).
+  Renomeado pra "overall mastery" / "your courses" nos dois lugares onde aparecia (Dashboard e
+  DailyGoalCard); a conta em si (soma dos 3 cursos) não mudou, só o nome.
+
+Verificado via Playwright ad-hoc (dev server local, não persistido): usuário novo mostra 0/3
+(antes da correção mostrava 1/3) e a frase "You've mastered 0% of your courses so far."
+(antes "...of the A1 level..."); visita de unit → "Learn a new unit" vira ✓; conclusão de um
+Listening → "Practice Listening or Dictation" vira ✓ e mostra "🎉 Goal complete for today!";
+uma revisão vencida (injetada via localStorage, simulando o passar do tempo) fica
+**des**marcada até o usuário efetivamente reavaliá-la, só então "Clear today's reviews" vira
+✓; desmarcar um componente em "Customize goal" tira ele da lista e sobrevive a um reload;
+Dashboard mostra "Units mastered (all courses) — overall mastery"; zero erros no console em
+qualquer etapa.
 
 ## 4. [ ] Speaking (shadowing com reconhecimento de voz do Edge/Chrome)
 

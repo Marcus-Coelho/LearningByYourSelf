@@ -115,12 +115,53 @@ meu-leitor-pdf/
   "qualquer palavra maiúscula no início", isso apagaria começos de frase legítimos como
   "JetBlue flight...". Não mexe no texto exibido pelo Listening (`ListeningClozeExercise`
   usa `track.sentences` direto, sem essa limpeza)
+- **Token sem nenhuma letra/dígito (ex.: um "—" solto entre frases) não conta pro score** —
+  fica de fora do casamento LCS e renderiza sem cor (`dictation-word-neutral`, nem verde nem
+  vermelho) na correção, mas continua aparecendo no texto reconstruído. Antes disso, um "—"
+  virava um "wordResult" impossível de acertar (o aluno nunca digita "—"), sempre vermelho e
+  descontando nota — contra o próprio aviso da tela ("Punctuation and capitalization don't
+  matter"). Ver `isDictationPunctuationOnlyToken`/`scoreDictationAnswer`
+- **"Unit 1A" no título do Dictation e do Listening (só American1)**: `track.unit`/`.letter`
+  já existe pro Vocabulary (mostrado dentro do `listeningTrackLabel`, ex. "(unit 4A)"); pro
+  American1 (sem esses campos, só `cd`/`track`) é derivado de `american1_audio_anchors.json`
+  invertido (`AMERICAN1_CD_TRACK_TO_UNIT`, `App.js`) + um `Object.assign` de override manual
+  pras 4 faixas sem âncora indexada (`cd2-track11`→3B, `cd2-track35`→4A, `cd4-track7`/
+  `cd4-track8`→8A, informadas pelo dono). Ver `american1TrackUnitLabel`
+
+### Trilha de estudo (Home — `TodayPlanCard` + `DailyGoalCard`)
+- **`TodayPlanCard`**: "Learn something new" aponta pro curso mais ATRASADO em % de units
+  visitadas (`findNextUnvisitedByCourse`, ordena por `courseId` cruzando os 3 cursos — não é
+  mais sempre Vocabulary primeiro); "Practice listening" é uma faixa de Listening/Dictation de
+  verdade nunca tentada em nenhum dos 2 modos (`findUnpracticedListeningTrack`, varre os 359
+  tracks dos 2 cursos), não mais o 2º curso da lista de units
+- **`DailyGoalCard`**: meta diária com 3 componentes togglináveis via "Customize goal" —
+  aprender unit nova, zerar revisões do dia, praticar Listening/Dictation. Os 3 usam uma flag
+  própria em `dailyGoalToday` (nenhum é `reviewQueue.length === 0` — isso dava um check de
+  graça pra usuário novo sem nada agendado ainda, corrigido em 2026-07-20): "reviews" só marca
+  dentro de `scheduleReview`, quando o item reavaliado JÁ estava vencido em `reviewQueue`
+  (reavaliar conteúdo novo não conta); os outros 2 via `markDailyGoalDone` (visitar unit nunca
+  visitada / terminar Listening ou Dictation, `onPracticed` prop em `ListeningClozeExercise`/
+  `DictationExercise`). Progresso do dia em `dailyGoal:<YYYY-MM-DD>` (data LOCAL, nunca
+  `toISOString`), nunca desmarcado — dia novo já nasce zerado porque a chave muda sozinha
+- Cada item do `DailyGoalCard` tem um botão "i" (mesmo padrão do `UnitBadgeLegend`) explicando
+  como cumprir aquele item — **um popover só, fora do `<ul>`**, não um por `<li>`: com os itens
+  colados (6px de gap), um popover por linha cobria o botão "i" do vizinho de baixo e travava
+  o clique nele (bug real, pego via Playwright). Texto de cada explicação em
+  `DAILY_GOAL_EXPLANATIONS` tem que continuar batendo com a lógica real de quando cada
+  componente marca — não é só rótulo solto
+- `courseProgress` (status por unit dos 3 cursos) e `overallMasteryPercent` são computados uma
+  vez no corpo de `App()`, compartilhados entre a Home e o Progress Dashboard — não duplicar
+  esse cálculo se mexer em qualquer um dos dois. **Não chamar isso de "% do A1"** — só
+  American1 e Grammar Elem são A1 de verdade, o Vocabulary (English Vocabulary B) é
+  Pre-Intermediate/Intermediate e entra na mesma soma (rótulo já foi "A1 level" e corrigido
+  pra "overall mastery" depois que o dono notou a inconsistência)
 
 ### Progress Dashboard ("Progress", menu principal)
 - Tela só-leitura: cartões de estatística (palavras aprendidas/devidas, revisões pendentes,
-  units dominadas nos 3 cursos, exercícios de Listening/Dictation praticados) + progresso por
-  curso (barra segmentada não-visitado/visitado/avaliado/dominado) + atalho "Continue where
-  you left off". Não escreve nada — só lê dados que os outros recursos já persistem
+  units dominadas nos 3 cursos + "% de domínio do A1" no mesmo tile, exercícios de
+  Listening/Dictation praticados) + progresso por curso (barra segmentada não-visitado/
+  visitado/avaliado/dominado) + atalho "Continue where you left off". Não escreve nada — só lê
+  dados que os outros recursos já persistem
 
 ---
 
@@ -161,6 +202,14 @@ u:<nome>:dictation:<trackId>:stats — JSON {attempts, lastScorePercent, lastAtt
 
 # Última posição
 u:<nome>:lastVisited               — JSON por curso, alimenta "Continue where you left off"
+
+# Trilha de estudo / Today's Goal (Home)
+u:<nome>:dailyGoal:<YYYY-MM-DD>    — JSON {newUnit, listening, reviews} (bool), data LOCAL —
+                                      chave nova a cada dia, nunca desmarcado dentro do mesmo
+                                      dia; "reviews" só vira true reavaliando algo que já
+                                      estava vencido (nunca por reviewQueue estar vazia)
+u:<nome>:dailyGoalPrefs            — JSON {newUnit, reviews, listening} (bool) — quais
+                                      componentes contam pra meta, independente do progresso
 ```
 
 **Nomes especiais (sem o prefixo `u:<nome>:`):**
@@ -251,6 +300,15 @@ Não há testes unitários automatizados (`npm test` funciona mas CRA cria um es
   mas o real (`.app-header`) tem 81px — qualquer tela nova baseada em `.landing-page` que
   pareça ter overflow/scroll indevido provavelmente precisa de um `min-height: 0` escopado,
   igual já feito em `.landing-page.vocabulary-mode.wordbook-mode`/`.dashboard-mode`
+- **`.app-shell` tem `height: 100vh` fixo** — telas cujo conteúdo pode crescer além da
+  viewport (grades de unit, busca com muitos resultados, cards empilhados na Home) precisam
+  da classe `app-shell--allow-grow` (aplicada via JS em `App.js`, lista de `activePage`) +
+  `align-items: flex-start` (nunca `center` herdado — centralizar conteúdo mais alto que a
+  tela esconde a metade de cima atrás do header `sticky`) no seletor `.landing-page.<modo>`
+  daquela tela, senão o conteúdo simplesmente é CORTADO sem gerar barra de rolagem nenhuma
+  (nem a página nem nenhum container interno rola). A Home (`landing-page--home`) caiu nisso
+  quando ganhou um 2º card (`DailyGoalCard`) — corrigido adicionando `'home'` à lista do
+  `app-shell--allow-grow`
 - Cartões/retângulos de conteúdo sobre o fundo desfocado (`--page-hero-bg`) precisam de
   background **opaco**, nunca `rgba(...)` translúcido — ver "Decisões Imutáveis" item 7
 - `.landing-panel p { color: rgba(255,255,255,0.75) }` (herdado do tema roxo escuro original)
