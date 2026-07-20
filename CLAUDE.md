@@ -113,7 +113,12 @@ pras 4 telas acima pegarem sozinhas.
   amostragem e decidir se o Listening também ganha), com detecção por CRUZAMENTO do ponto
   (nunca por proximidade — proximidade re-pausava em cima do ponto ao usar "Replay last
   part"), toggle on/off, pílulas de estado (pausado/fim do áudio) e botão "↺ Replay last
-  part". `Ctrl+Space` retoma
+  part". `Ctrl+Space` retoma. **Cruzamento checado via `requestAnimationFrame`, não
+  `timeupdate`** — o navegador só dispara `timeupdate` a cada ~250ms, atraso suficiente pra
+  `audio.pause()` vazar pro comecinho da fala seguinte em falas coladas (relatado pelo dono,
+  casos reais do American1 com pouco silêncio entre personagens); rAF (~60x/s) reduz essa
+  folga a poucos ms. Se ainda vazar em algum caso pontual, o próximo passo é recuar os pontos
+  mais cedo em `dictation_pause_points.json` (via script, nunca à mão — ver "Dados Gerados")
 - A recuperação do casamento LCS é por DP de SUFIXOS + caminhada pra frente (palavra casa
   com a ocorrência mais CEDO no texto) — a versão prefixos+trás casava palavra repetida com
   uma ocorrência lá do fim, deixando o verde longe do contexto digitado; não regredir

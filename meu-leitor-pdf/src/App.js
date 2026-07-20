@@ -7026,25 +7026,32 @@ function DictationExercise({ track, userName, onPracticed }) {
     if (!audio) return undefined;
     const pausePoints = dictationPausePoints[track.id] || [];
 
-    const handleTimeUpdate = () => {
+    // Cruzamento checado via requestAnimationFrame (~60x/s) em vez do evento
+    // 'timeupdate' (que o navegador só dispara a cada ~250ms) — esse atraso
+    // deixava o audio.pause() disparar até 250ms depois do ponto real, tempo
+    // suficiente pra vazar pro comecinho da fala seguinte em falas coladas
+    // (relatado pelo dono, casos reais do American1 com pouco silêncio entre
+    // personagens).
+    let rafId = requestAnimationFrame(function checkCrossing() {
       const t = audio.currentTime;
       const prev = prevTimeRef.current;
       prevTimeRef.current = t;
-      if (audio.paused) return;
-      // Só um avanço normal de reprodução conta como cruzamento (timeupdate
-      // dispara a cada ~250ms; um delta maior que 2s é um seek, não playback).
-      if (t <= prev || t - prev > 2) return;
-      for (const p of pausePoints) {
-        if (prev < p && t >= p) {
-          audio.pause();
-          setIsAutoPaused(true);
-          break;
+      // Só um avanço normal de reprodução conta como cruzamento (um delta
+      // maior que 2s é um seek, não playback).
+      if (!audio.paused && t > prev && t - prev <= 2) {
+        for (const p of pausePoints) {
+          if (prev < p && t >= p) {
+            audio.pause();
+            setIsAutoPaused(true);
+            break;
+          }
         }
       }
-    };
+      rafId = requestAnimationFrame(checkCrossing);
+    });
     // Depois de um seek (arrastar o cursor, Replay last part), o "anterior"
-    // passa a ser a nova posição — senão o próximo timeupdate enxergaria um
-    // falso cruzamento gigante do ponto antigo até aqui.
+    // passa a ser a nova posição — senão o próximo check enxergaria um falso
+    // cruzamento gigante do ponto antigo até aqui.
     const handleSeeked = () => {
       prevTimeRef.current = audio.currentTime;
     };
@@ -7053,11 +7060,10 @@ function DictationExercise({ track, userName, onPracticed }) {
       setIsAutoPaused(false);
     };
 
-    audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('seeked', handleSeeked);
     audio.addEventListener('play', handlePlay);
     return () => {
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      cancelAnimationFrame(rafId);
       audio.removeEventListener('seeked', handleSeeked);
       audio.removeEventListener('play', handlePlay);
     };
