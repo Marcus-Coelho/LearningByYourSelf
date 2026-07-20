@@ -2,3 +2,8 @@
 Pre Intermediate and Intermediate/
 American English Level 1/
 Grammar Elemetary/
+
+# Local backup-folder target (personal progress data, not project code) —
+# lives outside the repo now, but ignored too as a safety net in case it
+# ever gets created/linked inside the repo folder again.
+progressdata/
