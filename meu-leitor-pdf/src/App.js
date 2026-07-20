@@ -920,6 +920,13 @@ function App() {
   const [selectedDictationTrack, setSelectedDictationTrack] = useState(RESTORED_POSITION?.selectedDictationTrack ?? null);
   const [dictationSearchQuery, setDictationSearchQuery] = useState('');
   const [hideMasteredDictation, setHideMasteredDictation] = useState(false);
+  // Navegação da tela "Speaking" (menu principal): hub -> fonte -> track —
+  // mesmo padrão do Listening/Dictation (mesmos LISTENING_SOURCES), estado
+  // isolado dos outros dois (namespace próprio speaking:<trackId>:stats).
+  const [selectedSpeakingSource, setSelectedSpeakingSource] = useState(RESTORED_POSITION?.selectedSpeakingSource ?? null);
+  const [selectedSpeakingTrack, setSelectedSpeakingTrack] = useState(RESTORED_POSITION?.selectedSpeakingTrack ?? null);
+  const [speakingSearchQuery, setSpeakingSearchQuery] = useState('');
+  const [hideMasteredSpeaking, setHideMasteredSpeaking] = useState(false);
   // Largura inicial = RIGHT_PANEL_WIDTH_RATIO da janela (ver comentário na
   // constante), com piso em MIN_RIGHT_WIDTH e teto no espaço realmente
   // disponível — numa tablet mais estreita (~820px), MIN_CENTER_WIDTH(420) +
@@ -984,6 +991,35 @@ function App() {
   const [backupFolderHandle, setBackupFolderHandle] = useState(null);
   const [backupFolderNeedsPermission, setBackupFolderNeedsPermission] = useState(false);
   const [lastFolderBackupAt, setLastFolderBackupAt] = useState(null);
+  // Notificação estilizada (substitui window.alert/window.confirm nativos,
+  // feios e sem cara do app) usada pelo fluxo de Backup & Restore — pedido
+  // do dono depois de ver o alert() padrão do navegador ("localhost:3000
+  // diz..."). `toast` é fire-and-forget (auto-some sozinho); `confirmDialog`
+  // é a versão com 2 botões, resolvida via Promise (askConfirm) pra dar pra
+  // usar exatamente como `if (await askConfirm(...)) { ... }` no lugar de
+  // `if (window.confirm(...)) { ... }`. O clique em "OK"/"Escolher pasta"
+  // do próprio diálogo É um gesto do usuário de verdade, então continua
+  // valendo pra abrir showDirectoryPicker()/requestPermission() logo depois.
+  const [toast, setToast] = useState(null);
+  const toastTimeoutRef = useRef(null);
+  const showToast = (message, tone = 'info') => {
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    setToast({ message, tone, id: Date.now() });
+    toastTimeoutRef.current = setTimeout(() => setToast(null), 4500);
+  };
+  const [confirmDialog, setConfirmDialog] = useState(null);
+  const confirmResolveRef = useRef(null);
+  const askConfirm = (message, { confirmLabel = 'OK', cancelLabel = 'Cancel' } = {}) => new Promise((resolve) => {
+    confirmResolveRef.current = resolve;
+    setConfirmDialog({ message, confirmLabel, cancelLabel });
+  });
+  const handleConfirmDialogChoice = (choice) => {
+    setConfirmDialog(null);
+    if (confirmResolveRef.current) {
+      confirmResolveRef.current(choice);
+      confirmResolveRef.current = null;
+    }
+  };
   // "Today's Goal" (ROADMAP item 3, trilha de estudo) — dailyGoalPrefs é qual
   // dos 3 componentes CONTA pra meta (togglável em DailyGoalCard);
   // dailyGoalToday é o que já foi CUMPRIDO hoje (chave inclui a data — ver
@@ -1699,6 +1735,8 @@ function App() {
       selectedListeningTrack,
       selectedDictationSource,
       selectedDictationTrack,
+      selectedSpeakingSource,
+      selectedSpeakingTrack,
     };
     try {
       window.sessionStorage.setItem(SESSION_POSITION_KEY, JSON.stringify(position));
@@ -1736,6 +1774,8 @@ function App() {
     selectedListeningTrack,
     selectedDictationSource,
     selectedDictationTrack,
+    selectedSpeakingSource,
+    selectedSpeakingTrack,
     userName,
   ]);
 
@@ -1771,6 +1811,8 @@ function App() {
       setSelectedListeningTrack(state.selectedListeningTrack ?? null);
       setSelectedDictationSource(state.selectedDictationSource ?? null);
       setSelectedDictationTrack(state.selectedDictationTrack ?? null);
+      setSelectedSpeakingSource(state.selectedSpeakingSource ?? null);
+      setSelectedSpeakingTrack(state.selectedSpeakingTrack ?? null);
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -1913,6 +1955,14 @@ function App() {
   // dentro de uma unit, e esconde o botão "‹ Back to Unit" (ver JSX).
   const handleOpenAmerican1SoundBank = (event) => {
     event.preventDefault();
+    // Mesma trava de acesso do resto do menu (ver handleCourses) — sem isso
+    // um visitante sem cadastro conseguia abrir o Sound Bank (áudio/PDF de
+    // verdade) direto pelo menu lateral, que fica sempre visível mesmo
+    // deslogado.
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
     setSelectedAmerican1Reference({ type: 'sound', pages: [166, 167] });
     setShowAmerican1ReferenceAnswers(false);
     setActivePage('american1-reference');
@@ -2017,6 +2067,11 @@ function App() {
   // hub, mesmo se já havia uma fonte/track selecionada de uma visita anterior.
   const handleOpenListening = (event) => {
     event.preventDefault();
+    // Mesma trava de acesso do resto do menu (ver handleCourses).
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
     setActivePage('listening');
     setActiveCourseId(null);
   };
@@ -2060,6 +2115,11 @@ function App() {
   // fazendo no Listening, e vice-versa.
   const handleOpenDictation = (event) => {
     event.preventDefault();
+    // Mesma trava de acesso do resto do menu (ver handleCourses).
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
     setActivePage('dictation');
     setActiveCourseId(null);
   };
@@ -2093,6 +2153,51 @@ function App() {
   const handleBackToDictationTracks = () => {
     setActivePage('dictation-tracks');
     setSelectedDictationTrack(null);
+  };
+
+  // Tela "Speaking" do menu principal: hub -> fonte -> track, mesmo padrão
+  // do Listening/Dictation (mesmos LISTENING_SOURCES) — o usuário repete a
+  // fala em voz alta em vez de ler ou digitar (ver SpeakingExercise).
+  const handleOpenSpeaking = (event) => {
+    event.preventDefault();
+    // Mesma trava de acesso do resto do menu (ver handleCourses).
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
+    setActivePage('speaking');
+    setActiveCourseId(null);
+  };
+
+  const handleOpenSpeakingSource = (source) => {
+    setSelectedSpeakingSource(source.id);
+    setActivePage('speaking-tracks');
+    setSpeakingSearchQuery('');
+    setHideMasteredSpeaking(false);
+  };
+
+  const handleOpenSpeakingTrack = (track) => {
+    setSelectedSpeakingTrack(track.id);
+    setActivePage('speaking-exercise');
+  };
+
+  const handleNextSpeakingTrack = () => {
+    const source = LISTENING_SOURCES.find((item) => item.id === selectedSpeakingSource);
+    const tracks = source?.tracks || [];
+    const index = tracks.findIndex((item) => item.id === selectedSpeakingTrack);
+    if (index === -1 || index >= tracks.length - 1) return;
+    setSelectedSpeakingTrack(tracks[index + 1].id);
+  };
+
+  const handleBackToSpeakingHub = () => {
+    setActivePage('speaking');
+    setSelectedSpeakingSource(null);
+    setSelectedSpeakingTrack(null);
+  };
+
+  const handleBackToSpeakingTracks = () => {
+    setActivePage('speaking-tracks');
+    setSelectedSpeakingTrack(null);
   };
 
   // Abre um item vencido do "Today's Review" direto na tela onde ele é
@@ -2245,16 +2350,20 @@ function App() {
     }
     setRegisterNameInput('');
     setRegisterError('');
-    // Oferece vincular a pasta de backup só num cadastro DE VERDADE novo
-    // (não ao "continuar como" um nome já existente) e só se ainda não tiver
-    // nenhuma pasta linkada (pedido do dono — perguntar de novo pra um 2º
-    // nome cadastrado no mesmo navegador seria redundante, já está
-    // resolvido pro navegador inteiro). Pedir aqui e não silenciosamente no
-    // fundo porque showDirectoryPicker() exige um gesto do usuário — mostrar
-    // uma tela pedindo autorização explícita é mais claro que um diálogo
-    // nativo do SO surgindo do nada logo após digitar o nome.
-    const shouldOfferBackupFolder = isNewRegistration && isBackupFolderSupported() && !backupFolderHandle;
-    setActivePage(shouldOfferBackupFolder ? 'backup-setup' : 'courses');
+    // Oferece vincular a pasta de backup em TODO cadastro DE VERDADE novo
+    // (não ao "continuar como" um nome já existente) — pedido explícito do
+    // dono, sempre pergunta de novo, MESMO se já houver uma pasta linkada e
+    // funcionando (era condicionado a "!backupFolderHandle" antes; isso
+    // bloqueava silenciosamente a oferta pra qualquer 2º+ cadastro no mesmo
+    // navegador, incluindo o caso real deste projeto de um handle salvo mas
+    // quebrado depois de mover a pasta no disco). A tela em si (ver
+    // 'backup-setup' abaixo) mostra o nome da pasta já linkada, se houver,
+    // e avisa que escolher outra troca o vínculo do NAVEGADOR inteiro (não
+    // é por nome cadastrado — ver CLAUDE.md). Pedir aqui e não
+    // silenciosamente no fundo porque showDirectoryPicker() exige um gesto
+    // do usuário.
+    const shouldOfferBackupFolder = isNewRegistration && isBackupFolderSupported();
+    setActivePage(shouldOfferBackupFolder ? 'backup-setup' : 'home');
   };
 
   const handleContinueAs = (name) => {
@@ -2264,7 +2373,7 @@ function App() {
     } catch (error) {
       // Armazenamento indisponível — sessão fica só nesta aba.
     }
-    setActivePage('courses');
+    setActivePage('home');
   };
 
   // "Log out": limpa só o ponteiro de usuário ativo — a lista de usuários e
@@ -2530,7 +2639,7 @@ function App() {
     try {
       const backup = buildBackupPayload(userName);
       if (!backup) {
-        window.alert('Nothing to back up yet — no progress saved for this user.');
+        showToast('Nothing to back up yet — no progress saved for this user.', 'error');
         return;
       }
       const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -2544,7 +2653,7 @@ function App() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (error) {
-      window.alert('Could not export your backup.');
+      showToast('Could not export your backup.', 'error');
     }
   };
 
@@ -2556,42 +2665,44 @@ function App() {
   // recadastrar o mesmo nome ali, e importar por cima). Escreve direto no
   // localStorage e recarrega a página em vez de tentar sincronizar
   // manualmente cada pedaço de estado React espalhado pelo app.
-  const applyBackupJson = (text) => {
+  const applyBackupJson = async (text) => {
     let parsed;
     try {
       parsed = JSON.parse(text);
     } catch (error) {
-      window.alert("Could not read this file — make sure it's a backup .json exported from this app.");
+      showToast("Could not read this file — make sure it's a backup .json exported from this app.", 'error');
       return;
     }
     if (!parsed || typeof parsed.data !== 'object' || parsed.data === null) {
-      window.alert("This file doesn't look like a Let's Learn English backup.");
+      showToast("This file doesn't look like a Let's Learn English backup.", 'error');
       return;
     }
     const keys = Object.keys(parsed.data).filter((k) => typeof parsed.data[k] === 'string');
     if (keys.length === 0) {
-      window.alert('This backup file is empty.');
+      showToast('This backup file is empty.', 'error');
       return;
     }
     const fromDifferentUser = parsed.userName && parsed.userName !== userName;
     const warning = fromDifferentUser
       ? `This backup was exported from "${parsed.userName}". `
       : '';
-    if (!window.confirm(
+    const proceed = await askConfirm(
       `${warning}Import ${keys.length} saved item(s) into "${userName}"? This will overwrite any matching progress, notes, answers and ratings already saved for this user on this browser. This cannot be undone.`,
-    )) {
-      return;
-    }
+      { confirmLabel: 'Import' },
+    );
+    if (!proceed) return;
     try {
       keys.forEach((relativeKey) => {
         window.localStorage.setItem(userKey(userName, relativeKey), parsed.data[relativeKey]);
       });
     } catch (error) {
-      window.alert('Could not write the backup to this browser (storage may be full or unavailable).');
+      showToast('Could not write the backup to this browser (storage may be full or unavailable).', 'error');
       return;
     }
-    window.alert('Backup imported. The page will reload to apply it.');
-    window.location.reload();
+    showToast('Backup imported. The page will reload to apply it.', 'success');
+    // Pequeno atraso pro toast (não-bloqueante) dar tempo de aparecer antes
+    // do reload — o window.alert() antigo bloqueava sozinho até o clique.
+    setTimeout(() => window.location.reload(), 1200);
   };
 
   const handleImportBackupFile = (event) => {
@@ -2600,7 +2711,7 @@ function App() {
     if (!file || !userName) return;
     const reader = new FileReader();
     reader.onload = () => applyBackupJson(String(reader.result));
-    reader.onerror = () => window.alert('Could not read this file.');
+    reader.onerror = () => showToast('Could not read this file.', 'error');
     reader.readAsText(file);
   };
 
@@ -2618,22 +2729,22 @@ function App() {
     } catch (error) {
       // AbortError = usuário cancelou o seletor de pasta, não é erro de verdade.
       if (error?.name !== 'AbortError') {
-        window.alert('Could not link that folder.');
+        showToast('Could not link that folder.', 'error');
       }
     }
   };
 
   // Tela "backup-setup" (logo após um cadastro novo, ver handleRegisterSubmit)
-  // — os dois botões dela sempre seguem pra Courses depois, dê certo,
-  // cancele, ou dê erro escolher a pasta; a diferença de handleChooseBackupFolder
+  // — os dois botões dela sempre seguem pra Home depois, dê certo, cancele,
+  // ou dê erro escolher a pasta; a diferença de handleChooseBackupFolder
   // (usado em My Profile) é só essa navegação automática no final.
   const handleChooseBackupFolderAndContinue = async () => {
     await handleChooseBackupFolder();
-    setActivePage('courses');
+    setActivePage('home');
   };
 
   const handleSkipBackupSetup = () => {
-    setActivePage('courses');
+    setActivePage('home');
   };
 
   const handleReconnectBackupFolder = async () => {
@@ -2643,10 +2754,10 @@ function App() {
       if (permission === 'granted') {
         setBackupFolderNeedsPermission(false);
       } else {
-        window.alert('Permission was not granted — the folder stays linked, but backups will not run until you allow access again.');
+        showToast('Permission was not granted — the folder stays linked, but backups will not run until you allow access again.', 'error');
       }
     } catch (error) {
-      window.alert('Could not reconnect to that folder.');
+      showToast('Could not reconnect to that folder.', 'error');
     }
   };
 
@@ -2669,14 +2780,14 @@ function App() {
     if (!targetHandle || !userName) return;
     const payload = buildBackupPayload(userName);
     if (!payload) {
-      if (!silent) window.alert('Nothing to back up yet — no progress saved for this user.');
+      if (!silent) showToast('Nothing to back up yet — no progress saved for this user.', 'error');
       return;
     }
     try {
       const permission = await targetHandle.queryPermission({ mode: 'readwrite' });
       if (permission !== 'granted') {
         setBackupFolderNeedsPermission(true);
-        if (!silent) window.alert('This app needs permission to write to the linked folder again — click "Reconnect folder" below.');
+        if (!silent) showToast('This app needs permission to write to the linked folder again — click "Reconnect folder" below.', 'error');
         return;
       }
       const fileHandle = await targetHandle.getFileHandle(backupFileNameFor(userName), { create: true });
@@ -2684,10 +2795,54 @@ function App() {
       await writable.write(JSON.stringify(payload, null, 2));
       await writable.close();
       setLastFolderBackupAt(Date.now());
-      if (!silent) window.alert('Saving your progress.');
+      if (!silent) showToast(`Saving your progress to "${targetHandle.name}".`, 'success');
     } catch (error) {
-      if (!silent) window.alert('Could not save the backup to the linked folder.');
+      if (!silent) showToast('Could not save the backup to the linked folder.', 'error');
     }
+  };
+
+  // Botão "Save progress now" do Progress Dashboard — mesma ação de "Save
+  // backup now" do My Profile, só que acessível de um lugar mais visível
+  // (pedido do dono: o autosave silencioso não deixa claro que está
+  // funcionando, e às vezes simplesmente pára — ex. permissão expirada
+  // depois de mover/recriar a pasta vinculada). Sem status permanente na
+  // tela (pedido do dono) — mas TODO clique dá algum retorno visível agora
+  // (popup, mesmo no sucesso) — "silent" demais deixava parecer que o botão
+  // não fazia nada (relatado pelo dono depois da 1ª versão, que só avisava
+  // quando a pasta não estava conectada e ficava muda no resto).
+  // askConfirm (diálogo próprio, não window.confirm) nos dois casos "não
+  // conectada": o clique em "OK"/"Choose folder"/"Reconnect" do PRÓPRIO
+  // diálogo é um gesto do usuário de verdade, então ainda vale pra abrir
+  // showDirectoryPicker/requestPermission logo em seguida.
+  const handleSaveProgressFromDashboard = async () => {
+    if (!backupFolderHandle) {
+      const proceed = await askConfirm(
+        'No backup folder linked yet — choose one now to save your progress?',
+        { confirmLabel: 'Choose folder' },
+      );
+      if (proceed) await handleChooseBackupFolder();
+      return;
+    }
+    if (backupFolderNeedsPermission) {
+      const proceed = await askConfirm(
+        `The linked backup folder ("${backupFolderHandle.name}") needs permission again — reconnect now?`,
+        { confirmLabel: 'Reconnect' },
+      );
+      if (!proceed) return;
+      try {
+        const permission = await backupFolderHandle.requestPermission({ mode: 'readwrite' });
+        if (permission === 'granted') {
+          setBackupFolderNeedsPermission(false);
+          await handleSaveBackupToFolder();
+        } else {
+          showToast('Permission was not granted — the folder stays linked, but backups will not run until you allow access again.', 'error');
+        }
+      } catch (error) {
+        showToast('Could not reconnect to that folder.', 'error');
+      }
+      return;
+    }
+    await handleSaveBackupToFolder();
   };
 
   const handleRestoreFromFolder = async () => {
@@ -2696,7 +2851,7 @@ function App() {
       const permission = await backupFolderHandle.queryPermission({ mode: 'readwrite' });
       if (permission !== 'granted') {
         setBackupFolderNeedsPermission(true);
-        window.alert('This app needs permission to read the linked folder again — click "Reconnect folder" below.');
+        showToast('This app needs permission to read the linked folder again — click "Reconnect folder" below.', 'error');
         return;
       }
       const fileHandle = await backupFolderHandle.getFileHandle(backupFileNameFor(userName));
@@ -2705,9 +2860,9 @@ function App() {
       applyBackupJson(text);
     } catch (error) {
       if (error?.name === 'NotFoundError') {
-        window.alert(`No backup file found in the linked folder for "${userName}" yet — click "Save backup now" first.`);
+        showToast(`No backup file found in the linked folder for "${userName}" yet — click "Save backup now" first.`, 'error');
       } else {
-        window.alert('Could not read the backup from the linked folder.');
+        showToast('Could not read the backup from the linked folder.', 'error');
       }
     }
   };
@@ -3317,7 +3472,7 @@ function App() {
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenWordbook(event); setMobileMenuOpen(false); }}><IconWords /><span>My Words</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenListening(event); setMobileMenuOpen(false); }}><IconHeadphones /><span>Listening</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenDictation(event); setMobileMenuOpen(false); }}><IconText /><span>Dictation</span></a></li>
-            <li className="side-drawer-item"><a href="#link-3" onClick={() => setMobileMenuOpen(false)}><IconMic /><span>Speaking</span></a></li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenSpeaking(event); setMobileMenuOpen(false); }}><IconMic /><span>Speaking</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenAmerican1SoundBank(event); setMobileMenuOpen(false); }}><IconSound /><span>Sound Bank</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenDashboard(event); setMobileMenuOpen(false); }}><IconDashboard /><span>Progress</span></a></li>
             <li className="side-drawer-divider" role="separator" />
@@ -4780,6 +4935,156 @@ function App() {
             </div>
           </main>
         );
+      })() : activePage === 'speaking' ? (
+        <main className="landing-page landing-page--courses vocabulary-mode listening-mode speaking-mode">
+          <div className="landing-panel course-links-panel listening-panel">
+            <p className="eyebrow">Speaking</p>
+            <h1>Choose a speaking source</h1>
+            <p className="listening-instructions">
+              Listen to a sentence, then press the microphone and repeat it out loud — your
+              browser transcribes what you said and compares it with the original.
+            </p>
+            {!SPEECH_RECOGNITION_SUPPORTED && (
+              <p className="speaking-unsupported">
+                Speech recognition isn't available in this browser. Try Chrome or Edge on
+                desktop or Android to practice Speaking.
+              </p>
+            )}
+            <div className="course-links">
+              {LISTENING_SOURCES.map((source) => (
+                <Fragment key={source.id}>
+                  {courses[source.id]?.level && (
+                    <span className="course-level-heading">{courses[source.id].level}</span>
+                  )}
+                  <div className="course-link-row">
+                    <a
+                      className="course-link"
+                      href="#0"
+                      onClick={(event) => { event.preventDefault(); handleOpenSpeakingSource(source); }}
+                    >
+                      {/* Mesmo LISTENING_SOURCES do Listening/Dictation (mesmos tracks/áudio),
+                          título só de exibição — nunca escrito de volta no JSON. */}
+                      <span>{source.title.replace(/^Listening/, 'Speaking')}</span>
+                      <small>Same audio as Listening — you repeat it out loud instead of typing.</small>
+                    </a>
+                  </div>
+                </Fragment>
+              ))}
+            </div>
+          </div>
+        </main>
+      ) : activePage === 'speaking-tracks' ? (() => {
+        const source = LISTENING_SOURCES.find((item) => item.id === selectedSpeakingSource);
+        const speakingSearchNormalized = speakingSearchQuery.trim().toLowerCase();
+        const allSpeakingTracks = (source?.tracks || []).map((track) => ({
+          track,
+          stats: loadSpeakingStats(userName, track.id),
+        }));
+        const visibleSpeakingTracks = allSpeakingTracks.filter(({ track, stats }) => {
+          if (hideMasteredSpeaking && stats?.lastScorePercent === 100) return false;
+          if (!speakingSearchNormalized) return true;
+          return (
+            listeningTrackLabel(track).toLowerCase().includes(speakingSearchNormalized)
+            || String(track.number).includes(speakingSearchNormalized)
+          );
+        });
+        return (
+          <main className="landing-page landing-page--courses vocabulary-mode listening-mode listening-tracks-mode speaking-mode">
+            <div className="landing-panel course-links-panel listening-panel listening-tracks-mode">
+              <button type="button" className="upload-button" onClick={handleBackToSpeakingHub}>
+                ‹ Back to Speaking
+              </button>
+              <p className="eyebrow">{source ? source.title.replace(/^Listening/, 'Speaking') : 'Speaking'}</p>
+              <h1>Choose an exercise</h1>
+              <div className="listening-tracks-controls">
+                <UnitSearchBox
+                  value={speakingSearchQuery}
+                  onChange={setSpeakingSearchQuery}
+                  placeholder="Search by unit or exercise number..."
+                />
+                <button
+                  type="button"
+                  className={`upload-button listening-hide-mastered-toggle${hideMasteredSpeaking ? ' is-active' : ''}`}
+                  onClick={() => setHideMasteredSpeaking((current) => !current)}
+                >
+                  {hideMasteredSpeaking ? '✓ Hiding 100% score' : 'Hide 100% score'}
+                </button>
+              </div>
+              {visibleSpeakingTracks.length === 0 && (
+                <p className="unit-search-empty">No exercises match your filters.</p>
+              )}
+              <div className="course-links">
+                {visibleSpeakingTracks.map(({ track, stats }) => {
+                  return (
+                    <div className="course-link-row" key={track.id}>
+                      <a
+                        className="course-link"
+                        href="#0"
+                        onClick={(event) => { event.preventDefault(); handleOpenSpeakingTrack(track); }}
+                      >
+                        <span>{`Speaking Exercise n. ${track.number}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''} (${listeningTrackLabel(track)})`}</span>
+                        <small>{track.sentences.length} sentences · repeat what you hear</small>
+                        {stats && (
+                          <small className="listening-track-stats">
+                            Done {stats.attempts}× · Last score: {stats.lastScorePercent}%
+                          </small>
+                        )}
+                      </a>
+                      {stats && (
+                        <button
+                          type="button"
+                          className="continue-cta course-continue-cta"
+                          onClick={() => handleOpenSpeakingTrack(track)}
+                        >
+                          Try again
+                          <small>Last score: {stats.lastScorePercent}%</small>
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </main>
+        );
+      })() : activePage === 'speaking-exercise' ? (() => {
+        const source = LISTENING_SOURCES.find((item) => item.id === selectedSpeakingSource);
+        const tracks = source?.tracks || [];
+        const track = tracks.find((item) => item.id === selectedSpeakingTrack);
+        const trackIndex = tracks.findIndex((item) => item.id === selectedSpeakingTrack);
+        const hasNextTrack = trackIndex !== -1 && trackIndex < tracks.length - 1;
+        return (
+          <main className="landing-page landing-page--courses vocabulary-mode listening-mode speaking-mode">
+            <div className="landing-panel course-links-panel listening-panel listening-exercise-panel">
+              <div className="listening-exercise-nav">
+                <button type="button" className="upload-button" onClick={handleBackToSpeakingTracks}>
+                  ‹ Back to Exercises
+                </button>
+                {hasNextTrack && (
+                  <button type="button" className="upload-button" onClick={handleNextSpeakingTrack}>
+                    Next Speaking
+                  </button>
+                )}
+              </div>
+              <p className="eyebrow">{source ? source.title.replace(/^Listening/, 'Speaking') : 'Speaking'}</p>
+              <h1>
+                {track
+                  ? `Speaking Exercise n. ${track.number}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''} (${listeningTrackLabel(track)})`
+                  : 'Exercise'}
+              </h1>
+              {track ? (
+                <SpeakingExercise
+                  key={track.id}
+                  track={track}
+                  userName={userName}
+                  onPracticed={() => markDailyGoalDone('listening')}
+                />
+              ) : (
+                <p>Exercise not found.</p>
+              )}
+            </div>
+          </main>
+        );
       })() : activePage === 'wordbook' ? (
         <main className="landing-page vocabulary-mode wordbook-mode">
           <WordbookPage
@@ -4968,14 +5273,15 @@ function App() {
                     <button type="button" className="profile-reset-btn primary" onClick={handleChooseBackupFolder}>
                       <span>Link a backup folder</span>
                       <small>Choose a folder once (Chrome/Edge) — the app saves a backup there
-                        automatically from now on (every 10 min while linked), and can restore
-                        from it later. Good pick: a folder already synced to the cloud (OneDrive,
-                        Google Drive...), so it survives even if this computer is lost.</small>
+                        automatically from now on (every 5 min while linked, and also whenever
+                        you switch units), and can restore from it later. Good pick: a folder
+                        already synced to the cloud (OneDrive, Google Drive...), so it survives
+                        even if this computer is lost.</small>
                     </button>
                   ) : (
                     <div className="profile-backup-folder">
                       <p className="landing-meta profile-backup-folder-status">
-                        📁 Backup folder linked
+                        📁 Backup folder linked ("{backupFolderHandle.name}")
                         {backupFolderNeedsPermission
                           ? ' — permission needed again'
                           : lastFolderBackupAt
@@ -5059,6 +5365,9 @@ function App() {
               onContinueLastVisited={handleContinueLastVisited}
               onOpenWordbook={handleOpenWordbook}
               onOpenCourses={handleCourses}
+              backupFolderHandle={backupFolderHandle}
+              backupFolderNeedsPermission={backupFolderNeedsPermission}
+              onSaveProgressNow={handleSaveProgressFromDashboard}
             />
           </main>
         );
@@ -5130,6 +5439,16 @@ function App() {
               Picking a folder that's already synced to the cloud (OneDrive, Google Drive...)
               means your progress survives even if this computer is lost.
             </p>
+            {backupFolderHandle && (
+              <p className="landing-meta">
+                {backupFolderNeedsPermission
+                  ? <>This browser already has a folder linked ("{backupFolderHandle.name}"), but it needs
+                      permission again — choosing it below reconnects it.</>
+                  : <>This browser is already saving to a folder named "{backupFolderHandle.name}". Choosing a
+                      folder below replaces it for every name registered on this browser, not just
+                      "{userName}".</>}
+              </p>
+            )}
             <div className="register-form">
               <button type="button" className="show-answers-btn" onClick={handleChooseBackupFolderAndContinue}>
                 Choose a folder
@@ -5205,6 +5524,40 @@ function App() {
       {userName && insideCourse && (!PAGES_WITH_SIDE_PANEL.includes(activePage) || sidePanelVisible) && (
         <WordQuickAdd contextLabel={studyContextLabel} onAdd={handleAddWord} />
       )}
+      <Toast toast={toast} />
+      <ConfirmDialog dialog={confirmDialog} onChoice={handleConfirmDialogChoice} />
+    </div>
+  );
+}
+
+// Substituem window.alert (Toast) e window.confirm (ConfirmDialog) só no
+// fluxo de Backup & Restore (ver showToast/askConfirm em App()) — o resto
+// do app continua com os nativos, não é um refactor geral. Renderizados uma
+// vez só, fora do ternário de activePage, pra funcionar em qualquer tela.
+function Toast({ toast }) {
+  if (!toast) return null;
+  return (
+    <div className={`app-toast app-toast--${toast.tone}`} role="status" key={toast.id}>
+      {toast.message}
+    </div>
+  );
+}
+
+function ConfirmDialog({ dialog, onChoice }) {
+  if (!dialog) return null;
+  return (
+    <div className="app-confirm-overlay" role="presentation">
+      <div className="app-confirm-dialog" role="alertdialog" aria-modal="true">
+        <p className="app-confirm-message">{dialog.message}</p>
+        <div className="app-confirm-actions">
+          <button type="button" className="app-confirm-btn app-confirm-btn--cancel" onClick={() => onChoice(false)}>
+            {dialog.cancelLabel}
+          </button>
+          <button type="button" className="app-confirm-btn app-confirm-btn--confirm" onClick={() => onChoice(true)}>
+            {dialog.confirmLabel}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -5611,6 +5964,9 @@ function DashboardPage({
   onContinueLastVisited,
   onOpenWordbook,
   onOpenCourses,
+  backupFolderHandle,
+  backupFolderNeedsPermission,
+  onSaveProgressNow,
 }) {
   const masteredTotal = courseProgress.reduce((sum, course) => sum + course.tally.mastered, 0);
   const unitsTotal = courseProgress.reduce((sum, course) => sum + course.total, 0);
@@ -5624,12 +5980,23 @@ function DashboardPage({
         Listening and Dictation, all in one place.
       </p>
 
-      {mostRecentLastVisited && (
-        <button type="button" className="landing-cta continue-cta dashboard-hero-continue" onClick={onContinueLastVisited}>
-          Continue where you left off
-          <small>{lastVisitedLabel}</small>
-        </button>
-      )}
+      <div className="dashboard-hero-row">
+        {mostRecentLastVisited && (
+          <button type="button" className="landing-cta continue-cta dashboard-hero-continue" onClick={onContinueLastVisited}>
+            Continue where you left off
+            <small>{lastVisitedLabel}</small>
+          </button>
+        )}
+        {isBackupFolderSupported() && (
+          <button type="button" className="upload-button dashboard-save-progress-btn" onClick={onSaveProgressNow}>
+            {!backupFolderHandle
+              ? 'Set up backup folder'
+              : backupFolderNeedsPermission
+                ? 'Reconnect folder'
+                : 'Save progress now'}
+          </button>
+        )}
+      </div>
 
       <div className="dashboard-stats">
         <button type="button" className="dashboard-stat-tile" onClick={onOpenWordbook}>
@@ -7219,6 +7586,222 @@ function DictationExercise({ track, userName, onPracticed }) {
   );
 }
 
+// SpeechRecognition só existe no Chrome/Edge (roda em nuvem, precisa de
+// internet) — não existe no Firefox/Safari. Checado uma vez no carregamento
+// do módulo (não muda em runtime) e reaproveitado tanto no hub quanto no
+// fallback do exercício, ao contrário de tentar usar a API e deixar quebrar.
+const SPEECH_RECOGNITION_SUPPORTED =
+  typeof window !== 'undefined' && Boolean(window.SpeechRecognition || window.webkitSpeechRecognition);
+
+// O reconhecedor de voz do Chrome/Edge às vezes TRANSCREVE "number 9" como
+// "#9" (abreviação do próprio reconhecedor antes de um dígito) — o usuário
+// pronunciou a palavra "number" normalmente, só a transcrição que diverge do
+// texto original. Sem essa expansão, "number" (e às vezes o dígito também,
+// dependendo de como o LCS casa o token colado) perdiam pontos mesmo falados
+// certo. Só afeta a PONTUAÇÃO da fala (ver handleSpeechResult) — o texto
+// bruto reconhecido continua exibido em "You said: ..." sem alteração, pra
+// não esconder o que o reconhecedor realmente devolveu.
+function expandSpokenNumberShorthand(transcript) {
+  return transcript.replace(/#(\d+)/g, 'number $1');
+}
+
+// Falas que pedem pra SOLETRAR uma palavra letra por letra (ex.
+// "D-A-R-L-Y", "B-E-Z-E-R-A") não dá pra pontuar com confiança — o
+// reconhecedor tenta interpretar as letras soltas como uma palavra e
+// devolve qualquer coisa (ex. "DARL"), mesmo com o usuário pronunciando
+// cada letra certinho. Só 4 falas em todo o corpus (359 tracks) têm esse
+// padrão. Em vez de mexer em scoreDictationAnswer (compartilhada com o
+// Dictation, onde o usuário ouve com o próprio ouvido e consegue soletrar
+// de volta com confiança — lá o problema não existe), essas palavras viram
+// neutras (nem verde nem vermelho, fora do score) só no lado do Speaking,
+// mesmo tratamento que pontuação solta já recebe em scoreDictationAnswer.
+// Se a fala inteira for só a palavra soletrada, o score cai pra 100% por
+// falta de qualquer coisa scorable (mesma regra de m===0 do
+// scoreDictationAnswer) — não é ideal, mas é mais honesto que fingir que dá
+// pra avaliar isso pelo reconhecimento de voz.
+const SPOKEN_SPELLING_TOKEN_RE = /^[A-Za-z](-[A-Za-z])+$/;
+
+function neutralizeUnscorableSpeakingWords(scored) {
+  let scorableCount = 0;
+  let correctCount = 0;
+  const wordResults = scored.wordResults.map((wordResult) => {
+    if (wordResult.correct === null) return wordResult;
+    const bareWord = wordResult.word.replace(/[.,!?"'’;:()]/g, '');
+    if (SPOKEN_SPELLING_TOKEN_RE.test(bareWord)) {
+      return { ...wordResult, correct: null };
+    }
+    scorableCount += 1;
+    if (wordResult.correct) correctCount += 1;
+    return wordResult;
+  });
+  const scorePercent = scorableCount === 0 ? 100 : Math.round((correctCount / scorableCount) * 100);
+  return { scorePercent, wordResults };
+}
+
+// Tela "Speaking" (shadowing, fase 1 do ROADMAP item 4): o usuário ouve o
+// áudio do track como referência, lê a fala em destaque e clica no
+// microfone pra repetir em voz alta — o navegador transcreve
+// (SpeechRecognition, nuvem) e a transcrição é comparada com o texto
+// original pela MESMA lógica de pontuação do Dictation (scoreDictationAnswer,
+// LCS palavra-a-palavra): aqui não é "escreva", é "fale", mas o critério de
+// acerto é idêntico, incluindo a limpeza de rótulo de personagem
+// (stripDictationSpeakerLabel) — a voz do áudio não fala "Jenny:", então não
+// faz sentido cobrar isso na fala também.
+//
+// Diferente do Listening/Dictation, aqui NÃO existe áudio isolado por fala —
+// os tracks têm um único MP3 do trecho inteiro, sem timestamp por frase
+// (dictation_pause_points.json marca só pausas de silêncio, não front bumpa
+// 1:1 com o array `sentences`). O player toca o áudio inteiro só como
+// referência; a prática em si (gravar/pontuar) roda fala por fala,
+// independente de onde o áudio está tocando.
+function SpeakingExercise({ track, userName, onPracticed }) {
+  const [recordingIndex, setRecordingIndex] = useState(null);
+  const [micError, setMicError] = useState(null);
+  const [resultsBySentence, setResultsBySentence] = useState({});
+  const recognitionRef = useRef(null);
+  const audioBarRef = useRef(null);
+
+  // Troca de track: descarta gravação em andamento e os resultados da
+  // tentativa anterior — senão a fala 1 do track novo mostraria, por um
+  // instante, o resultado da fala 1 do track anterior.
+  useEffect(() => {
+    recognitionRef.current?.abort();
+    setRecordingIndex(null);
+    setMicError(null);
+    setResultsBySentence({});
+  }, [track.id]);
+
+  // Desmontar a tela (sair do exercício) com o microfone ainda gravando não
+  // pode deixar o reconhecimento rodando em segundo plano.
+  useEffect(() => () => recognitionRef.current?.abort(), []);
+
+  const handleSpeechResult = (sentenceIndex, transcript) => {
+    const targetText = stripDictationSpeakerLabel(track.sentences[sentenceIndex]);
+    const rawScored = scoreDictationAnswer(expandSpokenNumberShorthand(transcript), targetText);
+    const scored = neutralizeUnscorableSpeakingWords(rawScored);
+    setResultsBySentence((prev) => ({ ...prev, [sentenceIndex]: { ...scored, transcript } }));
+    saveSpeakingAttempt(userName, track.id, scored.scorePercent);
+    if (onPracticed) onPracticed();
+  };
+
+  const startRecording = (sentenceIndex) => {
+    const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognitionCtor) return;
+    recognitionRef.current?.abort();
+    const recognition = new SpeechRecognitionCtor();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event) => {
+      const transcript = event.results?.[0]?.[0]?.transcript || '';
+      handleSpeechResult(sentenceIndex, transcript);
+      // Não espera o onend pra destravar o mic — com um resultado em mãos a
+      // gravação já terminou; esperar só o onend deixaria os OUTROS botões
+      // travados em "disabled" se ele atrasar ou não disparar (comportamento
+      // observado num teste com reconhecimento mockado, mas sem garantia
+      // formal de timing nem em navegador de verdade).
+      setRecordingIndex(null);
+    };
+    recognition.onerror = (event) => {
+      // 'aborted' dispara sempre que a gente mesma chama .abort() (troca de
+      // fala, saída da tela) — não é um erro de verdade, não vale avisar.
+      if (event.error !== 'aborted') setMicError(event.error);
+      setRecordingIndex(null);
+    };
+    recognition.onend = () => setRecordingIndex(null);
+    recognitionRef.current = recognition;
+    setMicError(null);
+    setRecordingIndex(sentenceIndex);
+    recognition.start();
+  };
+
+  const stopRecording = () => {
+    recognitionRef.current?.stop();
+  };
+
+  if (!SPEECH_RECOGNITION_SUPPORTED) {
+    return (
+      <div className="speaking-exercise">
+        <p className="speaking-unsupported">
+          Speech recognition isn't available in this browser. Try Chrome or Edge on desktop or
+          Android to practice Speaking.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="speaking-exercise">
+      <div className="listening-audio-bar" ref={audioBarRef}>
+        <WideAudioPlayer src={track.audio} />
+      </div>
+      <p className="listening-instructions">
+        Listen to the audio above as a reference, then press the microphone next to a sentence
+        and repeat it out loud. Your browser needs microphone access and an internet connection
+        to recognize your speech.
+      </p>
+      {micError && (
+        <p className="speaking-mic-error">
+          {micError === 'not-allowed' || micError === 'permission-denied'
+            ? 'Microphone access was denied — allow it in your browser settings and try again.'
+            : micError === 'no-speech'
+              ? "Didn't catch any speech — try again, a bit closer to the mic."
+              : `Speech recognition error: ${micError}.`}
+        </p>
+      )}
+      <ol className="speaking-sentences">
+        {track.sentences.map((sentence, index) => {
+          const text = stripDictationSpeakerLabel(sentence);
+          const result = resultsBySentence[index];
+          const isRecording = recordingIndex === index;
+          return (
+            <li key={index} className="speaking-sentence">
+              <div className="speaking-sentence-head">
+                <span className="listening-sentence-number">{index + 1}</span>
+                <span className="speaking-sentence-text">{text}</span>
+                <button
+                  type="button"
+                  className={`speaking-mic-btn${isRecording ? ' is-recording' : ''}`}
+                  onClick={() => (isRecording ? stopRecording() : startRecording(index))}
+                  disabled={recordingIndex !== null && !isRecording}
+                  title={isRecording ? 'Stop' : 'Repeat this sentence out loud'}
+                >
+                  {isRecording ? '⏹ Listening…' : '🎤 Speak'}
+                </button>
+              </div>
+              {result && (
+                <div className="dictation-result speaking-result">
+                  <p className="dictation-score">
+                    Score: <strong>{result.scorePercent}%</strong>
+                  </p>
+                  <p className="dictation-correct-text">
+                    {result.wordResults.map((wordResult, wIndex) => [
+                      wIndex > 0 ? ' ' : null,
+                      <span
+                        key={wIndex}
+                        className={
+                          wordResult.correct === null
+                            ? 'dictation-word-neutral'
+                            : wordResult.correct ? 'dictation-word-correct' : 'dictation-word-wrong'
+                        }
+                      >
+                        {wordResult.word}
+                      </span>,
+                    ])}
+                  </p>
+                  <p className="speaking-transcript-hint">
+                    You said: “{result.transcript || '(nothing recognized)'}”
+                  </p>
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  );
+}
+
 // Palavras curtas/funcionais que não viram lacuna (artigo, pronome, verbo
 // auxiliar...) — a ideia é sortear palavras de conteúdo (substantivos,
 // verbos, números "grandes"), como no exemplo original ("cheese" em vez de
@@ -7384,6 +7967,39 @@ function saveDictationAttempt(userName, trackId, scorePercent) {
       lastAttemptAt: new Date().toISOString(),
     };
     window.localStorage.setItem(dictationStatsKey(userName, trackId), JSON.stringify(next));
+  } catch (error) {
+    // Armazenamento indisponível — segue funcionando, só sem estatística.
+  }
+}
+
+// Mesmo padrão de estatísticas do Listening/Dictation, namespace próprio
+// "speaking:". Diferente dos outros dois (que pontuam o track inteiro de
+// uma vez), o Speaking pontua fala por fala (ver SpeakingExercise) — cada
+// tentativa de UMA fala atualiza o mesmo registro por track (attempts soma
+// cada fala repetida, lastScorePercent é o score da fala mais recente), pra
+// caber no mesmo "Done N× · Last score: X%" já usado na lista de exercícios.
+const speakingStatsKey = (userName, trackId) => userKey(userName, `speaking:${trackId}:stats`);
+
+function loadSpeakingStats(userName, trackId) {
+  if (!userName) return null;
+  try {
+    const raw = window.localStorage.getItem(speakingStatsKey(userName, trackId));
+    return raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function saveSpeakingAttempt(userName, trackId, scorePercent) {
+  if (!userName) return;
+  try {
+    const prev = loadSpeakingStats(userName, trackId);
+    const next = {
+      attempts: (prev?.attempts || 0) + 1,
+      lastScorePercent: scorePercent,
+      lastAttemptAt: new Date().toISOString(),
+    };
+    window.localStorage.setItem(speakingStatsKey(userName, trackId), JSON.stringify(next));
   } catch (error) {
     // Armazenamento indisponível — segue funcionando, só sem estatística.
   }

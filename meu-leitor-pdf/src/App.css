@@ -1090,8 +1090,26 @@ body {
   max-width: 640px;
 }
 
-.dashboard-hero-continue {
+/* "Continue where you left off" + "Save progress now" lado a lado — o
+   segundo reaproveita a mesma ação do My Profile, só mais visível (pedido
+   do dono: o autosave é silencioso demais, não dá pra saber se está
+   funcionando). Sem status permanente na tela — só popup, e só quando a
+   pasta não está conectada (ver handleSaveProgressFromDashboard); o botão
+   muda de rótulo conforme o estado, então não precisa de texto extra. */
+.dashboard-hero-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
   margin: 18px 0 4px;
+}
+
+.dashboard-hero-continue {
+  margin: 0;
+}
+
+.dashboard-save-progress-btn {
+  margin-bottom: 0;
 }
 
 /* Grade de KPIs (My Words/revisões/prática) — auto-fit encolhe pra 2-3
@@ -1700,6 +1718,101 @@ body {
   text-decoration: underline;
   text-decoration-color: rgba(192, 57, 43, 0.45);
   text-underline-offset: 3px;
+}
+
+/* Tela "Speaking" — reaproveita .dictation-result/.dictation-score/
+   .dictation-correct-text/.dictation-word-* diretamente (mesmo critério de
+   pontuação, mesma cor de acerto/erro), só o layout por-frase é próprio
+   (lista de cartões, não um textarea único). */
+.speaking-exercise {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.speaking-unsupported {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(27, 58, 94, 0.06);
+  border: 1px solid rgba(27, 58, 94, 0.15);
+  color: #1b3a5e;
+  font-size: 15px;
+}
+
+.speaking-mic-error {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(192, 57, 43, 0.08);
+  border: 1px solid rgba(192, 57, 43, 0.25);
+  color: #c0392b;
+  font-size: 14px;
+}
+
+.speaking-sentences {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.speaking-sentence {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(27, 58, 94, 0.04);
+  border: 1px solid rgba(27, 58, 94, 0.1);
+}
+
+.speaking-sentence-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.speaking-sentence-text {
+  flex: 1 1 320px;
+  color: #1b3a5e;
+  line-height: 1.5;
+  font-size: 1.05rem;
+}
+
+.speaking-mic-btn {
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--purple-700), var(--purple-500));
+  cursor: pointer;
+}
+
+.speaking-mic-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Reaproveita a mesma animação de pulso do "paused" do Dictation — mesma
+   ideia de "algo precisa da sua atenção agora", só a cor muda pra vermelho
+   (gravando) em vez de roxo (pausado). */
+.speaking-mic-btn.is-recording {
+  background: linear-gradient(135deg, #c0392b, #e6584a);
+  animation: dictation-paused-pulse 1.2s ease-in-out infinite;
+}
+
+.speaking-transcript-hint {
+  margin: 0;
+  font-size: 13px;
+  font-style: italic;
+  color: rgba(27, 58, 94, 0.65);
 }
 
 .listening-sentences {
@@ -4268,4 +4381,105 @@ body {
 .ap-btn.ap-btn-ab.is-looping {
   background: rgba(109, 66, 216, 0.22);
   color: var(--purple-700);
+}
+
+/* Toast + ConfirmDialog — substituem window.alert/window.confirm no fluxo
+   de Backup & Restore (ver showToast/askConfirm em App()). Fixed, fora do
+   fluxo normal do layout, então funcionam em qualquer tela sem depender de
+   onde o botão que os disparou está. */
+.app-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  z-index: 2000;
+  max-width: min(92vw, 480px);
+  padding: 14px 20px;
+  border-radius: 14px;
+  background: #1b3a5e;
+  color: #fff;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  animation: app-toast-in 220ms ease-out;
+}
+
+@keyframes app-toast-in {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.app-toast--success {
+  background: linear-gradient(135deg, #0e9f4e, #19c964);
+}
+
+.app-toast--error {
+  background: linear-gradient(135deg, #b23a2b, #d9483a);
+}
+
+.app-toast--info {
+  background: linear-gradient(135deg, var(--purple-700), var(--purple-500));
+}
+
+.app-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(24, 15, 43, 0.55);
+  padding: 20px;
+}
+
+.app-confirm-dialog {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  animation: app-toast-in 180ms ease-out;
+}
+
+.app-confirm-message {
+  margin: 0 0 20px;
+  color: #1b3a5e;
+  font-size: 15.5px;
+  line-height: 1.6;
+}
+
+.app-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.app-confirm-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.app-confirm-btn--cancel {
+  background: rgba(27, 58, 94, 0.08);
+  color: #1b3a5e;
+}
+
+.app-confirm-btn--cancel:hover {
+  background: rgba(27, 58, 94, 0.14);
+}
+
+.app-confirm-btn--confirm {
+  background: linear-gradient(135deg, var(--purple-700), var(--purple-500));
+  color: #fff;
+}
+
+.app-confirm-btn--confirm:hover {
+  filter: brightness(1.08);
 }
