@@ -104,7 +104,7 @@ const RESPONSIVE_WIDTH_BUFFER = 24;
 const RIGHT_PANEL_WIDTH_RATIO = 0.21;
 
 // Velocidades disponíveis no player de áudio ancorado.
-const AUDIO_SPEEDS = [0.75, 1, 1.25, 1.5, 2];
+const AUDIO_SPEEDS = [0.75, 0.9, 1, 1.1, 1.25, 1.5, 2];
 
 // Revisão espaçada ("Today's Review"): dias até um item autoavaliado voltar
 // à fila de revisão, conforme a nota dada — nota baixa volta logo, nota alta
@@ -652,6 +652,143 @@ const getGrammarElemAppendixTitle = (appendixNumber) => grammarElemAppendixIndex
 const GRAMMAR_ELEM_ADDITIONAL_COUNT = 35;
 const grammarElemAdditionalNumbers = Array.from({ length: GRAMMAR_ELEM_ADDITIONAL_COUNT }, (_, i) => i + 1);
 
+// As notas ("My Notes") são salvas como HTML (negrito/marca-texto do
+// editor) — precisa converter pra texto puro pra exportar/pré-visualizar.
+// O editor quebra cada linha numa <div> própria (Shift+Enter vira <br>);
+// textContent sozinho ignora essas fronteiras de bloco e junta tudo sem
+// espaço nenhum, daí inserir "\n" manualmente antes de extrair.
+function noteHtmlToText(html) {
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  container.querySelectorAll('br').forEach((br) => br.replaceWith('\n'));
+  container.querySelectorAll('div, p').forEach((el) => el.append('\n'));
+  return (container.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+// Dado o tipo+página de uma referência do American1 (guardados na chave da
+// nota, que só tem pages[0] — ver storageKeyBase da tela de referência),
+// acha o objeto {type, pages} completo em american1_references.json pra
+// poder reabrir a página certa (handleOpenAmerican1Reference precisa do
+// array `pages` inteiro, não só a primeira página).
+function american1ReferenceByTypeAndPage(type, page) {
+  for (const entry of american1References) {
+    const match = entry.refs.find((ref) => ref.type === type && ref.pages[0] === page);
+    if (match) return match;
+  }
+  return null;
+}
+
+// Junta TODAS as notas ("My Notes") de um usuário — os 3 cursos, mais as
+// páginas de referência e Transcriptions do American1, mais Appendixes e
+// Additional Exercises do Grammar Elem — usada pela tela "My Notes"
+// (MyNotesPage) e por handleExportNotes (Profile). Cada entrada carrega o
+// suficiente pra montar um título de exibição E pra reabrir o lugar certo
+// (kind + os parâmetros daquele kind), sem duplicar essa varredura em dois
+// lugares (handleExportNotes tinha uma versão mais simples que não sabia
+// nada sobre Grammar Elem — corrigido aqui).
+function collectAllNotesEntries(userName) {
+  if (!userName) return [];
+  const entries = [];
+  try {
+    const prefix = userKey(userName, 'notes:');
+    for (let i = 0; i < window.localStorage.length; i += 1) {
+      const key = window.localStorage.key(i);
+      if (!key || !key.startsWith(prefix)) continue;
+      const remainder = key.slice(prefix.length);
+      const html = window.localStorage.getItem(key) || '';
+      // Nota vazia (aberta e fechada sem escrever nada) não aparece na lista.
+      if (!noteHtmlToText(html)) continue;
+
+      const american1RefMatch = remainder.match(/^american1-ref:([a-z]+):(\d+)$/);
+      // Uma nota por SEÇÃO (A/B/C/Practical English/Review and Check), não
+      // mais uma por unit inteira (pedido do dono) — chave leva a seção
+      // depois do número da unit. Notas salvas no formato antigo (sem
+      // seção, só "american1:<unit>") não batem nesse regex e ficam de fora
+      // da lista — dado órfão no localStorage, não migrado automaticamente
+      // (não dava pra saber com segurança qual seção deveria herdar a nota).
+      const american1Match = remainder.match(/^american1:(\d+):(.+)$/);
+      const grammarElemAppendixMatch = remainder.match(/^grammarElem:appendix-(\d+)$/);
+      const grammarElemAdditionalMatch = remainder.match(/^grammarElem:additional-(\d+)$/);
+      const grammarElemUnitMatch = remainder.match(/^grammarElem:(\d+)$/);
+
+      if (remainder === 'american1-transcriptions') {
+        entries.push({ key, course: 'american1', kind: 'american1-transcriptions', title: 'American English A1 — Transcriptions', html });
+      } else if (american1RefMatch) {
+        const [, refType, refPageStr] = american1RefMatch;
+        const refPage = Number(refPageStr);
+        entries.push({
+          key,
+          course: 'american1',
+          kind: 'american1-ref',
+          refType,
+          refPage,
+          title: `American English A1 — ${AMERICAN1_REFERENCE_LABELS[refType] || refType} p.${refPage}`,
+          html,
+        });
+      } else if (american1Match) {
+        const unit = Number(american1Match[1]);
+        const section = american1Match[2];
+        const sectionLabel = /^[A-C]$/.test(section) ? section : ` (${section})`;
+        entries.push({
+          key,
+          course: 'american1',
+          kind: 'american1-unit',
+          unit,
+          section,
+          title: `American English A1 — Unit ${unit}${sectionLabel}`,
+          html,
+        });
+      } else if (grammarElemAppendixMatch) {
+        const appendixNumber = Number(grammarElemAppendixMatch[1]);
+        const appendixTitle = getGrammarElemAppendixTitle(appendixNumber);
+        entries.push({
+          key,
+          course: 'grammarElem',
+          kind: 'grammarElem-appendix',
+          appendixNumber,
+          title: `Grammar English A1 — Appendix ${appendixNumber}${appendixTitle ? ` - ${appendixTitle}` : ''}`,
+          html,
+        });
+      } else if (grammarElemAdditionalMatch) {
+        const additionalNumber = Number(grammarElemAdditionalMatch[1]);
+        entries.push({
+          key,
+          course: 'grammarElem',
+          kind: 'grammarElem-additional',
+          additionalNumber,
+          title: `Grammar English A1 — Additional Exercise ${additionalNumber}`,
+          html,
+        });
+      } else if (grammarElemUnitMatch) {
+        const unit = Number(grammarElemUnitMatch[1]);
+        const unitTitle = getGrammarElemUnitTitle(unit);
+        entries.push({
+          key,
+          course: 'grammarElem',
+          kind: 'grammarElem-unit',
+          unit,
+          title: `Grammar English A1 — Unit ${unit}${unitTitle ? ` - ${unitTitle}` : ''}`,
+          html,
+        });
+      } else if (/^\d+$/.test(remainder)) {
+        const unit = Number(remainder);
+        entries.push({
+          key,
+          course: 'vocabulary',
+          kind: 'vocabulary-unit',
+          unit,
+          title: `English Vocabulary B — Unit ${unit}${unitTable[unit] ? ` - ${unitTable[unit]}` : ''}`,
+          html,
+        });
+      }
+      // Formato desconhecido: ignora silenciosamente em vez de quebrar a lista inteira.
+    }
+  } catch (error) {
+    return [];
+  }
+  return entries;
+}
+
 const renderPdfUpload = (onChange, label = 'Load PDF') => (
   <label className="upload-button">
     {label}
@@ -735,12 +872,14 @@ const IconSound = () => (
   </svg>
 );
 
-const IconLanguage = () => (
-  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9z" />
-    <path d="M7 9h10" />
-    <path d="M7 12h10" />
-    <path d="M7 15h6" />
+// Ícone do menu "My Notes" — documento com canto dobrado + linhas de texto.
+const IconNotes = () => (
+  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 3.5h9l3 3v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-16a1 1 0 0 1 1-1z" />
+    <path d="M15 3.5v3a1 1 0 0 0 1 1h3" />
+    <path d="M8 12h8" />
+    <path d="M8 15.5h8" />
+    <path d="M8 8.5h4" />
   </svg>
 );
 
@@ -907,6 +1046,9 @@ function App() {
   // handleVocabulary/handleAmerican1/handleGrammarElem) pra não começar
   // filtrada sem o usuário saber por quê.
   const [unitSearchQuery, setUnitSearchQuery] = useState('');
+  // Busca por título na tela "My Notes" (todas as anotações dos 3 cursos
+  // juntas — ver collectAllNotesEntries) — zerada ao abrir a tela.
+  const [myNotesSearchQuery, setMyNotesSearchQuery] = useState('');
   // Busca (unit ou número do exercício) e filtro "hide 100%" da lista de
   // listening exercises — zerados ao abrir uma fonte (ver
   // handleOpenListeningSource) pra não começar filtrada sem o usuário saber.
@@ -1572,6 +1714,16 @@ function App() {
   const handleUpdateWordMeaning = (id, meaning) => {
     persistWordbook(wordbookEntries.map((entry) => (
       entry.id === id ? { ...entry, meaning } : entry
+    )));
+  };
+
+  // Botão "Edit" da lista do My Words — diferente de handleUpdateWordMeaning
+  // (só significado, usado no flashcard de prática), este aceita qualquer
+  // combinação de campos (word/meaning/example/image) de uma vez, vindos do
+  // formulário de edição do card na lista (ver WordbookPage).
+  const handleUpdateWordEntry = (id, updates) => {
+    persistWordbook(wordbookEntries.map((entry) => (
+      entry.id === id ? { ...entry, ...updates } : entry
     )));
   };
 
@@ -2280,6 +2432,49 @@ function App() {
     setActiveCourseId(null);
   };
 
+  // Tela "My Notes": todas as anotações dos 3 cursos (+ referências/
+  // Transcriptions do American1, Appendixes/Additional do Grammar Elem)
+  // numa lista só, com preview e clique pra abrir onde a nota foi escrita —
+  // mesma trava de acesso de Wordbook/Profile/Dashboard.
+  const handleOpenMyNotes = (event) => {
+    event.preventDefault();
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
+    setActivePage('my-notes');
+    setMyNotesSearchQuery('');
+    setSelectedUnit(null);
+    setSelectedAmerican1Unit(null);
+    setSelectedAmerican1Section(null);
+    setSelectedGrammarElemUnit(null);
+    setSelectedGrammarElemAppendix(null);
+    setSelectedGrammarElemAdditional(null);
+    setActiveCourseId(null);
+  };
+
+  // Reabre o lugar exato onde uma nota foi escrita, a partir do "kind" e
+  // dos parâmetros guardados em cada entrada de collectAllNotesEntries.
+  const handleOpenNoteEntry = (event, entry) => {
+    event.preventDefault();
+    if (entry.kind === 'vocabulary-unit') {
+      openVocabularyUnit(entry.unit);
+    } else if (entry.kind === 'american1-unit') {
+      openAmerican1Section(entry.unit, entry.section);
+    } else if (entry.kind === 'american1-ref') {
+      const ref = american1ReferenceByTypeAndPage(entry.refType, entry.refPage);
+      if (ref) handleOpenAmerican1Reference(ref);
+    } else if (entry.kind === 'american1-transcriptions') {
+      handleOpenAmerican1Transcriptions();
+    } else if (entry.kind === 'grammarElem-unit') {
+      openGrammarElemUnit(entry.unit);
+    } else if (entry.kind === 'grammarElem-appendix') {
+      handleGrammarElemAppendixSelect(event, entry.appendixNumber);
+    } else if (entry.kind === 'grammarElem-additional') {
+      handleGrammarElemAdditionalSelect(event, entry.additionalNumber);
+    }
+  };
+
   const handleOpenProfile = (event) => {
     event.preventDefault();
     if (!userName) {
@@ -2512,64 +2707,23 @@ function App() {
     });
   };
 
+  // Ordem numérica pra dentro de um mesmo course/kind (Unit 10 não pode vir
+  // antes de Unit 2 numa ordenação de texto) — cobre qualquer kind que
+  // carregue unit/appendixNumber/additionalNumber/refPage.
+  const notesEntrySortNumber = (entry) => (
+    entry.unit ?? entry.appendixNumber ?? entry.additionalNumber ?? entry.refPage ?? 0
+  );
+
   // Junta as anotações ("My Notes") de todas as units num único .txt e
-  // dispara o download. As notas são salvas como HTML (negrito/marca-texto),
-  // então convertemos para texto puro antes de exportar. `courseFilter`
-  // ('vocabulary' | 'american1' | undefined) limita o export a um curso —
-  // usado pelos botões de export separados por curso no Profile.
+  // dispara o download — mesma varredura de collectAllNotesEntries, usada
+  // também pela tela "My Notes" (MyNotesPage). `courseFilter`
+  // ('vocabulary' | 'american1' | 'grammarElem' | undefined) limita o
+  // export a um curso — usado pelos botões de export separados por curso
+  // no Profile.
   const handleExportNotes = (courseFilter) => {
     if (!userName) return;
     try {
-      const entries = [];
-      const prefix = userKey(userName, 'notes:');
-      for (let i = 0; i < window.localStorage.length; i += 1) {
-        const key = window.localStorage.key(i);
-        if (!key || !key.startsWith(prefix)) continue;
-
-        // Três notações possíveis depois do prefixo: "<unit>" (curso
-        // Vocabulary), "american1:<unit>" (UnitNotes da seção) ou
-        // "american1-ref:<type>:<page>" (UnitNotes de uma página de
-        // referência — Grammar/Vocabulary/Sound Bank/Communication/Writing,
-        // cada uma com sua própria anotação, independente da seção) — cada
-        // uma vira um título diferente no export.
-        const remainder = key.slice(prefix.length);
-        const american1Match = remainder.match(/^american1:(\d+)$/);
-        const american1RefMatch = remainder.match(/^american1-ref:([a-z]+):(\d+)$/);
-        const html = window.localStorage.getItem(key) || '';
-
-        if (american1RefMatch) {
-          const [, refType, refPage] = american1RefMatch;
-          entries.push({
-            course: 'american1',
-            unit: `ref-${refType}-${refPage}`,
-            title: `American English A1 - ${AMERICAN1_REFERENCE_LABELS[refType] || refType} p.${refPage}`,
-            html,
-          });
-        } else if (american1Match) {
-          entries.push({
-            course: 'american1',
-            unit: Number(american1Match[1]),
-            title: `American English A1 - Unit ${american1Match[1]}`,
-            html,
-          });
-        } else if (remainder === 'american1-transcriptions') {
-          entries.push({
-            course: 'american1',
-            unit: 'transcriptions',
-            title: 'American English A1 - Transcriptions',
-            html,
-          });
-        } else {
-          const unit = Number(remainder);
-          entries.push({
-            course: 'vocabulary',
-            unit,
-            title: `Unit ${unit}${unitTable[unit] ? ` - ${unitTable[unit]}` : ''}`,
-            html,
-          });
-        }
-      }
-
+      const entries = collectAllNotesEntries(userName);
       const filteredEntries = courseFilter
         ? entries.filter((entry) => entry.course === courseFilter)
         : entries;
@@ -2581,27 +2735,13 @@ function App() {
 
       filteredEntries.sort((a, b) => (
         a.course.localeCompare(b.course)
-        || (typeof a.unit === 'number' && typeof b.unit === 'number' ? a.unit - b.unit : 0)
-        || String(a.unit).localeCompare(String(b.unit))
+        || a.kind.localeCompare(b.kind)
+        || notesEntrySortNumber(a) - notesEntrySortNumber(b)
       ));
-
-      // O editor de notas quebra cada linha em uma <div> própria (e Shift+Enter
-      // vira <br>) — textContent ignora essas fronteiras de bloco e junta tudo
-      // sem espaço nenhum, então precisamos inserir "\n" nós mesmos antes de
-      // extrair o texto.
-      const htmlToText = (html) => {
-        const container = document.createElement('div');
-        container.innerHTML = html;
-        container.querySelectorAll('br').forEach((br) => br.replaceWith('\n'));
-        container.querySelectorAll('div, p').forEach((el) => el.append('\n'));
-        return (container.textContent || '')
-          .replace(/\n{3,}/g, '\n\n')
-          .trim();
-      };
 
       const content = filteredEntries
         .map(({ title, html }) => {
-          const text = htmlToText(html) || '(empty)';
+          const text = noteHtmlToText(html) || '(empty)';
           return `${title}\n${'-'.repeat(title.length)}\n${text}\n`;
         })
         .join('\n');
@@ -2614,7 +2754,9 @@ function App() {
         ? 'my-notes-american-english-level-1.txt'
         : courseFilter === 'vocabulary'
           ? 'my-notes-vocabulary-pre-intermediate.txt'
-          : 'my-notes.txt';
+          : courseFilter === 'grammarElem'
+            ? 'my-notes-grammar-english-level-1.txt'
+            : 'my-notes.txt';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -3226,9 +3368,21 @@ function App() {
   const vocabularyStatuses = unitItems.map((unit) => (
     getVocabularyUnitBadgeStatus(unit.number, Boolean(visitedUnits[unit.number]), exerciseRatings)
   ));
-  const american1Statuses = american1UnitNumbers.map((unit) => {
-    const visited = Object.keys(american1VisitedSections).some((key) => key.startsWith(`${unit}|`));
-    return getUnitBadgeStatus(visited, american1UnitRatings[unit] || 0);
+  // Por SEÇÃO (A/B/C/Practical English/Review and Check), não por unit —
+  // pedido do dono: "1/12 units started" era enganoso, já que uma unit conta
+  // como "started" com só 1 das várias seções visitadas. A avaliação em
+  // estrelas continua por UNIT (não existe rating por seção — ver
+  // UnitNotes/american1UnitRatings), então toda seção de uma unit herda a
+  // MESMA rating pra decidir "rated"/"mastered"; só o "visited" é granular
+  // por seção (american1VisitedSections já é por seção). american1SectionsTotal
+  // (== american1Index.length) é a soma de sections por unit, não o número
+  // de units.
+  const american1Statuses = american1UnitNumbers.flatMap((unit) => {
+    const sections = american1SectionsByUnit[unit] || [];
+    const rating = american1UnitRatings[unit] || 0;
+    return sections.map((section) => (
+      getUnitBadgeStatus(Boolean(american1VisitedSections[`${unit}|${section.section}`]), rating)
+    ));
   });
   const grammarElemStatuses = grammarElemUnitNumbers.map((unit) => (
     getUnitBadgeStatus(Boolean(grammarElemVisitedUnits[unit]), grammarElemUnitRatings[unit] || 0)
@@ -3236,9 +3390,11 @@ function App() {
   // Ordem = COURSE_LEVEL_ORDER (Beginner antes de Intermediate — American1,
   // Grammar Elem, Vocabulary), não mais a ordem de implementação — o
   // Progress Dashboard lista "Progress by course" direto nessa ordem.
+  // unitLabel: só American1 conta por "sections" agora (ver acima); os
+  // outros 2 continuam por "units" (rótulo default do DashboardCourseRow).
   const courseProgressById = {
     vocabulary: { id: 'vocabulary', title: courses.vocabulary.title, level: courses.vocabulary.level, total: unitItems.length, tally: tallyUnitStatuses(vocabularyStatuses) },
-    american1: { id: 'american1', title: courses.american1.title, level: courses.american1.level, total: american1UnitNumbers.length, tally: tallyUnitStatuses(american1Statuses) },
+    american1: { id: 'american1', title: courses.american1.title, level: courses.american1.level, total: american1SectionsTotal, tally: tallyUnitStatuses(american1Statuses), unitLabel: 'sections' },
     grammarElem: { id: 'grammarElem', title: courses.grammarElem.title, level: courses.grammarElem.level, total: GRAMMAR_ELEM_UNIT_COUNT, tally: tallyUnitStatuses(grammarElemStatuses) },
   };
   const courseProgress = COURSE_LEVEL_ORDER.map((id) => courseProgressById[id]);
@@ -3470,6 +3626,7 @@ function App() {
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleHome(event); setMobileMenuOpen(false); }}><IconHome /><span>Home</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleCourses(event); setMobileMenuOpen(false); }}><IconCourses /><span>Courses</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenWordbook(event); setMobileMenuOpen(false); }}><IconWords /><span>My Words</span></a></li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenMyNotes(event); setMobileMenuOpen(false); }}><IconNotes /><span>My Notes</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenListening(event); setMobileMenuOpen(false); }}><IconHeadphones /><span>Listening</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenDictation(event); setMobileMenuOpen(false); }}><IconText /><span>Dictation</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenSpeaking(event); setMobileMenuOpen(false); }}><IconMic /><span>Speaking</span></a></li>
@@ -4457,10 +4614,10 @@ function App() {
             <aside className={`side-panel right-panel${sidePanelVisible ? '' : ' is-hidden'}`}>
               <div className="panel-content related-panel">
                 <UnitNotes
-                  key={selectedAmerican1Unit}
+                  key={`${selectedAmerican1Unit}-${activeSection?.section}`}
                   unit={selectedAmerican1Unit}
                   userName={userName}
-                  storageKeyBase={`notes:american1:${selectedAmerican1Unit}`}
+                  storageKeyBase={`notes:american1:${selectedAmerican1Unit}:${activeSection?.section}`}
                   hasAnswers={Boolean(answersUrl)}
                   showAnswers={showAmerican1Answers}
                   onToggleAnswers={() => setShowAmerican1Answers((prev) => !prev)}
@@ -5093,6 +5250,18 @@ function App() {
             onDelete={handleDeleteWord}
             onGrade={handleGradeWord}
             onUpdateMeaning={handleUpdateWordMeaning}
+            onUpdateEntry={handleUpdateWordEntry}
+          />
+        </main>
+      ) : activePage === 'my-notes' ? (
+        <main className="landing-page vocabulary-mode my-notes-mode">
+          <MyNotesPage
+            userName={userName}
+            searchQuery={myNotesSearchQuery}
+            onSearchChange={setMyNotesSearchQuery}
+            onOpenEntry={handleOpenNoteEntry}
+            askConfirm={askConfirm}
+            showToast={showToast}
           />
         </main>
       ) : activePage === 'profile' ? (
@@ -5317,6 +5486,10 @@ function App() {
                     Automatic folder backup needs Chrome or Edge — use Export/Import below instead.
                   </p>
                 )}
+                <button type="button" className="profile-reset-btn primary" onClick={() => handleExportNotes()}>
+                  <span>Download all notes (.txt)</span>
+                  <small>Downloads "My Notes" from all 3 courses — units, reference pages, appendixes and additional exercises — as a single plain-text file.</small>
+                </button>
                 <button type="button" className="profile-reset-btn primary" onClick={handleExportBackup}>
                   <span>Export full backup (.json)</span>
                   <small>Downloads everything for "{userName}": progress, notes, answers, ratings and My Words.</small>
@@ -5897,13 +6070,13 @@ function ReviewCard({ items, dueWordsCount, onOpenItem, onOpenWords, embedded })
 const DASHBOARD_BAR_SEGMENTS = ['visited', 'rated', 'mastered'];
 const DASHBOARD_LEGEND_ORDER = ['unvisited', 'visited', 'rated', 'mastered'];
 
-function DashboardCourseRow({ title, total, tally, continueEntry, continueLabel, onContinue }) {
+function DashboardCourseRow({ title, total, tally, unitLabel = 'units', continueEntry, continueLabel, onContinue }) {
   const safeTotal = total || 1;
   return (
     <div className="dashboard-course-row">
       <div className="dashboard-course-head">
         <h3>{title}</h3>
-        <span className="dashboard-course-count">{total - tally.unvisited}/{total} units started</span>
+        <span className="dashboard-course-count">{total - tally.unvisited}/{total} {unitLabel} started</span>
       </div>
       <div
         className="dashboard-progress-bar"
@@ -6045,6 +6218,7 @@ function DashboardPage({
                 title={course.title}
                 total={course.total}
                 tally={course.tally}
+                unitLabel={course.unitLabel}
                 continueEntry={entry}
                 continueLabel={entry ? formatLastVisitedLabel(course.id, entry) : ''}
                 onContinue={() => onOpenLastVisited(course.id, entry)}
@@ -6173,6 +6347,26 @@ function youglishUrlFor(word) {
   const normalizedWord = encodeURIComponent(word.trim().toLowerCase());
   return `https://youglish.com/pronounce/${normalizedWord}/english/us`;
 }
+// Google Translate (EN→PT) para termos de mais de uma palavra — o Cambridge
+// Dictionary busca só palavras/expressões fixas cadastradas no dicionário
+// dele; frases soltas ("untidy is a mess") não acham nada útil lá. O "\n"
+// no final do texto reproduz como o próprio Google Translate monta a URL
+// quando o usuário digita ali (confirmado testando manualmente).
+function googleTranslateUrlFor(text) {
+  const encoded = encodeURIComponent(`${text.trim()}\n`);
+  return `https://translate.google.com/?sl=en&tl=pt&text=${encoded}&op=translate`;
+}
+const isSingleWordEntry = (text) => text.trim().split(/\s+/).filter(Boolean).length <= 1;
+// Escolhe Cambridge Dictionary (uma palavra/expressão fixa) ou Google
+// Translate (mais de uma palavra) — usado em todo lugar que antes ia direto
+// pro Cambridge (lista do My Words, botão "?" dos formulários de
+// adicionar/editar, clique na palavra do flashcard de prática).
+function wordReferenceUrlFor(text) {
+  return isSingleWordEntry(text) ? cambridgeDictionaryUrlFor(text) : googleTranslateUrlFor(text);
+}
+function wordReferenceLabel(text) {
+  return isSingleWordEntry(text) ? 'See in Dictionary' : 'Translate';
+}
 
 // Página "My Words": caderno de vocabulário pessoal do usuário. Lista as
 // palavras salvas (com significado/exemplo/contexto/imagem), permite
@@ -6186,7 +6380,7 @@ function youglishUrlFor(word) {
 //   invertido de propósito (pedido do usuário): força o aluno a olhar a
 //   imagem, ler o significado, e tentar lembrar/reconhecer a palavra em
 //   inglês antes de revelar, em vez de só reconhecer a tradução.
-function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
+function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUpdateEntry }) {
   const [word, setWord] = useState('');
   const [meaning, setMeaning] = useState('');
   const [example, setExample] = useState('');
@@ -6195,9 +6389,45 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
   const [practiceIndex, setPracticeIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [finished, setFinished] = useState(false);
+  // true quando a sessão atual veio do botão "view larger" de UM card (ver
+  // startPracticeSingle), não do "Practice words" de verdade — usado por
+  // gradeCard pra pular a tela "Session complete!" nesse caso.
+  const [isSingleView, setIsSingleView] = useState(false);
   const [editingMeaning, setEditingMeaning] = useState(false);
   const [meaningDraft, setMeaningDraft] = useState('');
   const meaningInputRef = useRef(null);
+  // Botão "Edit" de cada card da LISTA (diferente de editingMeaning acima,
+  // que é só o significado dentro do flashcard de prática) — edita
+  // word/meaning/example/image de uma vez, num form inline substituindo o
+  // conteúdo normal do card.
+  const [editingEntryId, setEditingEntryId] = useState(null);
+  const [editDraft, setEditDraft] = useState({ word: '', meaning: '', example: '', image: null });
+
+  const startEditingEntry = (entry) => {
+    setEditingEntryId(entry.id);
+    setEditDraft({
+      word: entry.word,
+      meaning: entry.meaning || '',
+      example: entry.example || '',
+      image: entry.image || null,
+    });
+  };
+
+  const cancelEditingEntry = () => {
+    setEditingEntryId(null);
+  };
+
+  const saveEditingEntry = () => {
+    const trimmedWord = editDraft.word.trim();
+    if (!trimmedWord) return;
+    onUpdateEntry(editingEntryId, {
+      word: trimmedWord,
+      meaning: editDraft.meaning.trim(),
+      example: editDraft.example.trim(),
+      image: editDraft.image,
+    });
+    setEditingEntryId(null);
+  };
 
   // Focar o input do significado manualmente (em vez de autoFocus): abrir o
   // dicionario externo (ver startEditingMeaning) tira o foco da JANELA pra
@@ -6253,6 +6483,25 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
     setFlipped(false);
     setFinished(false);
     setEditingMeaning(false);
+    setIsSingleView(false);
+  };
+
+  // Botão "view larger" de um card da lista: mesmo flashcard grande do modo
+  // Practice, só que com UM card só (o clicado) — reaproveita o mesmo
+  // practicing/currentCard/gradeCard de baixo, então "Again/Good/Easy"
+  // continua funcionando normalmente se o usuário quiser avaliar por ali
+  // mesmo; "Stop practicing" volta pra lista sem precisar avaliar nada.
+  // isSingleView marca esse caso pra gradeCard NÃO mostrar a tela "Session
+  // complete!" ao terminar — essa tela é sobre uma SESSÃO de revisão de
+  // verdade (várias palavras vencidas), não faz sentido depois de só abrir
+  // uma palavra pra olhar de perto.
+  const startPracticeSingle = (entry) => {
+    setPracticeIds([entry.id]);
+    setPracticeIndex(0);
+    setFlipped(false);
+    setFinished(false);
+    setEditingMeaning(false);
+    setIsSingleView(true);
   };
 
   const practicing = Array.isArray(practiceIds) && practiceIds.length > 0 && !finished;
@@ -6265,6 +6514,8 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
     setEditingMeaning(false);
     if (practiceIndex < practiceIds.length - 1) {
       setPracticeIndex(practiceIndex + 1);
+    } else if (isSingleView) {
+      setPracticeIds(null);
     } else {
       setFinished(true);
       setPracticeIds(null);
@@ -6279,7 +6530,7 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
     // popup se nao acharem que ainda faz parte do mesmo gesto do usuario —
     // por isso os dois ficam aqui dentro do handler de click, sincronos,
     // sem nenhum await/setTimeout no meio.
-    window.open(cambridgeDictionaryUrlFor(currentCard.word), '_blank', 'noopener,noreferrer');
+    window.open(wordReferenceUrlFor(currentCard.word), '_blank', 'noopener,noreferrer');
     window.open(youglishUrlFor(currentCard.word), '_blank', 'noopener,noreferrer');
   };
 
@@ -6492,13 +6743,30 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
               value={word}
               onChange={(event) => setWord(event.target.value)}
             />
-            <input
-              type="text"
-              className="wordbook-input"
-              placeholder="Meaning / translation"
-              value={meaning}
-              onChange={(event) => setMeaning(event.target.value)}
-            />
+            <div className="wordbook-input-with-help">
+              <input
+                type="text"
+                className="wordbook-input"
+                placeholder="Meaning / translation"
+                value={meaning}
+                onChange={(event) => setMeaning(event.target.value)}
+              />
+              {word.trim() ? (
+                <a
+                  href={wordReferenceUrlFor(word)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="wordbook-input-help"
+                  title={isSingleWordEntry(word)
+                    ? `Look up "${word.trim()}" in the Cambridge Dictionary`
+                    : `Translate "${word.trim()}" with Google Translate`}
+                >
+                  ?
+                </a>
+              ) : (
+                <span className="wordbook-input-help wordbook-input-help--disabled" aria-hidden="true">?</span>
+              )}
+            </div>
             <ImageDropZone image={image} onChange={setImage} />
             <input
               type="text"
@@ -6520,50 +6788,219 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
                 text in the reading PDF first fills the word in for you.
               </p>
             ) : (
-              sortedEntries.map((entry) => (
-                <div key={entry.id} className="wordbook-entry">
-                  {entry.image && <img src={entry.image} alt="" className="wordbook-entry-thumb" />}
-                  <div className="wordbook-entry-main">
-                    <span className="wordbook-entry-word">{entry.word}</span>
-                    {entry.meaning && <p className="wordbook-entry-meaning">{entry.meaning}</p>}
-                    {entry.example && <p className="wordbook-entry-example">“{entry.example}”</p>}
-                    <p className="wordbook-entry-meta">
-                      {entry.context ? `${entry.context} · ` : ''}
-                      {formatDue(entry)}
-                    </p>
-                    <div className="wordbook-entry-links">
-                      <a
-                        href={cambridgeDictionaryUrlFor(entry.word)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="wordbook-entry-link"
-                      >
-                        See in Dictionary
-                      </a>
-                      <a
-                        href={youglishUrlFor(entry.word)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="wordbook-entry-link"
-                      >
-                        Spoken in phrases
-                      </a>
-                    </div>
+              sortedEntries.map((entry) => {
+                const isEditing = editingEntryId === entry.id;
+                return (
+                  <div key={entry.id} className="wordbook-entry">
+                    {isEditing ? (
+                      <div className="wordbook-entry-edit">
+                        <ImageDropZone
+                          image={editDraft.image}
+                          onChange={(nextImage) => setEditDraft((draft) => ({ ...draft, image: nextImage }))}
+                          compact
+                        />
+                        <input
+                          type="text"
+                          className="wordbook-input"
+                          placeholder="Word or expression"
+                          value={editDraft.word}
+                          onChange={(event) => setEditDraft((draft) => ({ ...draft, word: event.target.value }))}
+                        />
+                        <input
+                          type="text"
+                          className="wordbook-input"
+                          placeholder="Meaning / translation"
+                          value={editDraft.meaning}
+                          onChange={(event) => setEditDraft((draft) => ({ ...draft, meaning: event.target.value }))}
+                        />
+                        <input
+                          type="text"
+                          className="wordbook-input"
+                          placeholder="Example sentence (optional)"
+                          value={editDraft.example}
+                          onChange={(event) => setEditDraft((draft) => ({ ...draft, example: event.target.value }))}
+                        />
+                        <div className="wordbook-entry-edit-actions">
+                          <button
+                            type="button"
+                            className="show-answers-btn"
+                            onClick={saveEditingEntry}
+                            disabled={!editDraft.word.trim()}
+                          >
+                            Save
+                          </button>
+                          <button type="button" className="wordbook-entry-link" onClick={cancelEditingEntry}>
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        {entry.image && <img src={entry.image} alt="" className="wordbook-entry-thumb" />}
+                        <div className="wordbook-entry-main">
+                          <span className="wordbook-entry-word">{entry.word}</span>
+                          {entry.meaning && <p className="wordbook-entry-meaning">{entry.meaning}</p>}
+                          {entry.example && <p className="wordbook-entry-example">“{entry.example}”</p>}
+                          <p className="wordbook-entry-meta">
+                            {entry.context ? `${entry.context} · ` : ''}
+                            {formatDue(entry)}
+                          </p>
+                          <div className="wordbook-entry-links">
+                            <a
+                              href={wordReferenceUrlFor(entry.word)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="wordbook-entry-link"
+                            >
+                              {wordReferenceLabel(entry.word)}
+                            </a>
+                            <a
+                              href={youglishUrlFor(entry.word)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="wordbook-entry-link"
+                            >
+                              Spoken in phrases
+                            </a>
+                            <button
+                              type="button"
+                              className="wordbook-entry-link"
+                              onClick={() => startEditingEntry(entry)}
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        </div>
+                        <div className="wordbook-entry-corner-actions">
+                          <button
+                            type="button"
+                            className="wordbook-expand"
+                            title={`View "${entry.word}" larger`}
+                            aria-label={`View "${entry.word}" larger`}
+                            onClick={() => startPracticeSingle(entry)}
+                          >
+                            <IconMaximize />
+                          </button>
+                          <button
+                            type="button"
+                            className="wordbook-delete"
+                            title={`Delete "${entry.word}"`}
+                            aria-label={`Delete "${entry.word}"`}
+                            onClick={() => onDelete(entry.id)}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
-                  <button
-                    type="button"
-                    className="wordbook-delete"
-                    title={`Delete "${entry.word}"`}
-                    aria-label={`Delete "${entry.word}"`}
-                    onClick={() => onDelete(entry.id)}
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </>
+      )}
+    </div>
+  );
+}
+
+// Tela "My Notes": todas as anotações ("My Notes") dos 3 cursos numa lista
+// só — cada card mostra ONDE a nota foi escrita e uma prévia do texto;
+// clicar leva direto pra lá (ver handleOpenNoteEntry em App()), o botão ✕
+// apaga (com confirmação — ver askConfirm em App(), mesmo diálogo estilizado
+// do fluxo de Backup & Restore, não window.confirm nativo). Reaproveita
+// collectAllNotesEntries/noteHtmlToText, a mesma varredura usada pelo
+// export de notas do Profile. `refreshToken` força o useMemo a reler o
+// localStorage depois de um delete (a lista em si não é estado React).
+function MyNotesPage({ userName, searchQuery, onSearchChange, onOpenEntry, askConfirm, showToast }) {
+  const [refreshToken, setRefreshToken] = useState(0);
+  const allEntries = useMemo(() => collectAllNotesEntries(userName), [userName, refreshToken]);
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredEntries = normalizedQuery
+    ? allEntries.filter((entry) => (
+      entry.title.toLowerCase().includes(normalizedQuery)
+      || noteHtmlToText(entry.html).toLowerCase().includes(normalizedQuery)
+    ))
+    : allEntries;
+
+  const entriesByCourse = {};
+  filteredEntries.forEach((entry) => {
+    (entriesByCourse[entry.course] ||= []).push(entry);
+  });
+  const notesEntrySortNumber = (entry) => (
+    entry.unit ?? entry.appendixNumber ?? entry.additionalNumber ?? entry.refPage ?? 0
+  );
+  Object.values(entriesByCourse).forEach((list) => {
+    list.sort((a, b) => a.kind.localeCompare(b.kind) || notesEntrySortNumber(a) - notesEntrySortNumber(b));
+  });
+
+  const handleDelete = async (event, entry) => {
+    event.preventDefault();
+    const proceed = await askConfirm(`Delete this note ("${entry.title}")? This cannot be undone.`, { confirmLabel: 'Delete' });
+    if (!proceed) return;
+    try {
+      window.localStorage.removeItem(entry.key);
+      setRefreshToken((token) => token + 1);
+      showToast('Note deleted.', 'success');
+    } catch (error) {
+      showToast('Could not delete that note.', 'error');
+    }
+  };
+
+  return (
+    <div className="landing-panel my-notes-panel">
+      <p className="eyebrow">My Notes</p>
+      <h1>All your notes</h1>
+      <p className="landing-meta">
+        Every note you've written across all 3 courses, in one place — click a card to jump straight back to where you wrote it.
+      </p>
+      <UnitSearchBox
+        value={searchQuery}
+        onChange={onSearchChange}
+        placeholder="Search your notes..."
+      />
+      {allEntries.length === 0 ? (
+        <p className="my-notes-empty">
+          No notes yet. Look for "My Notes" while reading any unit, reference page, appendix or
+          additional exercise — whatever you write there shows up here.
+        </p>
+      ) : filteredEntries.length === 0 ? (
+        <p className="unit-search-empty">No notes match your search.</p>
+      ) : (
+        <div className="my-notes-list">
+          {COURSE_LEVEL_ORDER.filter((courseId) => entriesByCourse[courseId]?.length).map((courseId) => (
+            <Fragment key={courseId}>
+              <span className="course-level-heading">{courses[courseId].level}</span>
+              <h2 className="my-notes-course-title">{courses[courseId].title}</h2>
+              {entriesByCourse[courseId].map((entry) => {
+                const preview = noteHtmlToText(entry.html);
+                return (
+                  <div key={entry.key} className="my-notes-card">
+                    <a
+                      href="#0"
+                      className="my-notes-card-link"
+                      onClick={(event) => onOpenEntry(event, entry)}
+                    >
+                      <span className="my-notes-card-title">{entry.title}</span>
+                      <span className="my-notes-card-preview">
+                        {preview.length > 180 ? `${preview.slice(0, 180)}…` : preview}
+                      </span>
+                    </a>
+                    <button
+                      type="button"
+                      className="my-notes-card-delete"
+                      title="Delete this note"
+                      aria-label={`Delete note: ${entry.title}`}
+                      onClick={(event) => handleDelete(event, entry)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                );
+              })}
+            </Fragment>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -6639,13 +7076,30 @@ function WordQuickAdd({ contextLabel, onAdd }) {
             onChange={(event) => setWord(event.target.value)}
             autoFocus
           />
-          <input
-            type="text"
-            className="wordbook-input"
-            placeholder="Meaning / translation"
-            value={meaning}
-            onChange={(event) => setMeaning(event.target.value)}
-          />
+          <div className="wordbook-input-with-help">
+            <input
+              type="text"
+              className="wordbook-input"
+              placeholder="Meaning / translation"
+              value={meaning}
+              onChange={(event) => setMeaning(event.target.value)}
+            />
+            {word.trim() ? (
+              <a
+                href={wordReferenceUrlFor(word)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="wordbook-input-help"
+                title={isSingleWordEntry(word)
+                  ? `Look up "${word.trim()}" in the Cambridge Dictionary`
+                  : `Translate "${word.trim()}" with Google Translate`}
+              >
+                ?
+              </a>
+            ) : (
+              <span className="wordbook-input-help wordbook-input-help--disabled" aria-hidden="true">?</span>
+            )}
+          </div>
           <ImageDropZone image={image} onChange={setImage} compact />
           <input
             type="text"
@@ -7132,7 +7586,7 @@ function SimpleAudioPlayer({ src, label }) {
 // progresso arrastável e tempo atual/total. O <audio> continua sendo um
 // elemento real dentro do componente — Ctrl+Space, auto-pause e "Replay
 // last part" (Dictation) o encontram via querySelector('audio') como antes.
-const WIDE_PLAYER_SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+const WIDE_PLAYER_SPEEDS = [0.5, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2];
 
 function formatPlayerTime(seconds) {
   if (!Number.isFinite(seconds)) return '0:00';

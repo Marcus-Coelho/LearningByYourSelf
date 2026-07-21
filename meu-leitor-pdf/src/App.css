@@ -26,6 +26,7 @@
    nunca atrapalhar cliques. */
 .landing-page.landing-page--courses,
 .landing-page.vocabulary-mode.wordbook-mode,
+.landing-page.vocabulary-mode.my-notes-mode,
 .landing-page.vocabulary-mode.profile-mode,
 .landing-page.vocabulary-mode.dashboard-mode {
   position: relative;
@@ -33,6 +34,7 @@
 
 .landing-page.landing-page--courses::before,
 .landing-page.vocabulary-mode.wordbook-mode::before,
+.landing-page.vocabulary-mode.my-notes-mode::before,
 .landing-page.vocabulary-mode.profile-mode::before,
 .landing-page.vocabulary-mode.dashboard-mode::before {
   content: '';
@@ -52,6 +54,7 @@
 
 .landing-panel.course-links-panel,
 .landing-panel.wordbook-panel,
+.landing-panel.my-notes-panel,
 .landing-panel.profile-panel,
 .landing-panel.dashboard-panel {
   position: relative;
@@ -328,6 +331,16 @@ body {
    forçava uma altura mínima maior que o espaço disponível de verdade,
    estourando o app-shell e criando a barra de rolagem externa indesejada. */
 .landing-page.vocabulary-mode.wordbook-mode {
+  padding-top: 16px;
+  align-items: stretch;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Mesmo tratamento do wordbook-mode acima (mesma causa raiz: min-height
+   herdado de .landing-page maior que o espaço real disponível) — a lista
+   de notas (.my-notes-list) é quem rola, não a página. */
+.landing-page.vocabulary-mode.my-notes-mode {
   padding-top: 16px;
   align-items: stretch;
   overflow: hidden;
@@ -1088,6 +1101,28 @@ body {
 .landing-panel.dashboard-panel > p {
   color: rgba(27, 58, 94, 0.75);
   max-width: 640px;
+}
+
+/* Mesmo fix de cor herdada do tema roxo escuro (.landing-panel p, ver
+   Quirks & Gotchas no CLAUDE.md) — sem isso o eyebrow/h1/parágrafos da tela
+   "My Notes" ficam quase invisíveis (branco sobre o fundo claro). */
+.landing-panel.my-notes-panel .eyebrow {
+  color: var(--purple-700);
+}
+
+.landing-panel.my-notes-panel h1 {
+  margin: 0 0 10px;
+  font-size: clamp(1.8rem, 2.6vw, 2.4rem);
+  color: #1b3a5e;
+}
+
+/* max-width mais largo que o padrão de outros painéis (640px) de propósito
+   — o texto é uma frase só e o painel aqui é largo (900px, ver
+   .my-notes-panel); 640px forçava uma quebra de linha feia bem no meio da
+   frase ("...jump straight / back to where..."). */
+.landing-panel.my-notes-panel > p {
+  color: rgba(27, 58, 94, 0.75);
+  max-width: 100%;
 }
 
 /* "Continue where you left off" + "Save progress now" lado a lado — o
@@ -3939,6 +3974,42 @@ body {
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
 }
 
+/* "?" dentro do campo de significado, ao adicionar uma palavra — link pro
+   Cambridge Dictionary da palavra já digitada no campo "Word or expression"
+   (mesmo padrão de dicionário externo já usado no flashcard de prática, ver
+   startEditingMeaning). Cinza/inerte enquanto a palavra ainda não foi
+   digitada (não dá pra montar uma URL de busca vazia). */
+.wordbook-input-with-help {
+  position: relative;
+}
+
+.wordbook-input-with-help .wordbook-input {
+  width: 100%;
+  padding-right: 38px;
+  box-sizing: border-box;
+}
+
+.wordbook-input-help {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 800;
+  font-size: 22px;
+  color: #c0392b;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.wordbook-input-help:hover {
+  text-decoration: underline;
+}
+
+.wordbook-input-help--disabled {
+  color: rgba(27, 58, 94, 0.25);
+  cursor: default;
+}
+
 /* Área de imagem-mnemônica (upload/drag&drop/paste) — ver ImageDropZone. */
 .image-dropzone {
   grid-column: 1 / -1;
@@ -4080,10 +4151,10 @@ body {
 
 .wordbook-entry-thumb {
   flex: 0 0 auto;
-  width: 48px;
-  height: 48px;
+  width: 88px;
+  height: 88px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 12px;
   border: 1px solid rgba(27, 58, 94, 0.15);
   background: #fff;
 }
@@ -4144,6 +4215,51 @@ body {
   background: rgba(91, 63, 217, 0.18);
 }
 
+/* Form inline do botão "Edit" de cada card — substitui o conteúdo normal
+   do card (thumb/word/meaning/example/links) em vez de abrir um modal, pra
+   ficar no mesmo lugar/contexto que o usuário já está olhando. */
+.wordbook-entry-edit {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wordbook-entry-edit-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+/* Botões do canto superior direito do card ("view larger" + delete) —
+   pedido do dono: ver a palavra grande, do mesmo jeito que aparece no modo
+   Practice, sem precisar clicar em "Practice N words" (que pega TODAS as
+   vencidas, não só essa). Reaproveita o próprio flashcard de prática pra
+   isso (ver startPracticeSingle) — não é uma tela nova. */
+.wordbook-entry-corner-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.wordbook-expand {
+  flex: 0 0 auto;
+  border: none;
+  background: transparent;
+  color: rgba(27, 58, 94, 0.45);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.wordbook-expand:hover {
+  color: var(--purple-700);
+  background: rgba(91, 63, 217, 0.1);
+}
+
 .wordbook-delete {
   flex: 0 0 auto;
   border: none;
@@ -4172,6 +4288,7 @@ body {
 
 .flashcard--done {
   padding: 22px;
+  margin-bottom: 18px;
 }
 
 .flashcard .flashcard-progress {
@@ -4387,28 +4504,31 @@ body {
    de Backup & Restore (ver showToast/askConfirm em App()). Fixed, fora do
    fluxo normal do layout, então funcionam em qualquer tela sem depender de
    onde o botão que os disparou está. */
+/* Centro da tela (não mais rodapé) — pedido do dono: perto do rodapé
+   passava despercebido, some sozinho embaixo da página em vez de chamar
+   atenção. */
 .app-toast {
   position: fixed;
   left: 50%;
-  bottom: 28px;
-  transform: translateX(-50%);
+  top: 50%;
+  transform: translate(-50%, -50%);
   z-index: 2000;
   max-width: min(92vw, 480px);
-  padding: 14px 20px;
+  padding: 16px 24px;
   border-radius: 14px;
   background: #1b3a5e;
   color: #fff;
-  font-size: 14.5px;
+  font-size: 15.5px;
   font-weight: 600;
   line-height: 1.5;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
   text-align: center;
   animation: app-toast-in 220ms ease-out;
 }
 
 @keyframes app-toast-in {
-  from { opacity: 0; transform: translate(-50%, 10px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
 .app-toast--success {
@@ -4482,4 +4602,102 @@ body {
 
 .app-confirm-btn--confirm:hover {
   filter: brightness(1.08);
+}
+
+/* Tela "My Notes" — mesmo esqueleto do My Words (.wordbook-panel/-list):
+   painel estica pra altura disponível (align-items:stretch em
+   .my-notes-mode), só a lista rola. background OPACO (não o
+   rgba(255,255,255,0.09) herdado de .landing-panel, pensado pro tema roxo
+   escuro original) — sem isso a imagem borrada de fundo vazava por todo o
+   painel, deixando o texto quase ilegível (Decisões Imutáveis, item 7 do
+   CLAUDE.md — esqueci de aplicar aqui na primeira versão). */
+.landing-panel.my-notes-panel {
+  max-height: none;
+  background: #fbfcfd;
+  border: 1px solid rgba(27, 58, 94, 0.1);
+}
+
+.my-notes-panel {
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+}
+
+.my-notes-empty {
+  margin: 16px 0 0;
+  color: rgba(27, 58, 94, 0.65);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.my-notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-top: 14px;
+}
+
+.my-notes-course-title {
+  margin: 10px 0 2px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #1b3a5e;
+}
+
+.my-notes-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: #f3f5f7;
+  border: 1px solid rgba(27, 58, 94, 0.12);
+}
+
+.my-notes-card:hover {
+  background: #eceff2;
+  border-color: rgba(27, 58, 94, 0.22);
+}
+
+.my-notes-card-link {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.my-notes-card-title {
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--purple-700);
+}
+
+.my-notes-card-preview {
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: rgba(27, 58, 94, 0.75);
+  white-space: pre-line;
+}
+
+.my-notes-card-delete {
+  flex: 0 0 auto;
+  border: none;
+  background: transparent;
+  color: rgba(27, 58, 94, 0.45);
+  cursor: pointer;
+  font-size: 15px;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.my-notes-card-delete:hover {
+  color: #c0392b;
+  background: rgba(192, 57, 43, 0.08);
 }
