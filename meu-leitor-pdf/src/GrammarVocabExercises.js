@@ -14,15 +14,22 @@
 // units 1-100 de "Essential Grammar in Use" — escritos à mão a partir dos
 // títulos reais de grammar_elem_index.json, já que o app não tem o texto
 // das lições extraído, só os títulos) e grammar_vocab_exercises_vocab.json
-// (97 exercícios, 1 por unit nas units 4-100 de English Vocabulary B — as
-// 3 primeiras units não têm faixa de Listening pra tirar uma frase de
+// (200 exercícios, 1-3 por unit nas units 4-100 de English Vocabulary B —
+// as 3 primeiras units não têm faixa de Listening pra tirar uma frase de
 // verdade, ver script gerador no scratchpad da sessão). Vocabulary é
 // gerado por script (SEMPRE grounded em dado real: palavra-alvo real de
 // vocabulary_target_words.json numa frase real de listening_vocabulary.json,
 // nunca inventado — os distratores preferem a mesma "categoria" heurística
 // da resposta certa, ver roughCategory no script gerador, e nunca são
-// números/contrações soltas, pra não ficarem óbvios demais de descartar)
-// — Grammar é escrito à mão porque o app não tem o texto das lições, só os
+// números/contrações soltas, pra não ficarem óbvios demais de descartar).
+// Revisão manual adicional depois de 2 rodadas de feedback do dono: sentenças
+// que são só LISTAS de palavras do PDF (ex. "Forehead, cheek, ___, neck...")
+// viram exercício ambíguo (qualquer item da lista serve) — trocadas por uma
+// frase de verdade quando havia uma disponível pro mesmo unit/palavra-alvo;
+// distratores quase-sinônimos da resposta certa (ex. "totally"/"absolutely"
+// pra "completely", "focus"/"concentrate" pra "work") também foram trocados
+// por palavras plausíveis mas que mudam o sentido, não só o registro —
+// Grammar é escrito à mão porque o app não tem o texto das lições, só os
 // títulos reais das units.
 import { useState } from 'react';
 import { userKey } from './App';
