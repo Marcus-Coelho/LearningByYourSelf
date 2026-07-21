@@ -1,0 +1,246 @@
+/* CSS próprio da tela "Grammar & Vocabulary Exercises" — ver comentário
+   grande no topo de GrammarVocabExercises.js sobre por que esse arquivo
+   existe fora de App.css. Reaproveita as variáveis de cor globais
+   (--purple-700 etc., definidas em :root no App.css) em vez de duplicá-las
+   — mas CUIDADO: import GrammarVocabExercisesPage vem ANTES de
+   `import './App.css'` no topo de App.js, então ESTE arquivo entra no bundle
+   final ANTES de App.css, não depois. Em empate de especificidade, quem vem
+   DEPOIS no bundle vence — por isso os seletores abaixo usam
+   ".landing-panel.gve-panel" (2 classes) em vez de só ".gve-panel", pra
+   ficarem mais específicos que ".landing-panel h1"/".landing-panel p"/
+   ".landing-panel .eyebrow" do App.css e vencerem de qualquer jeito,
+   independente da ordem de import. */
+/* Mesmo bug/fix já documentado em App.css pra listening-tracks-mode/
+   wordbook-mode/my-notes-mode: a regra base ".landing-page.vocabulary-mode"
+   (overflow:auto, sem min-height:0) deixa a PÁGINA tentar crescer pro
+   tamanho do conteúdo antes de cortar — com 100+ exercícios isso estoura o
+   .app-shell (height:100vh fixo) e cria DUAS barras de rolagem ao mesmo
+   tempo (a da página + a nativa do navegador). overflow:hidden +
+   align-items:stretch + min-height:0 aqui faz o painel esticar exatamente
+   pro espaço disponível; só .gve-list (abaixo) rola de verdade. */
+.landing-page.vocabulary-mode.gve-mode {
+  overflow: hidden;
+  align-items: stretch;
+  min-height: 0;
+}
+
+.gve-panel {
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* .landing-panel sozinho é o tema roxo escuro original (fundo quase
+   transparente, texto branco) — every other content screen in this app
+   overrides it with an opaque light background + dark text (ver Quirks &
+   Gotchas no CLAUDE.md); replicado aqui porque esta tela vive no próprio
+   arquivo, fora de App.css. */
+.landing-panel.gve-panel {
+  background: #fbfcfd;
+  border: 1px solid rgba(27, 58, 94, 0.1);
+}
+
+.landing-panel.gve-panel .eyebrow {
+  color: var(--purple-700);
+}
+
+.landing-panel.gve-panel h1 {
+  margin: 0 0 10px;
+  font-size: clamp(1.8rem, 2.6vw, 2.4rem);
+  color: #1b3a5e;
+}
+
+.landing-panel.gve-panel p {
+  color: rgba(27, 58, 94, 0.75);
+}
+
+.gve-source-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.gve-source-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: #f3f5f7;
+  border: 1px solid rgba(27, 58, 94, 0.12);
+  cursor: pointer;
+  font: inherit;
+}
+
+.gve-source-card:hover {
+  background: #eceff2;
+  border-color: rgba(27, 58, 94, 0.22);
+}
+
+.gve-source-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #1b3a5e;
+}
+
+.gve-source-card small {
+  color: rgba(27, 58, 94, 0.65);
+  font-size: 13.5px;
+}
+
+.gve-source-stats {
+  color: var(--purple-700) !important;
+  font-weight: 700;
+}
+
+.gve-score {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 14px 0 4px;
+  color: rgba(27, 58, 94, 0.75);
+  font-size: 14.5px;
+}
+
+.gve-reset-btn {
+  border: none;
+  background: rgba(192, 57, 43, 0.08);
+  color: #c0392b;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.gve-reset-btn:hover {
+  background: rgba(192, 57, 43, 0.16);
+}
+
+.gve-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.gve-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: #f3f5f7;
+  border: 1px solid rgba(27, 58, 94, 0.12);
+  /* .landing-panel herda text-align:center do tema roxo original — reseta
+     aqui pro texto da pergunta ficar alinhado à esquerda (pedido do dono). */
+  text-align: left;
+}
+
+.gve-card-unit {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: rgba(27, 58, 94, 0.55);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.gve-card-prompt {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #1b3a5e;
+}
+
+.gve-card-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gve-option {
+  border: 1px solid rgba(27, 58, 94, 0.2);
+  background: #fff;
+  color: #1b3a5e;
+  font-weight: 600;
+  font-size: 14.5px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.gve-option:hover:not(:disabled) {
+  border-color: var(--purple-500);
+  background: rgba(139, 92, 246, 0.08);
+}
+
+.gve-option:disabled {
+  cursor: default;
+}
+
+.gve-option.is-correct {
+  background: rgba(22, 163, 74, 0.12);
+  border-color: #16a34a;
+  color: #16a34a;
+}
+
+.gve-option.is-wrong {
+  background: rgba(220, 38, 38, 0.1);
+  border-color: #dc2626;
+  color: #dc2626;
+}
+
+/* Selecionada mas ainda NÃO checada — neutra de propósito (nem verde nem
+   vermelho), só pra o usuário ver o que escolheu antes de clicar "Check
+   Answer" (pedido do dono: não entregar certo/errado no clique da opção). */
+.gve-option.is-selected {
+  border-color: var(--purple-500);
+  background: rgba(139, 92, 246, 0.14);
+  color: var(--purple-700);
+}
+
+.gve-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.gve-check-btn {
+  border: none;
+  background: linear-gradient(135deg, var(--purple-700), var(--purple-500));
+  color: #fff;
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.gve-check-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.gve-unit-toggle-btn {
+  border: 1px solid rgba(27, 58, 94, 0.2);
+  background: #fff;
+  color: rgba(27, 58, 94, 0.7);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 7px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.gve-unit-toggle-btn:hover {
+  border-color: var(--purple-500);
+  color: var(--purple-700);
+}

@@ -21,6 +21,7 @@ import listeningAmerican1 from './listening_american1.json';
 import listeningVocabulary from './listening_vocabulary.json';
 import dictationPausePoints from './dictation_pause_points.json';
 import vocabularyTargetWords from './vocabulary_target_words.json';
+import GrammarVocabExercisesPage from './GrammarVocabExercises';
 import './App.css';
 
 // Fontes de Listening disponíveis na tela "Listening" do menu principal —
@@ -193,7 +194,13 @@ const saveUsers = (users) => {
   }
 };
 
-const userKey = (name, base) => `u:${encodeURIComponent(name)}:${base}`;
+// Exportado (named export, único caso no arquivo — ver "Para Outra IA" no
+// CLAUDE.md sobre por que quase tudo mora dentro de App.js) só pra
+// GrammarVocabExercises.js (tela "Grammar & Vocabulary Exercises", arquivo
+// próprio de propósito por causa do volume de dados/UI — ver comentário
+// grande no topo desse arquivo) conseguir namespacear localStorage do mesmo
+// jeito que o resto do app, sem duplicar essa função em dois lugares.
+export const userKey = (name, base) => `u:${encodeURIComponent(name)}:${base}`;
 
 // Backup automático em pasta local (File System Access API — só Chrome/Edge,
 // ver isBackupFolderSupported) — o dono pediu pra resolver "progresso só no
@@ -869,6 +876,17 @@ const IconSound = () => (
     <path d="M4 9.5v5h3.5L12 18V6L7.5 9.5H4z" />
     <path d="M16.5 9a4 4 0 0 1 0 6" />
     <path d="M19 6.5a8 8 0 0 1 0 11" />
+  </svg>
+);
+
+// Ícone do menu "Grammar & Vocabulary Exercises" — lista com marcas de
+// certo, mesmo estilo de traço dos outros ícones do drawer.
+const IconQuiz = () => (
+  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 6.5h14a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4z" />
+    <path d="M4 5.5a1 1 0 0 1 1-1h11" />
+    <path d="M8 11l1.5 1.5L12.5 9" />
+    <path d="M8 16.5h8.5" />
   </svg>
 );
 
@@ -2475,6 +2493,24 @@ function App() {
     }
   };
 
+  // Tela "Grammar & Vocabulary Exercises" (ver GrammarVocabExercises.js) —
+  // mesma trava de acesso do resto do menu.
+  const handleOpenGrammarVocabExercises = (event) => {
+    event.preventDefault();
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
+    setActivePage('grammar-vocab-exercises');
+    setSelectedUnit(null);
+    setSelectedAmerican1Unit(null);
+    setSelectedAmerican1Section(null);
+    setSelectedGrammarElemUnit(null);
+    setSelectedGrammarElemAppendix(null);
+    setSelectedGrammarElemAdditional(null);
+    setActiveCourseId(null);
+  };
+
   const handleOpenProfile = (event) => {
     event.preventDefault();
     if (!userName) {
@@ -3631,6 +3667,7 @@ function App() {
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenDictation(event); setMobileMenuOpen(false); }}><IconText /><span>Dictation</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenSpeaking(event); setMobileMenuOpen(false); }}><IconMic /><span>Speaking</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenAmerican1SoundBank(event); setMobileMenuOpen(false); }}><IconSound /><span>Sound Bank</span></a></li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenGrammarVocabExercises(event); setMobileMenuOpen(false); }}><IconQuiz /><span>Grammar &amp; Vocabulary Exercises</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenDashboard(event); setMobileMenuOpen(false); }}><IconDashboard /><span>Progress</span></a></li>
             <li className="side-drawer-divider" role="separator" />
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenProfile(event); setMobileMenuOpen(false); }}><IconProfile /><span>My Profile</span></a></li>
@@ -5263,6 +5300,10 @@ function App() {
             askConfirm={askConfirm}
             showToast={showToast}
           />
+        </main>
+      ) : activePage === 'grammar-vocab-exercises' ? (
+        <main className="landing-page vocabulary-mode gve-mode">
+          <GrammarVocabExercisesPage userName={userName} />
         </main>
       ) : activePage === 'profile' ? (
         <main className="landing-page vocabulary-mode profile-mode">
