@@ -1172,6 +1172,98 @@ Card `TodayPlanCard`, só na Home (não na tela Courses), com até 4 sugestões 
 - Cada linha some sozinha se não houver nada pra sugerir naquele slot; o card inteiro some se as 3 estiverem vazias (ex.: todo o conteúdo dos 3 cursos já visitado e nenhuma revisão vencida — só acontece depois de esgotar ~230 units/seções, não é um caso realista no curto prazo, mas o guard existe por correção).
 - Verificado via Playwright (15 checks): sem usuário o card não aparece; usuário novo mostra Vocabulary Unit 1 (novo) + American English Level 1 Unit 1A (listening, curso diferente); reatividade confirmada (depois de visitar a Unit 1, a sugestão avança pra Unit 2); com 3 revisões semeadas como vencidas, mostra só as 2 mais atrasadas + link "+1 more"; clicar no link leva pra Courses com as 3 completas; `ReviewCard` não se repete na Home.
 
+## 4º curso: American Accent (2026-07-23)
+
+Pedido do dono: transformar o livro "Mastering the American Accent" (Lisa Mojsin — PDF único
+de 211 páginas + 390 faixas de áudio já pré-recortadas por conceito, pasta fora da árvore do
+projeto) num 4º curso. Sessão longa, em várias rodadas — resumo por fase.
+
+### Fase 1 — leitura (páginas, player, progresso)
+
+- **Dados**: `american_accent_index.json` gerado via PyMuPDF — TOC embutido do PDF pros 9
+  capítulos, e um algoritmo pra decidir se cada página começa um "assunto novo" (não precisa de
+  merge com a anterior) ou continua o assunto da página anterior (precisa virar uma tela só,
+  senão uma faixa de áudio cujo conteúdo atravessa a quebra de página fica "cortada" — texto
+  numa página, mas o botão de play só nessa página, o resto sem áudio visível).
+- **Descoberta chave, 2 rodadas de bug**: a primeira versão do algoritmo confiava na ORDEM DE
+  LEITURA do `get_text()` simples do PyMuPDF pra achar o "primeiro texto da página" — errado,
+  porque essa ordem segue a ordem interna do PDF (stream de conteúdo), não a posição visual.
+  Um rodapé de página (`"Chapter One: THE VOWEL SOUNDS      7"`) às vezes aparece ANTES do
+  heading de verdade na ordem de leitura, mesmo estando visualmente no rodapé — causou merges
+  indevidos (ex. páginas 6 e 7 grudadas sem motivo). Corrigido usando posição Y real
+  (`get_text('dict')` + `bbox`) pra tudo: decidir o que é rodapé (faixa Y >= 700, não por
+  string), decidir qual é o heading real da página (linha de MENOR Y entre as não-rodapé,
+  excluindo linhas numeradas `"1. ..."` e linhas só de símbolo fonético `"/u/ /ʊ/"` — as duas
+  causaram bugs silenciosos reais, heading errado + 1ª frase de uma lista sumindo, tracks 52 e
+  129 pegos só numa varredura de sanidade depois).
+- **Exceção pontual, não generalizável**: o subtítulo "Common Spelling Patterns for /X/" quase
+  sempre é continuação da página anterior mesmo tendo tamanho de heading (16pt) — mas SÓ esse
+  subtítulo, não outros do mesmo tamanho ("Word Pairs for Practice" etc. nunca tiveram esse
+  problema reportado). Uma tentativa de generalizar "qualquer heading de tamanho <18 é
+  continuação" (achando que resolveria de vez) encolheu o livro de 94 pra 33 telas, mesclando
+  capítulos inteiros — revertida na hora.
+- **~15 exceções manuais por número de página** (`FORCE_CONTINUE_PRINTED_PAGES`/
+  `FORCE_FRESH_PRINTED_PAGES`/`EXCLUDED_PRINTED_PAGES` no gerador) descobertas por REVISÃO
+  VISUAL do dono, não por heurística nenhuma — cada uma com um motivo textual diferente (selo
+  de faixa fora da posição normal, lista numérica continuando no meio "3." em vez de "1.",
+  etc.), tratadas como override explícito em vez de tentar achar uma regra geral pra cada uma
+  (mesmo padrão de cautela usado depois pra não repetir o erro do "33 telas").
+- **UI**: player fixo no topo (não ancorado por coordenada como Vocabulary/American1 — página
+  pode ter até 7 faixas, um botão por pixel não escalava), progresso por PÁGINA REAL (não por
+  "tela" nem por unit, que não existe nesse curso), self-evaluation, reset, busca (dentro do
+  curso e na busca unificada), My Notes, "Continue where you left off", "Learn something new" —
+  todos os pontos de integração dos outros 3 cursos replicados um por um.
+- Bug de CSS pego na hora: texto de introdução do hub quase invisível (`<p>` herdando
+  `.landing-panel p { color: rgba(255,255,255,0.75) }`) — mesma armadilha já documentada em
+  CLAUDE.md, resolvida com `<span>` + cor opaca explícita.
+- Bug de UX pego na hora: botões "All Chapters"/"Previous"/"Next Page" mudavam de posição
+  verticalmente conforme o número de faixas da página crescia (`.pdf-toolbar` tem
+  `align-items: center` por padrão) — corrigido com `align-items: flex-start` escopado só a
+  essa tela.
+
+### Fase 2 — Dictation/Listening/Speaking Wave 1 (53 faixas)
+
+- **Descoberta que mudou o modelo mental**: o selo "Track N" NÃO fica agrupado no fim do bloco
+  de conteúdo (como a extração de texto simples sugeria) — fica na MARGEM da página (esquerda
+  OU direita, varia), na mesma altura Y do heading que ele narra. "Track" e o número às vezes
+  não são vizinhos na lista ordenada por Y (um heading de fonte grande no meio dos dois) —
+  casar por PROXIMIDADE Y entre "Track" e o dígito mais próximo, nunca por adjacência.
+- Extração final: para cada faixa candidata (nome de arquivo com "Practice Sentences"/
+  "Sentence Pairs for Practice"), acha o heading mais próximo do selo (a "âncora"), e o
+  conteúdo é tudo entre essa âncora e a PRÓXIMA âncora de qualquer faixa na mesma tela.
+- **Faixas puladas na 1ª extração automática**: 6 de 50 candidatas (217, 331, 333, 335, 337,
+  361) tinham anotação fonética solta ou prosa de instrução misturada no texto de um jeito que
+  a extração automática não separava direito — texto final veio direto do dono por mensagem
+  (revisão manual, não uma tentativa de limpar automaticamente o que já tinha se provado
+  ambíguo).
+- **3 faixas nunca detectadas**: nomes de arquivo com a ordem invertida "Sentences for
+  Practice" (não "Practice Sentences") — regex original só buscava a ordem normal. Achadas só
+  quando o dono apontou 2 delas (100, 255) por número; a 3ª (107) apareceu numa varredura do
+  mesmo padrão de nome.
+- **Pontos de pausa**: detecção de silêncio (`soundfile`+`numpy`, limiar relativo ao pico 90%,
+  silêncio mínimo 0.45s) — 1ª versão vazava um pouco no comecinho do som seguinte (relatado
+  pelo dono, "mesmo bug de antes" — CLAUDE.md já documentava esse padrão pro American1).
+  Corrigido com recuo fixo de 0.15s em todo ponto detectado.
+- **Pares mínimos com lacuna forçada** (`track.targetWords`): pedido do dono pra track 71
+  (pest/past, letter/ladder etc.) — sempre esconder essas palavras específicas no Listening,
+  sem toggle. Generalizado depois pras outras faixas de "Sentence Pairs for Practice" que são
+  DE VERDADE sobre confusão de som (80, 88 — vogal; 100 — vogal; 280 — acento de phrasal verb
+  vs. substantivo composto), excluindo as que são sobre outra coisa (331/333 são sobre tipo de
+  pergunta/entonação, não confusão sonora — não ganham a lacuna forçada). Track 255 (mudança de
+  acento politics/politician etc.) teve as palavras confirmadas direto na formatação **bold**
+  do PDF (`span['font']` contém "Bold"), não adivinhadas por posição de par.
+- Título do exercício nas 3 telas passou a incluir `(Track N)` — o número real da faixa no
+  livro/nome do arquivo, não só a posição sequencial "Exercise n. X" — pedido do dono porque
+  ele referencia as faixas pelo número real ao reportar problema.
+
+### Padrão geral desta sessão
+
+Praticamente toda extração de dado novo (headings, texto de frase, pontos de pausa) passou por
+pelo menos 1 rodada de "o dono testou/leu e reportou um caso errado" → investigação da causa
+raiz → fix estrutural quando generalizável, override pontual documentado quando não é. Ver
+CLAUDE.md, seção "Dados (American Accent)", pra lista consolidada dos bugs de extração já
+resolvidos (não reintroduzir se for regenerar os índices do zero).
+
 ## Observações para outra IA
 
 - Não existe roteamento real (react-router); tudo é estado local (`activePage`, `selectedUnit`) em um único componente `App`.

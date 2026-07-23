@@ -17,6 +17,8 @@ Aplicação roda em `http://localhost:3000` (ou `3001` em pendrive, auto-detecta
 
 Essas pastas são ignoradas por git (`.gitignore`), não são commitadas.
 
+**Exceção**: o curso American Accent lê de `C:\Users\marcu\OneDrive\Documentos\A_INGLES\LIVROS\3. Mastering the American Accent` — **fora** da árvore do projeto, não é pasta irmã (caminho absoluto hardcoded em `setupProxy.js`, ver comentário lá). Se um dia for movida pra virar irmã de verdade, trocar pelo padrão `path.join(__dirname, '..', '..', ...)` usado nas outras 3.
+
 `npm run build` **funciona e compila normalmente** — é usado o tempo todo durante o desenvolvimento pra verificar que uma mudança não quebrou nada (é o jeito padrão de "checar erros de sintaxe/JSX" nesse projeto, sem precisar do dev server rodando). O que **não existe** é hospedagem em produção: o build gerado não seria funcional publicado num servidor, porque `setupProxy.js` (áudio/PDF) só funciona sob `npm start` — ver "Decisões Imutáveis" abaixo.
 
 ---
@@ -28,7 +30,7 @@ Essas pastas são ignoradas por git (`.gitignore`), não são commitadas.
 ```
 meu-leitor-pdf/
 ├── src/
-│   ├── App.js (arquivo único, ~7000 linhas — tudo aqui: 3 cursos, Listening, Dictation,
+│   ├── App.js (arquivo único, ~10000 linhas — tudo aqui: 4 cursos, Listening, Dictation,
 │   │           My Words, Dashboard, Sound Bank, etc.)
 │   ├── App.css (~3700 linhas, também um arquivo único)
 │   ├── setupProxy.js (middleware do dev server — serve áudio/PDF das pastas irmãs)
@@ -64,11 +66,13 @@ meu-leitor-pdf/
 **Nível de cada curso** (`courses[id].level`, `App.js`): American English A1 e Grammar
 English A1 são "Beginner" (CEFR A1 de verdade); English Vocabulary B é "Intermediate" (a
 pasta de origem do material se chama "Pre Intermediate and Intermediate" — nível acima dos
-outros dois, apesar do "B" no nome não deixar isso óbvio). Avisado ao usuário (rótulo
-"Beginner"/"Intermediate" padronizado, classe `.course-level-heading`) nas telas Courses,
-Listening, Dictation e Progress Dashboard, sempre na ordem `COURSE_LEVEL_ORDER` (American1,
-Grammar Elem, Vocabulary — não mais a ordem de implementação/alfabética antiga). Adicionar um
-4º curso? Definir o `level` dele em `courses` e incluir o id em `COURSE_LEVEL_ORDER` já basta
+outros dois, apesar do "B" no nome não deixar isso óbvio). American Accent também é
+"Intermediate" — não é sobre dificuldade de leitura, mas o livro pressupõe alguma base de
+vocabulário/gramática pra fazer sentido (é sobre refinar pronúncia, não aprender do zero).
+Avisado ao usuário (rótulo "Beginner"/"Intermediate" padronizado, classe
+`.course-level-heading`) nas telas Courses, Listening, Dictation e Progress Dashboard, sempre
+na ordem `COURSE_LEVEL_ORDER` (American1, Grammar Elem, Vocabulary, American Accent). Um novo
+curso: definir o `level` dele em `courses` e incluir o id em `COURSE_LEVEL_ORDER` já basta
 pras 4 telas acima pegarem sozinhas.
 
 ### 1. Vocabulary — "English Vocabulary B" (100 units)
@@ -88,7 +92,41 @@ pras 4 telas acima pegarem sozinhas.
 - Índices: `grammar_elem_index.json` (títulos), `grammar_elem_appendix_index.json`,
   `grammar_elem_audio.json`
 
-### Listening (menu principal, fora dos 3 cursos)
+### 4. American Accent (livro "Mastering the American Accent", Lisa Mojsin — 9 capítulos)
+- Curso de **pronúncia**, não de conteúdo — sem "unit", é um livro corrido de 211 páginas (140
+  usadas, capítulos 1-9; a "Native Language Guide", páginas 149-210, fica fora). PDF único (não
+  um arquivo por página como os outros 3) + 390 faixas de áudio já pré-recortadas por conceito
+  (sem merge de PDF nem detecção visual de selo — cada faixa já é um arquivo próprio, e o
+  número "Track N" impresso no livro bate 1:1 com o número no início do nome do arquivo)
+- **Leitura por "tela"**, não por página fixa 1:1: `american_accent_index.json` agrupa 1+
+  páginas do PDF numa tela sempre que o conteúdo de uma faixa de áudio atravessa a quebra de
+  página impressa — ver "Dados Gerados" abaixo pra como isso é detectado e a lista de exceções
+  manuais conhecidas. Progresso é por **página real do livro** (não por tela nem por unit
+  inexistente) — visitar uma tela de 2 páginas marca as 2 pro cálculo de "Your Progress"
+- Player **fixo no topo**, não ancorado sobre o PDF (diferente do Vocabulary/American1) — uma
+  página pode ter 2-3 faixas, então um botão por coordenada não escalava; mesmo padrão do
+  Grammar Elem (link simples ao lado do conteúdo, não um selo posicionado em cima da página)
+- Identificação da tela mostra capítulo+título entre parênteses (`chapter.topic`, extraído do
+  rodapé corrido do livro) e página+subtítulo entre parênteses (`screen.topic`, o heading real
+  tamanho 18 daquela tela, "se houver") — ex. "Chapter Eight (Sound Like A True Native
+  Speaker) · p. 115–117 (Linking Words for Smoother Speech Flow)"
+- **Dictation/Listening/Speaking Wave 1** (53 faixas, `listening_american_accent.json`, dentro
+  de `LISTENING_SOURCES` — aparece nos 3 automaticamente): texto das "Practice Sentences"/
+  "Sentence Pairs for Practice"/"Sentences for Practice" extraído do PDF (âncora do selo
+  "Track N" — fica na MARGEM da página, alinhado com o heading que narra, não agrupado no fim
+  como a extração de texto simples sugere) + pontos de pausa por detecção de silêncio
+  (soundfile/numpy, recuo de 0.15s — ver "Auto-pause" no ROADMAP). Título do exercício nas 3
+  telas inclui `(Track N)` — o número real da faixa no livro, não só a posição sequencial
+- **Pares mínimos com lacuna forçada no Listening** (`track.targetWords`, tracks 71, 80, 88,
+  100, 255, 280): faixas de "Sentence Pairs for Practice" cujo par de frases muda só 1 palavra
+  parecida/confusa (ex. pest/past, lock/luck, bald/bold, fool/full) ou 1 palavra que muda de
+  acento (politics/politician — extraído direto da formatação **bold** do PDF, não chutado)
+  SEMPRE escondem essas palavras específicas no Listening, sem toggle — diferente do
+  `wordMode`/"Only Unit Words" opcional do Vocabulary. Nem toda "Sentence Pairs for Practice"
+  entra aqui — só as que são de verdade sobre confusão de som/acento (331/333/280-parcial são
+  sobre tipo de pergunta/entonação, não confusão sonora, então ficam com lacuna aleatória)
+
+### Listening (menu principal, fora dos 4 cursos)
 - Tela própria (`activePage: 'listening' → 'listening-tracks' → 'listening-exercise'`),
   reaproveita os mesmos tracks/áudio dos cursos (`listening_vocabulary.json`/
   `listening_american1.json`, agrupados em `LISTENING_SOURCES`)
@@ -145,7 +183,7 @@ pras 4 telas acima pegarem sozinhas.
 
 ### Trilha de estudo (Home — `TodayPlanCard` + `DailyGoalCard`)
 - **`TodayPlanCard`**: "Learn something new" aponta pro curso mais ATRASADO em % de units
-  visitadas (`findNextUnvisitedByCourse`, ordena por `courseId` cruzando os 3 cursos — não é
+  visitadas (`findNextUnvisitedByCourse`, ordena por `courseId` cruzando os 4 cursos — não é
   mais sempre Vocabulary primeiro); "Practice listening" é uma faixa de Listening/Dictation de
   verdade nunca tentada em nenhum dos 2 modos (`findUnpracticedListeningTrack`, varre os 359
   tracks dos 2 cursos), não mais o 2º curso da lista de units
@@ -164,7 +202,7 @@ pras 4 telas acima pegarem sozinhas.
   o clique nele (bug real, pego via Playwright). Texto de cada explicação em
   `DAILY_GOAL_EXPLANATIONS` tem que continuar batendo com a lógica real de quando cada
   componente marca — não é só rótulo solto
-- `courseProgress` (status por unit dos 3 cursos) e `overallMasteryPercent` são computados uma
+- `courseProgress` (status por unit/página dos 4 cursos) e `overallMasteryPercent` são computados uma
   vez no corpo de `App()`, compartilhados entre a Home e o Progress Dashboard — não duplicar
   esse cálculo se mexer em qualquer um dos dois. **Não chamar isso de "% do A1"** — só
   American1 e Grammar Elem são A1 de verdade, o Vocabulary (English Vocabulary B) é
@@ -173,7 +211,7 @@ pras 4 telas acima pegarem sozinhas.
 
 ### Progress Dashboard ("Progress", menu principal)
 - Tela só-leitura: cartões de estatística (palavras aprendidas/devidas, revisões pendentes,
-  units dominadas nos 3 cursos + "% de domínio do A1" no mesmo tile, exercícios de
+  units dominadas nos 4 cursos + "% overall mastery" no mesmo tile, exercícios de
   Listening/Dictation praticados) + progresso por curso (barra segmentada não-visitado/
   visitado/avaliado/dominado) + atalho "Continue where you left off". Não escreve nada — só lê
   dados que os outros recursos já persistem
@@ -206,7 +244,14 @@ u:<nome>:notes:american1:<unit>    — string
 u:<nome>:grammarElem-visitedUnits  — array de unit numbers
 u:<nome>:grammarElem-rating:<id>   — número 1-5
 
-# Revisão espaçada / My Words (compartilhado entre os 3 cursos)
+# American Accent
+u:<nome>:americanAccent-visitedPages — array de NÚMEROS DE PÁGINA do PDF (não units — esse
+                                      curso não tem unit, ver "Cursos & Recursos" item 4)
+u:<nome>:americanAccent-rating:<screenId> — número 1-5, autoavaliação por TELA (screen.id, ex.
+                                      "page-123"), não por página solta
+u:<nome>:notes:americanAccent:<screenId> — string, notas da tela
+
+# Revisão espaçada / My Words (compartilhado entre os 4 cursos)
 u:<nome>:review:<curso>:<id>       — JSON {rating, ratedAt, due}
 u:<nome>:wordbook                  — array JSON de palavras + flashcards ({id, word, meaning,
                                       example, context, image, createdAt, step, due})
@@ -281,12 +326,23 @@ Estes arquivos **não devem ser editados manualmente** (todos gerados por script
   `american1_videos.json` — American English A1
 - `grammar_elem_index.json`, `grammar_elem_appendix_index.json`, `grammar_elem_audio.json` —
   Grammar English A1
-- `listening_vocabulary.json`, `listening_american1.json` — tracks de Listening/Dictation (esses
-  dois foram escritos/ajustados manualmente ao longo do tempo, mas continuam sendo dados, não
-  lógica — tratar como fonte de verdade dos tracks, editar com cuidado)
+- `listening_vocabulary.json`, `listening_american1.json`, `listening_american_accent.json` —
+  tracks de Listening/Dictation/Speaking (os 3 foram escritos/ajustados manualmente ao longo do
+  tempo — o do American Accent especialmente, com bastante revisão manual pontual por track
+  reportada pelo dono, ver PROJECT_SUMMARY — mas continuam sendo dados, não lógica; tratar como
+  fonte de verdade, editar com cuidado)
 - `dictation_pause_points.json` — pontos de auto-pause do Dictation (segundos, por trackId),
   gerados por detecção de silêncio (Python `soundfile`+`numpy`; parâmetros documentados no
   ROADMAP item 1 e no PROJECT_SUMMARY) — regenerar rodando o detector, nunca editar à mão
+- `american_accent_index.json` — capítulos, "telas" de leitura (agrupamento de páginas) e mapa
+  track→arquivo de áudio do American Accent. Gerado via PyMuPDF cruzando: TOC embutido do PDF
+  (capítulos), posição Y do texto (não a ordem de leitura simples do PyMuPDF, que não é a
+  ordem visual — ver PROJECT_SUMMARY pros bugs reais que isso causou) pra achar heading real vs.
+  rodapé vs. selo de faixa na margem, e uma lista de exceções manuais por número de página
+  (`FORCE_CONTINUE_PRINTED_PAGES`/`FORCE_FRESH_PRINTED_PAGES`/`EXCLUDED_PRINTED_PAGES`/
+  `EXTRA_TRACKS_BY_PRINTED_PAGE` no gerador) pra casos que o heurístico não pega sozinho —
+  regenerar do zero SEM essas exceções reintroduziria bugs já corrigidos por revisão visual do
+  dono; se for regenerar, portar a lista de exceções do histórico do git primeiro
 
 Se os PDFs/áudios de origem mudarem, os índices precisam ser regenerados.
 
@@ -341,6 +397,34 @@ Não há testes unitários automatizados (`npm test` funciona mas CRA cria um es
 - CDs não coincidem com limites de unit (ex.: CD2 termina no meio da unit 5)
 - Algumas faixas vivem só no apêndice (não escaneadas)
 - Alguns selos com 2-3 faixas num ícone só — ancorados só na primeira
+
+### Dados (American Accent) — bugs de extração já resolvidos, não reintroduzir
+- **Ordem de leitura do PyMuPDF (`get_text()` simples) não é a ordem VISUAL da página** — texto
+  de rodapé/selo de margem pode aparecer no meio do texto corrido dependendo da ordem interna
+  do PDF. Qualquer heurística de "primeiro texto da página" tem que ordenar por posição Y de
+  verdade (`get_text('dict')` + `bbox`), nunca confiar na ordem do `get_text()` puro
+- O selo "Track N" fica na **margem** da página (esquerda OU direita, varia), na mesma altura
+  do heading que ele narra — não agrupado no fim do bloco de conteúdo como a extração simples
+  sugere. "Track" e o número às vezes não são vizinhos na lista ordenada por Y (um heading de
+  fonte grande pode ter Y entre os dois) — casar por PROXIMIDADE Y entre "Track" e o dígito
+  mais próximo, nunca por adjacência na lista
+- Heading candidato a "início de tela nova" nunca pode ser: uma linha numerada (`"1. ..."`,
+  sempre conteúdo, nunca título), nem uma linha só de símbolo fonético (`"/u/ /ʊ/"`, cabeçalho
+  de coluna de par mínimo) — as duas causaram bugs reais silenciosos (heading errado E 1ª
+  frase da lista sumindo, ex. tracks 52/100/129) antes de excluir os dois padrões
+- Subtítulo "Common Spelling Patterns for /X/" sempre é continuação da página anterior mesmo
+  quando mediria como heading (tamanho 16) — outros subtítulos (Word Pairs for Practice,
+  Practice Sentences) não têm esse problema, não generalizar a exceção pra eles
+- Nomes de arquivo variam: a maioria é "Practice Sentences"/"Sentence Pairs For Practice", mas
+  3 faixas (100, 107, 255) usam a ordem invertida "Sentences for Practice"/"Sentences For
+  Practice" — um regex que busca só "practice sentences" as perde silenciosamente
+- Várias páginas têm conteúdo solto (nota explicativa, heading da PRÓXIMA seção, coluna de
+  legenda "A B C") vazando pro fim do texto extraído de uma faixa — revisão manual por
+  amostragem continua necessária mesmo depois dos fixes estruturais acima (ver
+  PROJECT_SUMMARY pra lista completa de faixas corrigidas)
+- 3 páginas realmente em branco (38, 88, 140) — excluídas da lista de telas, não geram merge
+- Ordem das faixas dentro de cada tela: sempre ordenar numericamente (`tracks.sort()`) — a
+  ordem de aparição no texto corrido não é a ordem numérica
 
 ### Layout/CSS (bugs já resolvidos, não reintroduzir)
 - `min-height: calc(100vh - 72px)` na regra base `.landing-page` assume um header de 72px,
@@ -418,7 +502,7 @@ npm install
 
 ## Para Outra IA
 
-- Tudo (ou quase tudo) está em `App.js` — comece lá, é grande (~7000 linhas) mas um arquivo só
+- Tudo (ou quase tudo) está em `App.js` — comece lá, é grande (~10000 linhas) mas um arquivo só
 - `setupProxy.js` é crítico (middleware de áudio/PDF, só funciona em `npm start`)
 - Índices JSON (exceto `listening_*.json`) são **fonte de verdade gerada**, não edite à mão
 - `localStorage` é o único storage; tudo namespaced por usuário via `userKey`

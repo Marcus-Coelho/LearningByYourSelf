@@ -147,3 +147,28 @@ Listening/Dictation (`LISTENING_SOURCES`).
 - A API não existe no Firefox/Safari antigo — a tela deve detectar
   (`window.SpeechRecognition || window.webkitSpeechRecognition`) e mostrar um aviso claro em
   vez de quebrar.
+
+## 5. [~] 4º curso: American Accent (livro "Mastering the American Accent") — 2026-07-23, EM ANDAMENTO
+
+Curso novo de pronúncia (9 capítulos, sem unit) pedido pelo dono. Ver seção "4. American
+Accent" em CLAUDE.md pra arquitetura completa e PROJECT_SUMMARY.md pro histórico
+passo-a-passo (extração de dados, bugs achados, decisões de design). Resumo do que já está
+pronto:
+
+- **Leitura completa**: 9 capítulos, telas agrupadas por página real do livro (140 páginas),
+  player fixo no topo, progresso por página, self-evaluation, reset de progresso, busca (no
+  curso e na busca unificada), My Notes, "Continue where you left off" e "Learn something new"
+  — paridade total com os outros 3 cursos.
+- **Dictation/Listening/Speaking Wave 1**: 53 faixas ("Practice Sentences"/"Sentence Pairs for
+  Practice"/"Sentences for Practice"), com pontos de pausa automática e, pra faixas de pares
+  mínimos identificadas, lacuna forçada nas palavras que confundem (`track.targetWords`).
+
+**Falta pra fechar o item**:
+- **Wave 2** (Practice Dialogues, formato `a.`/`b.` — ver conversa da sessão de
+  2026-07-23 sobre esse plano) — ainda não implementada.
+- **Wave 3** (Practice Paragraph/Story/faixas multi-bloco tipo a 376, casal de contrações) —
+  deliberadamente adiada (texto mais arriscado de extrair automaticamente, precisa de mais
+  revisão manual), ver avaliação registrada na sessão.
+- Validar por amostragem as 53 faixas do Wave 1 já publicadas (o dono já corrigiu várias — 71,
+  100, 129, 217, 331, 333, 335, 337, 361 — sob demanda ao encontrar problema, não uma varredura
+  sistemática ouvindo tudo).

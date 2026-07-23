@@ -1,0 +1,2131 @@
+{
+ "chapters": [
+  {
+   "id": 1,
+   "name": "Chapter One",
+   "startPdfPage": 9,
+   "endPdfPage": 26,
+   "startPrintedPage": 1,
+   "endPrintedPage": 18,
+   "topic": "THE VOWEL SOUNDS"
+  },
+  {
+   "id": 2,
+   "name": "Chapter Two",
+   "startPdfPage": 27,
+   "endPdfPage": 40,
+   "startPrintedPage": 19,
+   "endPrintedPage": 32,
+   "topic": "VOWELS IN DETAIL"
+  },
+  {
+   "id": 3,
+   "name": "Chapter Three",
+   "startPdfPage": 41,
+   "endPdfPage": 46,
+   "startPrintedPage": 33,
+   "endPrintedPage": 38,
+   "topic": "CONSONANTS"
+  },
+  {
+   "id": 4,
+   "name": "Chapter Four",
+   "startPdfPage": 47,
+   "endPdfPage": 80,
+   "startPrintedPage": 39,
+   "endPrintedPage": 72,
+   "topic": "PROBLEMATIC CONSONANTS"
+  },
+  {
+   "id": 5,
+   "name": "Chapter Five",
+   "startPdfPage": 81,
+   "endPdfPage": 96,
+   "startPrintedPage": 73,
+   "endPrintedPage": 88,
+   "topic": "SYLLABLE STRESS"
+  },
+  {
+   "id": 6,
+   "name": "Chapter Six",
+   "startPdfPage": 97,
+   "endPdfPage": 116,
+   "startPrintedPage": 89,
+   "endPrintedPage": 108,
+   "topic": "WORD STRESS"
+  },
+  {
+   "id": 7,
+   "name": "Chapter Seven",
+   "startPdfPage": 117,
+   "endPdfPage": 122,
+   "startPrintedPage": 109,
+   "endPrintedPage": 114,
+   "topic": "INTONATION"
+  },
+  {
+   "id": 8,
+   "name": "Chapter Eight",
+   "startPdfPage": 123,
+   "endPdfPage": 142,
+   "startPrintedPage": 115,
+   "endPrintedPage": 134,
+   "topic": "SOUND LIKE A TRUE NATIVE SPEAKER"
+  },
+  {
+   "id": 9,
+   "name": "Chapter Nine",
+   "startPdfPage": 143,
+   "endPdfPage": 148,
+   "startPrintedPage": 135,
+   "endPrintedPage": 140,
+   "topic": "MEMORIZING THE EXCEPTIONS"
+  }
+ ],
+ "screens": [
+  {
+   "id": "page-9",
+   "chapter": 1,
+   "pdfPages": [
+    9,
+    10
+   ],
+   "printedPages": [
+    1,
+    2
+   ],
+   "tracks": [
+    2,
+    3
+   ],
+   "topic": "Production of Vowels"
+  },
+  {
+   "id": "page-11",
+   "chapter": 1,
+   "pdfPages": [
+    11
+   ],
+   "printedPages": [
+    3
+   ],
+   "tracks": [
+    4
+   ],
+   "topic": "Main Vowel Sounds of"
+  },
+  {
+   "id": "page-12",
+   "chapter": 1,
+   "pdfPages": [
+    12,
+    13
+   ],
+   "printedPages": [
+    4,
+    5
+   ],
+   "tracks": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "topic": "1. /i/ AS IN MEET"
+  },
+  {
+   "id": "page-14",
+   "chapter": 1,
+   "pdfPages": [
+    14
+   ],
+   "printedPages": [
+    6
+   ],
+   "tracks": [
+    12,
+    13,
+    14,
+    15
+   ],
+   "topic": "3. /eɪ/ AS IN TAKE"
+  },
+  {
+   "id": "page-15",
+   "chapter": 1,
+   "pdfPages": [
+    15
+   ],
+   "printedPages": [
+    7
+   ],
+   "tracks": [
+    16,
+    17,
+    18
+   ],
+   "topic": "4. /ɛ/ AS IN GET"
+  },
+  {
+   "id": "page-16",
+   "chapter": 1,
+   "pdfPages": [
+    16
+   ],
+   "printedPages": [
+    8
+   ],
+   "tracks": [
+    19,
+    20,
+    21,
+    22,
+    23
+   ],
+   "topic": "5. /æ/ AS IN FAT"
+  },
+  {
+   "id": "page-17",
+   "chapter": 1,
+   "pdfPages": [
+    17
+   ],
+   "printedPages": [
+    9
+   ],
+   "tracks": [
+    24,
+    25,
+    26,
+    27,
+    28
+   ],
+   "topic": "6. /ɑ/ AS IN FATHER"
+  },
+  {
+   "id": "page-18",
+   "chapter": 1,
+   "pdfPages": [
+    18
+   ],
+   "printedPages": [
+    10
+   ],
+   "tracks": [
+    29,
+    30,
+    31,
+    32
+   ],
+   "topic": "7. /ə/ AS IN FUN*"
+  },
+  {
+   "id": "page-19",
+   "chapter": 1,
+   "pdfPages": [
+    19,
+    20
+   ],
+   "printedPages": [
+    11,
+    12
+   ],
+   "tracks": [
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41
+   ],
+   "topic": "8. /ɔ/ AS IN SAW"
+  },
+  {
+   "id": "page-21",
+   "chapter": 1,
+   "pdfPages": [
+    21
+   ],
+   "printedPages": [
+    13
+   ],
+   "tracks": [
+    42,
+    43,
+    44,
+    45
+   ],
+   "topic": "9. /oʊ/ AS IN BOAT"
+  },
+  {
+   "id": "page-22",
+   "chapter": 1,
+   "pdfPages": [
+    22,
+    23
+   ],
+   "printedPages": [
+    14,
+    15
+   ],
+   "tracks": [
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54
+   ],
+   "topic": "10. /ʊ/ AS IN GOOD"
+  },
+  {
+   "id": "page-24",
+   "chapter": 1,
+   "pdfPages": [
+    24,
+    25
+   ],
+   "printedPages": [
+    16,
+    17
+   ],
+   "tracks": [
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61
+   ],
+   "topic": "12. /ər/ AS IN BIRD"
+  },
+  {
+   "id": "page-26",
+   "chapter": 1,
+   "pdfPages": [
+    26
+   ],
+   "printedPages": [
+    18
+   ],
+   "tracks": [
+    62,
+    63,
+    64,
+    65,
+    66
+   ],
+   "topic": "15. /ɔɪ/ AS IN BOY"
+  },
+  {
+   "id": "page-27",
+   "chapter": 2,
+   "pdfPages": [
+    27,
+    28
+   ],
+   "printedPages": [
+    19,
+    20
+   ],
+   "tracks": [
+    67,
+    68,
+    69,
+    70,
+    71,
+    72
+   ],
+   "topic": "Review of /I/ and /i/ Sounds"
+  },
+  {
+   "id": "page-29",
+   "chapter": 2,
+   "pdfPages": [
+    29,
+    30,
+    31
+   ],
+   "printedPages": [
+    21,
+    22,
+    23
+   ],
+   "tracks": [
+    73,
+    74,
+    75,
+    76,
+    77,
+    78
+   ],
+   "topic": "Review of /ə/, /ɑ/, /ɔ/, and /ou/ Sounds"
+  },
+  {
+   "id": "page-32",
+   "chapter": 2,
+   "pdfPages": [
+    32,
+    33
+   ],
+   "printedPages": [
+    24,
+    25
+   ],
+   "tracks": [
+    79,
+    80,
+    81,
+    82,
+    83
+   ],
+   "topic": "Three Different Ways to Pronounce the o"
+  },
+  {
+   "id": "page-34",
+   "chapter": 2,
+   "pdfPages": [
+    34
+   ],
+   "printedPages": [
+    26
+   ],
+   "tracks": [
+    84,
+    85,
+    86
+   ],
+   "topic": "The American /ɔ/ Sound"
+  },
+  {
+   "id": "page-35",
+   "chapter": 2,
+   "pdfPages": [
+    35
+   ],
+   "printedPages": [
+    27
+   ],
+   "tracks": [
+    87,
+    88,
+    89,
+    90
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-36",
+   "chapter": 2,
+   "pdfPages": [
+    36
+   ],
+   "printedPages": [
+    28
+   ],
+   "tracks": [
+    91,
+    92,
+    93
+   ],
+   "topic": "Review of /ɛ/, /æ/, /ɑ/, /ɔ/, /ə/, and /oʊ/"
+  },
+  {
+   "id": "page-37",
+   "chapter": 2,
+   "pdfPages": [
+    37
+   ],
+   "printedPages": [
+    29
+   ],
+   "tracks": [
+    94,
+    95,
+    96,
+    97,
+    98
+   ],
+   "topic": "The Problematic /ʊ/ Sound"
+  },
+  {
+   "id": "page-38",
+   "chapter": 2,
+   "pdfPages": [
+    38
+   ],
+   "printedPages": [
+    30
+   ],
+   "tracks": [
+    99,
+    100,
+    101,
+    102
+   ],
+   "topic": "Review of /ʊ/ and /u/ Sounds"
+  },
+  {
+   "id": "page-39",
+   "chapter": 2,
+   "pdfPages": [
+    39
+   ],
+   "printedPages": [
+    31
+   ],
+   "tracks": [
+    103,
+    104,
+    105,
+    106
+   ],
+   "topic": "Review of the /ər/ Sound"
+  },
+  {
+   "id": "page-40",
+   "chapter": 2,
+   "pdfPages": [
+    40
+   ],
+   "printedPages": [
+    32
+   ],
+   "tracks": [
+    107,
+    108,
+    109,
+    110
+   ],
+   "topic": "Vowels Followed by the /r/ Sound"
+  },
+  {
+   "id": "page-41",
+   "chapter": 3,
+   "pdfPages": [
+    41
+   ],
+   "printedPages": [
+    33
+   ],
+   "tracks": [
+    111
+   ],
+   "topic": "Forming American Consonants"
+  },
+  {
+   "id": "page-42",
+   "chapter": 3,
+   "pdfPages": [
+    42,
+    43,
+    44
+   ],
+   "printedPages": [
+    34,
+    35,
+    36
+   ],
+   "tracks": [
+    112,
+    113,
+    114,
+    115,
+    116,
+    117
+   ],
+   "topic": "Voiceless and Voiced Consonants"
+  },
+  {
+   "id": "page-45",
+   "chapter": 3,
+   "pdfPages": [
+    45
+   ],
+   "printedPages": [
+    37
+   ],
+   "tracks": [
+    118,
+    119,
+    120,
+    121,
+    122
+   ],
+   "topic": "Stops and Continuants"
+  },
+  {
+   "id": "page-47",
+   "chapter": 4,
+   "pdfPages": [
+    47,
+    48,
+    49
+   ],
+   "printedPages": [
+    39,
+    40,
+    41
+   ],
+   "tracks": [
+    123,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131
+   ],
+   "topic": "The Various t Sounds of American English"
+  },
+  {
+   "id": "page-50",
+   "chapter": 4,
+   "pdfPages": [
+    50
+   ],
+   "printedPages": [
+    42
+   ],
+   "tracks": [
+    132,
+    133,
+    134,
+    135,
+    136
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-51",
+   "chapter": 4,
+   "pdfPages": [
+    51
+   ],
+   "printedPages": [
+    43
+   ],
+   "tracks": [
+    137,
+    138,
+    139
+   ],
+   "topic": "The “Fast d ” Sound"
+  },
+  {
+   "id": "page-52",
+   "chapter": 4,
+   "pdfPages": [
+    52
+   ],
+   "printedPages": [
+    44
+   ],
+   "tracks": [
+    140,
+    141,
+    142,
+    143,
+    144,
+    145,
+    146
+   ],
+   "topic": "The /tʃr/ Sound: tr"
+  },
+  {
+   "id": "page-53",
+   "chapter": 4,
+   "pdfPages": [
+    53
+   ],
+   "printedPages": [
+    45
+   ],
+   "tracks": [
+    147,
+    148,
+    149,
+    150
+   ],
+   "topic": "The /dʒ/ Sound: du and d + y"
+  },
+  {
+   "id": "page-54",
+   "chapter": 4,
+   "pdfPages": [
+    54,
+    55
+   ],
+   "printedPages": [
+    46,
+    47
+   ],
+   "tracks": [
+    151,
+    152,
+    153,
+    154,
+    155
+   ],
+   "topic": "Words Ending in -ed"
+  },
+  {
+   "id": "page-56",
+   "chapter": 4,
+   "pdfPages": [
+    56,
+    57
+   ],
+   "printedPages": [
+    48,
+    49
+   ],
+   "tracks": [
+    156,
+    157,
+    158,
+    159
+   ],
+   "topic": "The th Sound"
+  },
+  {
+   "id": "page-58",
+   "chapter": 4,
+   "pdfPages": [
+    58,
+    59
+   ],
+   "printedPages": [
+    50,
+    51
+   ],
+   "tracks": [
+    160,
+    161,
+    162,
+    163,
+    164,
+    165,
+    166
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-60",
+   "chapter": 4,
+   "pdfPages": [
+    60
+   ],
+   "printedPages": [
+    52
+   ],
+   "tracks": [
+    167,
+    168,
+    169
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-61",
+   "chapter": 4,
+   "pdfPages": [
+    61,
+    62
+   ],
+   "printedPages": [
+    53,
+    54
+   ],
+   "tracks": [
+    170,
+    171,
+    172,
+    173,
+    174
+   ],
+   "topic": "The American /r/"
+  },
+  {
+   "id": "page-63",
+   "chapter": 4,
+   "pdfPages": [
+    63
+   ],
+   "printedPages": [
+    55
+   ],
+   "tracks": [
+    175,
+    176,
+    177,
+    178
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-64",
+   "chapter": 4,
+   "pdfPages": [
+    64
+   ],
+   "printedPages": [
+    56
+   ],
+   "tracks": [
+    179,
+    180,
+    181,
+    182,
+    183
+   ],
+   "topic": "The American /l/"
+  },
+  {
+   "id": "page-65",
+   "chapter": 4,
+   "pdfPages": [
+    65
+   ],
+   "printedPages": [
+    57
+   ],
+   "tracks": [
+    184,
+    185,
+    186
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-66",
+   "chapter": 4,
+   "pdfPages": [
+    66
+   ],
+   "printedPages": [
+    58
+   ],
+   "tracks": [
+    187,
+    188
+   ],
+   "topic": "Understanding /l/ Versus /r/"
+  },
+  {
+   "id": "page-67",
+   "chapter": 4,
+   "pdfPages": [
+    67
+   ],
+   "printedPages": [
+    59
+   ],
+   "tracks": [
+    189,
+    190,
+    191,
+    192
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-68",
+   "chapter": 4,
+   "pdfPages": [
+    68,
+    69
+   ],
+   "printedPages": [
+    60,
+    61
+   ],
+   "tracks": [
+    193,
+    194,
+    195,
+    196,
+    197,
+    198,
+    199
+   ],
+   "topic": "The /v/ Sound"
+  },
+  {
+   "id": "page-70",
+   "chapter": 4,
+   "pdfPages": [
+    70
+   ],
+   "printedPages": [
+    62
+   ],
+   "tracks": [
+    200,
+    201,
+    202,
+    203
+   ],
+   "topic": "Understanding /b/ Versus /v/"
+  },
+  {
+   "id": "page-71",
+   "chapter": 4,
+   "pdfPages": [
+    71,
+    72
+   ],
+   "printedPages": [
+    63,
+    64
+   ],
+   "tracks": [
+    204,
+    205,
+    206,
+    207,
+    208,
+    209
+   ],
+   "topic": "The /w/ Sound"
+  },
+  {
+   "id": "page-73",
+   "chapter": 4,
+   "pdfPages": [
+    73,
+    74
+   ],
+   "printedPages": [
+    65,
+    66
+   ],
+   "tracks": [
+    210,
+    211,
+    212,
+    213,
+    214
+   ],
+   "topic": "The /s/ and /z/ Sounds"
+  },
+  {
+   "id": "page-75",
+   "chapter": 4,
+   "pdfPages": [
+    75,
+    76
+   ],
+   "printedPages": [
+    67,
+    68
+   ],
+   "tracks": [
+    215,
+    216,
+    217,
+    218,
+    219
+   ],
+   "topic": "The /ŋ/ Sound: Pronouncing ng"
+  },
+  {
+   "id": "page-77",
+   "chapter": 4,
+   "pdfPages": [
+    77
+   ],
+   "printedPages": [
+    69
+   ],
+   "tracks": [
+    220,
+    221,
+    222,
+    223,
+    224
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-78",
+   "chapter": 4,
+   "pdfPages": [
+    78
+   ],
+   "printedPages": [
+    70
+   ],
+   "tracks": [
+    225,
+    226,
+    227
+   ],
+   "topic": "Consonant Clusters"
+  },
+  {
+   "id": "page-79",
+   "chapter": 4,
+   "pdfPages": [
+    79
+   ],
+   "printedPages": [
+    71
+   ],
+   "tracks": [
+    228,
+    229,
+    230,
+    231
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-80",
+   "chapter": 4,
+   "pdfPages": [
+    80
+   ],
+   "printedPages": [
+    72
+   ],
+   "tracks": [
+    232,
+    233,
+    234,
+    235
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-81",
+   "chapter": 5,
+   "pdfPages": [
+    81,
+    82,
+    83
+   ],
+   "printedPages": [
+    73,
+    74,
+    75
+   ],
+   "tracks": [
+    236,
+    237
+   ],
+   "topic": "Stressed and Reduced Vowels"
+  },
+  {
+   "id": "page-84",
+   "chapter": 5,
+   "pdfPages": [
+    84,
+    85
+   ],
+   "printedPages": [
+    76,
+    77
+   ],
+   "tracks": [
+    238,
+    239,
+    240,
+    241
+   ],
+   "topic": "Comparing Stressed and Reduced Vowels"
+  },
+  {
+   "id": "page-86",
+   "chapter": 5,
+   "pdfPages": [
+    86,
+    87
+   ],
+   "printedPages": [
+    78,
+    79
+   ],
+   "tracks": [
+    242,
+    243
+   ],
+   "topic": "Dangers of Stressing the Wrong Syllable"
+  },
+  {
+   "id": "page-88",
+   "chapter": 5,
+   "pdfPages": [
+    88,
+    89,
+    90,
+    91
+   ],
+   "printedPages": [
+    80,
+    81,
+    82,
+    83
+   ],
+   "tracks": [
+    244,
+    245,
+    246,
+    247,
+    248,
+    249,
+    250,
+    251,
+    252
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-92",
+   "chapter": 5,
+   "pdfPages": [
+    92
+   ],
+   "printedPages": [
+    84
+   ],
+   "tracks": [
+    253,
+    254
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-93",
+   "chapter": 5,
+   "pdfPages": [
+    93
+   ],
+   "printedPages": [
+    85
+   ],
+   "tracks": [
+    255,
+    256
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-94",
+   "chapter": 5,
+   "pdfPages": [
+    94,
+    95
+   ],
+   "printedPages": [
+    86,
+    87
+   ],
+   "tracks": [
+    257,
+    258,
+    259,
+    260,
+    261,
+    262,
+    263
+   ],
+   "topic": "Reduced Vowels for Review"
+  },
+  {
+   "id": "page-97",
+   "chapter": 6,
+   "pdfPages": [
+    97
+   ],
+   "printedPages": [
+    89
+   ],
+   "tracks": [
+    264,
+    265,
+    266
+   ],
+   "topic": "Compound Nouns"
+  },
+  {
+   "id": "page-98",
+   "chapter": 6,
+   "pdfPages": [
+    98
+   ],
+   "printedPages": [
+    90
+   ],
+   "tracks": [
+    267,
+    268
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-99",
+   "chapter": 6,
+   "pdfPages": [
+    99
+   ],
+   "printedPages": [
+    91
+   ],
+   "tracks": [
+    269,
+    270,
+    271,
+    272
+   ],
+   "topic": "Proper Stress with Adjectives"
+  },
+  {
+   "id": "page-100",
+   "chapter": 6,
+   "pdfPages": [
+    100
+   ],
+   "printedPages": [
+    92
+   ],
+   "tracks": [
+    273,
+    274
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-101",
+   "chapter": 6,
+   "pdfPages": [
+    101
+   ],
+   "printedPages": [
+    93
+   ],
+   "tracks": [
+    275,
+    276,
+    277
+   ],
+   "topic": "Phrasal Verbs"
+  },
+  {
+   "id": "page-102",
+   "chapter": 6,
+   "pdfPages": [
+    102
+   ],
+   "printedPages": [
+    94
+   ],
+   "tracks": [
+    278,
+    279,
+    280
+   ],
+   "topic": "Noun Forms of Phrasal Verbs"
+  },
+  {
+   "id": "page-103",
+   "chapter": 6,
+   "pdfPages": [
+    103
+   ],
+   "printedPages": [
+    95
+   ],
+   "tracks": [
+    281,
+    282,
+    283,
+    284
+   ],
+   "topic": "Abbreviations and Numbers"
+  },
+  {
+   "id": "page-104",
+   "chapter": 6,
+   "pdfPages": [
+    104,
+    105
+   ],
+   "printedPages": [
+    96,
+    97
+   ],
+   "tracks": [
+    285,
+    286,
+    287,
+    288,
+    289,
+    290
+   ],
+   "topic": "Names of Places and People"
+  },
+  {
+   "id": "page-106",
+   "chapter": 6,
+   "pdfPages": [
+    106,
+    107
+   ],
+   "printedPages": [
+    98,
+    99
+   ],
+   "tracks": [
+    291,
+    292,
+    293,
+    294,
+    295,
+    296
+   ],
+   "topic": "Which Words Should I Stress?"
+  },
+  {
+   "id": "page-108",
+   "chapter": 6,
+   "pdfPages": [
+    108,
+    109,
+    110,
+    111
+   ],
+   "printedPages": [
+    100,
+    101,
+    102,
+    103
+   ],
+   "tracks": [
+    297,
+    298,
+    299,
+    300,
+    301,
+    302,
+    303,
+    304,
+    305,
+    306,
+    307,
+    308,
+    309,
+    310
+   ],
+   "topic": "Reducing Vowels in Unstressed Words"
+  },
+  {
+   "id": "page-112",
+   "chapter": 6,
+   "pdfPages": [
+    112,
+    113
+   ],
+   "printedPages": [
+    104,
+    105
+   ],
+   "tracks": [
+    311,
+    312,
+    313,
+    314,
+    315,
+    316
+   ],
+   "topic": "Reducing Pronouns"
+  },
+  {
+   "id": "page-114",
+   "chapter": 6,
+   "pdfPages": [
+    114,
+    115
+   ],
+   "printedPages": [
+    106,
+    107
+   ],
+   "tracks": [
+    317,
+    318,
+    319,
+    320,
+    321
+   ],
+   "topic": "Thought Groups and Focus Words"
+  },
+  {
+   "id": "page-116",
+   "chapter": 6,
+   "pdfPages": [
+    116
+   ],
+   "printedPages": [
+    108
+   ],
+   "tracks": [
+    322,
+    323,
+    324
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-117",
+   "chapter": 7,
+   "pdfPages": [
+    117,
+    118
+   ],
+   "printedPages": [
+    109,
+    110
+   ],
+   "tracks": [
+    325,
+    326,
+    327,
+    328,
+    329,
+    330
+   ],
+   "topic": "Falling Intonation"
+  },
+  {
+   "id": "page-119",
+   "chapter": 7,
+   "pdfPages": [
+    119
+   ],
+   "printedPages": [
+    111
+   ],
+   "tracks": [
+    331,
+    332,
+    333
+   ],
+   "topic": "Non-final Intonation"
+  },
+  {
+   "id": "page-120",
+   "chapter": 7,
+   "pdfPages": [
+    120,
+    121
+   ],
+   "printedPages": [
+    112,
+    113
+   ],
+   "tracks": [
+    334,
+    335,
+    336,
+    337,
+    338,
+    339,
+    340
+   ],
+   "topic": "Wavering Intonation"
+  },
+  {
+   "id": "page-122",
+   "chapter": 7,
+   "pdfPages": [
+    122
+   ],
+   "printedPages": [
+    114
+   ],
+   "tracks": [
+    341,
+    342
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-123",
+   "chapter": 8,
+   "pdfPages": [
+    123,
+    124,
+    125
+   ],
+   "printedPages": [
+    115,
+    116,
+    117
+   ],
+   "tracks": [
+    343,
+    344,
+    345,
+    346,
+    347,
+    348,
+    349
+   ],
+   "topic": "Linking Words for Smoother"
+  },
+  {
+   "id": "page-126",
+   "chapter": 8,
+   "pdfPages": [
+    126,
+    127
+   ],
+   "printedPages": [
+    118,
+    119
+   ],
+   "tracks": [
+    350,
+    351,
+    352,
+    353
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-128",
+   "chapter": 8,
+   "pdfPages": [
+    128
+   ],
+   "printedPages": [
+    120
+   ],
+   "tracks": [
+    354,
+    355,
+    356
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-129",
+   "chapter": 8,
+   "pdfPages": [
+    129
+   ],
+   "printedPages": [
+    121
+   ],
+   "tracks": [
+    357,
+    358,
+    359
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-130",
+   "chapter": 8,
+   "pdfPages": [
+    130,
+    131,
+    132,
+    133
+   ],
+   "printedPages": [
+    122,
+    123,
+    124,
+    125
+   ],
+   "tracks": [
+    360,
+    361,
+    362,
+    363,
+    364,
+    365,
+    366,
+    367,
+    368,
+    369,
+    370,
+    371,
+    372
+   ],
+   "topic": "Contractions"
+  },
+  {
+   "id": "page-134",
+   "chapter": 8,
+   "pdfPages": [
+    134,
+    135
+   ],
+   "printedPages": [
+    126,
+    127
+   ],
+   "tracks": [
+    373,
+    374
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-136",
+   "chapter": 8,
+   "pdfPages": [
+    136
+   ],
+   "printedPages": [
+    128
+   ],
+   "tracks": [
+    374,
+    375
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-137",
+   "chapter": 8,
+   "pdfPages": [
+    137,
+    138
+   ],
+   "printedPages": [
+    129,
+    130
+   ],
+   "tracks": [
+    376,
+    377,
+    378
+   ],
+   "topic": "Conditional Tense and Contractions"
+  },
+  {
+   "id": "page-139",
+   "chapter": 8,
+   "pdfPages": [
+    139
+   ],
+   "printedPages": [
+    131
+   ],
+   "tracks": [
+    379,
+    380,
+    381
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-140",
+   "chapter": 8,
+   "pdfPages": [
+    140
+   ],
+   "printedPages": [
+    132
+   ],
+   "tracks": [
+    382,
+    383
+   ],
+   "topic": "Casual Versus Formal Speech"
+  },
+  {
+   "id": "page-141",
+   "chapter": 8,
+   "pdfPages": [
+    141,
+    142
+   ],
+   "printedPages": [
+    133,
+    134
+   ],
+   "tracks": [
+    384,
+    385
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-143",
+   "chapter": 9,
+   "pdfPages": [
+    143
+   ],
+   "printedPages": [
+    135
+   ],
+   "tracks": [
+    386
+   ],
+   "topic": null
+  },
+  {
+   "id": "page-144",
+   "chapter": 9,
+   "pdfPages": [
+    144
+   ],
+   "printedPages": [
+    136
+   ],
+   "tracks": [
+    387
+   ],
+   "topic": "Same Spelling, Different Pronunciation"
+  },
+  {
+   "id": "page-145",
+   "chapter": 9,
+   "pdfPages": [
+    145
+   ],
+   "printedPages": [
+    137
+   ],
+   "tracks": [
+    388,
+    389
+   ],
+   "topic": "Two Correct Pronunciations"
+  },
+  {
+   "id": "page-146",
+   "chapter": 9,
+   "pdfPages": [
+    146
+   ],
+   "printedPages": [
+    138
+   ],
+   "tracks": [
+    390
+   ],
+   "topic": "Words with Silent Letters"
+  },
+  {
+   "id": "page-147",
+   "chapter": 9,
+   "pdfPages": [
+    147
+   ],
+   "printedPages": [
+    139
+   ],
+   "tracks": [],
+   "topic": "Homophones"
+  }
+ ],
+ "trackFiles": {
+  "2": "002 CHAPTER 1 - The Vowel Sounds.mp3",
+  "3": "003 Production Of Vowels.mp3",
+  "4": "004 Main Vowel Sounds Of American English.mp3",
+  "5": "005 Vowel Sound - Meet.mp3",
+  "6": "006 Word Pairs For Practice-deep sea.mp3",
+  "7": "007 Practice Sentences-The employees.mp3",
+  "8": "008 Vowel Sound-as in SIT.mp3",
+  "9": "009 Word Pairs For Practice-big city.mp3",
+  "10": "010 Practice Sentences-Kim wll visit.mp3",
+  "11": "011 Quick Review- Word Contrasts-leave-live.mp3",
+  "12": "012 Word Pairs For Practice-stil sleepy.mp3",
+  "13": "013 Vowel Sound - as in TAKE.mp3",
+  "14": "014 Word Pairs For Practice-the same day.mp3",
+  "15": "015 Practice Sentences-She complained.mp3",
+  "16": "016 Vowel Sound - as in GET.mp3",
+  "17": "017 Word Pairs For Practice-presidential election.mp3",
+  "18": "018 Practice Sentences-Without some extra.mp3",
+  "19": "019 Quick Review - Word Contrasts-pen-pain.mp3",
+  "20": "020 Word Pairs For Practice-less rain.mp3",
+  "21": "021 Vowel Sound - FAT.mp3",
+  "22": "022 Word Pairs For Practice-bad example.mp3",
+  "23": "023 Practice Sentences-last chance.mp3",
+  "24": "024 Quick Review-Word Contrasts-men man.mp3",
+  "25": "025 Word Pairs For Practice-sad endings.mp3",
+  "26": "026 Vowel Sound - as in FATHER.mp3",
+  "27": "027 Word Pairs For Practice-common problem.mp3",
+  "28": "028 Practice Sentences-Ronald is confident.mp3",
+  "29": "029 Quick Review-Word Contrasts-hat hot.mp3",
+  "30": "030 Word Pairs For Practice-hot pan.mp3",
+  "31": "031 Advice From A Successful Student-Katarina.mp3",
+  "32": "032 Vowel Sound - as in FUN.mp3",
+  "33": "033 Word Pairs For Practice-young son.mp3",
+  "34": "034 Practice Sentences-Your younger brother.mp3",
+  "35": "035 Quick Review- Word Contrasts-Don done.mp3",
+  "36": "036 Word Pairs For Practice-come on.mp3",
+  "37": "037 Vowel Sound - as in SAW.mp3",
+  "38": "038 Word Pairs For Practice-pause in the hall.mp3",
+  "39": "039 Practice Sentences-The audience applauded.mp3",
+  "40": "040 Quick Review-Word Contrasts-cut caught.mp3",
+  "41": "041 Word Pairs For Practice-another dog.mp3",
+  "42": "042 Vowel Sound - as in BOAT.mp3",
+  "43": "043 Word Pairs For Practice-phone home.mp3",
+  "44": "044 Practice Sentences-We both hope.mp3",
+  "45": "045 Quick Review-Word Contrasts-bought boat.mp3",
+  "46": "046 Word Pairs For Practice-old law.mp3",
+  "47": "047 Vowel Sound - as in GOOD.mp3",
+  "48": "048 Word Pairs For Practice-good book.mp3",
+  "49": "049 Practice Sentences-Would you help.mp3",
+  "50": "050 Vowel Sound - as in TOO.mp3",
+  "51": "051 Word Pairs For Practice-too few.mp3",
+  "52": "052 Practice Sentences-The new roof.mp3",
+  "53": "053 Quick Review-Vowel Contrasts-full fool.mp3",
+  "54": "054 Word Pairs For Practice-good food.mp3",
+  "55": "055 Vowel Sound - as in BIRD.mp3",
+  "56": "056 Word Pairs For Practice-first person.mp3",
+  "57": "057 Practice Sentences-I will work.mp3",
+  "58": "058 Vowel Sound - as in TIME.mp3",
+  "59": "059 Word Pairs For Practice-lime pies.mp3",
+  "60": "060 Practice Sentences-Why is the price.mp3",
+  "61": "061 Vowel Sound - as in HOUSE.mp3",
+  "62": "062 Word Pairs For Practice-about an hour.mp3",
+  "63": "063 Practice Sentences-I doubt that the clown.mp3",
+  "64": "064 Vowel Sound - as in BOY.mp3",
+  "65": "065 Word Pairs For Practice-enjoy the toy.mp3",
+  "66": "066 Practice Sentences-He destroyed.mp3",
+  "67": "067 CHAPTER 2 - Vowels In Detail.mp3",
+  "68": "068 Review of i and e Vowel Sounds.mp3",
+  "69": "069 Practice Dialogues-Is it difficult.mp3",
+  "70": "070 Practice Paragraph-Guilty or Innocent.mp3",
+  "71": "071 Review Of Vowel Sounds-Sentence Pairs-pest.mp3",
+  "72": "072 Word Pairs In Sentences-This bed is bad.mp3",
+  "73": "073 Practice Sentences-Every member.mp3",
+  "74": "074-Practice Paragraph-Trip to France-NEW.mp3",
+  "75": "075 Review Of Vowel Sounds and WARNING.mp3",
+  "76": "076 Practice Dialogue-Coffee Tomorrow.mp3",
+  "77": "077 The Problematic O and Neutral Sound.mp3",
+  "78": "078 Memorizing The Exceptions.mp3",
+  "79": "079 Dialogues Uh sound-Let's go out for lunch.mp3",
+  "80": "080 Sentence Pairs For Practice-You have a good lock.mp3",
+  "81": "081 Study Tip Letter O.mp3",
+  "82": "082 3 Ways to pronounce O.mp3",
+  "83": "083 Review-Aa vs Uh.mp3",
+  "84": "084 Word Pairs Aa & Uh-ankle uncle.mp3",
+  "85": "085 Word Pract Sent Aa-Uh-cop is wearing a cap.mp3",
+  "86": "086 The American aw Sound.mp3",
+  "87": "087 Warning - Common Mistake.mp3",
+  "88": "088 Sentence Pairs For Practice-He's a bald man.mp3",
+  "89": "089 Word Pairs In Sentences-I bought a new boat.mp3",
+  "90": "090 Practice Sentences-We all thought Joe.mp3",
+  "91": "091 Study Tip-p28.mp3",
+  "92": "092 Review Of Vowel Sounds-p28.mp3",
+  "93": "093 Review Of Vowel Sounds - Short Words.mp3",
+  "94": "094 The Problematic Oo Snd-p29.mp3",
+  "95": "095 Common Words Oo-adulthood.mp3",
+  "96": "096 Common Words-bull.mp3",
+  "97": "097-Words-could should.mp3",
+  "98": "098 Words-wolf-woman.mp3",
+  "99": "099 Review Uuh and Ooo Snds-p30.mp3",
+  "100": "100 Sentences for Practice-Are you a fool.mp3",
+  "101": "101 Practice Dialogues-Will you start to.mp3",
+  "102": "102 Comparing Words w Letter U.mp3",
+  "103": "103 Words For Practice-attitude.mp3",
+  "104": "104 Practice Sentences-It's your duty.mp3",
+  "105": "105 Review Of The ER Sound.mp3",
+  "106": "106 Words For Practice-her early.mp3",
+  "107": "107 Sentences For Practice-What were the.mp3",
+  "108": "108 Vowels Followed By The R Sound.mp3",
+  "109": "109 Words For Practice-fear near.mp3",
+  "110": "110 Practice Sentences-Take the stairs.mp3",
+  "111": "111 Intro CHAPTER 3.mp3",
+  "112": "112 Voiceless and Voiced Cons p34 .mp3",
+  "113": "113 Voiceless Voiced Consonant Pairs.mp3",
+  "114": "114 Vowel Length And Voiced and Voiceless Consonants.mp3",
+  "115": "115 Word Pairs-advice advise.mp3",
+  "116": "116 Practice Sentences-My wallet.mp3",
+  "117": "117 Word Pairs In Sentences-He told me lies.mp3",
+  "118": "118 Stops And Continuants.mp3",
+  "119": "119 Holding Final Stops.mp3",
+  "120": "120 Words For Practice-stop cup.mp3",
+  "121": "121 Final Stops Followed By Consonants.mp3",
+  "122": "122 Word Pairs For Practice-help him.mp3",
+  "123": "123 CHAPTER 4-Problematic Consonants NEW.mp3",
+  "124": "124 The Various T Sounds-Held T-p34.mp3",
+  "125": "125 Held T plus Consonants-it was.mp3",
+  "126": "126 Practice Sentences-I might not do that-TIP.mp3",
+  "127": "127 Held T Before N Sound.mp3",
+  "128": "128 Words For Practice-certain gotten.mp3",
+  "129": "129 Practice Sentences-I will shorten.mp3",
+  "130": "130 Silent T After N.mp3",
+  "131": "131 Words For Practice-interview.mp3",
+  "132": "132 Practice Dialogue For Silent T.mp3",
+  "133": "133 When T Is Between Two Vowels.mp3",
+  "134": "134 Words For Practice-city duty.mp3",
+  "135": "135 When T is Between Two Words.mp3",
+  "136": "136 Word Groups-it is.mp3",
+  "137": "137 Practice Sentences-I'll eat it.mp3",
+  "138": "138 The Fast D Sound.mp3",
+  "139": "139 Word Pairs For Practice-medal metal.mp3",
+  "140": "140 Words For Practice-already addict.mp3",
+  "141": "141 Word Pairs For Practice-add on.mp3",
+  "142": "142 Practice Sentences-I already added it.mp3",
+  "143": "143 Sound of TR.mp3",
+  "144": "144 Practice Words-travel turkey.mp3",
+  "145": "145 Sound Of DR.mp3",
+  "146": "146 Practice Words-drink children.mp3",
+  "147": "147 Practice Dialogues For Tr And Dr.mp3",
+  "148": "148 Sound of Du and D plus Y-gradual schedule.mp3",
+  "149": "149 Words For Practice-Did you.mp3",
+  "150": "150 Sound Of Tu and T and Y-actually.mp3",
+  "151": "151 Practice Sentences-Did you go.mp3",
+  "152": "152 Words Ending in ED.mp3",
+  "153": "153  Linking ED and a Vowel.mp3",
+  "154": "154 Words For Practice-worried about.mp3",
+  "155": "155 More Linking Practice-Ed and It-I needed it.mp3",
+  "156": "156 Practice Dialogues For Ed Verbs-What did you think.mp3",
+  "157": "157 Story for Pract ED endings-Learning English.mp3",
+  "158": "158 The Th Sound.mp3",
+  "159": "159 Practice Words For Voiceless TH-anything author.mp3",
+  "160": "160 Word Pairs For Voiceless TH-with nothing.mp3",
+  "161": "161 Warning-Voiceless Th Versus T.mp3",
+  "162": "162 Practice Words For Voiced TH-although breathe.mp3",
+  "163": "163 Word Pairs For Voiced TH-that clothing.mp3",
+  "164": "164 Warning-Voiced Th Versus D.mp3",
+  "165": "165 Sound Contrasts for T and Voiceless TH-bat bath.mp3",
+  "166": "166 Sound Contrasts for Voiced TH and Duh-breeding.mp3",
+  "167": "167 Sentences Practice Voiced-less TH-thirty third.mp3",
+  "168": "168 Sentences Practice TH and D.mp3",
+  "169": "169 Comparing TH vs S and Z.mp3",
+  "170": "170 Word Contrasts for S and TH-mass math.mp3",
+  "171": "171 More Pract for S-Z-TH-Does that.mp3",
+  "172": "172 The American R.mp3",
+  "173": "173 Words For Practice-more here.mp3",
+  "174": "174 R Before a Consonant.mp3",
+  "175": "175 Word Pairs For Practice-important information.mp3",
+  "176": "176 Sentences-I spent.mp3",
+  "177": "177 Story-Surprise Birthday Party.mp3",
+  "178": "178 Advice From a Successful Student-Miroslav.mp3",
+  "179": "179 The American L-Common Mistake.mp3",
+  "180": "180 Words For Practice-although.mp3",
+  "181": "181 Word Pairs For Practice-tall girl.mp3",
+  "182": "182 L Before a Consonant.mp3",
+  "183": "183 Word Contrasts For Practice-code cold.mp3",
+  "184": "184 Sentences-Jill also doesn't.mp3",
+  "185": "185 Long Vowels plus L-Practice Words-feel steal.mp3",
+  "186": "186 Warning say-yal+words.mp3",
+  "187": "187 Prac Dialog Uh before L-He stole.mp3",
+  "188": "188 Understanding L Versus R-WARNING.mp3",
+  "189": "189 L and R In Final Position-feel fear.mp3",
+  "190": "190 Consonants Plus R and L.mp3",
+  "191": "191 Word Contrasts For Practice-fame frame.mp3",
+  "192": "192 Sentences-It's always pleasurable.mp3",
+  "193": "193 R and L Review-Practice Dialogues.mp3",
+  "194": "194 Poem-Alchemy.mp3",
+  "195": "195 Poem-Barter.mp3",
+  "196": "196 Advice From a Successful Student-Fang Lee.mp3",
+  "197": "197 The V Sound.mp3",
+  "198": "198 Words For Practice-very verb.mp3",
+  "199": "199 Practice Sentences-Five of David's.mp3",
+  "200": "200 Understanding B versus V.mp3",
+  "201": "201 Word Contrast-vest best.mp3",
+  "202": "202 Word Pairs In Sentences-very good berry.mp3",
+  "203": "203 Practice Sentences-Beverly is very.mp3",
+  "204": "204 The W Sound.mp3",
+  "205": "205 Words For Practice-always wish.mp3",
+  "206": "206 The Kw Sound-quick question.mp3",
+  "207": "207 Word Pairs For Practice-white wine.mp3",
+  "208": "208 Dialogue-Winter Weather.mp3",
+  "209": "209 Word Contrasts-vine wine.mp3",
+  "210": "210 Word Pairs For Practice-every week.mp3",
+  "211": "211 Practice Sentences-Victor's wife.mp3",
+  "212": "212 The S and Z Sounds-WARNING.mp3",
+  "213": "213 Rules for S and Z sounds-books eats.mp3",
+  "214": "214 Study Tip-Memorize was as is.mp3",
+  "215": "215 Verbs And Nouns and The Letter S-use abuse.mp3",
+  "216": "216 Dialogues For Practice-Do you still use.mp3",
+  "217": "217 Practice Sentences-A dishwasher-WARNING.mp3",
+  "218": "218 Story For Practice-Mark's Day.mp3",
+  "219": "219 Pronouncing Ng.mp3",
+  "220": "220 Words For Practice-doing teaching.mp3",
+  "221": "221 Word Pairs For Practice-doing nothing.mp3",
+  "222": "222 Practice Sentences-Don't bring.mp3",
+  "223": "223 Confusing N and Ng Endings.mp3",
+  "224": "224 Word Contrasts For Practice-thin thing.mp3",
+  "225": "225 Consonant Clusters.mp3",
+  "226": "226 Common Words Cons Clusters-instantly.mp3",
+  "227": "227 X and CC-Cons Clusters-extreme.mp3",
+  "228": "228 Sound Contrasts S KS-nest next.mp3",
+  "229": "229 Dialogues-Cons Clusters-How did you do.mp3",
+  "230": "230 More Cons Clusters-it's that's.mp3",
+  "231": "231 Sound Contrasts-is its.mp3",
+  "232": "232 Sentences-Cons Clusters-There are three.mp3",
+  "233": "233 Words with DS-Cons Clusters-needs decades.mp3",
+  "234": "234 Word Contrasts-fines finds.mp3",
+  "235": "235 Sentences-Cons Clusters-David's and Ed's.mp3",
+  "236": "236 CHAPTER 5- Syllable Stress.mp3",
+  "237": "237 Stressed And Reduced Vowels-man salesman.mp3",
+  "238": "238 Comp Stress Reduced Vowels-absent about.mp3",
+  "239": "239 StressedReduced E-envy enjoy.mp3",
+  "240": "240 Words w CON-concert concern.mp3",
+  "241": "241 Words begin w PRO-product produce.mp3",
+  "242": "242 Dangers Stressing Wrong Syllable-noble Nobel.mp3",
+  "243": "243 General Rules For Stress Placement.mp3",
+  "244": "244 Noun Verb Pairs-addict.mp3",
+  "245": "245 Practice Sentences-The singer wants.mp3",
+  "246": "246 Practice Dialogue-Have you heard.mp3",
+  "247": "247 Words Ending In Tion and Ate.mp3",
+  "248": "248 ATE Endings of Verbs and Nouns.mp3",
+  "249": "249 More Stressed Suffixes-employee.mp3",
+  "250": "250 Rules For Prefixes-oversleep.mp3",
+  "251": "251 Reflexive Pronouns-myself .mp3",
+  "252": "252 Practice With Prefixes.mp3",
+  "253": "253 Practice Paragraph-The Protest.mp3",
+  "254": "254 Syllable Stress Changes-politics political.mp3",
+  "255": "255 Sentences for Practice-He likes politics.mp3",
+  "256": "256 Declaration of Independence.mp3",
+  "257": "257 Reduced Vowels for Review.mp3",
+  "258": "258 Practice Words-little social.mp3",
+  "259": "259 Words Ending in EN ION-ocean fasten.mp3",
+  "260": "260 Words ending in AR-grammar teacher.mp3",
+  "261": "261 Words ending w ACE OUS-terrace cautious.mp3",
+  "262": "262 Words ending w ANT-ENT-distant present.mp3",
+  "263": "263 Words beginning w A-E-O-U-attain enough.mp3",
+  "264": "264 CHAPTER 6 - Word Stress.mp3",
+  "265": "265 Compound Nouns.mp3",
+  "266": "266 Compound Nouns For Practice-parking lot.mp3",
+  "267": "267 More Compound Nouns-cell phone number.mp3",
+  "268": "268 Dialogue-Business Trip.mp3",
+  "269": "269 Adjective Plus Noun-nice day.mp3",
+  "270": "270 Two Adjectives Plus Noun-big blue bus.mp3",
+  "271": "271 Adjec plus Noun Sentences-John has blue eyes.mp3",
+  "272": "272 Practice Sentences-He's got big blue eyes.mp3",
+  "273": "273 Adj plus Compound Nouns-cheap plane ticket.mp3",
+  "274": "274 Word Pairs For Practice-swimming pool.mp3",
+  "275": "275 Practice Sentences-playing football.mp3",
+  "276": "276 Compound Nouns Containing Adjectives.mp3",
+  "277": "277 Phrasal Verbs.mp3",
+  "278": "278 Practice Dialogues-turn.mp3",
+  "279": "279 Noun Forms of Phrasal Verbs.mp3",
+  "280": "280 Sentence Pairs For Practice-the car was tuned.mp3",
+  "281": "281 Phrasal Nouns Within Compound-backup plan.mp3",
+  "282": "282 Sentences-We have a backup plan.mp3",
+  "283": "283 Abbreviations and Numbers.mp3",
+  "284": "284 Practice Sentences-arrived at LAX.mp3",
+  "285": "285  Names of Places and People.mp3",
+  "286": "286 Practice Paragraph-Trip to LA-Part 1.mp3",
+  "287": "287 Practice Paragraph-Trip to LA-Part 2.mp3",
+  "288": "288 Word Stress Within a Sentence.mp3",
+  "289": "289 Lengthening The Main Vowel In Stressed Words.mp3",
+  "290": "290 Practice With Vowel Length-I got it.mp3",
+  "291": "291 Which Words Should I Stress.mp3",
+  "292": "292 Practice Sentences-I like bacon.mp3",
+  "293": "293 Content Words In Detail- Verbs.mp3",
+  "294": "294 Practice Sentences-I'll call you.mp3",
+  "295": "295 Stress Nouns But Not Pronouns.mp3",
+  "296": "296 Practice Sentences-He told John.mp3",
+  "297": "297 Content Words In Detail- Adjectives-That was good.mp3",
+  "298": "298 Practice Sentences-Wait.mp3",
+  "299": "299 Reducing Vowels In Unstressed Words-FUNCTION WORDS.mp3",
+  "300": "300 Exception-Negative Auxiliary Verbs.mp3",
+  "301": "301 Weak Forms.mp3",
+  "302": "302 Practice Sentence-I'd like to go.mp3",
+  "303": "303 Dialogues Unstressed-HAVE.mp3",
+  "304": "304 Dialogue 2 Reducing HAS.mp3",
+  "305": "305 Dialogue 3 Reducing TOO.mp3",
+  "306": "306 Dialogue 4 Reducing CAN.mp3",
+  "307": "307 Dialogue 5 Reducing SOME.mp3",
+  "308": "308 Dialogue 6 Reducing OUR.mp3",
+  "309": "309 Dialogue 7 Reducing FOR.mp3",
+  "310": "310 Dialogue 8 Reducing MYSELF.mp3",
+  "311": "311 Reducing Pronouns.mp3",
+  "312": "312 Practice Dialogue-The New Boyfriend.mp3",
+  "313": "313 Practice Dialogue-Who is Laura Jones.mp3",
+  "314": "314 Practice Dialogue-All About Eggs.mp3",
+  "315": "315 Strong Forms-I'm looking for you.mp3",
+  "316": "316 Warning-Don't speak fast.mp3",
+  "317": "317 Thought Groups and Focus Words.mp3",
+  "318": "318_Sentences_Focus_Words_Thought_Groups_I_want_to_talk_to_you.mp3",
+  "319": "319 Conversations-Phone Tag.mp3",
+  "320": "320 Conversations-Sales Call.mp3",
+  "321": "321 Contrastive Stress Combo with Sentences.mp3",
+  "322": "322 Contrastive Stress for Clarification.mp3",
+  "323": "323 Emphasizing Auxilliaries.mp3",
+  "324": "324 Making an Appointment.mp3",
+  "325": "325 CHAPTER 7 - Intonation.mp3",
+  "326": "326 Falling Intonation and Statements.mp3",
+  "327": "327 Questions-What's his name.mp3",
+  "328": "328 Rising Intonation.mp3",
+  "329": "329 Practice Sentences-Did he work yesterday.mp3",
+  "330": "330-Advice From A Successful Student-Sabrina.mp3",
+  "331": "331 Sentence Pairs For Practice-Do you teach.mp3",
+  "332": "332 Non-Final Intonation.mp3",
+  "333": "333 Sentence Pairs For Practice-I bought the book.mp3",
+  "334": "334 Introductory Words.mp3",
+  "335": "335 Practice Sentences-As a matter of fact.mp3",
+  "336": "336 Series Of Words.mp3",
+  "337": "337 Practice Sentences-I like football.mp3",
+  "338": "338 Expressing Choices.mp3",
+  "339": "339 Wavering Intonation.mp3",
+  "340": "340 Examples of Intonation Changes-You did.mp3",
+  "341": "341 Practice Dialogue-Angry Friends.mp3",
+  "342": "342 Practice Dialogue-Losing Weight.mp3",
+  "343": "343 CHAPTER 8 - Sound Like A True Native Speaker.mp3",
+  "344": "344 Linking Words For Smoother Speech Flow-WARNING.mp3",
+  "345": "345 Rules For Linking-Consonant to Vowel.mp3",
+  "346": "346 Common Expressions.mp3",
+  "347": "347 Linking w Article AN.mp3",
+  "348": "348 Sentences linking AN-I ate an apple.mp3",
+  "349": "349 Linking ING+vowel.mp3",
+  "350": "350 Dialogues-What are you planning.mp3",
+  "351": "351 Practice Dialogues-Can I come in.mp3",
+  "352": "352 Linking Consonant To Same Consonant.mp3",
+  "353": "353 Word Pairs For Practice-big game.mp3",
+  "354": "354 Practice Sentences-Both things are.mp3",
+  "355": "355 Two Types of Consonants.mp3",
+  "356": "356 Linking Two Consonants.mp3",
+  "357": "357 WordPairs-up there.mp3",
+  "358": "358 Words for Practice-admit hopefully.mp3",
+  "359": "359 Dialgogues Final Stops-How was the big party.mp3",
+  "360": "360 Linking Vowel to Vowel-Go out.mp3",
+  "361": "361 Practice Sentences-I ate out.mp3",
+  "362": "362 Practice Dialogues-Why so upset.mp3",
+  "363": "363 Do I Say The Or Thee.mp3",
+  "364": "364 Linking Vowels Within a Word.mp3",
+  "365": "365 Words for Practice-client science.mp3",
+  "366": "366 Practice Dialogue-In the Department Store.mp3",
+  "367": "367 More Practice Dialogues-I believe Veronica.mp3",
+  "368": "368 Practice Paragraph-My American Accent.mp3",
+  "369": "369 Practice Paragraph-My American Accent-SLOW.mp3",
+  "370": "370 Warning-Common Mistake.mp3",
+  "371": "371 Study Tip-Watch an American film.mp3",
+  "372": "372 Contractions and WARNING.mp3",
+  "373": "373 Commonly Contracted Words-to be.mp3",
+  "374": "374_Practice_With_Contractions_is_Word_pairs_are_missing_at_end.mp3",
+  "375": "375 Practice With Contractions-Common Expressions.mp3",
+  "376": "376 Dialogues-Employee Meeting-Restaurant-Birthday.mp3",
+  "377": "377 Conditional Tense And Contractions.mp3",
+  "378": "378 Word Groups For Practice-If I had been.mp3",
+  "379": "379 Conditional Questions.mp3",
+  "380": "380 Practice Sentences-If I had known.mp3",
+  "381": "381 Practice Dialogue-What would you have done.mp3",
+  "382": "382 Advice From A Successful Student-Mauricio.mp3",
+  "383": "383 Casual Versus Formal Speech.mp3",
+  "384": "384 Rules And Patterns Of Casual Speech.mp3",
+  "385": "385 Practice Dialogues-Invitation to a movie.mp3",
+  "386": "386 CHAPTER 9-Memorizing the Exceptions.mp3",
+  "387": "387 Same Spelling Different Pronunciation.mp3",
+  "388": "388 Two Correct Pronunciations.mp3",
+  "389": "389 Words With Dropped Syllables.mp3",
+  "390": "390 Words With Silent Letters.mp3"
+ }
+}

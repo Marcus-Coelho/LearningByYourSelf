@@ -19,19 +19,39 @@ import grammarElemIndex from './grammar_elem_index.json';
 import grammarElemAppendixIndex from './grammar_elem_appendix_index.json';
 import listeningAmerican1 from './listening_american1.json';
 import listeningVocabulary from './listening_vocabulary.json';
+import listeningAmericanAccent from './listening_american_accent.json';
 import dictationPausePoints from './dictation_pause_points.json';
 import vocabularyTargetWords from './vocabulary_target_words.json';
+import americanAccentIndexData from './american_accent_index.json';
 import GrammarVocabExercisesPage from './GrammarVocabExercises';
 import './App.css';
 
 // Fontes de Listening disponíveis na tela "Listening" do menu principal —
 // hoje só a do American English A1, mas é uma lista pra caber outras depois
 // (ex.: um listening da Grammar Elementary) sem precisar remodelar nada.
-const LISTENING_SOURCES = [listeningAmerican1, listeningVocabulary];
+// American Accent (Wave 1: Practice Sentences/Sentence Pairs, 50 faixas) —
+// texto extraído do PDF (âncora do "Track N" na margem esquerda, alinhada
+// ao heading que ele narra — NÃO agrupado no fim como os outros badges
+// pareciam sob a extração de texto simples) + pontos de pausa por detecção
+// de silêncio (mesmo método soundfile/numpy dos outros 2 cursos, com recuo
+// de 0.15s pra não vazar no comecinho do som seguinte — mesma classe de bug
+// já documentada pro American1). 6 faixas (217, 331, 333, 335, 337, 361)
+// tinham anotação fonética/prosa solta misturada no texto que a extração
+// automática não separava direito — texto final dessas veio direto do dono
+// (revisão manual, sentences hard-coded no gerador do scratchpad).
+const LISTENING_SOURCES = [listeningAmerican1, listeningVocabulary, listeningAmericanAccent];
 
 // Rótulo curto de origem mostrado ao lado do número do exercício (ex.:
 // "unit 7-c") — tracks do Vocabulary têm unit/letter próprios; tracks do
 // American1 não têm esses campos, então cai no audioLabel (ex.: "1-13").
+// track.heading e track.trackNumber (só American Accent, ver
+// listening_american_accent.json) entram direto no título "Exercise n. X"
+// das 3 telas (Listening/Dictation/Speaking): "(Track N)" logo depois do
+// número sequencial do exercício (N = número real da faixa no livro/nome do
+// arquivo — pedido do dono, ele referencia as faixas por esse número, não
+// pela posição sequencial "n. X" que já existia) e o heading logo depois —
+// mesma posição que american1TrackUnitLabel ocupa pro American1 ("Unit
+// 8A"), só que os dois nunca coexistem no mesmo track.
 const listeningTrackLabel = (track) => {
   if (track.unit && track.letter) {
     // "unit 4A" (não "unit 4-a") — mesmo formato do rótulo impresso no livro.
@@ -611,13 +631,25 @@ const courses = {
     description: 'Essential Grammar in Use, unit by unit — reading, exercises and audio.',
     level: 'Beginner',
   },
+  // Curso de pronúncia, não de conteúdo — não tem "unit", é um livro corrido
+  // (9 capítulos, ver AMERICAN_ACCENT_CHAPTERS abaixo). Rotulado Intermediate
+  // por decisão do dono: o livro pressupõe alguma base de vocabulário/
+  // gramática pra fazer sentido (é sobre refinar pronúncia, não aprender do
+  // zero), então fica no mesmo grupo do English Vocabulary B, não junto dos
+  // 2 cursos A1.
+  americanAccent: {
+    title: 'American Accent',
+    description: 'Master pronunciation, word stress and intonation — Mastering the American Accent, chapter by chapter.',
+    level: 'Intermediate',
+  },
 };
 
 // Ordem canônica "por nível" (Beginner antes de Intermediate) usada na tela
 // Courses, no Progress Dashboard e nos hubs de Listening/Dictation — pedido
 // explícito do dono: American → Grammar → Vocabulary, não mais a ordem
-// alfabética/de implementação que existia antes.
-const COURSE_LEVEL_ORDER = ['american1', 'grammarElem', 'vocabulary'];
+// alfabética/de implementação que existia antes. American Accent entra no
+// fim (mesmo grupo Intermediate do Vocabulary).
+const COURSE_LEVEL_ORDER = ['american1', 'grammarElem', 'vocabulary', 'americanAccent'];
 
 // Curso "Grammar English A1": 115 units, cada uma com um par de PDFs
 // de página única (Unit-<n>L.pdf de leitura, Unit-<n>E.pdf de exercícios,
@@ -626,6 +658,80 @@ const COURSE_LEVEL_ORDER = ['american1', 'grammarElem', 'vocabulary'];
 // Grammar Elemetary/audio_files).
 const GRAMMAR_ELEM_UNIT_COUNT = 115;
 const grammarElemUnitNumbers = Array.from({ length: GRAMMAR_ELEM_UNIT_COUNT }, (_, i) => i + 1);
+
+// Curso "American Accent" ("Mastering the American Accent", Lisa Mojsin):
+// livro corrido de pronúncia, sem "unit" — 9 capítulos, cada um com várias
+// "telas" de leitura (american_accent_index.json/screens). Uma tela cobre 1+
+// páginas do PDF: quando o conteúdo de uma faixa de áudio atravessa a quebra
+// de página impressa (gerador detectou isso pelo tamanho de fonte do 1º
+// texto de cada página — heading novo vs. continuação do bloco anterior),
+// as páginas envolvidas viram uma tela só, pra nunca deixar uma faixa
+// "sumida" numa página nem reiniciar o áudio ao virar a página. Progresso
+// desse curso é por PÁGINA REAL do livro (não por tela — visitar uma tela de
+// 2 páginas marca as 2), diferente dos outros 3 cursos (por unit/seção),
+// porque esse livro não tem unit nenhuma.
+//
+// 2 bugs reais já corrigidos nessa detecção (não mexer sem reler o
+// histórico): (1) o rodapé corrido "Chapter N: TÍTULO   <nº página>" vem
+// dividido em 2 "spans"/linhas no PDF — ignorar só por posição Y (não por
+// texto) evita contar a 2ª metade como se fosse conteúdo real da página, o
+// que causava merge indevido (ex.: páginas 6-7 grudando sem motivo). (2) a
+// seção "Common Spelling Patterns for /X/" é subtítulo (tamanho 14-16, não
+// 18 como o heading de verdade do vowel/consonant) e às vezes cai bem no
+// topo de uma página cujo vowel só foi NOMEADO (sem nenhum exemplo) no
+// rodapé da página anterior — nesse caso ela SEMPRE conta como continuação,
+// nunca como início de página nova, mesmo quando teria tamanho de heading
+// (bug real reportado: páginas 4-5, 11-12, 16-17 separadas sem necessidade).
+// Outros subtítulos (Word Pairs for Practice/Practice Sentences/Quick
+// Review) NÃO tiveram esse problema reportado — não generalizar a exceção
+// pra eles sem evidência de bug real, senão o livro inteiro vira poucas
+// telas gigantes (já aconteceu numa tentativa intermediária: baixar o
+// limiar de tamanho pra 18 "resolveu" via força bruta e encolheu 94 telas
+// pra 33, mesclando capítulos inteiros — revertido).
+//
+// Revisão visual manual do dono (2026-07-23) achou mais casos que o
+// heurístico não pega — dessa vez sem padrão textual único repetido (cada
+// um tem um subtítulo diferente no topo da página: "More Voiced
+// Consonants", "Practicing the -ed Sounds", "Forming the American /r/",
+// "Song Lyrics for Practice", um glyph de marcador decorativo antes de item
+// de lista numerado começando no meio (ex. "3. ...", não "1. ..."), etc.) —
+// tratados como overrides explícitos por número de página impressa, não uma
+// regra nova generalizada (mesma cautela do parágrafo acima):
+// FORCE_CONTINUE_PRINTED_PAGES/FORCE_FRESH_PRINTED_PAGES no gerador.
+// Também: 3 páginas em branco de verdade (38/88/140, 0 caracteres) ficam
+// FORA da lista de telas — não aparecem pro usuário, não geram merge. Tracks
+// de cada tela agora são sempre ordenados crescente (bug real: apareciam na
+// ordem que o texto corrido do PDF lista, não a ordem numérica). E a track
+// 374 (rotulada no fim da pg 127) tem seu áudio continuando na "Word Pairs
+// for Practice" da pg 128 sem NENHUM sinal impresso disso na pg 128 — só
+// descoberto por audição/revisão manual, adicionada via
+// EXTRA_TRACKS_BY_PRINTED_PAGE (não dá pra detectar automaticamente).
+//
+// Mais uma rodada da mesma revisão: páginas 27/28 tinham o selo "Track N"
+// impresso pequeno (tamanho 7) perto do TOPO da página — não agrupado no
+// rodapé como o padrão normal — e isso mascarava o heading de verdade que
+// vem logo em seguida ("Warning: Common Mistake"/"Study Tip", tamanho 12,
+// que já ficaria abaixo do limiar mesmo sem esse selo). Mesma solução:
+// override pontual por página, não regra nova generalizada.
+const AMERICAN_ACCENT_CHAPTERS = americanAccentIndexData.chapters;
+const AMERICAN_ACCENT_SCREENS = americanAccentIndexData.screens;
+const AMERICAN_ACCENT_TRACK_FILES = americanAccentIndexData.trackFiles;
+const AMERICAN_ACCENT_SCREEN_BY_ID = Object.fromEntries(
+  AMERICAN_ACCENT_SCREENS.map((screen) => [screen.id, screen]),
+);
+const AMERICAN_ACCENT_ALL_PDF_PAGES = AMERICAN_ACCENT_SCREENS.flatMap((screen) => screen.pdfPages);
+const americanAccentScreenAudioUrl = (trackNumber) => (
+  `/american-accent-audio/${encodeURIComponent(AMERICAN_ACCENT_TRACK_FILES[String(trackNumber)] || '')}`
+);
+const americanAccentScreenPdfUrl = (screen) => `/american-accent-pages/${screen.pdfPages.join('-')}`;
+// Tópico de cada capítulo vem em CAIXA ALTA do cabeçalho corrido do livro
+// ("THE VOWEL SOUNDS") — convertido pra Title Case só pra exibição, sem
+// mexer no dado gerado.
+const titleCase = (text) => text.toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
+const americanAccentPrintedPageLabel = (screen) => {
+  const pages = screen.printedPages;
+  return pages.length > 1 ? `p. ${pages[0]}–${pages[pages.length - 1]}` : `p. ${pages[0]}`;
+};
 
 // Título/tópico de cada unit (grammar_elem_index.json) — extraído das
 // próprias páginas Unit-<n>L.pdf (a de leitura; as _E são só exercícios,
@@ -717,6 +823,7 @@ function collectAllNotesEntries(userName) {
       const grammarElemAppendixMatch = remainder.match(/^grammarElem:appendix-(\d+)$/);
       const grammarElemAdditionalMatch = remainder.match(/^grammarElem:additional-(\d+)$/);
       const grammarElemUnitMatch = remainder.match(/^grammarElem:(\d+)$/);
+      const americanAccentMatch = remainder.match(/^americanAccent:(.+)$/);
 
       if (remainder === 'american1-transcriptions') {
         entries.push({ key, course: 'american1', kind: 'american1-transcriptions', title: 'American English A1 — Transcriptions', html });
@@ -777,6 +884,20 @@ function collectAllNotesEntries(userName) {
           title: `Grammar English A1 — Unit ${unit}${unitTitle ? ` - ${unitTitle}` : ''}`,
           html,
         });
+      } else if (americanAccentMatch) {
+        const screenId = americanAccentMatch[1];
+        const screen = AMERICAN_ACCENT_SCREEN_BY_ID[screenId];
+        if (screen) {
+          entries.push({
+            key,
+            course: 'americanAccent',
+            kind: 'americanAccent-page',
+            screenId,
+            page: screen.pdfPages[0],
+            title: `American Accent — ${americanAccentPrintedPageLabel(screen)}${screen.topic ? ` - ${screen.topic}` : ''}`,
+            html,
+          });
+        }
       } else if (/^\d+$/.test(remainder)) {
         const unit = Number(remainder);
         entries.push({
@@ -1040,6 +1161,7 @@ function App() {
   const [selectedGrammarElemUnit, setSelectedGrammarElemUnit] = useState(RESTORED_POSITION?.selectedGrammarElemUnit ?? null);
   const [selectedGrammarElemAppendix, setSelectedGrammarElemAppendix] = useState(RESTORED_POSITION?.selectedGrammarElemAppendix ?? null);
   const [selectedGrammarElemAdditional, setSelectedGrammarElemAdditional] = useState(RESTORED_POSITION?.selectedGrammarElemAdditional ?? null);
+  const [selectedAmericanAccentScreenId, setSelectedAmericanAccentScreenId] = useState(RESTORED_POSITION?.selectedAmericanAccentScreenId ?? null);
   // Navegação da tela "Listening" (menu principal): hub -> fonte (ex.:
   // "Listening from American English A1") -> track (ex.: CD1 Track 13).
   // Guardamos só os ids (não os objetos) pra caber no histórico/sessionStorage
@@ -1122,7 +1244,7 @@ function App() {
   // UnitNotes/respostas) usa o mesmo layout de grid de 3 colunas — listado
   // aqui pra saber quando faz sentido mostrar o botão de esconder/mostrar
   // (não existe em telas de grade de units, home, etc.).
-  const PAGES_WITH_SIDE_PANEL = ['exercises', 'unit', 'grammarElem-unit', 'grammarElem-exercise', 'grammarElem-appendix', 'grammarElem-additional', 'american1-unit', 'american1-reference', 'american1-transcriptions'];
+  const PAGES_WITH_SIDE_PANEL = ['exercises', 'unit', 'grammarElem-unit', 'grammarElem-exercise', 'grammarElem-appendix', 'grammarElem-additional', 'american1-unit', 'american1-reference', 'american1-transcriptions', 'american-accent-reader'];
   const [exerciseRatings, setExerciseRatings] = useState({});
   // Autoavaliação da UNIT inteira (tela de leitura, "_L.pdf") — separada de
   // exerciseRatings (por exercício, tela "exercises"). Chave própria
@@ -1135,6 +1257,14 @@ function App() {
   const [american1VisitedSections, setAmerican1VisitedSections] = useState({});
   const [grammarElemUnitRatings, setGrammarElemUnitRatings] = useState({});
   const [grammarElemVisitedUnits, setGrammarElemVisitedUnits] = useState({});
+  // American Accent: progresso é por PÁGINA REAL do livro, não por unit —
+  // ver comentário grande em AMERICAN_ACCENT_SCREENS. Chave = número da
+  // página do PDF (1-based).
+  const [visitedAmericanAccentPages, setVisitedAmericanAccentPages] = useState({});
+  // Autoavaliação por TELA (screen.id, ex. "page-123") — mesmo mecanismo dos
+  // outros 3 cursos (1-5 estrelas), só que por tela de leitura em vez de
+  // unit, já que esse livro não tem unit nenhuma.
+  const [americanAccentPageRatings, setAmericanAccentPageRatings] = useState({});
   // Última unit/seção aberta EM CADA curso — alimenta o botão "Continue
   // where you left off", um por curso na tela Courses e um só (o mais
   // recente dos 3, por timestamp) na Home. Chave = id do curso
@@ -1642,6 +1772,55 @@ function App() {
     }
   }, [userName]);
 
+  // Mesmo mecanismo de autoavaliação dos outros 3 cursos, agora por
+  // screen.id do American Accent ("americanAccent-rating:<screenId>").
+  useEffect(() => {
+    if (!userName) {
+      setAmericanAccentPageRatings({});
+      return;
+    }
+    try {
+      const prefix = userKey(userName, 'americanAccent-rating:');
+      const loaded = {};
+      for (let i = 0; i < window.localStorage.length; i += 1) {
+        const key = window.localStorage.key(i);
+        if (key && key.startsWith(prefix)) {
+          const value = Number(window.localStorage.getItem(key));
+          if (value >= 1 && value <= 5) {
+            loaded[key.slice(prefix.length)] = value;
+          }
+        }
+      }
+      setAmericanAccentPageRatings(loaded);
+    } catch (error) {
+      setAmericanAccentPageRatings({});
+    }
+  }, [userName]);
+
+  // Mesmo mecanismo, agora para o American Accent — chave própria
+  // ("americanAccent-visitedPages"), guardando NÚMEROS DE PÁGINA, não units.
+  useEffect(() => {
+    if (!userName) {
+      setVisitedAmericanAccentPages({});
+      return;
+    }
+    try {
+      const raw = window.localStorage.getItem(userKey(userName, 'americanAccent-visitedPages'));
+      if (raw) {
+        const list = JSON.parse(raw);
+        const loaded = {};
+        list.forEach((page) => {
+          loaded[page] = true;
+        });
+        setVisitedAmericanAccentPages(loaded);
+      } else {
+        setVisitedAmericanAccentPages({});
+      }
+    } catch (error) {
+      setVisitedAmericanAccentPages({});
+    }
+  }, [userName]);
+
   const handleRateGrammarElemUnit = (unit, value) => {
     if (!unit || !userName) return;
     setGrammarElemUnitRatings((prev) => ({ ...prev, [unit]: value }));
@@ -1653,6 +1832,17 @@ function App() {
     scheduleReview('grammarElem', unit, value);
   };
 
+  const handleRateAmericanAccentPage = (screenId, value) => {
+    if (!screenId || !userName) return;
+    setAmericanAccentPageRatings((prev) => ({ ...prev, [screenId]: value }));
+    try {
+      window.localStorage.setItem(userKey(userName, `americanAccent-rating:${screenId}`), String(value));
+    } catch (error) {
+      // Armazenamento indisponível — a nota fica só nesta sessão.
+    }
+    scheduleReview('americanAccent', screenId, value);
+  };
+
   const grammarElemRatingValues = Object.values(grammarElemUnitRatings);
   const grammarElemScorePercent = grammarElemRatingValues.length > 0
     ? Math.round((grammarElemRatingValues.reduce((sum, value) => sum + value, 0) / grammarElemRatingValues.length / 5) * 100)
@@ -1660,6 +1850,15 @@ function App() {
   const grammarElemVisitedUnitsCount = Object.keys(grammarElemVisitedUnits).length;
   const grammarElemProgressPercent = grammarElemUnitNumbers.length > 0
     ? Math.round((grammarElemVisitedUnitsCount / grammarElemUnitNumbers.length) * 100)
+    : 0;
+
+  const americanAccentRatingValues = Object.values(americanAccentPageRatings);
+  const americanAccentScorePercent = americanAccentRatingValues.length > 0
+    ? Math.round((americanAccentRatingValues.reduce((sum, value) => sum + value, 0) / americanAccentRatingValues.length / 5) * 100)
+    : null;
+  const americanAccentVisitedPagesCount = Object.keys(visitedAmericanAccentPages).length;
+  const americanAccentProgressPercent = AMERICAN_ACCENT_ALL_PDF_PAGES.length > 0
+    ? Math.round((americanAccentVisitedPagesCount / AMERICAN_ACCENT_ALL_PDF_PAGES.length) * 100)
     : 0;
 
   // Caderno de vocabulário ("My Words"): um único array JSON por usuário
@@ -1841,6 +2040,34 @@ function App() {
     });
   }, [selectedGrammarElemUnit, activePage, userName]);
 
+  // American Accent: marca TODAS as páginas da tela atual como visitadas (uma
+  // tela pode cobrir 2+ páginas reais do livro — ver AMERICAN_ACCENT_SCREENS).
+  useEffect(() => {
+    if (activePage !== 'american-accent-reader' || !selectedAmericanAccentScreenId || !userName) {
+      return;
+    }
+    const screen = AMERICAN_ACCENT_SCREEN_BY_ID[selectedAmericanAccentScreenId];
+    if (!screen) return;
+    setVisitedAmericanAccentPages((prev) => {
+      const alreadyAllVisited = screen.pdfPages.every((page) => prev[page]);
+      if (alreadyAllVisited) return prev;
+      const next = { ...prev };
+      screen.pdfPages.forEach((page) => {
+        next[page] = true;
+      });
+      try {
+        window.localStorage.setItem(
+          userKey(userName, 'americanAccent-visitedPages'),
+          JSON.stringify(Object.keys(next).map(Number)),
+        );
+      } catch (error) {
+        // Armazenamento indisponível — progresso não sobrevive a recarregar.
+      }
+      markDailyGoalDone('newUnit');
+      return next;
+    });
+  }, [selectedAmericanAccentScreenId, activePage, userName]);
+
   // "Continue where you left off": grava a última unit/seção aberta DE CADA
   // curso (um botão por curso na tela Courses) + timestamp (pra Home saber
   // qual dos 3 foi o mais recente e mostrar só esse). Reage às mesmas 3
@@ -1858,6 +2085,9 @@ function App() {
     } else if (activePage === 'grammarElem-unit' && selectedGrammarElemUnit) {
       course = 'grammarElem';
       entry = { unit: selectedGrammarElemUnit, timestamp: Date.now() };
+    } else if (activePage === 'american-accent-reader' && selectedAmericanAccentScreenId) {
+      course = 'americanAccent';
+      entry = { screenId: selectedAmericanAccentScreenId, timestamp: Date.now() };
     } else {
       return;
     }
@@ -1870,7 +2100,7 @@ function App() {
       }
       return next;
     });
-  }, [activePage, selectedUnit, selectedAmerican1Unit, selectedAmerican1Section, selectedGrammarElemUnit, userName]);
+  }, [activePage, selectedUnit, selectedAmerican1Unit, selectedAmerican1Section, selectedGrammarElemUnit, selectedAmericanAccentScreenId, userName]);
 
   // Restaurar posição ao recarregar (F5): sem router, um reload sempre
   // jogava de volta pra Home — grava a página atual + toda unit/seção
@@ -1901,6 +2131,7 @@ function App() {
       selectedGrammarElemUnit,
       selectedGrammarElemAppendix,
       selectedGrammarElemAdditional,
+      selectedAmericanAccentScreenId,
       selectedListeningSource,
       selectedListeningTrack,
       selectedDictationSource,
@@ -1940,6 +2171,7 @@ function App() {
     selectedGrammarElemUnit,
     selectedGrammarElemAppendix,
     selectedGrammarElemAdditional,
+    selectedAmericanAccentScreenId,
     selectedListeningSource,
     selectedListeningTrack,
     selectedDictationSource,
@@ -1977,6 +2209,7 @@ function App() {
       setSelectedGrammarElemUnit(state.selectedGrammarElemUnit ?? null);
       setSelectedGrammarElemAppendix(state.selectedGrammarElemAppendix ?? null);
       setSelectedGrammarElemAdditional(state.selectedGrammarElemAdditional ?? null);
+      setSelectedAmericanAccentScreenId(state.selectedAmericanAccentScreenId ?? null);
       setSelectedListeningSource(state.selectedListeningSource ?? null);
       setSelectedListeningTrack(state.selectedListeningTrack ?? null);
       setSelectedDictationSource(state.selectedDictationSource ?? null);
@@ -2173,6 +2406,47 @@ function App() {
 
   const handleBackToGrammarElemUnit = () => {
     setActivePage('grammarElem-unit');
+  };
+
+  const handleAmericanAccent = (event) => {
+    event.preventDefault();
+    // Mesma trava de acesso do resto do menu (ver handleOpenAmerican1SoundBank)
+    // — o drawer lateral fica sempre visível mesmo deslogado.
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
+    setActivePage('americanAccent');
+    setSelectedAmericanAccentScreenId(null);
+    setActiveCourseId('americanAccent');
+    setUnitSearchQuery('');
+  };
+
+  const openAmericanAccentScreen = (screenId) => {
+    setActivePage('american-accent-reader');
+    setSelectedAmericanAccentScreenId(screenId);
+  };
+
+  const handleAmericanAccentScreenSelect = (event, screenId) => {
+    event.preventDefault();
+    openAmericanAccentScreen(screenId);
+  };
+
+  const handleBackToAmericanAccent = () => {
+    setActivePage('americanAccent');
+    setSelectedAmericanAccentScreenId(null);
+  };
+
+  const handlePreviousAmericanAccentScreen = () => {
+    const index = AMERICAN_ACCENT_SCREENS.findIndex((screen) => screen.id === selectedAmericanAccentScreenId);
+    if (index <= 0) return;
+    setSelectedAmericanAccentScreenId(AMERICAN_ACCENT_SCREENS[index - 1].id);
+  };
+
+  const handleNextAmericanAccentScreen = () => {
+    const index = AMERICAN_ACCENT_SCREENS.findIndex((screen) => screen.id === selectedAmericanAccentScreenId);
+    if (index === -1 || index >= AMERICAN_ACCENT_SCREENS.length - 1) return;
+    setSelectedAmericanAccentScreenId(AMERICAN_ACCENT_SCREENS[index + 1].id);
   };
 
   // Appendixes: ficam depois da última unit na lista, mas são uma trilha à
@@ -2402,6 +2676,11 @@ function App() {
       setSelectedUnit(unit);
       setActiveCourseId('vocabulary');
       setActivePage('unit');
+    } else if (item.course === 'americanAccent') {
+      const screen = AMERICAN_ACCENT_SCREEN_BY_ID[item.id];
+      if (!screen) return;
+      setActiveCourseId('americanAccent');
+      openAmericanAccentScreen(screen.id);
     }
   };
 
@@ -2490,6 +2769,9 @@ function App() {
       handleGrammarElemAppendixSelect(event, entry.appendixNumber);
     } else if (entry.kind === 'grammarElem-additional') {
       handleGrammarElemAdditionalSelect(event, entry.additionalNumber);
+    } else if (entry.kind === 'americanAccent-page') {
+      setActiveCourseId('americanAccent');
+      openAmericanAccentScreen(entry.screenId);
     }
   };
 
@@ -2747,7 +3029,7 @@ function App() {
   // antes de Unit 2 numa ordenação de texto) — cobre qualquer kind que
   // carregue unit/appendixNumber/additionalNumber/refPage.
   const notesEntrySortNumber = (entry) => (
-    entry.unit ?? entry.appendixNumber ?? entry.additionalNumber ?? entry.refPage ?? 0
+    entry.unit ?? entry.appendixNumber ?? entry.additionalNumber ?? entry.refPage ?? entry.page ?? 0
   );
 
   // Junta as anotações ("My Notes") de todas as units num único .txt e
@@ -3267,6 +3549,55 @@ function App() {
     removeLocalStorageKeysWithPrefix('answers:grammarElem');
   };
 
+  // Equivalentes pro American Accent — sem "Answers" (não tem exercício
+  // escrito, é só leitura+áudio), chave de progresso guarda NÚMEROS DE
+  // PÁGINA (não units, ver visitedAmericanAccentPages).
+  const handleResetAmericanAccentProgress = () => {
+    if (!window.confirm('Reset your American Accent page progress? This cannot be undone.')) {
+      return;
+    }
+    setVisitedAmericanAccentPages({});
+    clearLastVisitedForCourse('americanAccent');
+    try {
+      window.localStorage.removeItem(userKey(userName, 'americanAccent-visitedPages'));
+    } catch (error) {
+      // Armazenamento indisponível.
+    }
+  };
+
+  const handleResetAmericanAccentSelfEvaluation = () => {
+    if (!window.confirm('Reset your American Accent self-evaluation score and every star rating you gave? This cannot be undone.')) {
+      return;
+    }
+    setAmericanAccentPageRatings({});
+    removeLocalStorageKeysWithPrefix('americanAccent-rating:');
+    removeLocalStorageKeysWithPrefix('review:americanAccent:');
+  };
+
+  const handleResetAmericanAccentNotes = () => {
+    if (!window.confirm('Reset your American Accent "My Notes" for every page? This cannot be undone.')) {
+      return;
+    }
+    removeLocalStorageKeysWithPrefix('notes:americanAccent');
+  };
+
+  const handleResetAmericanAccentAll = () => {
+    if (!window.confirm('Reset EVERYTHING for American Accent — progress, self-evaluation and page notes? This cannot be undone.')) {
+      return;
+    }
+    setVisitedAmericanAccentPages({});
+    setAmericanAccentPageRatings({});
+    clearLastVisitedForCourse('americanAccent');
+    try {
+      window.localStorage.removeItem(userKey(userName, 'americanAccent-visitedPages'));
+    } catch (error) {
+      // Armazenamento indisponível.
+    }
+    removeLocalStorageKeysWithPrefix('americanAccent-rating:');
+    removeLocalStorageKeysWithPrefix('review:americanAccent:');
+    removeLocalStorageKeysWithPrefix('notes:americanAccent');
+  };
+
   const toggleProfileCourse = (courseId) => {
     setExpandedProfileCourses((prev) => ({ ...prev, [courseId]: !prev[courseId] }));
   };
@@ -3423,6 +3754,15 @@ function App() {
   const grammarElemStatuses = grammarElemUnitNumbers.map((unit) => (
     getUnitBadgeStatus(Boolean(grammarElemVisitedUnits[unit]), grammarElemUnitRatings[unit] || 0)
   ));
+  // total/tally contam PÁGINAS REAIS (AMERICAN_ACCENT_ALL_PDF_PAGES), não
+  // telas — uma tela de 2 páginas soma 2 no progresso. Rating é por TELA
+  // (americanAccentPageRatings, chave screen.id) — toda página de uma tela
+  // herda a mesma nota, igual ao American1 (seção herda a rating da unit).
+  const americanAccentStatuses = AMERICAN_ACCENT_ALL_PDF_PAGES.map((page) => {
+    const screen = AMERICAN_ACCENT_SCREENS.find((item) => item.pdfPages.includes(page));
+    const rating = screen ? americanAccentPageRatings[screen.id] || 0 : 0;
+    return getUnitBadgeStatus(Boolean(visitedAmericanAccentPages[page]), rating);
+  });
   // Ordem = COURSE_LEVEL_ORDER (Beginner antes de Intermediate — American1,
   // Grammar Elem, Vocabulary), não mais a ordem de implementação — o
   // Progress Dashboard lista "Progress by course" direto nessa ordem.
@@ -3432,6 +3772,7 @@ function App() {
     vocabulary: { id: 'vocabulary', title: courses.vocabulary.title, level: courses.vocabulary.level, total: unitItems.length, tally: tallyUnitStatuses(vocabularyStatuses) },
     american1: { id: 'american1', title: courses.american1.title, level: courses.american1.level, total: american1SectionsTotal, tally: tallyUnitStatuses(american1Statuses), unitLabel: 'sections' },
     grammarElem: { id: 'grammarElem', title: courses.grammarElem.title, level: courses.grammarElem.level, total: GRAMMAR_ELEM_UNIT_COUNT, tally: tallyUnitStatuses(grammarElemStatuses) },
+    americanAccent: { id: 'americanAccent', title: courses.americanAccent.title, level: courses.americanAccent.level, total: AMERICAN_ACCENT_ALL_PDF_PAGES.length, tally: tallyUnitStatuses(americanAccentStatuses), unitLabel: 'pages' },
   };
   const courseProgress = COURSE_LEVEL_ORDER.map((id) => courseProgressById[id]);
   const overallMasteredTotal = courseProgress.reduce((sum, course) => sum + course.tally.mastered, 0);
@@ -3461,6 +3802,12 @@ function App() {
       }
     }
     const nextGrammarElemUnit = grammarElemUnitNumbers.find((unit) => !grammarElemVisitedUnits[unit]);
+    // Por TELA (não por página solta) — é o que dá pra abrir de fato; uma
+    // tela conta como "não visitada" se qualquer uma das páginas dela ainda
+    // não foi vista.
+    const nextAmericanAccentScreen = AMERICAN_ACCENT_SCREENS.find((screen) => (
+      screen.pdfPages.some((page) => !visitedAmericanAccentPages[page])
+    ));
 
     const candidates = [];
     if (nextVocabUnit) {
@@ -3493,6 +3840,14 @@ function App() {
         label: `Unit ${nextGrammarElemUnit}`,
         sublabel: 'Grammar English A1',
         onOpen: () => openGrammarElemUnit(nextGrammarElemUnit),
+      });
+    }
+    if (nextAmericanAccentScreen) {
+      candidates.push({
+        courseId: 'americanAccent',
+        label: `${americanAccentPrintedPageLabel(nextAmericanAccentScreen)}${nextAmericanAccentScreen.topic ? `: ${nextAmericanAccentScreen.topic}` : ''}`,
+        sublabel: 'American Accent',
+        onOpen: () => openAmericanAccentScreen(nextAmericanAccentScreen.id),
       });
     }
 
@@ -3548,6 +3903,18 @@ function App() {
   const filteredGrammarElemUnitNumbers = unitSearchNormalized
     ? grammarElemUnitNumbers.filter((unit) => getGrammarElemUnitTitle(unit).toLowerCase().includes(unitSearchNormalized) || String(unit).includes(unitSearchNormalized))
     : grammarElemUnitNumbers;
+  // Sem "unit" nenhuma nesse curso — busca por capítulo (nome + tópico) e,
+  // pra achar conteúdo específico (ex. "linking"), pelo subtítulo de cada
+  // tela de leitura (screen.topic, ver american_accent_index.json).
+  const filteredAmericanAccentChapters = unitSearchNormalized
+    ? AMERICAN_ACCENT_CHAPTERS.filter((chapter) => (
+      chapter.name.toLowerCase().includes(unitSearchNormalized)
+      || (chapter.topic || '').toLowerCase().includes(unitSearchNormalized)
+    ))
+    : AMERICAN_ACCENT_CHAPTERS;
+  const filteredAmericanAccentScreens = unitSearchNormalized
+    ? AMERICAN_ACCENT_SCREENS.filter((screen) => (screen.topic || '').toLowerCase().includes(unitSearchNormalized))
+    : [];
 
   const unvisitedCandidates = userName ? findNextUnvisitedByCourse() : [];
   const planNewUnit = unvisitedCandidates[0] || null;
@@ -3578,6 +3945,8 @@ function App() {
       openAmerican1Section(entry.unit, entry.section);
     } else if (course === 'grammarElem') {
       openGrammarElemUnit(entry.unit);
+    } else if (course === 'americanAccent') {
+      openAmericanAccentScreen(entry.screenId);
     }
   };
   const formatLastVisitedLabel = (course, entry) => {
@@ -3587,6 +3956,12 @@ function App() {
       return /^[A-C]$/.test(entry.section)
         ? `Unit ${entry.unit}${entry.section} · ${courses.american1.title}`
         : `Unit ${entry.unit} (${entry.section}) · ${courses.american1.title}`;
+    }
+    if (course === 'americanAccent') {
+      const screen = AMERICAN_ACCENT_SCREEN_BY_ID[entry.screenId];
+      return screen
+        ? `${americanAccentPrintedPageLabel(screen)} · ${courses.americanAccent.title}`
+        : courses.americanAccent.title;
     }
     return `Unit ${entry.unit} · ${courses.grammarElem.title}`;
   };
@@ -3666,6 +4041,7 @@ function App() {
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenListening(event); setMobileMenuOpen(false); }}><IconHeadphones /><span>Listening</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenDictation(event); setMobileMenuOpen(false); }}><IconText /><span>Dictation</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenSpeaking(event); setMobileMenuOpen(false); }}><IconMic /><span>Speaking</span></a></li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleAmericanAccent(event); setMobileMenuOpen(false); }}><IconCourses /><span>American Accent</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenAmerican1SoundBank(event); setMobileMenuOpen(false); }}><IconSound /><span>Sound Bank</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenGrammarVocabExercises(event); setMobileMenuOpen(false); }}><IconQuiz /><span>Grammar &amp; Vocabulary Exercises</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenDashboard(event); setMobileMenuOpen(false); }}><IconDashboard /><span>Progress</span></a></li>
@@ -3923,7 +4299,7 @@ function App() {
             />
             {unitSearchNormalized ? (
               <div className="unified-search-results">
-                {filteredUnitItems.length === 0 && filteredAmerican1UnitNumbers.length === 0 && filteredGrammarElemUnitNumbers.length === 0 ? (
+                {filteredUnitItems.length === 0 && filteredAmerican1UnitNumbers.length === 0 && filteredGrammarElemUnitNumbers.length === 0 && filteredAmericanAccentScreens.length === 0 ? (
                   <p className="unit-search-empty">No units match "{unitSearchQuery}" in any course.</p>
                 ) : (
                   <>
@@ -3989,6 +4365,28 @@ function App() {
                         </div>
                       </section>
                     )}
+                    {filteredAmericanAccentScreens.length > 0 && (
+                      <section className="unified-search-group">
+                        <h3 className="unified-search-group-title">{courses.americanAccent.title}</h3>
+                        <div className="vocabulary-list" role="list">
+                          {filteredAmericanAccentScreens.map((screen) => {
+                            const chapter = AMERICAN_ACCENT_CHAPTERS.find((item) => item.id === screen.chapter);
+                            return (
+                              <a
+                                key={`americanAccent-${screen.id}`}
+                                className="vocabulary-link"
+                                href={`#americanAccent-${screen.id}`}
+                                onClick={(event) => { event.preventDefault(); setActiveCourseId('americanAccent'); openAmericanAccentScreen(screen.id); }}
+                              >
+                                <UnitBadgeDot status={screen.pdfPages.every((page) => visitedAmericanAccentPages[page]) ? 'mastered' : screen.pdfPages.some((page) => visitedAmericanAccentPages[page]) ? 'visited' : 'unvisited'} />
+                                <span>{americanAccentPrintedPageLabel(screen)}</span>
+                                <small>{chapter ? chapter.name : ''} — {screen.topic}</small>
+                              </a>
+                            );
+                          })}
+                        </div>
+                      </section>
+                    )}
                   </>
                 )}
               </div>
@@ -4049,11 +4447,189 @@ function App() {
                     </button>
                   )}
                 </div>
+                <div className="course-link-row">
+                  <a className="course-link" href="#link-americanAccent" onClick={handleAmericanAccent}>
+                    <span>{courses.americanAccent.title}</span>
+                    <small>{courses.americanAccent.description}</small>
+                  </a>
+                  {lastVisitedByCourse.americanAccent && (
+                    <button
+                      type="button"
+                      className="continue-cta course-continue-cta"
+                      onClick={() => openLastVisitedEntry('americanAccent', lastVisitedByCourse.americanAccent)}
+                    >
+                      Continue where you left off
+                      <small>{formatLastVisitedLabel('americanAccent', lastVisitedByCourse.americanAccent)}</small>
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>
         </main>
-      ) : activePage === 'american1' ? (
+      ) : activePage === 'americanAccent' ? (
+        <main className="landing-page vocabulary-mode vocabulary-grid-mode" id="link-americanAccent">
+          <div className="landing-panel vocabulary-page vocabulary-grid-mode">
+            <h2 className="vocabulary-title">{courses.americanAccent.title}</h2>
+            <span className="american-accent-intro">
+              Mastering the American Accent — pick a chapter to start reading. Progress is tracked
+              per book page, not per chapter.
+            </span>
+            <UnitSearchBox
+              value={unitSearchQuery}
+              onChange={setUnitSearchQuery}
+              placeholder="Search chapters... (e.g. linking)"
+            />
+            {unitSearchNormalized && filteredAmericanAccentChapters.length === 0 && filteredAmericanAccentScreens.length === 0 ? (
+              <p className="unit-search-empty">No chapters or pages match "{unitSearchQuery}".</p>
+            ) : null}
+            <div className="vocabulary-list" role="list">
+              {filteredAmericanAccentChapters.map((chapter) => {
+                const chapterScreens = AMERICAN_ACCENT_SCREENS.filter((screen) => screen.chapter === chapter.id);
+                const chapterPages = chapterScreens.flatMap((screen) => screen.pdfPages);
+                const visitedCount = chapterPages.filter((page) => visitedAmericanAccentPages[page]).length;
+                const firstScreen = chapterScreens[0];
+                return (
+                  <a
+                    key={chapter.id}
+                    className="vocabulary-link"
+                    href={`#american-accent-chapter-${chapter.id}`}
+                    onClick={(event) => firstScreen && handleAmericanAccentScreenSelect(event, firstScreen.id)}
+                  >
+                    <UnitBadgeDot status={visitedCount === 0 ? 'unvisited' : visitedCount >= chapterPages.length ? 'mastered' : 'visited'} />
+                    <span>{chapter.name}</span>
+                    <small>{chapter.topic ? titleCase(chapter.topic) : `p. ${chapter.startPrintedPage}–${chapter.endPrintedPage}`}</small>
+                  </a>
+                );
+              })}
+            </div>
+            {unitSearchNormalized && filteredAmericanAccentScreens.length > 0 && (
+              <>
+                <h3 className="unified-search-group-title">Matching pages</h3>
+                <div className="vocabulary-list" role="list">
+                  {filteredAmericanAccentScreens.map((screen) => {
+                    const chapter = AMERICAN_ACCENT_CHAPTERS.find((item) => item.id === screen.chapter);
+                    return (
+                      <a
+                        key={screen.id}
+                        className="vocabulary-link"
+                        href={`#american-accent-${screen.id}`}
+                        onClick={(event) => handleAmericanAccentScreenSelect(event, screen.id)}
+                      >
+                        <UnitBadgeDot status={screen.pdfPages.every((page) => visitedAmericanAccentPages[page]) ? 'mastered' : screen.pdfPages.some((page) => visitedAmericanAccentPages[page]) ? 'visited' : 'unvisited'} />
+                        <span>{americanAccentPrintedPageLabel(screen)}</span>
+                        <small>{chapter ? chapter.name : ''} — {screen.topic}</small>
+                      </a>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+        </main>
+      ) : activePage === 'american-accent-reader' ? (() => {
+        const screen = AMERICAN_ACCENT_SCREEN_BY_ID[selectedAmericanAccentScreenId];
+        const chapter = screen ? AMERICAN_ACCENT_CHAPTERS.find((item) => item.id === screen.chapter) : null;
+        const screenIndex = screen ? AMERICAN_ACCENT_SCREENS.findIndex((item) => item.id === screen.id) : -1;
+
+        return (
+          <main
+            className="main-panels"
+            ref={layoutRef}
+            style={{
+              gridTemplateColumns: sidePanelVisible
+                ? `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`
+                : `minmax(${MIN_CENTER_WIDTH}px, 1fr)`,
+            }}
+          >
+            <section className="pdf-panel">
+              <div className="pdf-toolbar pdf-toolbar-left american-accent-toolbar">
+                <div className="pdf-toolbar-nav">
+                  <button type="button" className="upload-button all-units-link" onClick={handleBackToAmericanAccent}>
+                    All Chapters
+                  </button>
+                  <button
+                    type="button"
+                    className="upload-button"
+                    onClick={handlePreviousAmericanAccentScreen}
+                    disabled={screenIndex <= 0}
+                  >
+                    Previous Page
+                  </button>
+                  <button
+                    type="button"
+                    className="upload-button"
+                    onClick={handleNextAmericanAccentScreen}
+                    disabled={screenIndex === -1 || screenIndex >= AMERICAN_ACCENT_SCREENS.length - 1}
+                  >
+                    Next Page
+                  </button>
+                </div>
+                {/* Player fixo no topo, não ancorado sobre o PDF — diferente do
+                    Vocabulary/American1 (ver decisão registrada em conversa: uma
+                    página deste livro pode ter 2-3 faixas, então um botão por
+                    coordenada não escala aqui; mesmo padrão do Grammar Elem. */}
+                {screen && screen.tracks.length > 0 && (
+                  <div className="reference-links" role="group" aria-label="Page audio">
+                    {screen.tracks.map((trackNumber) => (
+                      <SimpleAudioPlayer
+                        key={trackNumber}
+                        label={`Track ${trackNumber}`}
+                        src={americanAccentScreenAudioUrl(trackNumber)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {screen && (
+                <div className="section-info">
+                  <strong>
+                    {courses.americanAccent.title}
+                    {' · '}
+                    {chapter ? chapter.name : ''}
+                    {chapter?.topic ? ` (${titleCase(chapter.topic)})` : ''}
+                    {' · '}
+                    {americanAccentPrintedPageLabel(screen)}
+                    {screen.topic ? ` (${screen.topic})` : ''}
+                  </strong>
+                </div>
+              )}
+
+              {screen ? (
+                <PdfWorkspace key={screen.id} fileUrl={americanAccentScreenPdfUrl(screen)} defaultScale={1.3} />
+              ) : (
+                <div className="pdf-empty-state">
+                  <p className="eyebrow">No page</p>
+                  <h1>No page selected</h1>
+                </div>
+              )}
+            </section>
+
+            <button
+              className={`resize-handle${sidePanelVisible ? '' : ' is-hidden'}`}
+              type="button"
+              aria-label="Resize right column"
+              onPointerDown={startPanelResize}
+            />
+
+            <aside className={`side-panel right-panel${sidePanelVisible ? '' : ' is-hidden'}`}>
+              <div className="panel-content related-panel">
+                {screen && (
+                  <UnitNotes
+                    key={screen.id}
+                    unit={screen.id}
+                    userName={userName}
+                    storageKeyBase={`notes:americanAccent:${screen.id}`}
+                    rating={americanAccentPageRatings[screen.id] || 0}
+                    onRate={(value) => handleRateAmericanAccentPage(screen.id, value)}
+                  />
+                )}
+              </div>
+            </aside>
+          </main>
+        );
+      })() : activePage === 'american1' ? (
         <main className="landing-page vocabulary-mode vocabulary-grid-mode" id="link-american1">
           <div className="landing-panel vocabulary-page vocabulary-grid-mode">
             <h2 className="vocabulary-title">American English A1</h2>
@@ -4834,9 +5410,9 @@ function App() {
             <p className="eyebrow">Listening</p>
             <h1>Choose a listening source</h1>
             <div className="course-links">
-              {LISTENING_SOURCES.map((source) => (
+              {LISTENING_SOURCES.map((source, index) => (
                 <Fragment key={source.id}>
-                  {courses[source.id]?.level && (
+                  {courses[source.id]?.level && courses[source.id].level !== courses[LISTENING_SOURCES[index - 1]?.id]?.level && (
                     <span className="course-level-heading">{courses[source.id].level}</span>
                   )}
                   <div className="course-link-row">
@@ -4867,6 +5443,7 @@ function App() {
           return (
             listeningTrackLabel(track).toLowerCase().includes(listeningSearchNormalized)
             || String(track.number).includes(listeningSearchNormalized)
+            || String(track.trackNumber || '').includes(listeningSearchNormalized)
           );
         });
         return (
@@ -4903,7 +5480,7 @@ function App() {
                         href="#0"
                         onClick={(event) => { event.preventDefault(); handleOpenListeningTrack(track); }}
                       >
-                        <span>{`Listening Exercise n. ${track.number}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''} (${listeningTrackLabel(track)})`}</span>
+                        <span>{`Listening Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (${listeningTrackLabel(track)})`}</span>
                         <small>{track.sentences.length} sentences · fill in the blank</small>
                         {stats && (
                           <small className="listening-track-stats">
@@ -4951,7 +5528,7 @@ function App() {
               <h1>
                 {track ? (
                   <>
-                    {`Listening Exercise n. ${track.number}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''} (`}
+                    {`Listening Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (`}
                     {track.unit ? (
                       <span
                         className="listening-unit-link"
@@ -4994,9 +5571,9 @@ function App() {
               Listen to the audio without reading the text first, then type what you hear.
             </p>
             <div className="course-links">
-              {LISTENING_SOURCES.map((source) => (
+              {LISTENING_SOURCES.map((source, index) => (
                 <Fragment key={source.id}>
-                  {courses[source.id]?.level && (
+                  {courses[source.id]?.level && courses[source.id].level !== courses[LISTENING_SOURCES[index - 1]?.id]?.level && (
                     <span className="course-level-heading">{courses[source.id].level}</span>
                   )}
                   <div className="course-link-row">
@@ -5030,6 +5607,7 @@ function App() {
           return (
             listeningTrackLabel(track).toLowerCase().includes(dictationSearchNormalized)
             || String(track.number).includes(dictationSearchNormalized)
+            || String(track.trackNumber || '').includes(dictationSearchNormalized)
           );
         });
         return (
@@ -5066,7 +5644,7 @@ function App() {
                         href="#0"
                         onClick={(event) => { event.preventDefault(); handleOpenDictationTrack(track); }}
                       >
-                        <span>{`Dictation Exercise n. ${track.number}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''} (${listeningTrackLabel(track)})`}</span>
+                        <span>{`Dictation Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (${listeningTrackLabel(track)})`}</span>
                         <small>{track.sentences.length} sentences · type what you hear</small>
                         {stats && (
                           <small className="listening-track-stats">
@@ -5113,7 +5691,7 @@ function App() {
               <p className="eyebrow">{source ? source.title.replace(/^Listening/, 'Dictation') : 'Dictation'}</p>
               <h1>
                 {track
-                  ? `Dictation Exercise n. ${track.number}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''} (${listeningTrackLabel(track)})`
+                  ? `Dictation Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (${listeningTrackLabel(track)})`
                   : 'Exercise'}
               </h1>
               {track ? (
@@ -5145,9 +5723,9 @@ function App() {
               </p>
             )}
             <div className="course-links">
-              {LISTENING_SOURCES.map((source) => (
+              {LISTENING_SOURCES.map((source, index) => (
                 <Fragment key={source.id}>
-                  {courses[source.id]?.level && (
+                  {courses[source.id]?.level && courses[source.id].level !== courses[LISTENING_SOURCES[index - 1]?.id]?.level && (
                     <span className="course-level-heading">{courses[source.id].level}</span>
                   )}
                   <div className="course-link-row">
@@ -5180,6 +5758,7 @@ function App() {
           return (
             listeningTrackLabel(track).toLowerCase().includes(speakingSearchNormalized)
             || String(track.number).includes(speakingSearchNormalized)
+            || String(track.trackNumber || '').includes(speakingSearchNormalized)
           );
         });
         return (
@@ -5216,7 +5795,7 @@ function App() {
                         href="#0"
                         onClick={(event) => { event.preventDefault(); handleOpenSpeakingTrack(track); }}
                       >
-                        <span>{`Speaking Exercise n. ${track.number}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''} (${listeningTrackLabel(track)})`}</span>
+                        <span>{`Speaking Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (${listeningTrackLabel(track)})`}</span>
                         <small>{track.sentences.length} sentences · repeat what you hear</small>
                         {stats && (
                           <small className="listening-track-stats">
@@ -5263,7 +5842,7 @@ function App() {
               <p className="eyebrow">{source ? source.title.replace(/^Listening/, 'Speaking') : 'Speaking'}</p>
               <h1>
                 {track
-                  ? `Speaking Exercise n. ${track.number}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''} (${listeningTrackLabel(track)})`
+                  ? `Speaking Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (${listeningTrackLabel(track)})`
                   : 'Exercise'}
               </h1>
               {track ? (
@@ -5439,6 +6018,48 @@ function App() {
                   <small>Clears the written answer saved for every unit's exercises.</small>
                 </button>
                 <button type="button" className="profile-reset-btn danger" onClick={handleResetGrammarElemAll}>
+                  <span>Reset All</span>
+                  <small>Everything above, all at once.</small>
+                </button>
+              </div>
+            )}
+
+            <div className="profile-course-head">
+              <h2 className="profile-course-heading">{courses.americanAccent.title}</h2>
+              <button
+                type="button"
+                className="profile-course-toggle"
+                onClick={() => toggleProfileCourse('americanAccent')}
+                aria-expanded={Boolean(expandedProfileCourses.americanAccent)}
+                aria-label={expandedProfileCourses.americanAccent ? 'Collapse' : 'Expand'}
+              >
+                {expandedProfileCourses.americanAccent ? '−' : '+'}
+              </button>
+            </div>
+            <p className="landing-meta">
+              Your Score: <strong>{americanAccentScorePercent !== null ? `${americanAccentScorePercent}%` : '—'}</strong>
+              {' '}({americanAccentRatingValues.length} page{americanAccentRatingValues.length === 1 ? '' : 's'} self-rated)
+              {' '}· Progress: <strong>{americanAccentProgressPercent}%</strong>
+            </p>
+            {expandedProfileCourses.americanAccent && (
+              <div className="profile-reset-list">
+                <button type="button" className="profile-reset-btn primary" onClick={() => handleExportNotes('americanAccent')}>
+                  <span>Export lesson notes (.txt)</span>
+                  <small>Downloads "My Notes" from every page as a single plain-text file.</small>
+                </button>
+                <button type="button" className="profile-reset-btn" onClick={handleResetAmericanAccentProgress}>
+                  <span>Reset page progress</span>
+                  <small>Clears which pages count toward "Your Progress".</small>
+                </button>
+                <button type="button" className="profile-reset-btn" onClick={handleResetAmericanAccentSelfEvaluation}>
+                  <span>Reset self-evaluation</span>
+                  <small>Clears "Your Score" and every star rating given per page.</small>
+                </button>
+                <button type="button" className="profile-reset-btn" onClick={handleResetAmericanAccentNotes}>
+                  <span>Reset lesson notes</span>
+                  <small>Clears "My Notes" for every page.</small>
+                </button>
+                <button type="button" className="profile-reset-btn danger" onClick={handleResetAmericanAccentAll}>
                   <span>Reset All</span>
                   <small>Everything above, all at once.</small>
                 </button>
@@ -6969,7 +7590,7 @@ function MyNotesPage({ userName, searchQuery, onSearchChange, onOpenEntry, askCo
     (entriesByCourse[entry.course] ||= []).push(entry);
   });
   const notesEntrySortNumber = (entry) => (
-    entry.unit ?? entry.appendixNumber ?? entry.additionalNumber ?? entry.refPage ?? 0
+    entry.unit ?? entry.appendixNumber ?? entry.additionalNumber ?? entry.refPage ?? entry.page ?? 0
   );
   Object.values(entriesByCourse).forEach((list) => {
     list.sort((a, b) => a.kind.localeCompare(b.kind) || notesEntrySortNumber(a) - notesEntrySortNumber(b));
@@ -8631,11 +9252,16 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed }) {
   // cache quando o usuário pede "Do it again with other words".
   const [regenerateKey, setRegenerateKey] = useState(0);
   const [wordMode, setWordMode] = useState('random'); // 'random' | 'unitWords'
+  // track.targetWords (só American Accent, tracks de pares mínimos — ex.
+  // pest/past, letter/ladder — ver listening_american_accent.json) SEMPRE
+  // vence, sem toggle nenhum: o pedido do dono foi "esconda sempre essas
+  // palavras", diferente do "Only Unit Words" do Vocabulary, que é opcional.
   const targetWordSet = useMemo(() => {
+    if (track.targetWords) return new Set(track.targetWords);
     if (!isVocabularyTrack || wordMode !== 'unitWords') return null;
     const words = vocabularyTargetWords[String(track.unit)];
     return words ? new Set(words) : null;
-  }, [isVocabularyTrack, wordMode, track.unit]);
+  }, [isVocabularyTrack, wordMode, track.unit, track.targetWords]);
   const sentenceModels = useMemo(
     () => track.sentences.map((text) => buildListeningSentenceModel(text, targetWordSet)),
     [track.id, regenerateKey, targetWordSet]

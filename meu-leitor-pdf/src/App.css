@@ -518,6 +518,20 @@ body {
   color: #1b3a5e;
 }
 
+/* Texto de introdução do hub do American Accent — precisa de cor opaca
+   explícita, senão herda `.landing-panel p` (branco translúcido, quase
+   invisível em painel claro — ver "Quirks & Gotchas" no CLAUDE.md). Usa
+   <span display:block> em vez de <p> de propósito, pelo mesmo motivo. */
+.landing-panel.vocabulary-page .american-accent-intro {
+  display: block;
+  margin: -8px 0 18px;
+  color: rgba(27, 58, 94, 0.75);
+  font-size: 1rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
 .landing-panel.vocabulary-page .vocabulary-link {
   color: #1b3a5e;
   background: rgba(27, 58, 94, 0.05);
@@ -2434,6 +2448,20 @@ body {
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
+}
+
+/* American Accent: até 7 faixas na mesma página (ver AMERICAN_ACCENT_SCREENS
+   em App.js), quebrando .reference-links em 2-3 linhas — .pdf-toolbar tem
+   align-items:center por padrão, então os botões All Chapters/Previous/Next
+   ficavam se recentralizando verticalmente conforme o número de linhas de
+   track mudava de página pra página (pedido do dono: eles têm que ficar
+   sempre no mesmo canto superior esquerdo, não "flutuar"). */
+.pdf-toolbar.american-accent-toolbar {
+  align-items: flex-start;
+}
+
+.american-accent-toolbar .pdf-toolbar-nav {
+  padding-top: 4px;
 }
 
 .pdf-toolbar-nav .upload-button {

@@ -449,4 +449,48 @@ module.exports = function (app) {
   app.use('/grammar-elem-pages', notFoundOn404);
   app.use('/grammar-elem-audio', express.static(path.join(grammarElemRoot, 'audio_files'), { fallthrough: false }));
   app.use('/grammar-elem-audio', notFoundOn404);
+
+  // Curso "American Accent" (livro "Mastering the American Accent", Lisa
+  // Mojsin): PDF único de 211 páginas + 390 faixas de áudio já pré-recortadas
+  // por conceito (sem merge de PDF nem detecção visual de selo como o
+  // American1 precisou — cada faixa já é um arquivo próprio, e o número
+  // "Track N" impresso no livro bate 1:1 com o número no início do nome do
+  // arquivo, ver gerador do índice). ATENÇÃO: esta pasta mora FORA da árvore
+  // do projeto — não é pasta irmã dentro de Projeto_pagina_pdf como as
+  // outras 3 (está em Documentos/A_INGLES/LIVROS/), por isso o caminho
+  // abaixo é absoluto, não relativo a __dirname. Se a pasta for movida pra
+  // virar irmã de verdade, trocar aqui pra path.join(__dirname, '..', '..', ...).
+  const americanAccentRoot = 'C:\\Users\\marcu\\OneDrive\\Documentos\\A_INGLES\\LIVROS\\3. Mastering the American Accent';
+  const americanAccentPdfPath = path.join(americanAccentRoot, 'Mastering the American Accent ( PDFDrive ).pdf');
+
+  app.use('/american-accent-audio', express.static(americanAccentRoot, { fallthrough: false }));
+  app.use('/american-accent-audio', notFoundOn404);
+
+  // Uma "tela" de leitura pode cobrir 1+ páginas do livro (ver
+  // american_accent_index.json/screens — quando o conteúdo de uma faixa
+  // atravessa a quebra de página impressa, ex. a track 346 nas páginas 116-
+  // 117, as duas páginas do PDF viram uma tela só). Sempre mesclado sob
+  // demanda com pdf-lib a partir do MESMO PDF fonte de 211 páginas — ao
+  // contrário do American1/Grammar Elem, aqui não há arquivo solto por
+  // página, então não precisa achar/ordenar arquivos, só copiar as páginas
+  // certas de um PDF só. :pdfPages vem como "123-124-125" (número de página
+  // do PDF, 1-based, separado por hífen — ver App.js).
+  app.get('/american-accent-pages/:pdfPages', async (req, res) => {
+    const pageNumbers = req.params.pdfPages.split('-').map(Number);
+    if (pageNumbers.length === 0 || pageNumbers.some((n) => !Number.isInteger(n) || n < 1)) {
+      res.status(400).end();
+      return;
+    }
+    try {
+      const bytes = fs.readFileSync(americanAccentPdfPath);
+      const source = await PDFDocument.load(bytes);
+      const merged = await PDFDocument.create();
+      const copiedPages = await merged.copyPages(source, pageNumbers.map((n) => n - 1));
+      copiedPages.forEach((p) => merged.addPage(p));
+      const mergedBytes = await merged.save();
+      res.type('application/pdf').send(Buffer.from(mergedBytes));
+    } catch (error) {
+      res.status(404).end();
+    }
+  });
 };
