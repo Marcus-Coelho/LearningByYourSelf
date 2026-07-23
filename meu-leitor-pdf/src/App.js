@@ -8932,11 +8932,14 @@ const LISTENING_STOPWORDS = new Set([
 ]);
 
 // Tira um rótulo de falante do início da fala (ex.: "A: ", "Teacher: ",
-// "Student 1: ") — nunca vira lacuna nem conta pro tamanho da fala.
+// "Student 1: ") — nunca vira lacuna nem conta pro tamanho da fala. Sempre
+// retorna label:'' agora (nunca mais exibido — pedido do dono, os
+// personagens do diálogo apareciam soltos no meio do exercício de
+// Listening) — o texto é só REMOVIDO, igual o Dictation já fazia
+// (stripDictationSpeakerLabel, incluindo os rótulos SEM dois-pontos do
+// American1 como "Teacher"/"Student 2", que esse regex sozinho não pegava).
 function splitListeningSpeakerLabel(text) {
-  const match = text.match(/^([A-Z][a-zA-Z]*(?:\s\d+)?:\s+)/);
-  if (!match) return { label: '', rest: text };
-  return { label: match[1], rest: text.slice(match[1].length) };
+  return { label: '', rest: stripDictationSpeakerLabel(text) };
 }
 
 // Preserva os espaços como tokens próprios, pra recompor o texto original
@@ -9131,9 +9134,11 @@ function saveSpeakingAttempt(userName, trackId, scorePercent) {
 // cada frase no começo do texto ("A: ...", "Jenny: ...", "Teacher OK...") —
 // é uma convenção de transcrição, a voz do áudio não fala esse nome, então
 // comparar contra ele penalizava o aluno por não digitar o personagem.
-// Removido só do texto usado pra CORRIGIR o Dictation (ver fullText em
-// DictationExercise); o Listening continua usando track.sentences direto,
-// sem mexer.
+// Removido do texto usado pra CORRIGIR o Dictation (ver fullText em
+// DictationExercise) E do texto exibido pelo Listening
+// (splitListeningSpeakerLabel reaproveita esta mesma função — antes só
+// cobria rótulo com dois-pontos, os personagens sem dois-pontos do
+// American1 ficavam soltos no meio do exercício, pedido do dono pra tirar).
 const DICTATION_LABEL_COLON_RE = /^[A-Z][A-Za-z0-9 ]{0,24}:\s*/;
 // Rótulos sem dois-pontos (só aparecem no American English A1) — lista
 // fechada, levantada manualmente em listening_american1.json. Não trocar por
@@ -9393,7 +9398,6 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed }) {
             <li key={sentenceIndex} className="listening-sentence">
               <span className="listening-sentence-number">{sentenceIndex + 1}</span>
               <span className="listening-sentence-text">
-                {model.label}
                 {model.parts.map((part, partIndex) => {
                   if (part.type === 'text') {
                     return <span key={partIndex}>{part.value}</span>;

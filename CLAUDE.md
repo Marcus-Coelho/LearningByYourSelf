@@ -161,13 +161,16 @@ pras 4 telas acima pegarem sozinhas.
   com a ocorrência mais CEDO no texto) — a versão prefixos+trás casava palavra repetida com
   uma ocorrência lá do fim, deixando o verde longe do contexto digitado; não regredir
 - **Rótulos de personagem (`A:`, `Jenny:`, `Teacher ...`) são removidos do texto usado pra
-  corrigir** (`stripDictationSpeakerLabel`, `App.js`) — são convenção de transcrição, a voz
-  do áudio não fala esse nome, então cobrar o aluno por não digitá-lo penalizava injustamente.
-  Regra de dois-pontos é genérica; rótulos sem dois-pontos (só existem no American1, ex.
-  "Rob Hi. My name's...") usam uma lista fechada de nomes conhecidos — não generalizar pra
-  "qualquer palavra maiúscula no início", isso apagaria começos de frase legítimos como
-  "JetBlue flight...". Não mexe no texto exibido pelo Listening (`ListeningClozeExercise`
-  usa `track.sentences` direto, sem essa limpeza)
+  corrigir E do texto exibido** (`stripDictationSpeakerLabel`, `App.js`) — são convenção de
+  transcrição, a voz do áudio não fala esse nome, então cobrar o aluno por não digitá-lo
+  penalizava injustamente, e mostrar o nome solto no meio do exercício de Listening também
+  não fazia sentido (pedido do dono, 2026-07-23 — antes só o Dictation limpava, o Listening
+  usava `track.sentences` direto). Regra de dois-pontos é genérica; rótulos sem dois-pontos
+  (só existem no American1, ex. "Teacher Good morning...", "Rob Hi. My name's...") usam uma
+  lista fechada de nomes conhecidos — não generalizar pra "qualquer palavra maiúscula no
+  início", isso apagaria começos de frase legítimos como "JetBlue flight...".
+  `splitListeningSpeakerLabel` (Listening) reaproveita a mesma `stripDictationSpeakerLabel` —
+  nunca duplicar essa lista/regex em dois lugares
 - **Token sem nenhuma letra/dígito (ex.: um "—" solto entre frases) não conta pro score** —
   fica de fora do casamento LCS e renderiza sem cor (`dictation-word-neutral`, nem verde nem
   vermelho) na correção, mas continua aparecendo no texto reconstruído. Antes disso, um "—"
