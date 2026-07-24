@@ -471,6 +471,14 @@ Não há testes unitários automatizados (`npm test` funciona mas CRA cria um es
   (`.study-bar`/`.section-info`) podem revelar o fundo do ancestral (`--soft`, lavanda) como
   faixas finas entre eles — se dois blocos brancos devem ficar colados (só separados por
   `border-bottom`), o container pai não pode ter `gap` nenhum ali.
+- **Painel de respostas ("Show Answers"/Teacher's Book) tem um padrão único, não reinvente
+  por tela**: sempre `study-answers-resize-handle` (botão de arraste) + `.section-answers-strip
+  .section-answers-strip--resizable` com `style={{height: answersPanelHeight}}`, SEM nenhuma
+  barra de título própria dentro do strip — o toggle mostrar/esconder já existe em outro lugar
+  da tela (botão "Show/Hide Answers"), então uma barra de título com "X" ali dentro é
+  redundante E some o handle de redimensionamento. A tela `american1-reference` (Grammar/
+  Vocabulary Bank) implementou esse painel do zero com uma barra de título própria em vez de
+  copiar o padrão das units — corrigido copiando exatamente a estrutura de `american1-unit`.
 
 ---
 

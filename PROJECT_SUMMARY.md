@@ -1264,6 +1264,28 @@ raiz → fix estrutural quando generalizável, override pontual documentado quan
 CLAUDE.md, seção "Dados (American Accent)", pra lista consolidada dos bugs de extração já
 resolvidos (não reintroduzir se for regenerar os índices do zero).
 
+### Correções pontuais pós-lançamento (2026-07-23)
+
+3 relatos do dono depois de usar o app com o 4º curso já no ar, cada um virou um commit
+separado:
+
+- **Rótulos de personagem também no Listening**: `splitListeningSpeakerLabel` só cobria o
+  padrão com dois-pontos ("Jenny: ..."); os rótulos SEM dois-pontos do American1 ("Teacher",
+  "Student 2" — já numa lista fechada, `DICTATION_NO_COLON_LABELS`, usada só pelo Dictation)
+  ficavam soltos no meio do texto do Listening. Corrigido reaproveitando
+  `stripDictationSpeakerLabel` nos dois lugares, em vez de manter 2 implementações parecidas.
+- **My Words deletava sem confirmar**: `handleDeleteWord` nunca teve um `askConfirm`/
+  `window.confirm` (checado no histórico do git — não achei evidência de que existiu antes,
+  mas era uma falta real de qualquer forma). Agora pergunta "Delete '<palavra>' from My Words?
+  This cannot be undone." com o mesmo diálogo estilizado do delete de nota em My Notes.
+- **Painel de respostas da tela de referência inconsistente**: `american1-reference` (Grammar/
+  Vocabulary Bank) tinha sua própria barra de título ("Teacher's Book answers" + botão "✕"),
+  sem o handle de redimensionamento que as units têm. Alinhado ao padrão de
+  `american1-unit`/Grammar Elem (`study-answers-resize-handle` + `section-answers-strip
+  --resizable`, sem título nenhum — o show/hide já é feito por um botão que já existia em
+  outro lugar da tela); CSS das 2 classes que ficaram sem uso (`section-answers-strip-head`/
+  `-close`) removido.
+
 ## Observações para outra IA
 
 - Não existe roteamento real (react-router); tudo é estado local (`activePage`, `selectedUnit`) em um único componente `App`.
