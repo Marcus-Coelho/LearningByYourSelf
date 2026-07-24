@@ -1911,8 +1911,14 @@ function App() {
     persistWordbook([entry, ...wordbookEntries]);
   };
 
-  const handleDeleteWord = (id) => {
-    persistWordbook(wordbookEntries.filter((entry) => entry.id !== id));
+  const handleDeleteWord = async (id) => {
+    const entry = wordbookEntries.find((item) => item.id === id);
+    const proceed = await askConfirm(
+      `Delete "${entry?.word || 'this word'}" from My Words? This cannot be undone.`,
+      { confirmLabel: 'Delete' },
+    );
+    if (!proceed) return;
+    persistWordbook(wordbookEntries.filter((item) => item.id !== id));
   };
 
   // Autoavaliação do flashcard: "again" volta ao primeiro degrau da escada
