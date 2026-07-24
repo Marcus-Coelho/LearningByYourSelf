@@ -2625,32 +2625,6 @@ body {
   border-top: none;
 }
 
-.section-answers-strip-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 12px;
-  background: var(--soft);
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--purple-900);
-  flex: 0 0 auto;
-}
-
-.section-answers-strip-close {
-  border: none;
-  background: transparent;
-  color: var(--purple-700);
-  cursor: pointer;
-  font-size: 14px;
-  line-height: 1;
-  padding: 4px;
-}
-
-.section-answers-strip-close:hover {
-  color: var(--purple-900);
-}
-
 .section-answers-strip-frame {
   flex: 1;
   min-height: 0;

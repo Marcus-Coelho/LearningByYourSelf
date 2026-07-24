@@ -5317,22 +5317,23 @@ function App() {
               )}
 
               {showAmerican1ReferenceAnswers && referenceAnswersUrl && (
-                <div className="section-answers-strip">
-                  <div className="section-answers-strip-head">
-                    <span>Teacher's Book answers</span>
-                    <button
-                      type="button"
-                      className="section-answers-strip-close"
-                      onClick={() => setShowAmerican1ReferenceAnswers(false)}
-                      aria-label="Close answers"
-                    >
-                      ✕
-                    </button>
+                <>
+                  <button
+                    type="button"
+                    className="study-answers-resize-handle"
+                    aria-label="Resize answers area"
+                    onPointerDown={startAnswersResize}
+                  />
+
+                  <div
+                    className="section-answers-strip section-answers-strip--resizable"
+                    style={answersPanelHeight ? { height: answersPanelHeight, maxHeight: answersPanelHeight, flex: '0 0 auto' } : undefined}
+                  >
+                    <div className="section-answers-strip-frame">
+                      <PdfWorkspace key={referenceAnswersUrl} fileUrl={referenceAnswersUrl} initialTool="hand" />
+                    </div>
                   </div>
-                  <div className="section-answers-strip-frame">
-                    <PdfWorkspace key={referenceAnswersUrl} fileUrl={referenceAnswersUrl} initialTool="hand" />
-                  </div>
-                </div>
+                </>
               )}
             </section>
 
