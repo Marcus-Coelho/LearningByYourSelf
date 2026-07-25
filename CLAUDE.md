@@ -139,6 +139,18 @@ pras 4 telas acima pegarem sozinhas.
 - Player: `WideAudioPlayer` (largura total — play/pause, ±5s, stop, A-B, loop do áudio
   inteiro, velocidades 0.5x-2x, barra de progresso). Usado SÓ aqui e no Dictation; o resto
   do app continua com os players compactos (pílula amarela)
+- **`Ctrl+Space` pausa/retoma QUALQUER `<audio>` tocando na página, em QUALQUER tela** —
+  atalho GLOBAL (`App.js`, `useEffect` logo no topo do componente, procura em
+  `document.querySelectorAll('audio')`), não mais dois `useEffect` locais escopados ao
+  próprio player do Listening/Dictation (removidos, 2026-07-24). Funciona também nas 9 telas
+  de leitura (players ancorados/simples, que nunca tiveram esse atalho) e com o foco dentro
+  do editor **contentEditable** do My Notes (que não é INPUT/TEXTAREA, então precisa checar
+  `document.activeElement.isContentEditable` além das 3 tags de sempre pra não interceptar o
+  Space normal de digitação ali). Space sozinho (sem Ctrl) continua funcionando fora de campo
+  de texto, igual antes. Um listener `play` em capture (`document.addEventListener('play',
+  ..., true)` — esse evento não faz bubble) guarda o último `<audio>` que tocou, pra
+  Ctrl+Space conseguir RETOMAR mesmo se a pausa anterior tiver sido por clique no botão do
+  player, não pelo teclado.
 
 ### Dictation (menu principal, "Modo Ditado")
 - Mesmíssimos `LISTENING_SOURCES`/tracks do Listening, mas **sem mostrar o texto antes** —
@@ -151,7 +163,8 @@ pras 4 telas acima pegarem sozinhas.
   amostragem e decidir se o Listening também ganha), com detecção por CRUZAMENTO do ponto
   (nunca por proximidade — proximidade re-pausava em cima do ponto ao usar "Replay last
   part"), toggle on/off, pílulas de estado (pausado/fim do áudio) e botão "↺ Replay last
-  part". `Ctrl+Space` retoma. **Cruzamento checado via `requestAnimationFrame`, não
+  part". `Ctrl+Space` retoma (agora o atalho GLOBAL, ver Listening acima). **Cruzamento
+  checado via `requestAnimationFrame`, não
   `timeupdate`** — o navegador só dispara `timeupdate` a cada ~250ms, atraso suficiente pra
   `audio.pause()` vazar pro comecinho da fala seguinte em falas coladas (relatado pelo dono,
   casos reais do American1 com pouco silêncio entre personagens); rAF (~60x/s) reduz essa

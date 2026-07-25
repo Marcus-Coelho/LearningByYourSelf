@@ -1240,6 +1240,56 @@ function App() {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [activePage]);
+
+  // Ctrl+Space pausa/retoma QUALQUER <audio> tocando na página, em
+  // QUALQUER tela — inclusive com o cursor dentro do editor de "My Notes"
+  // (contentEditable). Antes disso, o atalho só existia dentro do
+  // Listening/Dictation (dois useEffect locais, cada um escopado ao próprio
+  // audioBarRef daquele exercício); esses dois foram removidos e
+  // substituídos por este, que generaliza pra `document.querySelectorAll
+  // ('audio')` — cobre também os players ancorados/simples das 9 telas de
+  // leitura (Vocabulary/American1/Grammar Elem/American Accent), que nunca
+  // tiveram atalho nenhum. `lastPlayedAudioRef` guarda o último <audio> que
+  // tocou (via listener de 'play' em capture — esse evento não faz bubble),
+  // não importa se foi tocado por clique ou pelo próprio atalho, pra
+  // Ctrl+Space conseguir RETOMAR de onde parou mesmo se a pausa anterior
+  // tiver sido por clique no botão do player, não pelo teclado.
+  const lastPlayedAudioRef = useRef(null);
+  useEffect(() => {
+    const handlePlayCapture = (event) => {
+      if (event.target?.tagName === 'AUDIO') {
+        lastPlayedAudioRef.current = event.target;
+      }
+    };
+    const handleGlobalAudioShortcut = (event) => {
+      if (event.code !== 'Space') return;
+      const isCtrl = event.ctrlKey || event.metaKey;
+      const target = document.activeElement;
+      const tag = target?.tagName;
+      // Space sozinho continua digitando espaço normal dentro de campo de
+      // texto (INPUT/TEXTAREA/botão) OU do editor contentEditable do My
+      // Notes — só Ctrl+Space pausa/toca ali. Fora de campo de texto, o
+      // Space sozinho já basta (mesmo comportamento de antes).
+      const blocksPlainSpace = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'BUTTON' || Boolean(target?.isContentEditable);
+      if (!isCtrl && blocksPlainSpace) return;
+      const playing = Array.from(document.querySelectorAll('audio')).find((audio) => !audio.paused);
+      const audio = playing || lastPlayedAudioRef.current;
+      if (!audio || !document.contains(audio)) return;
+      event.preventDefault();
+      if (audio.paused) {
+        audio.play();
+      } else {
+        audio.pause();
+      }
+    };
+    document.addEventListener('play', handlePlayCapture, true);
+    document.addEventListener('keydown', handleGlobalAudioShortcut);
+    return () => {
+      document.removeEventListener('play', handlePlayCapture, true);
+      document.removeEventListener('keydown', handleGlobalAudioShortcut);
+    };
+  }, []);
+
   // Toda tela que tem o painel direito ("side-panel right-panel", com
   // UnitNotes/respostas) usa o mesmo layout de grid de 3 colunas — listado
   // aqui pra saber quando faz sentido mostrar o botão de esconder/mostrar
@@ -8621,28 +8671,9 @@ function DictationExercise({ track, userName, onPracticed }) {
     audio.play();
   };
 
-  // Mesmo atalho do Listening (ver ListeningClozeExercise): Ctrl+Space
-  // pausa/toca o áudio sem sair do textarea — aqui é ainda mais necessário,
-  // já que o usuário fica o tempo todo digitando (Space sozinho precisa
-  // continuar sendo um espaço normal no texto).
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.code !== 'Space') return;
-      const tag = document.activeElement?.tagName;
-      const blocksPlainSpace = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'BUTTON';
-      if (!event.ctrlKey && blocksPlainSpace) return;
-      const audio = audioBarRef.current?.querySelector('audio');
-      if (!audio) return;
-      event.preventDefault();
-      if (audio.paused) {
-        audio.play();
-      } else {
-        audio.pause();
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  // Ctrl+Space (Space sozinho fora de campo de texto) pausa/toca o áudio —
+  // agora tratado por um atalho GLOBAL em App() que vale a página inteira,
+  // não só este textarea (ver useEffect "handleGlobalAudioShortcut").
 
   return (
     <div className="dictation-exercise">
@@ -9324,31 +9355,9 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed }) {
     setRegenerateKey((key) => key + 1);
   };
 
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.code !== 'Space') return;
-      // Dentro de um campo de resposta (ou botão focado), o Space sozinho
-      // precisa continuar digitando um espaço normal (respostas de mais de
-      // uma palavra) — só Ctrl+Space pausa/toca ali. Fora de campo de
-      // texto, o Space sozinho já basta, sem precisar do Ctrl.
-      // (Alt+Space foi tentado antes, mas no Windows o Alt sozinho já ativa
-      // o menu do navegador antes do evento chegar aqui — Ctrl não tem esse
-      // problema.)
-      const tag = document.activeElement?.tagName;
-      const blocksPlainSpace = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'BUTTON';
-      if (!event.ctrlKey && blocksPlainSpace) return;
-      const audio = audioBarRef.current?.querySelector('audio');
-      if (!audio) return;
-      event.preventDefault();
-      if (audio.paused) {
-        audio.play();
-      } else {
-        audio.pause();
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  // Ctrl+Space (Space sozinho fora de campo de texto) pausa/toca o áudio —
+  // agora tratado por um atalho GLOBAL em App() que vale a página inteira
+  // (ver useEffect "handleGlobalAudioShortcut"), não só este exercício.
 
   const handleChange = (key, value) => {
     setAnswers((prev) => ({ ...prev, [key]: value }));
