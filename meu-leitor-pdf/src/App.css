@@ -4563,7 +4563,19 @@ body {
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-  animation: app-toast-in 180ms ease-out;
+  animation: app-confirm-in 180ms ease-out;
+}
+
+/* Keyframes próprio (não reaproveitar app-toast-in): este diálogo é
+   centralizado pelo flex do .app-confirm-overlay (align-items/justify-
+   content: center), não por position:fixed + left/top:50% como o Toast —
+   herdar o translate(-50%,-50%) do Toast deslocava a caixa inteira pra
+   longe do centro durante os 180ms da animação, que "saltava" de volta pro
+   centro certo assim que a animação terminava (bug real reportado pelo
+   dono, 2026-07-24). Sem transform de posição aqui, só o scale do efeito. */
+@keyframes app-confirm-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .app-confirm-message {
