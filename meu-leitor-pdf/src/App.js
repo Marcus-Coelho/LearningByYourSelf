@@ -1602,19 +1602,37 @@ function App() {
   const scheduleReview = (course, id, rating) => {
     if (!userName) return;
     const days = REVIEW_INTERVALS_BY_RATING[rating] || 7;
+    const storageKey = userKey(userName, `review:${course}:${id}`);
+    // "Clear today's reviews" (DailyGoalCard) só conta quando o item
+    // reavaliado JÁ estava vencido — reavaliar algo que nunca esteve vencido
+    // (ex.: 1ª nota de uma unit nova) é estudar conteúdo novo, não "revisar",
+    // então não deve dar o check de graça. Checado direto no localStorage
+    // (fonte de verdade), NUNCA contra o state `reviewQueue` — esse state só
+    // recarrega quando `activePage` MUDA (ver useEffect acima), mas navegar
+    // entre units com "Next Unit"/"Previous Unit" nunca muda `activePage`
+    // (fica sempre "grammarElem-unit", por ex.), então `reviewQueue` podia
+    // ficar desatualizado por uma sessão inteira de navegação — se um item
+    // vencesse nesse meio tempo, o check contra o state antigo nunca via a
+    // vencida, e "Clear today's reviews" nunca marcava mesmo reavaliando o
+    // item certo (bug real, reportado pelo dono, 2026-07-24).
+    let wasDue = false;
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      if (raw) {
+        const existing = JSON.parse(raw);
+        wasDue = typeof existing.due === 'number' && existing.due <= Date.now();
+      }
+    } catch (error) {
+      // Armazenamento indisponível — trata como não vencido, sem quebrar o resto.
+    }
     try {
       window.localStorage.setItem(
-        userKey(userName, `review:${course}:${id}`),
+        storageKey,
         JSON.stringify({ rating, ratedAt: Date.now(), due: Date.now() + days * DAY_MS }),
       );
     } catch (error) {
       // Armazenamento indisponível — sem agendamento de revisão.
     }
-    // "Clear today's reviews" (DailyGoalCard) só conta quando o item
-    // reavaliado JÁ estava vencido em reviewQueue — reavaliar algo que nunca
-    // esteve lá (ex.: 1ª nota de uma unit nova) é estudar conteúdo novo, não
-    // "revisar", então não deve dar o check de graça.
-    const wasDue = reviewQueue.some((item) => item.course === course && String(item.id) === String(id));
     if (wasDue) {
       markDailyGoalDone('reviews');
     }

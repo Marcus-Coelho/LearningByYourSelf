@@ -194,11 +194,17 @@ pras 4 telas acima pegarem sozinhas.
   aprender unit nova, zerar revisões do dia, praticar Listening/Dictation. Os 3 usam uma flag
   própria em `dailyGoalToday` (nenhum é `reviewQueue.length === 0` — isso dava um check de
   graça pra usuário novo sem nada agendado ainda, corrigido em 2026-07-20): "reviews" só marca
-  dentro de `scheduleReview`, quando o item reavaliado JÁ estava vencido em `reviewQueue`
-  (reavaliar conteúdo novo não conta); os outros 2 via `markDailyGoalDone` (visitar unit nunca
-  visitada / terminar Listening ou Dictation, `onPracticed` prop em `ListeningClozeExercise`/
-  `DictationExercise`). Progresso do dia em `dailyGoal:<YYYY-MM-DD>` (data LOCAL, nunca
-  `toISOString`), nunca desmarcado — dia novo já nasce zerado porque a chave muda sozinha
+  dentro de `scheduleReview`, quando o item reavaliado JÁ estava vencido (reavaliar conteúdo
+  novo não conta) — checado **direto no localStorage**, nunca contra o state `reviewQueue`
+  (bug real corrigido em 2026-07-24: `reviewQueue` só recarrega quando `activePage` MUDA de
+  valor, mas navegar entre units com "Next Unit"/"Previous Unit" nunca muda `activePage`
+  — fica sempre a mesma string, ex. `"grammarElem-unit"` — então uma revisão que vencesse
+  DURANTE uma sessão de navegação assim nunca era reconhecida como vencida, mesmo reavaliando
+  o item certo; state pode ficar desatualizado por tempo indeterminado, localStorage nunca);
+  os outros 2 via `markDailyGoalDone` (visitar unit nunca visitada / terminar Listening ou
+  Dictation, `onPracticed` prop em `ListeningClozeExercise`/`DictationExercise`). Progresso do
+  dia em `dailyGoal:<YYYY-MM-DD>` (data LOCAL, nunca `toISOString`), nunca desmarcado — dia
+  novo já nasce zerado porque a chave muda sozinha
 - Cada item do `DailyGoalCard` tem um botão "i" (mesmo padrão do `UnitBadgeLegend`) explicando
   como cumprir aquele item — **um popover só, fora do `<ul>`**, não um por `<li>`: com os itens
   colados (6px de gap), um popover por linha cobria o botão "i" do vizinho de baixo e travava

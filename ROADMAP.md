@@ -123,6 +123,18 @@ uma revisão vencida (injetada via localStorage, simulando o passar do tempo) fi
 Dashboard mostra "Units mastered (all courses) — overall mastery"; zero erros no console em
 qualquer etapa.
 
+**Correção 2026-07-24** (dono relatou "Clear today's reviews" não marcando mesmo reavaliando o
+item vencido): a comparação de "estava vencido" em `scheduleReview` checava contra o STATE
+`reviewQueue`, que só recarrega quando `activePage` muda de valor — navegar entre units com
+"Next Unit"/"Previous Unit" nunca muda esse valor (fica sempre a mesma string), então uma
+revisão que vencesse no meio de uma sessão de navegação assim deixava `reviewQueue`
+desatualizado indefinidamente, e o check nunca reconhecia o item como tendo estado vencido.
+Reproduzido de propósito (rate → navega por Next/Previous sem trocar de tela → injeta due no
+passado → volta e reavalia → `dailyGoal` gravava `reviews:false`) antes de corrigir. Trocado
+pra checar direto o localStorage (fonte de verdade, sempre atual) em vez do state — mesmo
+teste depois da correção grava `reviews:true`; reavaliação de conteúdo NUNCA vencido continua
+corretamente não contando (sem regressão).
+
 ## 4. [ ] Speaking (shadowing com reconhecimento de voz do Edge/Chrome)
 
 Nova tela "Speaking" usando a `SpeechRecognition` API nativa do navegador (Edge/Chrome —
