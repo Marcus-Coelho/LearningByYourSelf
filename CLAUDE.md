@@ -339,6 +339,46 @@ internet nem conta nenhuma.
   diálogo sozinho ao carregar a página — a tela pede autorização explícita (2 botões: escolher
   pasta ou pular) antes de disparar o diálogo nativo do SO.
 
+### Pronúncia (🔊) no My Words (2026-07-24, trocado de Cambridge pra Google TTS em 2026-07-25)
+
+Cada entrada (palavra OU expressão de várias palavras) na lista do My Words ganha um botão 🔊
+(`WordAudioButton`, `App.js`) que toca a pronúncia em inglês daquele texto.
+- **1ª versão (revertida)**: raspava o Cambridge Dictionary com Playwright (Chromium headless)
+  — pronúncia de dicionário "de verdade" (gravação humana), mas ~5-6s por palavra nova (custo
+  de abrir um navegador inteiro) e só cobria palavra única. Removida a pedido do dono
+  (dependência pesada + lenta demais) — não reintroduzir sem pedido explícito.
+- **Versão atual**: `src/pronunciationTts.js` chama direto o endpoint clássico (não-oficial,
+  mesmo usado por baixo dos panos pela lib Python gTTS) do Google Translate TTS
+  (`https://translate.google.com/translate_tts?ie=UTF-8&q=<texto>&tl=en&client=tw-ob`) — uma
+  requisição HTTP simples, sem navegador, ~150-350ms por entrada nova (medido; ~15-20x mais
+  rápido que a versão Cambridge) e funciona igual bem pra frase inteira. Trade-off aceito: voz
+  sintetizada (TTS), não uma gravação humana real. Nenhuma dependência nova de servidor (só
+  `https` nativo do Node) — a versão anterior tinha adicionado `playwright` a
+  `devDependencies` e baixado o Chromium; ambos foram removidos (`npm uninstall playwright` +
+  apagados os binários baixados especificamente pra essa feature) junto com a troca.
+- **Cache em disco**: `pronunciation-cache/` (raiz de `meu-leitor-pdf/`, IRMÃ de `src/`, não
+  dentro — se ficasse em `src/`, cada escrita em runtime disparava o watcher do webpack/CRA e
+  recarregava a página sozinha). `index.json` (texto normalizado → nome do mp3 cacheado, nome
+  = slug + hash curto do texto pra evitar colisão/truncamento em frases longas) + os próprios
+  `.mp3`. Ignorado no git (`.gitignore`) — é cache local de áudio gerado, não dado de curso.
+  Diferente da versão Cambridge, não existe mais um "missing" permanente em cache — qualquer
+  texto válido gera algum áudio, então erro é sempre transitório (rede) e não fica cacheado.
+- **Rota**: `GET /pronunciation-audio/:text` (`setupProxy.js`) — serve o mp3 cacheado
+  diretamente (`res.sendFile`), gerando na hora se ainda não tiver cache. Só funciona sob
+  `npm start`, mesma limitação de sempre (não há servidor de produção).
+- **Auto-warm ao adicionar palavra**: `handleAddWord` dispara um `fetch` em segundo plano (sem
+  `await`, erro ignorado) pra essa rota assim que a entrada é salva, pra o áudio já estar
+  cacheado quando o usuário clicar no 🔊 — agora pra qualquer entrada, não só palavra única.
+- **`scripts/preload-pronunciations.js`**: script standalone (Node puro, roda com `node
+  scripts/preload-pronunciations.js caminho/backup.json`) pra aquecer o cache inteiro de uma
+  vez, com 0.5s de delay entre chamadas. Recebe o JSON de **backup** (My Profile → Backup &
+  Restore → Export), não uma lista direta — o My Words só existe no `localStorage` do
+  navegador (sem backend/banco, ver Decisões Imutáveis), então o backup exportado é a única
+  ponte que um script Node tem pra "a lista atual de palavras".
+- Dedup de requisições concorrentes pro mesmo texto (`inFlight` Map em `pronunciationTts.js`)
+  — evita duas chamadas em paralelo se o auto-warm do `handleAddWord` e um clique manual
+  coincidirem.
+
 ---
 
 ## Dados Gerados (Índices)
@@ -521,6 +561,11 @@ npm test
 # Limpeza
 rm -rf node_modules package-lock.json
 npm install
+
+# Aquecer o cache de pronúncia (🔊 do My Words) pra todas as palavras de um
+# backup de uma vez (ver "Pronúncia no My Words" acima) — exporte o backup em
+# My Profile -> Backup & Restore primeiro
+node scripts/preload-pronunciations.js caminho/para/backup.json
 ```
 
 ---

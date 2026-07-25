@@ -1100,6 +1100,14 @@ const IconStop = () => (
   <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M6 6h12v12H6z" /></svg>
 );
 
+const IconSpeaker = () => (
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" stroke="none" />
+    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+    <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+  </svg>
+);
+
 const IconDots = () => (
   <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
     <circle cx="12" cy="5" r="2" />
@@ -1977,6 +1985,10 @@ function App() {
       due: Date.now(),
     };
     persistWordbook([entry, ...wordbookEntries]);
+    // Aquece o cache de pronúncia (ver pronunciationTts.js) em segundo
+    // plano, pra o áudio já estar pronto quando o usuário clicar no 🔊 —
+    // silenciosamente ignorado se falhar (o clique manual tenta de novo).
+    fetch(`/pronunciation-audio/${encodeURIComponent(trimmedWord)}`).catch(() => {});
   };
 
   const handleDeleteWord = async (id) => {
@@ -3804,7 +3816,7 @@ function App() {
   // página de teste do Course 2...), não só nas telas de unit/exercícios.
   const insideCourse = Boolean(selectedUnit) || Boolean(selectedAmerican1Unit)
     || Boolean(selectedGrammarElemUnit) || Boolean(selectedGrammarElemAppendix)
-    || Boolean(selectedGrammarElemAdditional);
+    || Boolean(selectedGrammarElemAdditional) || Boolean(selectedAmericanAccentScreenId);
   const visitedUnitsCount = Object.keys(visitedUnits).length;
 
   // Status por unit dos 3 cursos (mesma lógica das 3 grades de unit e do
@@ -4075,7 +4087,12 @@ function App() {
           ? `Grammar Elementary Appendix ${selectedGrammarElemAppendix}`
           : selectedGrammarElemAdditional
             ? `Grammar Elementary Additional Exercise ${selectedGrammarElemAdditional}`
-            : '';
+            : selectedAmericanAccentScreenId
+              ? (() => {
+                  const screen = AMERICAN_ACCENT_SCREEN_BY_ID[selectedAmericanAccentScreenId];
+                  return screen ? `American Accent ${americanAccentPrintedPageLabel(screen)}` : 'American Accent';
+                })()
+              : '';
 
   return (
     <div
@@ -7117,6 +7134,59 @@ function wordReferenceLabel(text) {
   return isSingleWordEntry(text) ? 'See in Dictionary' : 'Translate';
 }
 
+// Ícone 🔊 ao lado de cada entrada do My Words (palavra OU frase — o TTS do
+// Google lê as duas igual bem, diferente da 1ª versão desta feature que
+// raspava o Cambridge Dictionary e só cobria palavra única): toca a
+// pronúncia em inglês, servida pelo nosso próprio proxy (ver setupProxy.js
+// + pronunciationTts.js — nunca aponta pra URL do Google diretamente,
+// mesmo padrão de todo áudio deste app).
+//
+// Estados: idle -> loading (clicou, aguardando o servidor gerar/baixar na
+// 1ª vez ou servir do cache) -> playing (tocando) -> volta pra idle no fim,
+// ou error se a requisição falhou (rede/servidor — não existe mais um
+// "404 não encontrado" permanente como no Cambridge, qualquer texto válido
+// gera algum áudio). Desabilitado durante loading/playing pra não disparar
+// dois <audio> tocando por cima um do outro com cliques repetidos.
+function WordAudioButton({ word }) {
+  const [status, setStatus] = useState('idle');
+  const audioRef = useRef(null);
+
+  useEffect(() => () => {
+    audioRef.current?.pause();
+  }, []);
+
+  const handleClick = () => {
+    if (status === 'loading' || status === 'playing') return;
+    setStatus('loading');
+    const audio = new Audio(`/pronunciation-audio/${encodeURIComponent(word)}`);
+    audioRef.current = audio;
+    audio.addEventListener('playing', () => setStatus('playing'));
+    audio.addEventListener('ended', () => setStatus('idle'));
+    audio.addEventListener('error', () => setStatus('error'));
+    audio.play().catch(() => setStatus('error'));
+  };
+
+  const titleByStatus = {
+    idle: `Play pronunciation of "${word}"`,
+    loading: 'Loading pronunciation…',
+    playing: 'Playing…',
+    error: 'Could not load pronunciation — click to try again',
+  };
+
+  return (
+    <button
+      type="button"
+      className={`word-audio-btn${status !== 'idle' ? ` word-audio-btn--${status}` : ''}`}
+      title={titleByStatus[status]}
+      aria-label={titleByStatus[status]}
+      onClick={handleClick}
+      disabled={status === 'loading' || status === 'playing'}
+    >
+      <IconSpeaker />
+    </button>
+  );
+}
+
 // Página "My Words": caderno de vocabulário pessoal do usuário. Lista as
 // palavras salvas (com significado/exemplo/contexto/imagem), permite
 // adicionar e apagar, e tem o modo de prática por flashcards. Again/Good/Easy
@@ -7223,6 +7293,20 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
     event.preventDefault();
     resizeImageFileToDataUrl(file)
       .then(setImage)
+      .catch(() => window.alert('Could not read that image from the clipboard.'));
+  };
+
+  // Mesma ideia de handleFormPaste, mas pro form de EDIÇÃO de uma entrada já
+  // existente (editDraft, não o "word"/"image" do form de adicionar) — só
+  // faltava aqui, por isso colar imagem não funcionava editando (bug real
+  // reportado pelo dono, 2026-07-25): o bloco de edição era um <div> sem
+  // onPaste nenhum, diferente do form de adicionar e do WordQuickAdd.
+  const handleEditFormPaste = (event) => {
+    const file = getImageFileFromClipboardEvent(event);
+    if (!file) return;
+    event.preventDefault();
+    resizeImageFileToDataUrl(file)
+      .then((dataUrl) => setEditDraft((draft) => ({ ...draft, image: dataUrl })))
       .catch(() => window.alert('Could not read that image from the clipboard.'));
   };
 
@@ -7542,7 +7626,7 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
                 return (
                   <div key={entry.id} className="wordbook-entry">
                     {isEditing ? (
-                      <div className="wordbook-entry-edit">
+                      <div className="wordbook-entry-edit" onPaste={handleEditFormPaste}>
                         <ImageDropZone
                           image={editDraft.image}
                           onChange={(nextImage) => setEditDraft((draft) => ({ ...draft, image: nextImage }))}
@@ -7587,7 +7671,10 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
                       <>
                         {entry.image && <img src={entry.image} alt="" className="wordbook-entry-thumb" />}
                         <div className="wordbook-entry-main">
-                          <span className="wordbook-entry-word">{entry.word}</span>
+                          <span className="wordbook-entry-word-row">
+                            <WordAudioButton word={entry.word} />
+                            <span className="wordbook-entry-word">{entry.word}</span>
+                          </span>
                           {entry.meaning && <p className="wordbook-entry-meaning">{entry.meaning}</p>}
                           {entry.example && <p className="wordbook-entry-example">“{entry.example}”</p>}
                           <p className="wordbook-entry-meta">

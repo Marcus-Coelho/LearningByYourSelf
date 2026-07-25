@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const { PDFDocument } = require('pdf-lib');
+const { getPronunciationAudioPath } = require('./pronunciationTts');
 
 // Serves audio and PDFs straight from the source material folder, so they
 // never need to be copied into public/ (and therefore never end up in git).
@@ -491,6 +492,25 @@ module.exports = function (app) {
       res.type('application/pdf').send(Buffer.from(mergedBytes));
     } catch (error) {
       res.status(404).end();
+    }
+  });
+
+  // Ícone 🔊 do My Words (ver App.js, WordAudioButton): serve o mp3 de
+  // pronúncia (palavra OU frase) gerado via Google Translate TTS na
+  // primeira vez que é pedido, cacheado localmente depois (ver
+  // pronunciationTts.js — nunca aponta o front-end pra URL do Google
+  // diretamente). Só funciona sob `npm start` (mesma limitação de sempre —
+  // não há servidor de produção).
+  app.get('/pronunciation-audio/:text', async (req, res) => {
+    try {
+      const filePath = await getPronunciationAudioPath(req.params.text);
+      if (!filePath) {
+        res.status(404).end();
+        return;
+      }
+      res.type('audio/mpeg').sendFile(filePath);
+    } catch (error) {
+      res.status(502).end();
     }
   });
 };

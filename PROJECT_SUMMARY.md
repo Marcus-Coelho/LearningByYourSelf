@@ -1286,6 +1286,52 @@ separado:
   outro lugar da tela); CSS das 2 classes que ficaram sem uso (`section-answers-strip-head`/
   `-close`) removido.
 
+### Correções e features pontuais (2026-07-24/25)
+
+- **`reviewQueue` desatualizado em `scheduleReview`**: o check "esse item já estava vencido"
+  comparava contra o STATE `reviewQueue`, que só recarrega quando `activePage` muda de valor —
+  navegar entre units com "Next Unit"/"Previous Unit" nunca muda esse valor, então uma revisão
+  vencida no meio de uma sessão de navegação assim nunca era reconhecida. Trocado por checar o
+  `localStorage` direto (fonte de verdade sempre atual). Ver ROADMAP item 3, "Correção
+  2026-07-24", pra reprodução detalhada.
+- **Graduar flashcard vencido do My Words não marcava "Clear today's reviews"**: a UI ("Today's
+  Review" card, Courses) já apresenta revisão de curso e flashcard vencido como o mesmo
+  conceito ("1 item" contando os dois juntos), mas `handleGradeWord` nunca chamava
+  `markDailyGoalDone('reviews')` — inconsistência real entre o que a tela promete e o que o
+  código fazia. Corrigido com o mesmo critério `(entry.due ?? 0) <= agora` que
+  `wordbookDueCount` já usa.
+- **`Ctrl+Space` virou atalho GLOBAL**: antes só existia dentro do Listening/Dictation (2
+  `useEffect` locais, cada um escopado ao próprio player daquele exercício) — nas 9 telas de
+  leitura (players ancorados/simples) e com o foco dentro do editor do My Notes
+  (`contentEditable`), o atalho simplesmente não existia. Um único `useEffect` em `App()`
+  substituiu os 2 locais: procura em `document.querySelectorAll('audio')` qualquer áudio
+  tocando (pausa) ou o último que tocou via listener de `play` em capture (retoma), e trata
+  `contentEditable` igual a INPUT/TEXTAREA pra não interceptar o Space normal de digitação.
+- **Diálogo de confirmação (delete) "pulando" pro centro**: `.app-confirm-dialog` reaproveitava
+  o keyframe do Toast (`app-toast-in`), que inclui `translate(-50%,-50%)` — pensado pra um
+  elemento posicionado via `top/left:50%`, não pra este diálogo, que já é centralizado pelo
+  flex do overlay. O transform deslocava a caixa da posição certa durante os 180ms da
+  animação, que "saltava" de volta pro centro assim que a animação acabava. Keyframe próprio
+  criado, só com fade+scale, sem transform de posição.
+- **Botão "+ Word" não aparecia no American Accent**: `insideCourse` (controla quando o FAB
+  flutuante aparece) nunca checava `selectedAmericanAccentScreenId`, só os outros 3 cursos —
+  faltou na integração original do 4º curso. `studyContextLabel` (o "from ..." salvo junto com
+  a palavra) também ganhou o branch do American Accent (`American Accent p. X–Y`).
+- **Ícone 🔊 de pronúncia no My Words**: implementado 2x na mesma sessão. 1ª versão raspava o
+  Cambridge Dictionary com Playwright (Chromium headless) — pronúncia de dicionário real, mas
+  ~5-6s por palavra nova e só cobria palavra única. Trocado a pedido do dono pelo endpoint
+  clássico de Text-to-Speech do Google Translate (mesmo usado por baixo dos panos pela lib
+  Python gTTS) — ~150-350ms por entrada nova (15-20x mais rápido, medido), funciona igual bem
+  pra frase inteira, sem dependência de navegador. `playwright` e o Chromium baixado pra essa
+  feature foram desinstalados/apagados na troca. Ver seção "Pronúncia no My Words" em
+  CLAUDE.md pra arquitetura completa (cache em disco, rota, script de preload em lote).
+- **Colar imagem não funcionava editando uma palavra do My Words**: o form de "Add word" e o
+  "+Word" já tinham `onPaste` no `<form>` inteiro (cola com o cursor em qualquer campo, não só
+  na caixinha de imagem — pedido explícito de uma sessão anterior). O bloco de EDIÇÃO
+  (`wordbook-entry-edit`) nunca ganhou esse mesmo tratamento — era um `<div>` sem `onPaste`
+  nenhum, então colar simplesmente não fazia nada ali. Corrigido com um handler próprio
+  (`handleEditFormPaste`, grava em `editDraft.image`) no mesmo padrão.
+
 ## Observações para outra IA
 
 - Não existe roteamento real (react-router); tudo é estado local (`activePage`, `selectedUnit`) em um único componente `App`.

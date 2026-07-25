@@ -4174,6 +4174,50 @@ body {
   font-size: 19px;
 }
 
+.wordbook-entry-word-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Ícone 🔊 de pronúncia (ver WordAudioButton, App.js) — mesma linguagem
+   visual do .wordbook-expand (botão discreto, ganha cor no hover). */
+.word-audio-btn {
+  flex: 0 0 auto;
+  border: none;
+  background: transparent;
+  color: rgba(27, 58, 94, 0.45);
+  cursor: pointer;
+  padding: 3px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.word-audio-btn:hover:not(:disabled) {
+  color: var(--purple-700);
+  background: rgba(91, 63, 217, 0.1);
+}
+
+.word-audio-btn--loading {
+  color: var(--purple-500);
+  animation: word-audio-pulse 900ms ease-in-out infinite;
+}
+
+.word-audio-btn--playing {
+  color: var(--purple-700);
+}
+
+.word-audio-btn--error {
+  color: rgba(192, 57, 43, 0.6);
+}
+
+@keyframes word-audio-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
 .wordbook-entry .wordbook-entry-meaning {
   margin: 2px 0 0;
   font-size: 16.5px;

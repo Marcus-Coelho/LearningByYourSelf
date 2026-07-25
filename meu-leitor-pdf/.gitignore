@@ -15,6 +15,10 @@
 # never duplicate it into public/
 /public/audio
 
+# cached Google Translate TTS pronunciation mp3s (see src/pronunciationTts.js)
+# — local runtime cache, not course data, never commit generated audio
+/pronunciation-cache
+
 # misc
 .DS_Store
 .env.local
