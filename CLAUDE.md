@@ -200,11 +200,16 @@ pras 4 telas acima pegarem sozinhas.
   valor, mas navegar entre units com "Next Unit"/"Previous Unit" nunca muda `activePage`
   — fica sempre a mesma string, ex. `"grammarElem-unit"` — então uma revisão que vencesse
   DURANTE uma sessão de navegação assim nunca era reconhecida como vencida, mesmo reavaliando
-  o item certo; state pode ficar desatualizado por tempo indeterminado, localStorage nunca);
-  os outros 2 via `markDailyGoalDone` (visitar unit nunca visitada / terminar Listening ou
-  Dictation, `onPracticed` prop em `ListeningClozeExercise`/`DictationExercise`). Progresso do
-  dia em `dailyGoal:<YYYY-MM-DD>` (data LOCAL, nunca `toISOString`), nunca desmarcado — dia
-  novo já nasce zerado porque a chave muda sozinha
+  o item certo; state pode ficar desatualizado por tempo indeterminado, localStorage nunca) —
+  **também marca ao graduar um flashcard vencido do My Words** (`handleGradeWord`, mesmo
+  critério `(entry.due ?? 0) <= agora` que `wordbookDueCount` já usa, checado ANTES de
+  sobrescrever o `due`; corrigido 2026-07-24 — o card "Today's Review" já mostra "Practice N
+  words" junto com as revisões de curso como se fossem a mesma coisa, então só contar um dos
+  dois tipos era inconsistente com o que a tela promete); os outros 2 via `markDailyGoalDone`
+  (visitar unit nunca visitada / terminar Listening ou Dictation, `onPracticed` prop em
+  `ListeningClozeExercise`/`DictationExercise`). Progresso do dia em `dailyGoal:<YYYY-MM-DD>`
+  (data LOCAL, nunca `toISOString`), nunca desmarcado — dia novo já nasce zerado porque a
+  chave muda sozinha
 - Cada item do `DailyGoalCard` tem um botão "i" (mesmo padrão do `UnitBadgeLegend`) explicando
   como cumprir aquele item — **um popover só, fora do `<ul>`**, não um por `<li>`: com os itens
   colados (6px de gap), um popover por linha cobria o botão "i" do vizinho de baixo e travava

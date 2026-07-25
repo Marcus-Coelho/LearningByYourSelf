@@ -1942,14 +1942,26 @@ function App() {
   // Autoavaliação do flashcard: "again" volta ao primeiro degrau da escada
   // de intervalos, "good" sobe um degrau, "easy" sobe dois.
   const handleGradeWord = (id, grade) => {
-    persistWordbook(wordbookEntries.map((entry) => {
-      if (entry.id !== id) return entry;
-      const currentStep = Number.isInteger(entry.step) ? entry.step : 0;
+    // "Clear today's reviews" (DailyGoalCard) também conta um flashcard do My
+    // Words graduado — o card "Today's Review" já mostra "Practice N words"
+    // junto com as revisões de curso, como se fossem a mesma coisa (mesmo
+    // título, mesma contagem "N items"), então só marcar pra um dos dois
+    // tipos seria inconsistente com o que a tela promete. Mesmo critério de
+    // "estava vencido" usado em wordbookDueCount: (entry.due ?? 0) <= agora,
+    // checado ANTES de sobrescrever o `due` com a próxima data.
+    const entry = wordbookEntries.find((item) => item.id === id);
+    const wasDue = Boolean(entry) && (entry.due ?? 0) <= Date.now();
+    persistWordbook(wordbookEntries.map((item) => {
+      if (item.id !== id) return item;
+      const currentStep = Number.isInteger(item.step) ? item.step : 0;
       const nextStep = grade === 'again'
         ? 0
         : Math.min(FLASHCARD_STEPS_DAYS.length - 1, currentStep + (grade === 'easy' ? 2 : 1));
-      return { ...entry, step: nextStep, due: Date.now() + FLASHCARD_STEPS_DAYS[nextStep] * DAY_MS };
+      return { ...item, step: nextStep, due: Date.now() + FLASHCARD_STEPS_DAYS[nextStep] * DAY_MS };
     }));
+    if (wasDue) {
+      markDailyGoalDone('reviews');
+    }
   };
 
   const handleUpdateWordMeaning = (id, meaning) => {
