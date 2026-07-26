@@ -1789,6 +1789,149 @@ body {
   font-size: 15px;
 }
 
+/* ==== Ask AI (Q&A avulso de gramática, via Gemini — ver App.js/setupProxy.js) ==== */
+
+.ask-ai-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 640px;
+  text-align: left;
+}
+
+/* .landing-panel base (tema roxo escuro original) deixa .eyebrow/h1/p quase
+   brancos e sem a fonte Quicksand — sem um override ".landing-panel
+   .ask-ai-panel" aqui (mesmo padrão já usado por .listening-panel/
+   .profile-panel/etc.), ".landing-panel p" (classe+tag, mais específico que
+   uma classe sozinha) vence a cascata e o texto fica ilegível sobre o fundo
+   claro. Bug real reportado pelo dono (2026-07-25), mesma causa já
+   documentada em CLAUDE.md pra esse tipo de tela. */
+.landing-panel.ask-ai-panel .eyebrow {
+  color: var(--purple-700);
+}
+
+.landing-panel.ask-ai-panel h1 {
+  color: #1b3a5e;
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
+  font-size: clamp(1.5rem, 2.2vw, 2rem);
+  line-height: 1.25;
+}
+
+.landing-panel.ask-ai-panel p {
+  color: rgba(27, 58, 94, 0.75);
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Render do markdown-lite da resposta (ver renderAdeleMarkdown, App.js) —
+   ".landing-panel.ask-ai-panel p" acima já cobre os <p>, mas h3/ul/li/strong
+   são elementos novos que essa regra não alcança; explícito aqui em vez de
+   confiar em herança, mesmo padrão do resto do arquivo. */
+.landing-panel.ask-ai-panel .ask-ai-answer-body p {
+  color: #1b3a5e;
+  margin: 0 0 8px;
+  font-size: 15.5px;
+  line-height: 1.6;
+}
+
+.landing-panel.ask-ai-panel .ask-ai-answer-body p:last-child {
+  margin-bottom: 0;
+}
+
+.landing-panel.ask-ai-panel .ask-ai-answer-body h3 {
+  margin: 14px 0 6px;
+  color: var(--purple-700);
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.landing-panel.ask-ai-panel .ask-ai-answer-body h3:first-child {
+  margin-top: 0;
+}
+
+.landing-panel.ask-ai-panel .ask-ai-answer-body ul {
+  margin: 0 0 8px;
+  padding-left: 22px;
+}
+
+.landing-panel.ask-ai-panel .ask-ai-answer-body li {
+  color: #1b3a5e;
+  margin-bottom: 4px;
+}
+
+.landing-panel.ask-ai-panel .ask-ai-answer-body strong {
+  color: #12294a;
+}
+
+.landing-panel.ask-ai-panel .ask-ai-answer-body .ask-ai-answer-quote {
+  padding-left: 12px;
+  border-left: 3px solid rgba(109, 66, 216, 0.35);
+  font-style: italic;
+  color: rgba(27, 58, 94, 0.75);
+}
+
+.ask-ai-answer-divider {
+  margin: 14px 0;
+  border: none;
+  border-top: 1px dashed rgba(27, 58, 94, 0.2);
+}
+
+.ask-ai-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ask-ai-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-align: left;
+}
+
+.ask-ai-mascot {
+  flex: 0 0 auto;
+  display: inline-flex;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(109, 66, 216, 0.25);
+  box-shadow: 0 4px 14px rgba(27, 58, 94, 0.15);
+}
+
+.ask-ai-mascot svg {
+  width: 100%;
+  height: 100%;
+}
+
+.ask-ai-header h1 {
+  margin: 4px 0 0;
+}
+
+.ask-ai-textarea {
+  min-height: 100px;
+}
+
+.ask-ai-panel .show-answers-btn {
+  align-self: flex-start;
+}
+
+.ask-ai-error {
+  margin: 0;
+  color: #c0392b;
+  font-size: 14.5px;
+}
+
+.ask-ai-answer {
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: #f3f5f7;
+  border: 1px solid rgba(27, 58, 94, 0.12);
+}
+
 .speaking-mic-error {
   margin: 0;
   padding: 10px 14px;
@@ -4422,6 +4565,70 @@ body {
   margin: 10px 0 0;
   font-style: italic;
   color: rgba(27, 58, 94, 0.75);
+}
+
+/* "Or try to spell it here" (ver WordbookPage, variante com imagem do
+   flashcard) — caixa de tentativa de soletrar a palavra antes de revelar. */
+.flashcard-spell {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px dashed rgba(27, 58, 94, 0.2);
+}
+
+.flashcard-spell-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(27, 58, 94, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.flashcard-spell-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.flashcard-spell-input {
+  flex: 1 1 auto;
+  max-width: 260px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(27, 58, 94, 0.25);
+  font-family: inherit;
+  font-size: 1rem;
+  color: #1b3a5e;
+  box-sizing: border-box;
+}
+
+.flashcard-spell-input:focus {
+  outline: none;
+  border-color: var(--purple-500);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+.flashcard-spell-check {
+  flex: 0 0 auto;
+}
+
+/* ".flashcard .flashcard-X" (2 classes) — precisa vencer ".landing-panel p"
+   (classe+tag, mais específico que uma classe sozinha), mesmo motivo já
+   documentado em .flashcard-example/.flashcard-context acima (a cor branca
+   do tema roxo escuro original venceria por especificidade senão). */
+.flashcard .flashcard-spell-feedback {
+  margin: 10px 0 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.flashcard .flashcard-spell-feedback--correct {
+  color: #0e9f4e;
+}
+
+.flashcard .flashcard-spell-feedback--incorrect {
+  color: #c0392b;
 }
 
 .flashcard-actions {

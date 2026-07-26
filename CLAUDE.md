@@ -19,6 +19,8 @@ Essas pastas são ignoradas por git (`.gitignore`), não são commitadas.
 
 **Exceção**: o curso American Accent lê de `C:\Users\marcu\OneDrive\Documentos\A_INGLES\LIVROS\3. Mastering the American Accent` — **fora** da árvore do projeto, não é pasta irmã (caminho absoluto hardcoded em `setupProxy.js`, ver comentário lá). Se um dia for movida pra virar irmã de verdade, trocar pelo padrão `path.join(__dirname, '..', '..', ...)` usado nas outras 3.
 
+**Opcional — tela "Ask AI"**: precisa de `GEMINI_API_KEY` em `meu-leitor-pdf/.env.local` (copie de `.env.local.example`, chave gratuita em https://aistudio.google.com/apikey). Sem essa chave o resto do app funciona normal, só essa tela responde erro 500 explicando o que falta.
+
 `npm run build` **funciona e compila normalmente** — é usado o tempo todo durante o desenvolvimento pra verificar que uma mudança não quebrou nada (é o jeito padrão de "checar erros de sintaxe/JSX" nesse projeto, sem precisar do dev server rodando). O que **não existe** é hospedagem em produção: o build gerado não seria funcional publicado num servidor, porque `setupProxy.js` (áudio/PDF) só funciona sob `npm start` — ver "Decisões Imutáveis" abaixo.
 
 ---
@@ -125,6 +127,49 @@ pras 4 telas acima pegarem sozinhas.
   `wordMode`/"Only Unit Words" opcional do Vocabulary. Nem toda "Sentence Pairs for Practice"
   entra aqui — só as que são de verdade sobre confusão de som/acento (331/333/280-parcial são
   sobre tipo de pergunta/entonação, não confusão sonora, então ficam com lacuna aleatória)
+
+### Ask AI (menu principal, fora dos 4 cursos, 2026-07-25)
+
+Tela de Q&A pra dúvidas sobre a língua inglesa em geral (gramática, vocabulário, pronúncia,
+expressões idiomáticas, uso — não só gramática, ver "Correção 2026-07-25" abaixo): um campo de
+texto, botão "Ask", resposta abaixo. A IA se chama **Adele** (americana, EUA — pedido do dono,
+2026-07-25), mascote desenhado em SVG puro (`AdeleMascot`, `App.js` — sem arquivo de imagem
+externo, mesmo espírito dos ícones do resto do app).
+- **Backend**: `POST /api/ask-grammar` (`setupProxy.js`) chama a API do Gemini
+  (`src/geminiGrammarHelper.js`, modelo `gemini-flash-latest` — alias que a Google sempre
+  aponta pro flash atual, escolhido depois de `gemini-2.5-flash` parar de aceitar contas novas
+  no meio da implementação). Nome da rota/arquivo ficou "grammar" por já existir quando o
+  escopo era mais estreito — não é mais literal, mas renomear não foi pedido.
+  - Único endpoint do projeto que recebe corpo JSON — `express.json()` escopado só nesta rota
+    (as outras usam GET com parâmetro na URL, nunca precisaram de body parser).
+- **`systemInstruction`** (2026-07-25, reescrita depois que o dono mostrou uma resposta de
+  outra IA que ele gostou): tutora completa/didática, não só uma frase curta — confirma o que
+  está certo, explica a regra, dá exemplos, **chama exceções explicitamente**, e às vezes
+  termina com um desafio curto ("fill in the blank"). Também corrige a pergunta do próprio
+  usuário se tiver erro (linha "Corrected: ..." antes de responder, só quando havia erro de
+  verdade).
+- **Memória de só o ÚLTIMO turno** (`askAiLastExchange`, `App.js`, 2026-07-25): não é chat de
+  verdade — não cresce, não persiste no `localStorage`, reseta ao sair da tela. O cliente
+  reenvia `previousQuestion`/`previousAnswer` a cada request; o servidor não guarda nada entre
+  requisições (mesmo padrão stateless de sempre, só que o cliente carrega 1 turno de contexto).
+  Existe especificamente pra Adele poder propor um desafio numa resposta e avaliar a tentativa
+  do usuário na pergunta seguinte — sem isso ela não teria como saber a que uma resposta tipo
+  "He is always tired." se refere. Botão "Start a new topic" zera essa memória na mão.
+- **Render do markdown-lite** (`renderAdeleMarkdown`, `App.js`): a resposta pode vir com
+  `### heading`, `**bold**`, `- bullet` (pedido no prompt) e também `*italic*`/`> quote`/`***`
+  como divisor (o modelo usa esses por conta própria mesmo sem pedir — mais robusto o renderer
+  cobrir do que tentar proibir via prompt, LLM não obedece restrição de formatação com 100% de
+  fidelidade). Parser feito à mão, sem lib de markdown nem `dangerouslySetInnerHTML` — só monta
+  elementos React de verdade a partir do texto, zero risco de XSS mesmo com resposta hostil.
+- **Chave**: `GEMINI_API_KEY` em `meu-leitor-pdf/.env.local` (gitignored, template em
+  `.env.local.example`). Nome SEM prefixo `REACT_APP_` de propósito — o CRA só expõe pro bundle
+  do navegador variáveis com esse prefixo; sem ele, a chave existe só no processo Node do dev
+  server (onde `setupProxy.js`/`geminiGrammarHelper.js` rodam), nunca chega no cliente. Avaliado
+  contra chamar a API direto do navegador — rejeitado porque exporia a chave no DevTools/aba de
+  rede pra qualquer um roubar.
+- Só funciona sob `npm start`, mesma limitação de sempre (não há servidor de produção). Sem a
+  chave configurada, a rota responde 500 com mensagem explicando o que falta — o resto do app
+  funciona normal.
 
 ### Listening (menu principal, fora dos 4 cursos)
 - Tela própria (`activePage: 'listening' → 'listening-tracks' → 'listening-exercise'`),

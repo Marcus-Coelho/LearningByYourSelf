@@ -3,6 +3,7 @@ const path = require('path');
 const express = require('express');
 const { PDFDocument } = require('pdf-lib');
 const { getPronunciationAudioPath } = require('./pronunciationTts');
+const { askGrammarQuestion } = require('./geminiGrammarHelper');
 
 // Serves audio and PDFs straight from the source material folder, so they
 // never need to be copied into public/ (and therefore never end up in git).
@@ -511,6 +512,37 @@ module.exports = function (app) {
       res.type('audio/mpeg').sendFile(filePath);
     } catch (error) {
       res.status(502).end();
+    }
+  });
+
+  // Tela "Ask AI" (menu principal): pergunta de gramática -> resposta do
+  // Gemini (ver App.js, geminiGrammarHelper.js). Único endpoint deste app
+  // que recebe corpo JSON, daí o express.json() escopado só nele (as outras
+  // rotas usam GET com parâmetro de rota, sem precisar disso). Precisa de
+  // `GEMINI_API_KEY` em meu-leitor-pdf/.env.local (gitignored) — sem ela,
+  // responde 500 com uma mensagem explicando o que falta.
+  app.post('/api/ask-grammar', express.json(), async (req, res) => {
+    const question = String(req.body?.question || '').trim();
+    if (!question) {
+      res.status(400).json({ error: 'Missing question' });
+      return;
+    }
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      res.status(500).json({ error: 'GEMINI_API_KEY not set — see meu-leitor-pdf/.env.local' });
+      return;
+    }
+    // Memória de só o último turno (ver App.js, askAiLastExchange) — o
+    // cliente reenvia a pergunta/resposta anteriores a cada request, o
+    // servidor não guarda nada entre requisições.
+    const previousExchange = (req.body?.previousQuestion && req.body?.previousAnswer)
+      ? { question: String(req.body.previousQuestion), answer: String(req.body.previousAnswer) }
+      : null;
+    try {
+      const answer = await askGrammarQuestion(question, apiKey, previousExchange);
+      res.json({ answer });
+    } catch (error) {
+      res.status(502).json({ error: 'Could not reach Gemini right now. Please try again.' });
     }
   });
 };
