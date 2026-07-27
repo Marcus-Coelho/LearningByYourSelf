@@ -7462,21 +7462,58 @@ function WordAudioButton({ word }) {
   );
 }
 
-// Esconde a palavra/expressão-alvo dentro da frase de exemplo do flashcard
-// COM imagem (frente) — sem isso, a frase de exemplo (pista mostrada antes
-// de revelar) simplesmente entregava a resposta de graça, o que anulava o
-// sentido do "Or try to spell it here" (bug de UX real apontado pelo dono,
-// 2026-07-25, com screenshot mostrando "mow the lawn" escrito por extenso
-// na frase logo acima da caixa de tentar soletrar). Casamento simples
-// (case-insensitive, com limite de palavra \b — não pega inflexões tipo
-// "mowing" se a palavra salva for só "mow", mas cobre o caso comum de a
-// frase reusar a palavra/expressão exatamente como salva).
+// Palavras curtas/funcionais que NUNCA viram lacuna ao mascarar — senão
+// esconder "the"/"or"/"in" de uma frase deixaria o exemplo ilegível sem
+// proteger nada. "usa"/"uk" entram porque aparecem em anotação de
+// dicionário ("...or neighbour in the USA"), não são a palavra-alvo.
+const MASK_SKIP_WORDS = new Set([
+  'the', 'and', 'or', 'in', 'on', 'at', 'to', 'of', 'for', 'a', 'an',
+  'is', 'are', 'was', 'were', 'be', 'it', 'as', 'my', 'your', 'his', 'her',
+  'usa', 'uk', 'us', 'etc', 'noun', 'verb', 'adj',
+]);
+
+// Esconde a palavra/expressão-alvo dentro da frase mostrada na FRENTE do
+// flashcard com imagem — sem isso a pista entrega a resposta de graça e
+// anula o "Or try to spell it here" (bug de UX apontado pelo dono,
+// 2026-07-25, com "mow the lawn" escrito por extenso logo acima da caixa).
+//
+// Passou por 2 rodadas de correção. A 1ª versão casava só a string INTEIRA
+// como salva, e falhava em dois casos reais do caderno do dono
+// (2026-07-26):
+//   1. palavra salva com anotação junto — "neighbor. or neighbour in the
+//      USA" nunca aparece assim na frase, então nada era escondido e
+//      "neighbor" ficava à mostra;
+//   2. flexão — palavra salva "pen", frase com "pens": o \b no fim impedia
+//      o casamento.
+// Agora mascara em duas passadas: a expressão inteira primeiro (preserva o
+// caso "mow the lawn") e depois cada palavra significativa dela, aceitando
+// sufixo de flexão (s/es/ed/ing).
 const maskWordInExample = (example, word) => {
   const trimmedWord = (word || '').trim();
   if (!example || !trimmedWord) return example;
-  const escaped = trimmedWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const pattern = new RegExp(`\\b${escaped}\\b`, 'gi');
-  return example.replace(pattern, (match) => '_'.repeat(match.length));
+  const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const toMask = (match) => '_'.repeat(Math.max(3, match.length));
+
+  // 1ª passada: a expressão inteira, exatamente como salva.
+  let masked = example.replace(new RegExp(`\\b${escapeRe(trimmedWord)}\\b`, 'gi'), toMask);
+
+  // 2ª passada: cada palavra significativa da expressão, com flexão.
+  // Roda DEPOIS da 1ª de propósito: o que já virou "____" não casa mais,
+  // então não há risco de mascarar duas vezes o mesmo trecho.
+  trimmedWord.split(/[^a-zA-Z'-]+/).forEach((token) => {
+    const t = token.replace(/^[-']+|[-']+$/g, '');
+    if (t.length < 3 || MASK_SKIP_WORDS.has(t.toLowerCase())) return;
+    // Sufixo simples cobre "pen->pens", mas não radical que muda: "study"
+    // vira "studies"/"studied" (y->i) e "make" vira "making" (cai o e).
+    // Sem lematização de verdade — só essas duas trocas, que respondem pela
+    // maioria dos casos e não exigem dicionário.
+    const alternativas = [`${escapeRe(t)}(s|es|ed|ing)?`];
+    if (/y$/i.test(t)) alternativas.push(`${escapeRe(t.slice(0, -1))}(ies|ied)`);
+    if (/e$/i.test(t)) alternativas.push(`${escapeRe(t.slice(0, -1))}(ing|ed)`);
+    masked = masked.replace(new RegExp(`\\b(?:${alternativas.join('|')})\\b`, 'gi'), toMask);
+  });
+
+  return masked;
 };
 
 // Página "My Words": caderno de vocabulário pessoal do usuário. Lista as
@@ -9972,7 +10009,7 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed }) {
           // Usuário respondeu algo, mas errou — capturar pro caderno de erros
           // (não pra lacunas 100% numéricas, ver isNumericOnlyToken acima)
           const sentenceFull = model.label + model.parts.map((p) => (p.type === 'blank' ? p.word : p.value)).join('');
-          missedWords.push({ word: part.word, context: sentenceFull });
+          missedWords.push({ word: part.word, example: sentenceFull });
         }
       });
     });
@@ -9980,11 +10017,16 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed }) {
       saveListeningAttempt(userName, track.id, Math.round((correct / total) * 100));
       if (onPracticed) onPracticed();
     }
-    // Adicionar palavras erradas ao My Words
+    // Adicionar palavras erradas ao My Words. A frase vai em `example` (não
+    // em `context`, como ia antes): `context` é o rótulo curto de PROCEDÊNCIA
+    // ("American Accent p. 6") e é renderizado a 12,5px, então a frase inteira
+    // caía lá minúscula e ilegível no flashcard — bug real reportado pelo dono
+    // (2026-07-26), 4 das 18 entradas do caderno dele estavam assim.
     if (missedWords.length > 0 && onAddWord) {
       const uniqueMissed = Array.from(new Map(missedWords.map((w) => [normalizeListeningAnswer(w.word), w])).values());
-      uniqueMissed.forEach(({ word, context }) => {
-        onAddWord({ word, meaning: '', example: '', context });
+      const origem = `Listening — ${listeningTrackLabel(track)}`;
+      uniqueMissed.forEach(({ word, example }) => {
+        onAddWord({ word, meaning: '', example, context: origem });
       });
       setAddedWordsCount(uniqueMissed.length);
       setTimeout(() => setAddedWordsCount(0), 4000);

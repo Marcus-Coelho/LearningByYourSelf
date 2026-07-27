@@ -4614,10 +4614,16 @@ body {
   gap: 8px;
 }
 
+/* 12,5px era pequeno demais: as entradas salvas automaticamente pelo
+   Listening ANTES da correcao de 2026-07-26 guardaram a frase inteira aqui
+   (e nao em `example`), e ficavam ilegiveis. As novas ja vao pro campo
+   certo, mas as antigas continuam no caderno — este tamanho as resgata sem
+   precisar migrar dado nenhum. */
 .flashcard .flashcard-context {
   margin: 6px 0 0;
-  font-size: 12.5px;
-  color: rgba(27, 58, 94, 0.55);
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(27, 58, 94, 0.6);
 }
 
 .flashcard-back {
@@ -4682,10 +4688,16 @@ body {
   font-weight: 700;
 }
 
+/* Tamanho explicito (antes so herdava ~1rem): a frase de exemplo e a PISTA
+   principal do card com imagem — o dono leu ela e reportou "escrito muito
+   pequeno" (2026-07-26). Agora fica maior que o texto corrido, so abaixo do
+   significado. */
 .flashcard .flashcard-example {
   margin: 10px 0 0;
   font-style: italic;
-  color: rgba(27, 58, 94, 0.75);
+  font-size: 1.1rem;
+  line-height: 1.55;
+  color: rgba(27, 58, 94, 0.8);
 }
 
 /* "Or try to spell it here" (ver WordbookPage, variante com imagem do
