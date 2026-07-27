@@ -17,7 +17,16 @@ Aplicação roda em `http://localhost:3000` (ou `3001` em pendrive, auto-detecta
 
 Essas pastas são ignoradas por git (`.gitignore`), não são commitadas.
 
-**Exceção**: o curso American Accent lê de `C:\Users\marcu\OneDrive\Documentos\A_INGLES\LIVROS\3. Mastering the American Accent` — **fora** da árvore do projeto, não é pasta irmã (caminho absoluto hardcoded em `setupProxy.js`, ver comentário lá). Se um dia for movida pra virar irmã de verdade, trocar pelo padrão `path.join(__dirname, '..', '..', ...)` usado nas outras 3.
+**Exceção — American Accent** (`3. Mastering the American Accent/`): o caminho é resolvido por
+TENTATIVA em `setupProxy.js` (não é mais um absoluto fixo, desde 2026-07-26), nesta ordem:
+1. pasta **irmã** das outras 3, dentro da árvore do projeto — é assim na cópia do pendrive, que
+   precisa ser autocontida pra rodar em qualquer PC;
+2. `C:\Users\marcu\OneDrive\Documentos\A_INGLES\LIVROS\3. Mastering the American Accent` — onde
+   a pasta ainda mora no PC do dono, fora da árvore do projeto.
+
+Quem existir primeiro vence, então as duas cópias funcionam sem nenhuma edição manual. Se
+nenhum caminho existir, só esse curso fica indisponível (rotas 404) — o resto do app roda
+normal.
 
 **Opcional — tela "Ask AI"**: precisa de `GEMINI_API_KEY` em `meu-leitor-pdf/.env.local` (copie de `.env.local.example`, chave gratuita em https://aistudio.google.com/apikey). Sem essa chave o resto do app funciona normal, só essa tela responde erro 500 explicando o que falta.
 

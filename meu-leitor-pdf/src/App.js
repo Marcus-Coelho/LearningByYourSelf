@@ -2829,6 +2829,21 @@ function App() {
     setActiveCourseId(null);
   };
 
+  // Atalho pra "Ask Adele" a partir de qualquer tela de leitura (mesmo FAB
+  // do "+ Word", ver render mais abaixo) — antes só dava pra chegar em
+  // Adele pelo menu, sem nenhuma ponte com a leitura de onde a dúvida de
+  // gramática realmente surge (achado de revisão de UX, 2026-07-26). Igual
+  // ao +Word, pré-preenche com o texto selecionado no PDF, se houver.
+  const handleAskAdeleShortcut = (event) => {
+    event.preventDefault();
+    const selection = (window.getSelection?.().toString() || '').trim().replace(/\s+/g, ' ');
+    if (selection) {
+      setAskAiQuestion((current) => current || selection);
+    }
+    setActivePage('ask-ai');
+    setActiveCourseId(null);
+  };
+
   const handleAskAiSubmit = async () => {
     const question = askAiQuestion.trim();
     if (!question || askAiStatus === 'loading') return;
@@ -4127,7 +4142,7 @@ function App() {
     if (!userName) return null;
     for (const source of LISTENING_SOURCES) {
       const track = source.tracks.find((item) => (
-        !loadListeningStats(userName, item.id) && !loadDictationStats(userName, item.id)
+        !loadListeningStats(userName, item.id) && !loadDictationStats(userName, item.id) && !loadSpeakingStats(userName, item.id)
       ));
       if (track) {
         return {
@@ -4294,20 +4309,35 @@ function App() {
           {/* Menu único e idêntico em qualquer lugar do app, dentro ou fora
               de um curso — não tem mais uma lista "insideCourse" diferente
               (que só tinha Courses/All Units/My Words/My Profile). */}
+          {/* Agrupado em 4 blocos (Learn/Practice/Tools/Account) desde
+              2026-07-26 — antes era uma lista só de 12 itens sem nenhuma
+              hierarquia visual, difícil de escanear pra quem chega novo
+              (achado de revisão de UX). Só reorganiza visualmente com
+              divisores + rótulo pequeno; nenhum destino/handler mudou.
+              American Accent perdeu o atalho direto que só ELE tinha (os
+              outros 3 cursos sempre viveram só dentro de "Courses") — ficava
+              inconsistente sem motivo claro pro usuário; agora os 4 cursos
+              são acessados do mesmo jeito. */}
           <ol>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleHome(event); setMobileMenuOpen(false); }}><IconHome /><span>Home</span></a></li>
+            <li className="side-drawer-divider" role="separator" />
+            <li className="side-drawer-group-label">Learn</li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleCourses(event); setMobileMenuOpen(false); }}><IconCourses /><span>Courses</span></a></li>
-            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenWordbook(event); setMobileMenuOpen(false); }}><IconWords /><span>My Words</span></a></li>
-            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenMyNotes(event); setMobileMenuOpen(false); }}><IconNotes /><span>My Notes</span></a></li>
+            <li className="side-drawer-divider" role="separator" />
+            <li className="side-drawer-group-label">Practice</li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenListening(event); setMobileMenuOpen(false); }}><IconHeadphones /><span>Listening</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenDictation(event); setMobileMenuOpen(false); }}><IconText /><span>Dictation</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenSpeaking(event); setMobileMenuOpen(false); }}><IconMic /><span>Speaking</span></a></li>
-            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleAmericanAccent(event); setMobileMenuOpen(false); }}><IconCourses /><span>American Accent</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenAmerican1SoundBank(event); setMobileMenuOpen(false); }}><IconSound /><span>Sound Bank</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenGrammarVocabExercises(event); setMobileMenuOpen(false); }}><IconQuiz /><span>Grammar &amp; Vocabulary Exercises</span></a></li>
-            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenAskAi(event); setMobileMenuOpen(false); }}><IconChat /><span>Ask Adele</span></a></li>
-            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenDashboard(event); setMobileMenuOpen(false); }}><IconDashboard /><span>Progress</span></a></li>
             <li className="side-drawer-divider" role="separator" />
+            <li className="side-drawer-group-label">Tools</li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenWordbook(event); setMobileMenuOpen(false); }}><IconWords /><span>My Words</span></a></li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenMyNotes(event); setMobileMenuOpen(false); }}><IconNotes /><span>My Notes</span></a></li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenAskAi(event); setMobileMenuOpen(false); }}><IconChat /><span>Ask Adele</span></a></li>
+            <li className="side-drawer-divider" role="separator" />
+            <li className="side-drawer-group-label">Account</li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenDashboard(event); setMobileMenuOpen(false); }}><IconDashboard /><span>Progress</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenProfile(event); setMobileMenuOpen(false); }}><IconProfile /><span>My Profile</span></a></li>
           </ol>
         </nav>
@@ -5684,8 +5714,14 @@ function App() {
                       href="#0"
                       onClick={(event) => { event.preventDefault(); handleOpenListeningSource(source); }}
                     >
+                      {/* Descrição fixa daqui (não source.description) — esse campo do
+                          JSON é reaproveitado por Dictation/Speaking também, e o do
+                          American Accent foi escrito pensando no Dictation ("Dictation
+                          practice..."), o que ficava errado exibido aqui no Listening
+                          (bug real reportado pelo dono, 2026-07-26). Mesmo padrão que
+                          Dictation/Speaking já usavam, só que hardcoded pro Listening. */}
                       <span>{source.title}</span>
-                      <small>{source.description}</small>
+                      <small>Fill in the blank exercises — listen to the audio and complete the missing words.</small>
                     </a>
                   </div>
                 </Fragment>
@@ -5775,7 +5811,7 @@ function App() {
         const trackIndex = tracks.findIndex((item) => item.id === selectedListeningTrack);
         const hasNextTrack = trackIndex !== -1 && trackIndex < tracks.length - 1;
         return (
-          <main className="landing-page landing-page--courses vocabulary-mode listening-mode">
+          <main className="landing-page landing-page--courses vocabulary-mode listening-mode listening-exercise-scroll-mode">
             <div className="landing-panel course-links-panel listening-panel listening-exercise-panel">
               <div className="listening-exercise-nav">
                 <button type="button" className="upload-button" onClick={handleBackToListeningTracks}>
@@ -6040,7 +6076,12 @@ function App() {
                 onClick={handleAskAiSubmit}
                 disabled={!askAiQuestion.trim() || askAiStatus === 'loading'}
               >
-                {askAiStatus === 'loading' ? 'Asking…' : 'Ask'}
+                {askAiStatus === 'loading' ? (
+                  <span className="ask-ai-thinking">
+                    Thinking
+                    <span className="ask-ai-thinking-dots"><span>.</span><span>.</span><span>.</span></span>
+                  </span>
+                ) : 'Ask'}
               </button>
               {askAiLastExchange && (
                 <button type="button" className="ghost-button" onClick={handleAskAiReset}>
@@ -6141,7 +6182,7 @@ function App() {
         const trackIndex = tracks.findIndex((item) => item.id === selectedSpeakingTrack);
         const hasNextTrack = trackIndex !== -1 && trackIndex < tracks.length - 1;
         return (
-          <main className="landing-page landing-page--courses vocabulary-mode listening-mode speaking-mode">
+          <main className="landing-page landing-page--courses vocabulary-mode listening-mode speaking-mode listening-exercise-scroll-mode">
             <div className="landing-panel course-links-panel listening-panel listening-exercise-panel">
               <div className="listening-exercise-nav">
                 <button type="button" className="upload-button" onClick={handleBackToSpeakingTracks}>
@@ -6492,6 +6533,11 @@ function App() {
         const listeningTracks = LISTENING_SOURCES.flatMap((source) => source.tracks);
         const listeningAttempted = listeningTracks.filter((track) => Boolean(loadListeningStats(userName, track.id))).length;
         const dictationAttempted = listeningTracks.filter((track) => Boolean(loadDictationStats(userName, track.id))).length;
+        // Speaking existia como modo próprio (tracks/stats/namespace igual
+        // Listening/Dictation) mas nunca tinha entrado nesse resumo — a tela
+        // promete "everything you've studied" e ficava sem ele (falha real
+        // apontada em revisão, 2026-07-25/26). Mesmo padrão dos outros 2.
+        const speakingAttempted = listeningTracks.filter((track) => Boolean(loadSpeakingStats(userName, track.id))).length;
 
         return (
           <main className="landing-page vocabulary-mode dashboard-mode">
@@ -6506,6 +6552,8 @@ function App() {
               listeningTotal={listeningTracks.length}
               dictationAttempted={dictationAttempted}
               dictationTotal={listeningTracks.length}
+              speakingAttempted={speakingAttempted}
+              speakingTotal={listeningTracks.length}
               lastVisitedByCourse={lastVisitedByCourse}
               onOpenLastVisited={openLastVisitedEntry}
               formatLastVisitedLabel={formatLastVisitedLabel}
@@ -6671,7 +6719,18 @@ function App() {
       )}
 
       {userName && insideCourse && (!PAGES_WITH_SIDE_PANEL.includes(activePage) || sidePanelVisible) && (
-        <WordQuickAdd contextLabel={studyContextLabel} onAdd={handleAddWord} />
+        <>
+          <button
+            type="button"
+            className="ask-adele-fab"
+            onClick={handleAskAdeleShortcut}
+            title="Ask Adele about this (select text first to fill in your question)"
+          >
+            <span className="ask-adele-fab-mascot"><AdeleMascot /></span>
+            Ask Adele
+          </button>
+          <WordQuickAdd contextLabel={studyContextLabel} onAdd={handleAddWord} />
+        </>
       )}
       <Toast toast={toast} />
       <ConfirmDialog dialog={confirmDialog} onChoice={handleConfirmDialogChoice} />
@@ -7105,6 +7164,8 @@ function DashboardPage({
   listeningTotal,
   dictationAttempted,
   dictationTotal,
+  speakingAttempted,
+  speakingTotal,
   lastVisitedByCourse,
   onOpenLastVisited,
   formatLastVisitedLabel,
@@ -7126,7 +7187,7 @@ function DashboardPage({
       <h1>{userName ? `${userName}'s Progress` : 'Your Progress'}</h1>
       <p>
         A snapshot of everything you've studied so far — units, My Words, spaced review,
-        Listening and Dictation, all in one place.
+        Listening, Dictation and Speaking, all in one place.
       </p>
 
       <div className="dashboard-hero-row">
@@ -7174,6 +7235,10 @@ function DashboardPage({
         <div className="dashboard-stat-tile dashboard-stat-tile--static">
           <span className="dashboard-stat-value">{dictationAttempted}/{dictationTotal}</span>
           <span className="dashboard-stat-label">Dictation exercises practiced</span>
+        </div>
+        <div className="dashboard-stat-tile dashboard-stat-tile--static">
+          <span className="dashboard-stat-value">{speakingAttempted}/{speakingTotal}</span>
+          <span className="dashboard-stat-label">Speaking exercises practiced</span>
         </div>
       </div>
 
@@ -7748,7 +7813,10 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
                 {currentCard.context && <p className="flashcard-context">from {currentCard.context}</p>}
                 {flipped ? (
                   <div className="flashcard-back">
-                    <p className="flashcard-word">{currentCard.word}</p>
+                    <p className="flashcard-word flashcard-word-row">
+                      <WordAudioButton word={currentCard.word} />
+                      {currentCard.word}
+                    </p>
                     {gradeButtons}
                   </div>
                 ) : (
@@ -7799,7 +7867,10 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
               </>
             ) : (
               <>
-                <p className="flashcard-word">{currentCard.word}</p>
+                <p className="flashcard-word flashcard-word-row">
+                  <WordAudioButton word={currentCard.word} />
+                  {currentCard.word}
+                </p>
                 {currentCard.context && <p className="flashcard-context">from {currentCard.context}</p>}
                 {flipped ? (
                   <div className="flashcard-back">
@@ -8627,7 +8698,7 @@ function AudioPlayerControls({ src }) {
         onEnded={() => setIsPlaying(false)}
         onTimeUpdate={handleTimeUpdate}
       />
-      <button type="button" className="ap-btn" title="Play/Pause" onClick={togglePlay}>
+      <button type="button" className="ap-btn" title="Play/Pause (tip: Ctrl+Space also works anywhere on this page, even while typing in My Notes)" onClick={togglePlay}>
         {isPlaying ? <IconPause /> : <IconPlay />}
       </button>
       <button type="button" className="ap-btn" title="Back 5 seconds" onClick={rewindFive}>
@@ -8728,7 +8799,7 @@ function formatPlayerTime(seconds) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-function WideAudioPlayer({ src, label }) {
+function WideAudioPlayer({ src, label, onReplayLastPart, autoPauseEnabled, onToggleAutoPause }) {
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -8737,7 +8808,6 @@ function WideAudioPlayer({ src, label }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loopStart, setLoopStart] = useState(null);
   const [loopEnd, setLoopEnd] = useState(null);
-  const [loopAll, setLoopAll] = useState(false);
 
   useEffect(() => {
     if (!menuOpen) return undefined;
@@ -8838,7 +8908,6 @@ function WideAudioPlayer({ src, label }) {
         ref={audioRef}
         src={src}
         preload="metadata"
-        loop={loopAll}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onTimeUpdate={handleTimeUpdate}
@@ -8882,15 +8951,41 @@ function WideAudioPlayer({ src, label }) {
       >
         A-B
       </button>
-      <button
-        type="button"
-        className={`wide-player-btn wide-player-btn--text${loopAll ? ' is-looping' : ''}`}
-        onClick={() => setLoopAll((current) => !current)}
-        title={loopAll ? 'Stop repeating the whole audio' : 'Repeat the whole audio when it ends'}
-      >
-        ⟳
-      </button>
-
+      {/* "Replay last part" (Listening/Speaking — ver ListeningClozeExercise/
+          SpeakingExercise, que passam handleReplayLastSegment aqui) agora
+          vive DENTRO do player, mesmo alinhamento/tamanho dos outros botões
+          — pedido do dono, 2026-07-26: antes era um botão largo separado
+          embaixo do player, destoando do resto da barra. Opcional (só
+          aparece se o consumidor passar a prop) — o Dictation continua com
+          o próprio botão, agrupado com o toggle de auto-pause, que faz
+          sentido ficar separado ali. Mesma cor/tamanho do Play
+          (wide-player-btn--main, pedido do dono) — só o símbolo muda. */}
+      {onReplayLastPart && (
+        <button
+          type="button"
+          className="wide-player-btn wide-player-btn--main"
+          onClick={onReplayLastPart}
+          title="Replay last part"
+        >
+          ↺
+        </button>
+      )}
+      {/* Toggle de auto-pause (Listening/Speaking — mesma feature que já
+          existia só no Dictation, ver useAudioAutoPause) — verde, mesmo
+          tamanho do Play (pedido do dono, 2026-07-26), pra distinguir das
+          outras ações do player sem quebrar o alinhamento da fileira.
+          Aceso (verde cheio) = ligado; apagado (verde meio transparente) =
+          desligado, sem mudar de tamanho nenhuma hora. */}
+      {onToggleAutoPause && (
+        <button
+          type="button"
+          className={`wide-player-btn wide-player-btn--green${autoPauseEnabled ? '' : ' is-off'}`}
+          onClick={onToggleAutoPause}
+          title={autoPauseEnabled ? 'Auto-pause on — click to turn off' : 'Auto-pause off — click to turn on'}
+        >
+          <IconPause />
+        </button>
+      )}
       <div className="wide-player-speed">
         <button
           type="button"
@@ -8919,43 +9014,25 @@ function WideAudioPlayer({ src, label }) {
   );
 }
 
-// Tela do exercício de Dictation: mesmo áudio/track do Listening, mas sem
-// mostrar o texto antes — o usuário ouve (com play/pause/repetir A-B/
-// velocidade, reaproveitando AudioPlayerControls) e digita tudo numa caixa
-// só. "Check" compara com o texto completo (todas as sentences do track
-// juntas) via LCS palavra-a-palavra (ver scoreDictationAnswer) e destaca
-// cada palavra esperada em verde (acertou, apareceu na ordem certa) ou
-// vermelho (errou/faltou), sem nunca alterar nada do ListeningClozeExercise.
-function DictationExercise({ track, userName, onPracticed }) {
-  const [typedText, setTypedText] = useState('');
-  const [checked, setChecked] = useState(false);
-  const [result, setResult] = useState(null);
-  const audioBarRef = useRef(null);
-  // Auto-pause: pontos (em segundos) onde o áudio pausa sozinho pra dar
-  // tempo de escrever — detectados por análise de silêncio dos MP3s (script
-  // Python offline, ver dictation_pause_points.json; cobre todo o English
-  // Vocabulary B e o American English A1 — American1 usa limiares mais
-  // sensíveis pro corte de frases longas, já que o diálogo é mais contínuo,
-  // com menos silêncio real entre falas, e descarta só a 1ª pausa do início
-  // (CD+track falado), não 2 como no cabeçalho "Unit N letra. Título" do
-  // Vocabulary).
-  // Ctrl+Space (atalho que já existia) retoma do ponto onde parou.
-  const hasAutoPause = (dictationPausePoints[track.id] || []).length > 0;
-  const [autoPauseEnabled, setAutoPauseEnabled] = useState(true);
+// Pausa automática nos silêncios entre frases — extraído do que era só do
+// Dictation (2026-07-26, quando o dono pediu a mesma coisa pro Listening e
+// pro Speaking) pra não triplicar a mesma lógica de detecção nos 3
+// exercícios. `audioBarRef` é a ref já existente em cada um (aponta pro
+// container que tem o <audio> renderizado pelo WideAudioPlayer dentro).
+// Cruzamento checado via requestAnimationFrame (~60x/s), não pelo evento
+// 'timeupdate' (só dispara a cada ~250ms — atraso suficiente pra
+// audio.pause() vazar pro comecinho da fala seguinte em falas coladas, já
+// visto no American1). `prevTimeRef` é o que garante que a pausa dispara só
+// no CRUZAMENTO do ponto (nunca por proximidade — proximidade re-pausava
+// em cima do ponto ao usar "Replay last part").
+function useAudioAutoPause(audioBarRef, trackId, enabled) {
+  const hasAutoPause = (dictationPausePoints[trackId] || []).length > 0;
   const [isAutoPaused, setIsAutoPaused] = useState(false);
   // Fim do áudio: sem esse aviso o usuário não distingue "pausou sozinho no
   // meio" de "acabou" — a última pausa automática cai perto do fim, e ao dar
   // play de novo o áudio recomeça do zero, o que parecia um bug.
   const [audioEnded, setAudioEnded] = useState(false);
-  // Posição do timeupdate ANTERIOR — a pausa só dispara quando a reprodução
-  // CRUZA um ponto (prev < p <= atual), nunca por simplesmente estar perto
-  // dele. Isso evita o insta-repause ao retomar em cima de um ponto e,
-  // principalmente, ao usar "Replay last part" (que volta exatamente pra um
-  // ponto de pausa — a versão anterior, baseada em janela de proximidade,
-  // re-pausava ali mesmo e o replay parecia não funcionar).
   const prevTimeRef = useRef(0);
-
-  const fullText = track.sentences.map(stripDictationSpeakerLabel).join(' ');
 
   // Sinaliza o fim do áudio (independente do auto-pause estar ligado).
   useEffect(() => {
@@ -8972,20 +9049,14 @@ function DictationExercise({ track, userName, onPracticed }) {
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('play', handlePlay);
     };
-  }, [track.id]);
+  }, [audioBarRef, trackId]);
 
   useEffect(() => {
-    if (!hasAutoPause || !autoPauseEnabled) return undefined;
+    if (!hasAutoPause || !enabled) return undefined;
     const audio = audioBarRef.current?.querySelector('audio');
     if (!audio) return undefined;
-    const pausePoints = dictationPausePoints[track.id] || [];
+    const pausePoints = dictationPausePoints[trackId] || [];
 
-    // Cruzamento checado via requestAnimationFrame (~60x/s) em vez do evento
-    // 'timeupdate' (que o navegador só dispara a cada ~250ms) — esse atraso
-    // deixava o audio.pause() disparar até 250ms depois do ponto real, tempo
-    // suficiente pra vazar pro comecinho da fala seguinte em falas coladas
-    // (relatado pelo dono, casos reais do American1 com pouco silêncio entre
-    // personagens).
     let rafId = requestAnimationFrame(function checkCrossing() {
       const t = audio.currentTime;
       const prev = prevTimeRef.current;
@@ -9021,7 +9092,38 @@ function DictationExercise({ track, userName, onPracticed }) {
       audio.removeEventListener('seeked', handleSeeked);
       audio.removeEventListener('play', handlePlay);
     };
-  }, [hasAutoPause, autoPauseEnabled, track.id]);
+  }, [audioBarRef, hasAutoPause, enabled, trackId]);
+
+  return { hasAutoPause, isAutoPaused, audioEnded };
+}
+
+// Tela do exercício de Dictation: mesmo áudio/track do Listening, mas sem
+// mostrar o texto antes — o usuário ouve (com play/pause/repetir A-B/
+// velocidade, reaproveitando AudioPlayerControls) e digita tudo numa caixa
+// só. "Check" compara com o texto completo (todas as sentences do track
+// juntas) via LCS palavra-a-palavra (ver scoreDictationAnswer) e destaca
+// cada palavra esperada em verde (acertou, apareceu na ordem certa) ou
+// vermelho (errou/faltou), sem nunca alterar nada do ListeningClozeExercise.
+function DictationExercise({ track, userName, onPracticed }) {
+  const [typedText, setTypedText] = useState('');
+  const [checked, setChecked] = useState(false);
+  const [result, setResult] = useState(null);
+  const audioBarRef = useRef(null);
+  // Auto-pause: pontos (em segundos) onde o áudio pausa sozinho pra dar
+  // tempo de escrever — detectados por análise de silêncio dos MP3s (script
+  // Python offline, ver dictation_pause_points.json; cobre todo o English
+  // Vocabulary B e o American English A1 — American1 usa limiares mais
+  // sensíveis pro corte de frases longas, já que o diálogo é mais contínuo,
+  // com menos silêncio real entre falas, e descarta só a 1ª pausa do início
+  // (CD+track falado), não 2 como no cabeçalho "Unit N letra. Título" do
+  // Vocabulary). Lógica de detecção compartilhada (ver useAudioAutoPause,
+  // extraído daqui em 2026-07-26 quando o Listening/Speaking ganharam a
+  // mesma feature).
+  // Ctrl+Space (atalho que já existia) retoma do ponto onde parou.
+  const [autoPauseEnabled, setAutoPauseEnabled] = useState(true);
+  const { hasAutoPause, isAutoPaused, audioEnded } = useAudioAutoPause(audioBarRef, track.id, autoPauseEnabled);
+
+  const fullText = track.sentences.map(stripDictationSpeakerLabel).join(' ');
 
   const handleCheck = () => {
     if (!typedText.trim()) return;
@@ -9061,8 +9163,31 @@ function DictationExercise({ track, userName, onPracticed }) {
 
   return (
     <div className="dictation-exercise">
+      {/* Replay last part + auto-pause agora dentro do próprio player, mesmo
+          alinhamento/tamanho do Play (mesmo tratamento já dado ao Listening
+          e ao Speaking, ver WideAudioPlayer) — pedido do dono, 2026-07-26,
+          o Dictation ainda estava com os botões largos separados embaixo,
+          diferente dos outros dois agora. */}
       <div className="listening-audio-bar" ref={audioBarRef}>
-        <WideAudioPlayer src={track.audio} />
+        <WideAudioPlayer
+          src={track.audio}
+          onReplayLastPart={handleReplayLastSegment}
+          autoPauseEnabled={hasAutoPause ? autoPauseEnabled : undefined}
+          onToggleAutoPause={hasAutoPause ? () => setAutoPauseEnabled((current) => !current) : undefined}
+        />
+        {hasAutoPause && (
+          <span
+            className={`dictation-autopause-hint${audioEnded
+              ? ' dictation-autopause-hint--ended'
+              : isAutoPaused && autoPauseEnabled ? ' dictation-autopause-hint--paused' : ''}`}
+          >
+            {audioEnded
+              ? '🏁 End of audio — Ctrl+Space to play it again'
+              : isAutoPaused && autoPauseEnabled
+                ? '⏸ Paused — press Ctrl+Space to continue'
+                : 'The audio pauses by itself at natural breaks (green button to turn off).'}
+          </span>
+        )}
       </div>
       <p className="listening-instructions">
         Listen carefully (replay as many times as you need) and type everything you hear below.
@@ -9072,36 +9197,6 @@ function DictationExercise({ track, userName, onPracticed }) {
       <p className="listening-instructions">
         If you hear "for example", type "e.g.".
       </p>
-      {hasAutoPause && (
-        <div className="dictation-autopause-row">
-          <button
-            type="button"
-            className={`upload-button listening-hide-mastered-toggle${autoPauseEnabled ? ' is-active' : ''}`}
-            onClick={() => setAutoPauseEnabled((current) => !current)}
-          >
-            {autoPauseEnabled ? '✓ Auto-pause on' : 'Auto-pause off'}
-          </button>
-          <button
-            type="button"
-            className="upload-button"
-            onClick={handleReplayLastSegment}
-            title="Listen to the current part again, from the previous pause"
-          >
-            ↺ Replay last part
-          </button>
-          <span
-            className={`dictation-autopause-hint${audioEnded
-              ? ' dictation-autopause-hint--ended'
-              : isAutoPaused && autoPauseEnabled ? ' dictation-autopause-hint--paused' : ''}`}
-          >
-            {audioEnded
-              ? '🏁 End of audio — Ctrl+Space to plays it again'
-              : isAutoPaused && autoPauseEnabled
-                ? '⏸ Paused — press Ctrl+Space to continue'
-                : 'The audio pauses by itself at natural breaks so you can write.'}
-          </span>
-        </div>
-      )}
       <textarea
         className="dictation-textarea"
         value={typedText}
@@ -9228,11 +9323,26 @@ function SpeakingExercise({ track, userName, onPracticed }) {
   const [resultsBySentence, setResultsBySentence] = useState({});
   const recognitionRef = useRef(null);
   const audioBarRef = useRef(null);
+  // Auto-pause (mesma feature do Dictation, ver useAudioAutoPause) — pedido
+  // do dono, 2026-07-26, pra dar um instante entre falas de referência
+  // antes da próxima começar, igual já acontecia no Dictation.
+  const [autoPauseEnabled, setAutoPauseEnabled] = useState(true);
+  const { hasAutoPause, isAutoPaused, audioEnded } = useAudioAutoPause(audioBarRef, track.id, autoPauseEnabled);
+  // true só quando o próprio usuário clicou pra parar (stopRecording) — o
+  // reconhecedor do navegador pode disparar 'onend' sozinho no meio de uma
+  // fala mais longa (silêncio breve, limite interno do Chrome) mesmo com
+  // continuous=true; sem essa flag, isso derrubava a gravação antes do
+  // usuário terminar de falar (bug real reportado pelo dono, 2026-07-26).
+  // Só reiniciamos automaticamente quando 'onend' dispara SEM essa flag —
+  // do jeito que o usuário pediu, "só fecha se ele reapertar o botão".
+  const stoppedByUserRef = useRef(true);
+  const transcriptRef = useRef('');
 
   // Troca de track: descarta gravação em andamento e os resultados da
   // tentativa anterior — senão a fala 1 do track novo mostraria, por um
   // instante, o resultado da fala 1 do track anterior.
   useEffect(() => {
+    stoppedByUserRef.current = true;
     recognitionRef.current?.abort();
     setRecordingIndex(null);
     setMicError(null);
@@ -9241,7 +9351,10 @@ function SpeakingExercise({ track, userName, onPracticed }) {
 
   // Desmontar a tela (sair do exercício) com o microfone ainda gravando não
   // pode deixar o reconhecimento rodando em segundo plano.
-  useEffect(() => () => recognitionRef.current?.abort(), []);
+  useEffect(() => () => {
+    stoppedByUserRef.current = true;
+    recognitionRef.current?.abort();
+  }, []);
 
   const handleSpeechResult = (sentenceIndex, transcript) => {
     const targetText = stripDictationSpeakerLabel(track.sentences[sentenceIndex]);
@@ -9255,36 +9368,77 @@ function SpeakingExercise({ track, userName, onPracticed }) {
   const startRecording = (sentenceIndex) => {
     const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognitionCtor) return;
+    stoppedByUserRef.current = true;
     recognitionRef.current?.abort();
+    transcriptRef.current = '';
     const recognition = new SpeechRecognitionCtor();
     recognition.lang = 'en-US';
+    // continuous=true pra não cortar a fala no primeiro silêncio breve — só
+    // termina de verdade quando o usuário reaperta o botão (stopRecording).
+    recognition.continuous = true;
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
     recognition.onresult = (event) => {
-      const transcript = event.results?.[0]?.[0]?.transcript || '';
-      handleSpeechResult(sentenceIndex, transcript);
-      // Não espera o onend pra destravar o mic — com um resultado em mãos a
-      // gravação já terminou; esperar só o onend deixaria os OUTROS botões
-      // travados em "disabled" se ele atrasar ou não disparar (comportamento
-      // observado num teste com reconhecimento mockado, mas sem garantia
-      // formal de timing nem em navegador de verdade).
-      setRecordingIndex(null);
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        if (event.results[i].isFinal) {
+          const piece = event.results[i][0]?.transcript || '';
+          transcriptRef.current = transcriptRef.current ? `${transcriptRef.current} ${piece}` : piece;
+        }
+      }
     };
     recognition.onerror = (event) => {
       // 'aborted' dispara sempre que a gente mesma chama .abort() (troca de
-      // fala, saída da tela) — não é um erro de verdade, não vale avisar.
-      if (event.error !== 'aborted') setMicError(event.error);
+      // fala, saída da tela) — não é um erro de verdade. 'no-speech' é
+      // comum em modo contínuo durante um silêncio normal e se resolve
+      // sozinho (onend reinicia); não vale assustar o usuário com nenhum
+      // dos dois. Permissão negada É terminal — aí sim conta como "parado".
+      if (event.error === 'not-allowed' || event.error === 'permission-denied') {
+        stoppedByUserRef.current = true;
+        setMicError(event.error);
+      } else if (event.error !== 'aborted' && event.error !== 'no-speech') {
+        setMicError(event.error);
+      }
+    };
+    recognition.onend = () => {
+      if (!stoppedByUserRef.current) {
+        // O motor fechou sozinho (não foi o usuário) — reabre na hora,
+        // mantendo o transcript já acumulado, pra continuar ouvindo.
+        try {
+          recognition.start();
+          return;
+        } catch (error) {
+          // Já em outro estado / mic sumiu — desiste de reabrir.
+        }
+      }
+      const finalTranscript = transcriptRef.current.trim();
+      if (finalTranscript) {
+        handleSpeechResult(sentenceIndex, finalTranscript);
+      }
       setRecordingIndex(null);
     };
-    recognition.onend = () => setRecordingIndex(null);
     recognitionRef.current = recognition;
     setMicError(null);
+    stoppedByUserRef.current = false;
     setRecordingIndex(sentenceIndex);
     recognition.start();
   };
 
   const stopRecording = () => {
+    stoppedByUserRef.current = true;
     recognitionRef.current?.stop();
+  };
+
+  // "Replay last part" (mesma lógica do Dictation, ver handleReplayLastSegment
+  // em DictationExercise) — troca o antigo "Repeat whole audio" (loopAll do
+  // WideAudioPlayer, removido) por repetir só o trecho que acabou de tocar,
+  // usando os mesmos pontos de pausa por detecção de silêncio.
+  const handleReplayLastSegment = () => {
+    const audio = audioBarRef.current?.querySelector('audio');
+    if (!audio) return;
+    const points = dictationPausePoints[track.id] || [];
+    const before = points.filter((p) => p < audio.currentTime - 1.0);
+    audio.currentTime = before.length > 0 ? before[before.length - 1] : 0;
+    audio.play();
   };
 
   if (!SPEECH_RECOGNITION_SUPPORTED) {
@@ -9301,7 +9455,25 @@ function SpeakingExercise({ track, userName, onPracticed }) {
   return (
     <div className="speaking-exercise">
       <div className="listening-audio-bar" ref={audioBarRef}>
-        <WideAudioPlayer src={track.audio} />
+        <WideAudioPlayer
+          src={track.audio}
+          onReplayLastPart={handleReplayLastSegment}
+          autoPauseEnabled={hasAutoPause ? autoPauseEnabled : undefined}
+          onToggleAutoPause={hasAutoPause ? () => setAutoPauseEnabled((current) => !current) : undefined}
+        />
+        {hasAutoPause && (
+          <span
+            className={`dictation-autopause-hint${audioEnded
+              ? ' dictation-autopause-hint--ended'
+              : isAutoPaused && autoPauseEnabled ? ' dictation-autopause-hint--paused' : ''}`}
+          >
+            {audioEnded
+              ? '🏁 End of audio — Ctrl+Space to play it again'
+              : isAutoPaused && autoPauseEnabled
+                ? '⏸ Paused — press Ctrl+Space to continue'
+                : 'The audio pauses by itself at natural breaks (green button to turn off).'}
+          </span>
+        )}
       </div>
       <p className="listening-instructions">
         Listen to the audio above as a reference, then press the microphone next to a sentence
@@ -9317,6 +9489,11 @@ function SpeakingExercise({ track, userName, onPracticed }) {
               : `Speech recognition error: ${micError}.`}
         </p>
       )}
+      {/* Lista rolável à parte — o player acima fica sempre visível mesmo
+          com muitas falas (pedido do dono, 2026-07-26). Speaking não tem
+          barra de botões no fim (score é por fala, não em lote), então só
+          precisa dessa div a mais. */}
+      <div className="listening-exercise-scrollbody">
       <ol className="speaking-sentences">
         {track.sentences.map((sentence, index) => {
           const text = stripDictationSpeakerLabel(sentence);
@@ -9366,6 +9543,7 @@ function SpeakingExercise({ track, userName, onPracticed }) {
           );
         })}
       </ol>
+      </div>
     </div>
   );
 }
@@ -9480,6 +9658,18 @@ function buildListeningSentenceModel(text, targetWords = null) {
 }
 
 const normalizeListeningAnswer = (text) => text.trim().toLowerCase().replace(/[.,!?"'’]/g, '');
+
+// Uma lacuna sem NENHUMA letra (só dígitos/traços/pontuação — ex.: "40",
+// "970-555-3784", telefones/quantias) nunca deveria virar "vocabulário" no
+// My Words: (1) não é uma palavra de verdade pra aprender, e (2) o áudio
+// fala os números separados ("nine seven oh...", "forty"), nunca o texto
+// exato do gabarito com traço — então o aluno não tem como acertar por
+// ouvido mesmo entendendo perfeitamente, o que inflava o caderno de erros
+// com "palavras" impossíveis de acertar (bug real reportado pelo dono,
+// 2026-07-26, com prints mostrando várias entradas "970-555-3784" no My
+// Words). O exercício continua cobrando o número normalmente — só o
+// auto-envio pro My Words é que ignora essas lacunas.
+const isNumericOnlyToken = (word) => !/[a-zA-Z]/.test(word);
 
 // Histórico de tentativas de um exercício de Listening (quantas vezes o
 // usuário conferiu as respostas e a pontuação da última vez) — mostrado na
@@ -9728,6 +9918,10 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed }) {
   const [showAnswers, setShowAnswers] = useState(false);
   const [addedWordsCount, setAddedWordsCount] = useState(0);
   const audioBarRef = useRef(null);
+  // Auto-pause (mesma feature do Dictation, ver useAudioAutoPause) — pedido
+  // do dono, 2026-07-26.
+  const [autoPauseEnabled, setAutoPauseEnabled] = useState(true);
+  const { hasAutoPause, isAutoPaused, audioEnded } = useAudioAutoPause(audioBarRef, track.id, autoPauseEnabled);
 
   useEffect(() => {
     setAnswers({});
@@ -9737,6 +9931,18 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed }) {
 
   const handleRegenerate = () => {
     setRegenerateKey((key) => key + 1);
+  };
+
+  // "Replay last part" (mesma lógica do Dictation, ver handleReplayLastSegment
+  // em DictationExercise) — troca o antigo "Repeat whole audio" (loopAll do
+  // WideAudioPlayer, removido) por repetir só o trecho que acabou de tocar.
+  const handleReplayLastSegment = () => {
+    const audio = audioBarRef.current?.querySelector('audio');
+    if (!audio) return;
+    const points = dictationPausePoints[track.id] || [];
+    const before = points.filter((p) => p < audio.currentTime - 1.0);
+    audio.currentTime = before.length > 0 ? before[before.length - 1] : 0;
+    audio.play();
   };
 
   // Ctrl+Space (Space sozinho fora de campo de texto) pausa/toca o áudio —
@@ -9762,8 +9968,9 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed }) {
         const value = answers[`${sentenceIndex}:${blankIdx}`] || '';
         if (value.trim() && normalizeListeningAnswer(value) === normalizeListeningAnswer(part.word)) {
           correct += 1;
-        } else if (value.trim()) {
+        } else if (value.trim() && !isNumericOnlyToken(part.word)) {
           // Usuário respondeu algo, mas errou — capturar pro caderno de erros
+          // (não pra lacunas 100% numéricas, ver isNumericOnlyToken acima)
           const sentenceFull = model.label + model.parts.map((p) => (p.type === 'blank' ? p.word : p.value)).join('');
           missedWords.push({ word: part.word, context: sentenceFull });
         }
@@ -9819,8 +10026,31 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed }) {
         </div>
       )}
       <div className="listening-audio-bar" ref={audioBarRef}>
-        <WideAudioPlayer src={track.audio} />
+        <WideAudioPlayer
+          src={track.audio}
+          onReplayLastPart={handleReplayLastSegment}
+          autoPauseEnabled={hasAutoPause ? autoPauseEnabled : undefined}
+          onToggleAutoPause={hasAutoPause ? () => setAutoPauseEnabled((current) => !current) : undefined}
+        />
+        {hasAutoPause && (
+          <span
+            className={`dictation-autopause-hint${audioEnded
+              ? ' dictation-autopause-hint--ended'
+              : isAutoPaused && autoPauseEnabled ? ' dictation-autopause-hint--paused' : ''}`}
+          >
+            {audioEnded
+              ? '🏁 End of audio — Ctrl+Space to play it again'
+              : isAutoPaused && autoPauseEnabled
+                ? '⏸ Paused — press Ctrl+Space to continue'
+                : 'The audio pauses by itself at natural breaks (green button to turn off).'}
+          </span>
+        )}
       </div>
+      {/* Lista rolável à parte (ver .listening-exercise-scrollbody no CSS):
+          o player acima e a barra de "Check answers" abaixo do map ficam
+          SEMPRE visíveis, só as falas rolam — pedido do dono (2026-07-26),
+          o player sumia de vista em exercícios com muitas falas. */}
+      <div className="listening-exercise-scrollbody">
       <ol className="listening-sentences">
         {sentenceModels.map((model, sentenceIndex) => {
           let blankIndexInSentence = -1;
@@ -9875,6 +10105,7 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed }) {
           );
         })}
       </ol>
+      </div>
       <div className="listening-check-all">
         <button type="button" className="show-answers-btn" onClick={handleCheckAll}>
           Check answers

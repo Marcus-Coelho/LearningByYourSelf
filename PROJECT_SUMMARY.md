@@ -1072,7 +1072,7 @@ Share API como alternativa mais próxima. Também descartada uma ideia seguinte 
 Google — geraria uma dependência de OAuth/credenciais de API que não existe em lugar nenhum
 deste projeto (100% local, sem backend). A parte que sobreviveu e virou a solução final foi a
 ideia do próprio dono de "o sistema cria uma pasta no sistema pra salvar" — ele já tinha uma
-pasta pronta, dentro do OneDrive (`.../Projeto_pagina_pdf/progressdata`), o que por acidente
+pasta pronta, dentro do OneDrive (`.../Lets_Learn_English/progressdata`), o que por acidente
 feliz também dá sincronização em nuvem de graça, sem o app precisar saber disso.
 
 - **File System Access API** (`window.showDirectoryPicker`, só Chrome/Edge — `isBackupFolderSupported`,
@@ -1153,13 +1153,33 @@ lembra de fazer backup por conta própria"; enterrar a solução no mesmo lugar 
 
 ### Distribuição via pendrive + isolamento de porta (2026-07-07)
 
-Existe uma cópia espelhada do projeto num pendrive (unidade `E:\Projeto_pagina_pdf\`, rótulo `PROJETO_PDF`), usada para rodar o app noutro contexto/PC sem precisar do repositório git — é uma cópia simples de arquivos (sem `.git`, sem `node_modules` sincronizado automaticamente), atualizada manualmente copiando por cima só os arquivos que mudaram desde a última sincronização (não um mirror completo a cada vez — `node_modules`, `.git` e as pastas de material bruto, gigantes e inalteradas, ficam de fora dessa rotina).
+Existe uma cópia espelhada do projeto num pendrive (unidade `E:\Lets_Learn_English\`, rótulo `LEARN_ENGLISH`), usada para rodar o app noutro contexto/PC sem precisar do repositório git — é uma cópia simples de arquivos (sem `.git`), atualizada manualmente copiando por cima só os arquivos que mudaram desde a última sincronização (não um mirror completo a cada vez — `.git` e as pastas de material bruto, gigantes e inalteradas, ficam de fora dessa rotina). **`node_modules` VAI junto** (~1,8 GB): sem ele o outro PC precisaria de internet + `npm install` no primeiro uso (o `StartLearning.bat` faz isso sozinho se faltar, mas aí deixa de ser "plugar e usar").
 
 - **Bug descoberto ao usar o pendrive**: `StartLearning.bat`/`OpenWhenReady.ps1` sempre abriam `http://localhost:3000`, então a cópia do pendrive e a cópia do PC caíam na **mesma origem** do navegador — e `localStorage` é isolado por origem, não por pasta de arquivos no disco. Resultado: usuários cadastrados numa cópia apareciam na outra, misturados.
 - **Correção**: os dois scripts agora detectam, cada um por conta própria (`Get-Volume -DriveLetter`, sem passar argumento entre eles), se estão rodando de uma unidade fixa (HD/SSD do PC → porta 3000, comportamento inalterado) ou removível (pendrive → porta **3001**). Como a porta é recalculada a cada execução a partir de onde o script física está, e não fica salva em nenhum arquivo de configuração, copiar os mesmos `.bat`/`.ps1` do PC pro pendrive (ou vice-versa) continua funcionando corretamente dos dois lados — não precisa de uma versão "especial" do launcher só pro pendrive.
 - **Efeito colateral querido**: com origens diferentes, o `localStorage` (usuários, progresso, notas, My Words) da cópia do pendrive fica permanentemente isolado do da cópia do PC — não é um reset a cada abertura (isso apagaria o progresso feito no pendrive de uma sessão pra outra), é uma separação definitiva, como duas "instalações" diferentes do app.
 - **Limpeza dos usuários já misturados** (antes da correção): não foi possível fazer via automação — Playwright abre um perfil de navegador isolado, sem acesso ao perfil real do navegador do usuário, então não há como um agente de IA rodando localmente limpar o `localStorage` do navegador de verdade da pessoa. Precisou ser feito manualmente (Profile → "Delete this user" por usuário, ou console do DevTools com `Object.keys(localStorage).forEach(k => localStorage.removeItem(k))`).
 - **"Reset all data on this browser"** (link na tela de registro, ver "Cadastro de usuário e score" acima) nasceu diretamente dessa situação — resolve o mesmo problema (lista de "Continue as" com nomes não reconhecidos) sem precisar abrir o DevTools nem logar em cada usuário.
+
+#### Renomeação do projeto + pendrive autocontido (2026-07-26)
+
+Pedido do dono, já com o app "em uso contínuo, não mais um projeto em si": renomear a pasta
+`Projeto_pagina_pdf` → **`Lets_Learn_English`** (nome real do app; sem apóstrofo nem espaço,
+que quebrariam os caminhos nos `.bat`) e regravar o pendrive do zero pra rodar noutro PC.
+
+- **O que travava a portabilidade**: o American Accent era o único curso lido de um caminho
+  ABSOLUTO (`C:\Users\marcu\...\A_INGLES\LIVROS\...`), fora da árvore do projeto — num pendrive
+  levado pra outro computador, esse caminho simplesmente não existe. Resolvido com uma cadeia
+  de tentativas em `setupProxy.js` (pasta irmã primeiro, absoluto do PC depois; ver CLAUDE.md),
+  em vez de mover a pasta no PC ou manter duas versões do arquivo.
+- **O material do American Accent agora é copiado pra DENTRO da árvore** no pendrive, virando
+  a 4ª pasta irmã de material — é isso que torna a cópia portátil autocontida.
+- Os launchers (`StartLearning.bat`, `OpenWhenReady.ps1`, `RunHidden.vbs`) já eram 100%
+  relativos (`%~dp0`/`$PSScriptRoot`) e não precisaram de nenhuma alteração — inclusive a
+  detecção de porta fixa/removível (3000/3001) continua valendo sozinha na cópia nova.
+- **`.lnk` não sobrevive a renomeação**: atalho do Windows guarda caminho absoluto, então tanto
+  o da Área de Trabalho quanto o da raiz do pendrive tiveram que ser reapontados na mão
+  (via `WScript.Shell`) depois do rename/da cópia.
 
 ### "Today's Plan" — bloco de orientação na Home (2026-07-07)
 

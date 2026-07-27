@@ -457,12 +457,24 @@ module.exports = function (app) {
   // por conceito (sem merge de PDF nem detecção visual de selo como o
   // American1 precisou — cada faixa já é um arquivo próprio, e o número
   // "Track N" impresso no livro bate 1:1 com o número no início do nome do
-  // arquivo, ver gerador do índice). ATENÇÃO: esta pasta mora FORA da árvore
-  // do projeto — não é pasta irmã dentro de Projeto_pagina_pdf como as
-  // outras 3 (está em Documentos/A_INGLES/LIVROS/), por isso o caminho
-  // abaixo é absoluto, não relativo a __dirname. Se a pasta for movida pra
-  // virar irmã de verdade, trocar aqui pra path.join(__dirname, '..', '..', ...).
-  const americanAccentRoot = 'C:\\Users\\marcu\\OneDrive\\Documentos\\A_INGLES\\LIVROS\\3. Mastering the American Accent';
+  // arquivo, ver gerador do índice).
+  //
+  // Resolvido por TENTATIVA, em ordem (2026-07-26, quando o app passou a ser
+  // copiado pro pendrive pra rodar em outro computador): primeiro como pasta
+  // IRMÃ das outras 3 dentro da árvore do projeto — é assim na cópia
+  // portátil, que precisa ser autocontida —, e só então no caminho absoluto
+  // original em Documentos/A_INGLES/LIVROS/, onde a pasta ainda mora no PC
+  // do dono. Assim as duas cópias funcionam sem edição manual: quem achar
+  // primeiro, vence. Se nenhum existir, cai no caminho relativo mesmo (as
+  // rotas respondem 404, e só esse curso fica indisponível — o resto do app
+  // segue normal).
+  const AMERICAN_ACCENT_DIR_NAME = '3. Mastering the American Accent';
+  const americanAccentCandidates = [
+    path.join(__dirname, '..', '..', AMERICAN_ACCENT_DIR_NAME),
+    path.join('C:\\Users\\marcu\\OneDrive\\Documentos\\A_INGLES\\LIVROS', AMERICAN_ACCENT_DIR_NAME),
+  ];
+  const americanAccentRoot = americanAccentCandidates.find((dir) => fs.existsSync(dir))
+    || americanAccentCandidates[0];
   const americanAccentPdfPath = path.join(americanAccentRoot, 'Mastering the American Accent ( PDFDrive ).pdf');
 
   app.use('/american-accent-audio', express.static(americanAccentRoot, { fallthrough: false }));
