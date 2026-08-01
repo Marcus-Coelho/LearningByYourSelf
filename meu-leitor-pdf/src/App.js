@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { SpecialZoomLevel, Viewer, Worker } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
@@ -19,17 +19,39 @@ import grammarElemIndex from './grammar_elem_index.json';
 import grammarElemAppendixIndex from './grammar_elem_appendix_index.json';
 import listeningAmerican1 from './listening_american1.json';
 import listeningVocabulary from './listening_vocabulary.json';
+import listeningAmericanAccent from './listening_american_accent.json';
 import dictationPausePoints from './dictation_pause_points.json';
+import vocabularyTargetWords from './vocabulary_target_words.json';
+import americanAccentIndexData from './american_accent_index.json';
+import GrammarVocabExercisesPage from './GrammarVocabExercises';
 import './App.css';
 
 // Fontes de Listening disponíveis na tela "Listening" do menu principal —
 // hoje só a do American English A1, mas é uma lista pra caber outras depois
 // (ex.: um listening da Grammar Elementary) sem precisar remodelar nada.
-const LISTENING_SOURCES = [listeningAmerican1, listeningVocabulary];
+// American Accent (Wave 1: Practice Sentences/Sentence Pairs, 50 faixas) —
+// texto extraído do PDF (âncora do "Track N" na margem esquerda, alinhada
+// ao heading que ele narra — NÃO agrupado no fim como os outros badges
+// pareciam sob a extração de texto simples) + pontos de pausa por detecção
+// de silêncio (mesmo método soundfile/numpy dos outros 2 cursos, com recuo
+// de 0.15s pra não vazar no comecinho do som seguinte — mesma classe de bug
+// já documentada pro American1). 6 faixas (217, 331, 333, 335, 337, 361)
+// tinham anotação fonética/prosa solta misturada no texto que a extração
+// automática não separava direito — texto final dessas veio direto do dono
+// (revisão manual, sentences hard-coded no gerador do scratchpad).
+const LISTENING_SOURCES = [listeningAmerican1, listeningVocabulary, listeningAmericanAccent];
 
 // Rótulo curto de origem mostrado ao lado do número do exercício (ex.:
 // "unit 7-c") — tracks do Vocabulary têm unit/letter próprios; tracks do
 // American1 não têm esses campos, então cai no audioLabel (ex.: "1-13").
+// track.heading e track.trackNumber (só American Accent, ver
+// listening_american_accent.json) entram direto no título "Exercise n. X"
+// das 3 telas (Listening/Dictation/Speaking): "(Track N)" logo depois do
+// número sequencial do exercício (N = número real da faixa no livro/nome do
+// arquivo — pedido do dono, ele referencia as faixas por esse número, não
+// pela posição sequencial "n. X" que já existia) e o heading logo depois —
+// mesma posição que american1TrackUnitLabel ocupa pro American1 ("Unit
+// 8A"), só que os dois nunca coexistem no mesmo track.
 const listeningTrackLabel = (track) => {
   if (track.unit && track.letter) {
     // "unit 4A" (não "unit 4-a") — mesmo formato do rótulo impresso no livro.
@@ -42,6 +64,46 @@ const listeningTrackLabel = (track) => {
     return `${track.cd.replace(/^CD/i, '')}-${track.track}`.toLowerCase();
   }
   return '';
+};
+
+// Mapa cd+track -> {unit, section} do American1, derivado de
+// american1_audio_anchors.json (cada âncora de áudio já carrega cd/track/
+// section daquele MP3) — o JSON de tracks do Listening/Dictation do
+// American1 (listening_american1.json) não tem campo `unit`/`section` como
+// o do Vocabulary, só cd/track/number, então pro título do Dictation
+// mostrar "Unit 1A" (ver american1TrackUnitLabel abaixo) precisa dessa busca
+// reversa. Computado uma vez, no carregamento do módulo, não por render.
+const AMERICAN1_CD_TRACK_TO_UNIT = {};
+Object.entries(american1AudioAnchors).forEach(([unit, anchors]) => {
+  anchors.forEach((anchor) => {
+    if (anchor.cd && anchor.track != null) {
+      AMERICAN1_CD_TRACK_TO_UNIT[`${anchor.cd.toLowerCase()}:${anchor.track}`] = { unit, section: anchor.section };
+    }
+  });
+});
+// 4 faixas de Dictation sem âncora indexada em american1_audio_anchors.json
+// (vivem só no apêndice/exercício, não no texto de leitura ancorado) —
+// informadas manualmente pelo dono em vez de investigadas, ver ROADMAP/
+// PROJECT_SUMMARY pra contexto.
+Object.assign(AMERICAN1_CD_TRACK_TO_UNIT, {
+  'cd2:11': { unit: '3', section: 'B' },
+  'cd2:35': { unit: '4', section: 'A' },
+  'cd4:7': { unit: '8', section: 'A' },
+  'cd4:8': { unit: '8', section: 'A' },
+});
+
+// "Unit 1A" pro título do Dictation — só pro American1 (Vocabulary já mostra
+// a unit dentro de listeningTrackLabel, ex. "(unit 4A)"; duplicar aqui viraria
+// "... Unit 4 (unit 4A)", redundante). Seção de 1 letra (A/B/C) cola direto
+// no número ("Unit 8A"), igual ao resto do app; seções especiais ("Practical
+// English"/"Review and Check") ficam separadas por espaço. Uma faixa sem
+// âncora nem override manual retorna vazio — o título só fica sem a unit.
+const american1TrackUnitLabel = (track) => {
+  if (track.unit || !track.cd || track.track == null) return '';
+  const found = AMERICAN1_CD_TRACK_TO_UNIT[`${track.cd.toLowerCase()}:${track.track}`];
+  if (!found) return '';
+  const isLetterSection = /^[A-C]$/.test(found.section || '');
+  return isLetterSection ? `Unit ${found.unit}${found.section}` : `Unit ${found.unit} ${found.section || ''}`.trim();
 };
 
 // URL do gabarito único (multipágina), servido por src/setupProxy.js.
@@ -63,7 +125,7 @@ const RESPONSIVE_WIDTH_BUFFER = 24;
 const RIGHT_PANEL_WIDTH_RATIO = 0.21;
 
 // Velocidades disponíveis no player de áudio ancorado.
-const AUDIO_SPEEDS = [0.75, 1, 1.25, 1.5, 2];
+const AUDIO_SPEEDS = [0.75, 0.9, 1, 1.1, 1.25, 1.5, 2];
 
 // Revisão espaçada ("Today's Review"): dias até um item autoavaliado voltar
 // à fila de revisão, conforme a nota dada — nota baixa volta logo, nota alta
@@ -71,6 +133,18 @@ const AUDIO_SPEEDS = [0.75, 1, 1.25, 1.5, 2];
 // o que agenda a próxima repetição.
 const DAY_MS = 24 * 60 * 60 * 1000;
 const REVIEW_INTERVALS_BY_RATING = { 1: 1, 2: 2, 3: 3, 4: 7, 5: 30 };
+
+// Chave do dia local (não UTC — `toISOString` viraria o dia cedo demais/tarde
+// demais dependendo do fuso) usada pra "Today's Goal" (ver DailyGoalCard) —
+// cada dia novo já nasce com a chave `dailyGoal:<data>` inexistente, ou seja,
+// nenhuma meta marcada como feita, sem precisar resetar nada manualmente.
+const todayDateKey = () => {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+};
+
+const DEFAULT_DAILY_GOAL_PREFS = { newUnit: true, reviews: true, listening: true };
 
 // Escada de intervalos (em dias) dos flashcards do "My Words": palavra nova
 // nasce vencida (revisar já); "Again" volta ao primeiro degrau, "Good" sobe
@@ -140,7 +214,100 @@ const saveUsers = (users) => {
   }
 };
 
-const userKey = (name, base) => `u:${encodeURIComponent(name)}:${base}`;
+// Exportado (named export, único caso no arquivo — ver "Para Outra IA" no
+// CLAUDE.md sobre por que quase tudo mora dentro de App.js) só pra
+// GrammarVocabExercises.js (tela "Grammar & Vocabulary Exercises", arquivo
+// próprio de propósito por causa do volume de dados/UI — ver comentário
+// grande no topo desse arquivo) conseguir namespacear localStorage do mesmo
+// jeito que o resto do app, sem duplicar essa função em dois lugares.
+export const userKey = (name, base) => `u:${encodeURIComponent(name)}:${base}`;
+
+// Backup automático em pasta local (File System Access API — só Chrome/Edge,
+// ver isBackupFolderSupported) — o dono pediu pra resolver "progresso só no
+// navegador, sem aviso quando o cache é limpo" escolhendo uma pasta local
+// (a dele já sincronizada no OneDrive) em vez de e-mail/login com o Google
+// (rejeitado: exigiria OAuth, credenciais de API e uma conta de
+// desenvolvedor Google — infraestrutura estranha a um app 100% local/sem
+// backend). O handle da pasta não é uma string (não cabe no localStorage),
+// então vive num IndexedDB próprio — sobrevive a fechar/reabrir o
+// navegador sem pedir de novo toda vez (só reconfirma permissão, ver
+// handleReconnectBackupFolder em App()).
+const BACKUP_FOLDER_DB_NAME = 'lets-learn-english-fs';
+const BACKUP_FOLDER_STORE_NAME = 'handles';
+const BACKUP_FOLDER_HANDLE_KEY = 'backupFolder';
+
+const isBackupFolderSupported = () => typeof window !== 'undefined' && 'showDirectoryPicker' in window;
+
+const openBackupFolderDb = () => new Promise((resolve, reject) => {
+  const request = window.indexedDB.open(BACKUP_FOLDER_DB_NAME, 1);
+  request.onupgradeneeded = () => {
+    request.result.createObjectStore(BACKUP_FOLDER_STORE_NAME);
+  };
+  request.onsuccess = () => resolve(request.result);
+  request.onerror = () => reject(request.error);
+});
+
+const saveBackupFolderHandle = async (handle) => {
+  const db = await openBackupFolderDb();
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(BACKUP_FOLDER_STORE_NAME, 'readwrite');
+    tx.objectStore(BACKUP_FOLDER_STORE_NAME).put(handle, BACKUP_FOLDER_HANDLE_KEY);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+  db.close();
+};
+
+const loadBackupFolderHandle = async () => {
+  const db = await openBackupFolderDb();
+  const handle = await new Promise((resolve, reject) => {
+    const tx = db.transaction(BACKUP_FOLDER_STORE_NAME, 'readonly');
+    const request = tx.objectStore(BACKUP_FOLDER_STORE_NAME).get(BACKUP_FOLDER_HANDLE_KEY);
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = () => reject(request.error);
+  });
+  db.close();
+  return handle;
+};
+
+const clearBackupFolderHandle = async () => {
+  const db = await openBackupFolderDb();
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(BACKUP_FOLDER_STORE_NAME, 'readwrite');
+    tx.objectStore(BACKUP_FOLDER_STORE_NAME).delete(BACKUP_FOLDER_HANDLE_KEY);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+  db.close();
+};
+
+// Nome de arquivo por usuário dentro da pasta vinculada — a pasta é UMA só
+// (permissão do File System Access é por origem, não por usuário do app),
+// então cada nome cadastrado neste navegador ganha seu próprio arquivo lá
+// dentro, em vez de brigar por um nome fixo.
+const backupFileNameFor = (name) => `lets-learn-english-backup-${name.replace(/[^a-z0-9_-]+/gi, '_')}.json`;
+
+// Mesmo formato do backup manual (handleExportBackup) — dump 1:1 de todo o
+// namespace "u:<nome>:*" do localStorage. Função pura (não depende de
+// estado do componente) pra poder ser reusada tanto pelo download manual
+// quanto pelo save automático na pasta vinculada.
+const buildBackupPayload = (name) => {
+  const prefix = userKey(name, '');
+  const data = {};
+  for (let i = 0; i < window.localStorage.length; i += 1) {
+    const key = window.localStorage.key(i);
+    if (!key || !key.startsWith(prefix)) continue;
+    data[key.slice(prefix.length)] = window.localStorage.getItem(key);
+  }
+  if (Object.keys(data).length === 0) return null;
+  return {
+    app: 'lets-learn-english-backup',
+    version: 1,
+    userName: name,
+    exportedAt: new Date().toISOString(),
+    data,
+  };
+};
 
 // Chaves de progresso usadas antes de existir cadastro de usuário. Migradas
 // uma única vez para o primeiro nome cadastrado neste navegador, para não
@@ -441,20 +608,48 @@ const AMERICAN1_REFERENCE_LABELS = {
 
 // Cursos listados na página "Courses". title também é usado no topo do
 // leitor (reader-title-bar) enquanto o usuário está dentro de uma unit.
+// `level` é só um rótulo de orientação (não muda nada de conteúdo/lógica) —
+// American English A1 e Grammar English A1 são CEFR A1 de verdade
+// ("Beginner"); English Vocabulary B é Pré-Intermediário/Intermediário
+// (pasta de origem do material se chama "Pre Intermediate and
+// Intermediate"), nível acima dos outros dois, apesar do nome "B" não deixar
+// isso óbvio. Sem esse aviso em algum lugar, quem está escolhendo por onde
+// começar não tem como saber que os 3 cursos não estão no mesmo nível.
 const courses = {
   vocabulary: {
     title: 'English Vocabulary B',
     description: 'Explore pre-intermediate vocabulary practice and lessons.',
+    level: 'Intermediate',
   },
   american1: {
     title: 'American English A1',
     description: 'Read through American English File Book 1, unit by unit, section by section.',
+    level: 'Beginner',
   },
   grammarElem: {
     title: 'Grammar English A1',
     description: 'Essential Grammar in Use, unit by unit — reading, exercises and audio.',
+    level: 'Beginner',
+  },
+  // Curso de pronúncia, não de conteúdo — não tem "unit", é um livro corrido
+  // (9 capítulos, ver AMERICAN_ACCENT_CHAPTERS abaixo). Rotulado Intermediate
+  // por decisão do dono: o livro pressupõe alguma base de vocabulário/
+  // gramática pra fazer sentido (é sobre refinar pronúncia, não aprender do
+  // zero), então fica no mesmo grupo do English Vocabulary B, não junto dos
+  // 2 cursos A1.
+  americanAccent: {
+    title: 'American Accent',
+    description: 'Master pronunciation, word stress and intonation — Mastering the American Accent, chapter by chapter.',
+    level: 'Intermediate',
   },
 };
+
+// Ordem canônica "por nível" (Beginner antes de Intermediate) usada na tela
+// Courses, no Progress Dashboard e nos hubs de Listening/Dictation — pedido
+// explícito do dono: American → Grammar → Vocabulary, não mais a ordem
+// alfabética/de implementação que existia antes. American Accent entra no
+// fim (mesmo grupo Intermediate do Vocabulary).
+const COURSE_LEVEL_ORDER = ['american1', 'grammarElem', 'vocabulary', 'americanAccent'];
 
 // Curso "Grammar English A1": 115 units, cada uma com um par de PDFs
 // de página única (Unit-<n>L.pdf de leitura, Unit-<n>E.pdf de exercícios,
@@ -463,6 +658,80 @@ const courses = {
 // Grammar Elemetary/audio_files).
 const GRAMMAR_ELEM_UNIT_COUNT = 115;
 const grammarElemUnitNumbers = Array.from({ length: GRAMMAR_ELEM_UNIT_COUNT }, (_, i) => i + 1);
+
+// Curso "American Accent" ("Mastering the American Accent", Lisa Mojsin):
+// livro corrido de pronúncia, sem "unit" — 9 capítulos, cada um com várias
+// "telas" de leitura (american_accent_index.json/screens). Uma tela cobre 1+
+// páginas do PDF: quando o conteúdo de uma faixa de áudio atravessa a quebra
+// de página impressa (gerador detectou isso pelo tamanho de fonte do 1º
+// texto de cada página — heading novo vs. continuação do bloco anterior),
+// as páginas envolvidas viram uma tela só, pra nunca deixar uma faixa
+// "sumida" numa página nem reiniciar o áudio ao virar a página. Progresso
+// desse curso é por PÁGINA REAL do livro (não por tela — visitar uma tela de
+// 2 páginas marca as 2), diferente dos outros 3 cursos (por unit/seção),
+// porque esse livro não tem unit nenhuma.
+//
+// 2 bugs reais já corrigidos nessa detecção (não mexer sem reler o
+// histórico): (1) o rodapé corrido "Chapter N: TÍTULO   <nº página>" vem
+// dividido em 2 "spans"/linhas no PDF — ignorar só por posição Y (não por
+// texto) evita contar a 2ª metade como se fosse conteúdo real da página, o
+// que causava merge indevido (ex.: páginas 6-7 grudando sem motivo). (2) a
+// seção "Common Spelling Patterns for /X/" é subtítulo (tamanho 14-16, não
+// 18 como o heading de verdade do vowel/consonant) e às vezes cai bem no
+// topo de uma página cujo vowel só foi NOMEADO (sem nenhum exemplo) no
+// rodapé da página anterior — nesse caso ela SEMPRE conta como continuação,
+// nunca como início de página nova, mesmo quando teria tamanho de heading
+// (bug real reportado: páginas 4-5, 11-12, 16-17 separadas sem necessidade).
+// Outros subtítulos (Word Pairs for Practice/Practice Sentences/Quick
+// Review) NÃO tiveram esse problema reportado — não generalizar a exceção
+// pra eles sem evidência de bug real, senão o livro inteiro vira poucas
+// telas gigantes (já aconteceu numa tentativa intermediária: baixar o
+// limiar de tamanho pra 18 "resolveu" via força bruta e encolheu 94 telas
+// pra 33, mesclando capítulos inteiros — revertido).
+//
+// Revisão visual manual do dono (2026-07-23) achou mais casos que o
+// heurístico não pega — dessa vez sem padrão textual único repetido (cada
+// um tem um subtítulo diferente no topo da página: "More Voiced
+// Consonants", "Practicing the -ed Sounds", "Forming the American /r/",
+// "Song Lyrics for Practice", um glyph de marcador decorativo antes de item
+// de lista numerado começando no meio (ex. "3. ...", não "1. ..."), etc.) —
+// tratados como overrides explícitos por número de página impressa, não uma
+// regra nova generalizada (mesma cautela do parágrafo acima):
+// FORCE_CONTINUE_PRINTED_PAGES/FORCE_FRESH_PRINTED_PAGES no gerador.
+// Também: 3 páginas em branco de verdade (38/88/140, 0 caracteres) ficam
+// FORA da lista de telas — não aparecem pro usuário, não geram merge. Tracks
+// de cada tela agora são sempre ordenados crescente (bug real: apareciam na
+// ordem que o texto corrido do PDF lista, não a ordem numérica). E a track
+// 374 (rotulada no fim da pg 127) tem seu áudio continuando na "Word Pairs
+// for Practice" da pg 128 sem NENHUM sinal impresso disso na pg 128 — só
+// descoberto por audição/revisão manual, adicionada via
+// EXTRA_TRACKS_BY_PRINTED_PAGE (não dá pra detectar automaticamente).
+//
+// Mais uma rodada da mesma revisão: páginas 27/28 tinham o selo "Track N"
+// impresso pequeno (tamanho 7) perto do TOPO da página — não agrupado no
+// rodapé como o padrão normal — e isso mascarava o heading de verdade que
+// vem logo em seguida ("Warning: Common Mistake"/"Study Tip", tamanho 12,
+// que já ficaria abaixo do limiar mesmo sem esse selo). Mesma solução:
+// override pontual por página, não regra nova generalizada.
+const AMERICAN_ACCENT_CHAPTERS = americanAccentIndexData.chapters;
+const AMERICAN_ACCENT_SCREENS = americanAccentIndexData.screens;
+const AMERICAN_ACCENT_TRACK_FILES = americanAccentIndexData.trackFiles;
+const AMERICAN_ACCENT_SCREEN_BY_ID = Object.fromEntries(
+  AMERICAN_ACCENT_SCREENS.map((screen) => [screen.id, screen]),
+);
+const AMERICAN_ACCENT_ALL_PDF_PAGES = AMERICAN_ACCENT_SCREENS.flatMap((screen) => screen.pdfPages);
+const americanAccentScreenAudioUrl = (trackNumber) => (
+  `/american-accent-audio/${encodeURIComponent(AMERICAN_ACCENT_TRACK_FILES[String(trackNumber)] || '')}`
+);
+const americanAccentScreenPdfUrl = (screen) => `/american-accent-pages/${screen.pdfPages.join('-')}`;
+// Tópico de cada capítulo vem em CAIXA ALTA do cabeçalho corrido do livro
+// ("THE VOWEL SOUNDS") — convertido pra Title Case só pra exibição, sem
+// mexer no dado gerado.
+const titleCase = (text) => text.toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
+const americanAccentPrintedPageLabel = (screen) => {
+  const pages = screen.printedPages;
+  return pages.length > 1 ? `p. ${pages[0]}–${pages[pages.length - 1]}` : `p. ${pages[0]}`;
+};
 
 // Título/tópico de cada unit (grammar_elem_index.json) — extraído das
 // próprias páginas Unit-<n>L.pdf (a de leitura; as _E são só exercícios,
@@ -495,6 +764,158 @@ const getGrammarElemAppendixTitle = (appendixNumber) => grammarElemAppendixIndex
 // "Additional Exercises"/*.pdf).
 const GRAMMAR_ELEM_ADDITIONAL_COUNT = 35;
 const grammarElemAdditionalNumbers = Array.from({ length: GRAMMAR_ELEM_ADDITIONAL_COUNT }, (_, i) => i + 1);
+
+// As notas ("My Notes") são salvas como HTML (negrito/marca-texto do
+// editor) — precisa converter pra texto puro pra exportar/pré-visualizar.
+// O editor quebra cada linha numa <div> própria (Shift+Enter vira <br>);
+// textContent sozinho ignora essas fronteiras de bloco e junta tudo sem
+// espaço nenhum, daí inserir "\n" manualmente antes de extrair.
+function noteHtmlToText(html) {
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  container.querySelectorAll('br').forEach((br) => br.replaceWith('\n'));
+  container.querySelectorAll('div, p').forEach((el) => el.append('\n'));
+  return (container.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+// Dado o tipo+página de uma referência do American1 (guardados na chave da
+// nota, que só tem pages[0] — ver storageKeyBase da tela de referência),
+// acha o objeto {type, pages} completo em american1_references.json pra
+// poder reabrir a página certa (handleOpenAmerican1Reference precisa do
+// array `pages` inteiro, não só a primeira página).
+function american1ReferenceByTypeAndPage(type, page) {
+  for (const entry of american1References) {
+    const match = entry.refs.find((ref) => ref.type === type && ref.pages[0] === page);
+    if (match) return match;
+  }
+  return null;
+}
+
+// Junta TODAS as notas ("My Notes") de um usuário — os 3 cursos, mais as
+// páginas de referência e Transcriptions do American1, mais Appendixes e
+// Additional Exercises do Grammar Elem — usada pela tela "My Notes"
+// (MyNotesPage) e por handleExportNotes (Profile). Cada entrada carrega o
+// suficiente pra montar um título de exibição E pra reabrir o lugar certo
+// (kind + os parâmetros daquele kind), sem duplicar essa varredura em dois
+// lugares (handleExportNotes tinha uma versão mais simples que não sabia
+// nada sobre Grammar Elem — corrigido aqui).
+function collectAllNotesEntries(userName) {
+  if (!userName) return [];
+  const entries = [];
+  try {
+    const prefix = userKey(userName, 'notes:');
+    for (let i = 0; i < window.localStorage.length; i += 1) {
+      const key = window.localStorage.key(i);
+      if (!key || !key.startsWith(prefix)) continue;
+      const remainder = key.slice(prefix.length);
+      const html = window.localStorage.getItem(key) || '';
+      // Nota vazia (aberta e fechada sem escrever nada) não aparece na lista.
+      if (!noteHtmlToText(html)) continue;
+
+      const american1RefMatch = remainder.match(/^american1-ref:([a-z]+):(\d+)$/);
+      // Uma nota por SEÇÃO (A/B/C/Practical English/Review and Check), não
+      // mais uma por unit inteira (pedido do dono) — chave leva a seção
+      // depois do número da unit. Notas salvas no formato antigo (sem
+      // seção, só "american1:<unit>") não batem nesse regex e ficam de fora
+      // da lista — dado órfão no localStorage, não migrado automaticamente
+      // (não dava pra saber com segurança qual seção deveria herdar a nota).
+      const american1Match = remainder.match(/^american1:(\d+):(.+)$/);
+      const grammarElemAppendixMatch = remainder.match(/^grammarElem:appendix-(\d+)$/);
+      const grammarElemAdditionalMatch = remainder.match(/^grammarElem:additional-(\d+)$/);
+      const grammarElemUnitMatch = remainder.match(/^grammarElem:(\d+)$/);
+      const americanAccentMatch = remainder.match(/^americanAccent:(.+)$/);
+
+      if (remainder === 'american1-transcriptions') {
+        entries.push({ key, course: 'american1', kind: 'american1-transcriptions', title: 'American English A1 — Transcriptions', html });
+      } else if (american1RefMatch) {
+        const [, refType, refPageStr] = american1RefMatch;
+        const refPage = Number(refPageStr);
+        entries.push({
+          key,
+          course: 'american1',
+          kind: 'american1-ref',
+          refType,
+          refPage,
+          title: `American English A1 — ${AMERICAN1_REFERENCE_LABELS[refType] || refType} p.${refPage}`,
+          html,
+        });
+      } else if (american1Match) {
+        const unit = Number(american1Match[1]);
+        const section = american1Match[2];
+        const sectionLabel = /^[A-C]$/.test(section) ? section : ` (${section})`;
+        entries.push({
+          key,
+          course: 'american1',
+          kind: 'american1-unit',
+          unit,
+          section,
+          title: `American English A1 — Unit ${unit}${sectionLabel}`,
+          html,
+        });
+      } else if (grammarElemAppendixMatch) {
+        const appendixNumber = Number(grammarElemAppendixMatch[1]);
+        const appendixTitle = getGrammarElemAppendixTitle(appendixNumber);
+        entries.push({
+          key,
+          course: 'grammarElem',
+          kind: 'grammarElem-appendix',
+          appendixNumber,
+          title: `Grammar English A1 — Appendix ${appendixNumber}${appendixTitle ? ` - ${appendixTitle}` : ''}`,
+          html,
+        });
+      } else if (grammarElemAdditionalMatch) {
+        const additionalNumber = Number(grammarElemAdditionalMatch[1]);
+        entries.push({
+          key,
+          course: 'grammarElem',
+          kind: 'grammarElem-additional',
+          additionalNumber,
+          title: `Grammar English A1 — Additional Exercise ${additionalNumber}`,
+          html,
+        });
+      } else if (grammarElemUnitMatch) {
+        const unit = Number(grammarElemUnitMatch[1]);
+        const unitTitle = getGrammarElemUnitTitle(unit);
+        entries.push({
+          key,
+          course: 'grammarElem',
+          kind: 'grammarElem-unit',
+          unit,
+          title: `Grammar English A1 — Unit ${unit}${unitTitle ? ` - ${unitTitle}` : ''}`,
+          html,
+        });
+      } else if (americanAccentMatch) {
+        const screenId = americanAccentMatch[1];
+        const screen = AMERICAN_ACCENT_SCREEN_BY_ID[screenId];
+        if (screen) {
+          entries.push({
+            key,
+            course: 'americanAccent',
+            kind: 'americanAccent-page',
+            screenId,
+            page: screen.pdfPages[0],
+            title: `American Accent — ${americanAccentPrintedPageLabel(screen)}${screen.topic ? ` - ${screen.topic}` : ''}`,
+            html,
+          });
+        }
+      } else if (/^\d+$/.test(remainder)) {
+        const unit = Number(remainder);
+        entries.push({
+          key,
+          course: 'vocabulary',
+          kind: 'vocabulary-unit',
+          unit,
+          title: `English Vocabulary B — Unit ${unit}${unitTable[unit] ? ` - ${unitTable[unit]}` : ''}`,
+          html,
+        });
+      }
+      // Formato desconhecido: ignora silenciosamente em vez de quebrar a lista inteira.
+    }
+  } catch (error) {
+    return [];
+  }
+  return entries;
+}
 
 const renderPdfUpload = (onChange, label = 'Load PDF') => (
   <label className="upload-button">
@@ -579,12 +1000,120 @@ const IconSound = () => (
   </svg>
 );
 
-const IconLanguage = () => (
-  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9z" />
-    <path d="M7 9h10" />
-    <path d="M7 12h10" />
-    <path d="M7 15h6" />
+// Ícone do menu "Grammar & Vocabulary Exercises" — lista com marcas de
+// certo, mesmo estilo de traço dos outros ícones do drawer.
+const IconQuiz = () => (
+  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 6.5h14a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4z" />
+    <path d="M4 5.5a1 1 0 0 1 1-1h11" />
+    <path d="M8 11l1.5 1.5L12.5 9" />
+    <path d="M8 16.5h8.5" />
+  </svg>
+);
+
+// Ícone do menu "Ask AI" — balão de conversa.
+const IconChat = () => (
+  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 5.5h16v11H9l-4 3.5v-3.5H4z" />
+    <path d="M8 9.5h8" />
+    <path d="M8 13h5" />
+  </svg>
+);
+
+// Mascote da tela "Ask Adele" (ver ask-ai-mode): rosto simples desenhado em
+// SVG, mesmo espírito dos ícones acima (nenhum arquivo de imagem externo —
+// o dono colou uma referência no chat, mas não há como extrair esse anexo
+// pra um arquivo em disco a partir daqui; isso evita depender de um asset
+// externo que precisaria ser salvo manualmente).
+const AdeleMascot = () => (
+  <svg viewBox="0 0 100 100" width="64" height="64" role="img" aria-label="Adele">
+    <circle cx="50" cy="50" r="49" fill="#fdf1e7" />
+    <circle cx="50" cy="48" r="34" fill="#6b4226" />
+    <circle cx="24" cy="55" r="5.5" fill="#f6c9a0" />
+    <circle cx="76" cy="55" r="5.5" fill="#f6c9a0" />
+    <circle cx="50" cy="55" r="26" fill="#f6c9a0" />
+    <path d="M25 47 Q50 22 75 47 Q50 36 25 47 Z" fill="#6b4226" />
+    <path d="M23 43 Q50 21 77 43" stroke="#e05fa0" strokeWidth="6.5" fill="none" strokeLinecap="round" />
+    <path d="M38 53c2.5-2 6-2 8.5 0" stroke="#4a2d17" strokeWidth="2" fill="none" strokeLinecap="round" />
+    <path d="M53.5 53c2.5-2 6-2 8.5 0" stroke="#4a2d17" strokeWidth="2" fill="none" strokeLinecap="round" />
+    <circle cx="42" cy="59" r="4" fill="#3f7d4c" />
+    <circle cx="42.8" cy="58.2" r="1.5" fill="#12130f" />
+    <circle cx="58" cy="59" r="4" fill="#3f7d4c" />
+    <circle cx="58.8" cy="58.2" r="1.5" fill="#12130f" />
+    <circle cx="33" cy="66" r="4.2" fill="#f2a488" opacity="0.55" />
+    <circle cx="67" cy="66" r="4.2" fill="#f2a488" opacity="0.55" />
+    <path d="M41 70q9 8 18 0" stroke="#8a4a2f" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+  </svg>
+);
+
+// Render mínimo do "Markdown-lite" da resposta da Adele. O SYSTEM_INSTRUCTION
+// (geminiGrammarHelper.js) só pede "### heading"/"**bold**"/"- bullet", mas
+// na prática o modelo usa o resto do vocabulário markdown que aprendeu de
+// qualquer jeito (testado ao vivo: "***" como divisor, "> " como bloco de
+// citação, "*itálico*" de um asterisco só) — mais robusto cobrir esses
+// casos comuns aqui do que tentar proibir via prompt (LLM não obedece
+// restrição de formatação com 100% de fidelidade). Escrito à mão (sem
+// depender de nenhuma lib de markdown, mesma filosofia do resto do projeto)
+// e sem dangerouslySetInnerHTML nenhum: monta só elementos React de
+// verdade a partir do texto, então não há risco de XSS mesmo que a
+// resposta do modelo viesse maliciosa.
+const renderAdeleMarkdownInline = (text, keyPrefix) => (
+  text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g).filter(Boolean).map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+      return <strong key={`${keyPrefix}-b${index}`}>{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith('*') && part.endsWith('*') && part.length > 2) {
+      return <em key={`${keyPrefix}-i${index}`}>{part.slice(1, -1)}</em>;
+    }
+    return <Fragment key={`${keyPrefix}-t${index}`}>{part}</Fragment>;
+  })
+);
+
+function renderAdeleMarkdown(text) {
+  if (!text) return null;
+  const elements = [];
+  let listItems = [];
+  const flushList = () => {
+    if (listItems.length > 0) {
+      elements.push(<ul key={`ul-${elements.length}`}>{listItems}</ul>);
+      listItems = [];
+    }
+  };
+  text.split('\n').forEach((rawLine, index) => {
+    const line = rawLine.trim();
+    if (!line) {
+      flushList();
+      return;
+    }
+    if (/^(\*{3,}|-{3,})$/.test(line)) {
+      flushList();
+      elements.push(<hr key={`hr-${index}`} className="ask-ai-answer-divider" />);
+    } else if (line.startsWith('### ')) {
+      flushList();
+      elements.push(<h3 key={`h-${index}`}>{renderAdeleMarkdownInline(line.slice(4), `h-${index}`)}</h3>);
+    } else if (line.startsWith('- ') || line.startsWith('* ') || /^\d+\.\s/.test(line)) {
+      const content = line.replace(/^(-|\*|\d+\.)\s/, '');
+      listItems.push(<li key={`li-${index}`}>{renderAdeleMarkdownInline(content, `li-${index}`)}</li>);
+    } else if (line.startsWith('> ')) {
+      flushList();
+      elements.push(<p key={`bq-${index}`} className="ask-ai-answer-quote">{renderAdeleMarkdownInline(line.slice(2), `bq-${index}`)}</p>);
+    } else {
+      flushList();
+      elements.push(<p key={`p-${index}`}>{renderAdeleMarkdownInline(line, `p-${index}`)}</p>);
+    }
+  });
+  flushList();
+  return elements;
+}
+
+// Ícone do menu "My Notes" — documento com canto dobrado + linhas de texto.
+const IconNotes = () => (
+  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 3.5h9l3 3v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-16a1 1 0 0 1 1-1z" />
+    <path d="M15 3.5v3a1 1 0 0 0 1 1h3" />
+    <path d="M8 12h8" />
+    <path d="M8 15.5h8" />
+    <path d="M8 8.5h4" />
   </svg>
 );
 
@@ -666,6 +1195,14 @@ const IconStop = () => (
   <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M6 6h12v12H6z" /></svg>
 );
 
+const IconSpeaker = () => (
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" stroke="none" />
+    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+    <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+  </svg>
+);
+
 const IconDots = () => (
   <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
     <circle cx="12" cy="5" r="2" />
@@ -727,6 +1264,7 @@ function App() {
   const [selectedGrammarElemUnit, setSelectedGrammarElemUnit] = useState(RESTORED_POSITION?.selectedGrammarElemUnit ?? null);
   const [selectedGrammarElemAppendix, setSelectedGrammarElemAppendix] = useState(RESTORED_POSITION?.selectedGrammarElemAppendix ?? null);
   const [selectedGrammarElemAdditional, setSelectedGrammarElemAdditional] = useState(RESTORED_POSITION?.selectedGrammarElemAdditional ?? null);
+  const [selectedAmericanAccentScreenId, setSelectedAmericanAccentScreenId] = useState(RESTORED_POSITION?.selectedAmericanAccentScreenId ?? null);
   // Navegação da tela "Listening" (menu principal): hub -> fonte (ex.:
   // "Listening from American English A1") -> track (ex.: CD1 Track 13).
   // Guardamos só os ids (não os objetos) pra caber no histórico/sessionStorage
@@ -751,6 +1289,9 @@ function App() {
   // handleVocabulary/handleAmerican1/handleGrammarElem) pra não começar
   // filtrada sem o usuário saber por quê.
   const [unitSearchQuery, setUnitSearchQuery] = useState('');
+  // Busca por título na tela "My Notes" (todas as anotações dos 3 cursos
+  // juntas — ver collectAllNotesEntries) — zerada ao abrir a tela.
+  const [myNotesSearchQuery, setMyNotesSearchQuery] = useState('');
   // Busca (unit ou número do exercício) e filtro "hide 100%" da lista de
   // listening exercises — zerados ao abrir uma fonte (ver
   // handleOpenListeningSource) pra não começar filtrada sem o usuário saber.
@@ -764,6 +1305,25 @@ function App() {
   const [selectedDictationTrack, setSelectedDictationTrack] = useState(RESTORED_POSITION?.selectedDictationTrack ?? null);
   const [dictationSearchQuery, setDictationSearchQuery] = useState('');
   const [hideMasteredDictation, setHideMasteredDictation] = useState(false);
+  // Navegação da tela "Speaking" (menu principal): hub -> fonte -> track —
+  // mesmo padrão do Listening/Dictation (mesmos LISTENING_SOURCES), estado
+  // isolado dos outros dois (namespace próprio speaking:<trackId>:stats).
+  const [selectedSpeakingSource, setSelectedSpeakingSource] = useState(RESTORED_POSITION?.selectedSpeakingSource ?? null);
+  const [selectedSpeakingTrack, setSelectedSpeakingTrack] = useState(RESTORED_POSITION?.selectedSpeakingTrack ?? null);
+  const [speakingSearchQuery, setSpeakingSearchQuery] = useState('');
+  const [hideMasteredSpeaking, setHideMasteredSpeaking] = useState(false);
+  // Tela "Ask AI" (menu principal): Q&A avulso, nada salvo no localStorage.
+  // Backend em setupProxy.js + src/geminiGrammarHelper.js (Gemini API,
+  // chave em .env.local). Tem memória de só o ÚLTIMO turno (askAiLastExchange,
+  // pedido do dono 2026-07-25) — não é um chat de verdade (não cresce, não
+  // persiste), só o suficiente pra Adele poder propor um desafio ("fill in
+  // the blank") e avaliar a resposta na pergunta seguinte, como no exemplo
+  // que ele mostrou de outra IA. "Start a new topic" zera essa memória.
+  const [askAiQuestion, setAskAiQuestion] = useState('');
+  const [askAiAnswer, setAskAiAnswer] = useState('');
+  const [askAiStatus, setAskAiStatus] = useState('idle'); // idle | loading | error
+  const [askAiErrorMessage, setAskAiErrorMessage] = useState('');
+  const [askAiLastExchange, setAskAiLastExchange] = useState(null); // { question, answer } | null
   // Largura inicial = RIGHT_PANEL_WIDTH_RATIO da janela (ver comentário na
   // constante), com piso em MIN_RIGHT_WIDTH e teto no espaço realmente
   // disponível — numa tablet mais estreita (~820px), MIN_CENTER_WIDTH(420) +
@@ -795,11 +1355,61 @@ function App() {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [activePage]);
+
+  // Ctrl+Space pausa/retoma QUALQUER <audio> tocando na página, em
+  // QUALQUER tela — inclusive com o cursor dentro do editor de "My Notes"
+  // (contentEditable). Antes disso, o atalho só existia dentro do
+  // Listening/Dictation (dois useEffect locais, cada um escopado ao próprio
+  // audioBarRef daquele exercício); esses dois foram removidos e
+  // substituídos por este, que generaliza pra `document.querySelectorAll
+  // ('audio')` — cobre também os players ancorados/simples das 9 telas de
+  // leitura (Vocabulary/American1/Grammar Elem/American Accent), que nunca
+  // tiveram atalho nenhum. `lastPlayedAudioRef` guarda o último <audio> que
+  // tocou (via listener de 'play' em capture — esse evento não faz bubble),
+  // não importa se foi tocado por clique ou pelo próprio atalho, pra
+  // Ctrl+Space conseguir RETOMAR de onde parou mesmo se a pausa anterior
+  // tiver sido por clique no botão do player, não pelo teclado.
+  const lastPlayedAudioRef = useRef(null);
+  useEffect(() => {
+    const handlePlayCapture = (event) => {
+      if (event.target?.tagName === 'AUDIO') {
+        lastPlayedAudioRef.current = event.target;
+      }
+    };
+    const handleGlobalAudioShortcut = (event) => {
+      if (event.code !== 'Space') return;
+      const isCtrl = event.ctrlKey || event.metaKey;
+      const target = document.activeElement;
+      const tag = target?.tagName;
+      // Space sozinho continua digitando espaço normal dentro de campo de
+      // texto (INPUT/TEXTAREA/botão) OU do editor contentEditable do My
+      // Notes — só Ctrl+Space pausa/toca ali. Fora de campo de texto, o
+      // Space sozinho já basta (mesmo comportamento de antes).
+      const blocksPlainSpace = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'BUTTON' || Boolean(target?.isContentEditable);
+      if (!isCtrl && blocksPlainSpace) return;
+      const playing = Array.from(document.querySelectorAll('audio')).find((audio) => !audio.paused);
+      const audio = playing || lastPlayedAudioRef.current;
+      if (!audio || !document.contains(audio)) return;
+      event.preventDefault();
+      if (audio.paused) {
+        audio.play();
+      } else {
+        audio.pause();
+      }
+    };
+    document.addEventListener('play', handlePlayCapture, true);
+    document.addEventListener('keydown', handleGlobalAudioShortcut);
+    return () => {
+      document.removeEventListener('play', handlePlayCapture, true);
+      document.removeEventListener('keydown', handleGlobalAudioShortcut);
+    };
+  }, []);
+
   // Toda tela que tem o painel direito ("side-panel right-panel", com
   // UnitNotes/respostas) usa o mesmo layout de grid de 3 colunas — listado
   // aqui pra saber quando faz sentido mostrar o botão de esconder/mostrar
   // (não existe em telas de grade de units, home, etc.).
-  const PAGES_WITH_SIDE_PANEL = ['exercises', 'unit', 'grammarElem-unit', 'grammarElem-exercise', 'grammarElem-appendix', 'grammarElem-additional', 'american1-unit', 'american1-reference', 'american1-transcriptions'];
+  const PAGES_WITH_SIDE_PANEL = ['exercises', 'unit', 'grammarElem-unit', 'grammarElem-exercise', 'grammarElem-appendix', 'grammarElem-additional', 'american1-unit', 'american1-reference', 'american1-transcriptions', 'american-accent-reader'];
   const [exerciseRatings, setExerciseRatings] = useState({});
   // Autoavaliação da UNIT inteira (tela de leitura, "_L.pdf") — separada de
   // exerciseRatings (por exercício, tela "exercises"). Chave própria
@@ -812,6 +1422,14 @@ function App() {
   const [american1VisitedSections, setAmerican1VisitedSections] = useState({});
   const [grammarElemUnitRatings, setGrammarElemUnitRatings] = useState({});
   const [grammarElemVisitedUnits, setGrammarElemVisitedUnits] = useState({});
+  // American Accent: progresso é por PÁGINA REAL do livro, não por unit —
+  // ver comentário grande em AMERICAN_ACCENT_SCREENS. Chave = número da
+  // página do PDF (1-based).
+  const [visitedAmericanAccentPages, setVisitedAmericanAccentPages] = useState({});
+  // Autoavaliação por TELA (screen.id, ex. "page-123") — mesmo mecanismo dos
+  // outros 3 cursos (1-5 estrelas), só que por tela de leitura em vez de
+  // unit, já que esse livro não tem unit nenhuma.
+  const [americanAccentPageRatings, setAmericanAccentPageRatings] = useState({});
   // Última unit/seção aberta EM CADA curso — alimenta o botão "Continue
   // where you left off", um por curso na tela Courses e um só (o mais
   // recente dos 3, por timestamp) na Home. Chave = id do curso
@@ -820,6 +1438,53 @@ function App() {
   const [lastVisitedByCourse, setLastVisitedByCourse] = useState({});
   const [reviewQueue, setReviewQueue] = useState([]);
   const [wordbookEntries, setWordbookEntries] = useState([]);
+  // Backup automático em pasta local (My Profile → Backup & Restore) — ver
+  // comentário grande em buildBackupPayload (topo do arquivo). O handle NÃO
+  // é por usuário (é uma permissão do navegador pra ESSA origem), então
+  // esse estado é global ao app, carregado uma vez ao abrir (useEffect
+  // abaixo), não por troca de usuário.
+  const [backupFolderHandle, setBackupFolderHandle] = useState(null);
+  const [backupFolderNeedsPermission, setBackupFolderNeedsPermission] = useState(false);
+  const [lastFolderBackupAt, setLastFolderBackupAt] = useState(null);
+  // Notificação estilizada (substitui window.alert/window.confirm nativos,
+  // feios e sem cara do app) usada pelo fluxo de Backup & Restore — pedido
+  // do dono depois de ver o alert() padrão do navegador ("localhost:3000
+  // diz..."). `toast` é fire-and-forget (auto-some sozinho); `confirmDialog`
+  // é a versão com 2 botões, resolvida via Promise (askConfirm) pra dar pra
+  // usar exatamente como `if (await askConfirm(...)) { ... }` no lugar de
+  // `if (window.confirm(...)) { ... }`. O clique em "OK"/"Escolher pasta"
+  // do próprio diálogo É um gesto do usuário de verdade, então continua
+  // valendo pra abrir showDirectoryPicker()/requestPermission() logo depois.
+  const [toast, setToast] = useState(null);
+  const toastTimeoutRef = useRef(null);
+  const showToast = (message, tone = 'info') => {
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    setToast({ message, tone, id: Date.now() });
+    toastTimeoutRef.current = setTimeout(() => setToast(null), 4500);
+  };
+  const [confirmDialog, setConfirmDialog] = useState(null);
+  const confirmResolveRef = useRef(null);
+  const askConfirm = (message, { confirmLabel = 'OK', cancelLabel = 'Cancel' } = {}) => new Promise((resolve) => {
+    confirmResolveRef.current = resolve;
+    setConfirmDialog({ message, confirmLabel, cancelLabel });
+  });
+  const handleConfirmDialogChoice = (choice) => {
+    setConfirmDialog(null);
+    if (confirmResolveRef.current) {
+      confirmResolveRef.current(choice);
+      confirmResolveRef.current = null;
+    }
+  };
+  // "Today's Goal" (ROADMAP item 3, trilha de estudo) — dailyGoalPrefs é qual
+  // dos 3 componentes CONTA pra meta (togglável em DailyGoalCard);
+  // dailyGoalToday é o que já foi CUMPRIDO hoje (chave inclui a data — ver
+  // todayDateKey — então um dia novo já nasce zerado sem precisar resetar
+  // nada). "reviews" só vira true quando o usuário reavalia um item que
+  // JÁ estava vencido em reviewQueue (ver scheduleReview) — reviewQueue
+  // vazia sozinha não conta como "revisão feita" (dava um check de graça
+  // pra usuário novo, sem nada agendado ainda).
+  const [dailyGoalPrefs, setDailyGoalPrefs] = useState(DEFAULT_DAILY_GOAL_PREFS);
+  const [dailyGoalToday, setDailyGoalToday] = useState({ newUnit: false, listening: false, reviews: false });
   // Centro vertical (em px, relativo à viewport) do container que tem o
   // resize-handle — usado só pelo botão de esconder/mostrar o painel, que é
   // fixed na viewport (não filho do grid) e por isso não pode simplesmente
@@ -998,6 +1663,63 @@ function App() {
     }
   }, [userName]);
 
+  // Carrega as preferências de "Today's Goal" (quais dos 3 componentes
+  // contam) e o que já foi cumprido HOJE — os dois recarregam ao trocar de
+  // usuário; dailyGoalToday também recarrega naturalmente a cada dia porque
+  // a própria chave (`dailyGoal:<data>`) muda, sem precisar de lógica extra
+  // de "virou meia-noite".
+  useEffect(() => {
+    if (!userName) {
+      setDailyGoalPrefs(DEFAULT_DAILY_GOAL_PREFS);
+      setDailyGoalToday({ newUnit: false, listening: false, reviews: false });
+      return;
+    }
+    try {
+      const rawPrefs = window.localStorage.getItem(userKey(userName, 'dailyGoalPrefs'));
+      setDailyGoalPrefs(rawPrefs ? { ...DEFAULT_DAILY_GOAL_PREFS, ...JSON.parse(rawPrefs) } : DEFAULT_DAILY_GOAL_PREFS);
+    } catch (error) {
+      setDailyGoalPrefs(DEFAULT_DAILY_GOAL_PREFS);
+    }
+    try {
+      const rawToday = window.localStorage.getItem(userKey(userName, `dailyGoal:${todayDateKey()}`));
+      setDailyGoalToday(rawToday ? JSON.parse(rawToday) : { newUnit: false, listening: false, reviews: false });
+    } catch (error) {
+      setDailyGoalToday({ newUnit: false, listening: false, reviews: false });
+    }
+  }, [userName]);
+
+  // Marca um componente da meta de hoje como cumprido (chamado ao visitar
+  // uma unit nova pela 1ª vez, ou ao terminar um Listening/Dictation) —
+  // idempotente (não regrava se já estava true) e nunca "desmarca" (a meta
+  // de hoje só volta a zero quando o dia muda, não quando o usuário desfaz
+  // alguma coisa).
+  const markDailyGoalDone = (key) => {
+    if (!userName) return;
+    setDailyGoalToday((prev) => {
+      if (prev[key]) return prev;
+      const next = { ...prev, [key]: true };
+      try {
+        window.localStorage.setItem(userKey(userName, `dailyGoal:${todayDateKey()}`), JSON.stringify(next));
+      } catch (error) {
+        // Armazenamento indisponível — meta de hoje não persiste, tudo bem.
+      }
+      return next;
+    });
+  };
+
+  const handleToggleDailyGoalPref = (key) => {
+    if (!userName) return;
+    setDailyGoalPrefs((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      try {
+        window.localStorage.setItem(userKey(userName, 'dailyGoalPrefs'), JSON.stringify(next));
+      } catch (error) {
+        // Armazenamento indisponível — preferência não persiste, tudo bem.
+      }
+      return next;
+    });
+  };
+
   useEffect(() => {
     if (!userName) {
       setLastVisitedByCourse({});
@@ -1045,13 +1767,39 @@ function App() {
   const scheduleReview = (course, id, rating) => {
     if (!userName) return;
     const days = REVIEW_INTERVALS_BY_RATING[rating] || 7;
+    const storageKey = userKey(userName, `review:${course}:${id}`);
+    // "Clear today's reviews" (DailyGoalCard) só conta quando o item
+    // reavaliado JÁ estava vencido — reavaliar algo que nunca esteve vencido
+    // (ex.: 1ª nota de uma unit nova) é estudar conteúdo novo, não "revisar",
+    // então não deve dar o check de graça. Checado direto no localStorage
+    // (fonte de verdade), NUNCA contra o state `reviewQueue` — esse state só
+    // recarrega quando `activePage` MUDA (ver useEffect acima), mas navegar
+    // entre units com "Next Unit"/"Previous Unit" nunca muda `activePage`
+    // (fica sempre "grammarElem-unit", por ex.), então `reviewQueue` podia
+    // ficar desatualizado por uma sessão inteira de navegação — se um item
+    // vencesse nesse meio tempo, o check contra o state antigo nunca via a
+    // vencida, e "Clear today's reviews" nunca marcava mesmo reavaliando o
+    // item certo (bug real, reportado pelo dono, 2026-07-24).
+    let wasDue = false;
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      if (raw) {
+        const existing = JSON.parse(raw);
+        wasDue = typeof existing.due === 'number' && existing.due <= Date.now();
+      }
+    } catch (error) {
+      // Armazenamento indisponível — trata como não vencido, sem quebrar o resto.
+    }
     try {
       window.localStorage.setItem(
-        userKey(userName, `review:${course}:${id}`),
+        storageKey,
         JSON.stringify({ rating, ratedAt: Date.now(), due: Date.now() + days * DAY_MS }),
       );
     } catch (error) {
       // Armazenamento indisponível — sem agendamento de revisão.
+    }
+    if (wasDue) {
+      markDailyGoalDone('reviews');
     }
   };
 
@@ -1207,6 +1955,55 @@ function App() {
     }
   }, [userName]);
 
+  // Mesmo mecanismo de autoavaliação dos outros 3 cursos, agora por
+  // screen.id do American Accent ("americanAccent-rating:<screenId>").
+  useEffect(() => {
+    if (!userName) {
+      setAmericanAccentPageRatings({});
+      return;
+    }
+    try {
+      const prefix = userKey(userName, 'americanAccent-rating:');
+      const loaded = {};
+      for (let i = 0; i < window.localStorage.length; i += 1) {
+        const key = window.localStorage.key(i);
+        if (key && key.startsWith(prefix)) {
+          const value = Number(window.localStorage.getItem(key));
+          if (value >= 1 && value <= 5) {
+            loaded[key.slice(prefix.length)] = value;
+          }
+        }
+      }
+      setAmericanAccentPageRatings(loaded);
+    } catch (error) {
+      setAmericanAccentPageRatings({});
+    }
+  }, [userName]);
+
+  // Mesmo mecanismo, agora para o American Accent — chave própria
+  // ("americanAccent-visitedPages"), guardando NÚMEROS DE PÁGINA, não units.
+  useEffect(() => {
+    if (!userName) {
+      setVisitedAmericanAccentPages({});
+      return;
+    }
+    try {
+      const raw = window.localStorage.getItem(userKey(userName, 'americanAccent-visitedPages'));
+      if (raw) {
+        const list = JSON.parse(raw);
+        const loaded = {};
+        list.forEach((page) => {
+          loaded[page] = true;
+        });
+        setVisitedAmericanAccentPages(loaded);
+      } else {
+        setVisitedAmericanAccentPages({});
+      }
+    } catch (error) {
+      setVisitedAmericanAccentPages({});
+    }
+  }, [userName]);
+
   const handleRateGrammarElemUnit = (unit, value) => {
     if (!unit || !userName) return;
     setGrammarElemUnitRatings((prev) => ({ ...prev, [unit]: value }));
@@ -1218,6 +2015,17 @@ function App() {
     scheduleReview('grammarElem', unit, value);
   };
 
+  const handleRateAmericanAccentPage = (screenId, value) => {
+    if (!screenId || !userName) return;
+    setAmericanAccentPageRatings((prev) => ({ ...prev, [screenId]: value }));
+    try {
+      window.localStorage.setItem(userKey(userName, `americanAccent-rating:${screenId}`), String(value));
+    } catch (error) {
+      // Armazenamento indisponível — a nota fica só nesta sessão.
+    }
+    scheduleReview('americanAccent', screenId, value);
+  };
+
   const grammarElemRatingValues = Object.values(grammarElemUnitRatings);
   const grammarElemScorePercent = grammarElemRatingValues.length > 0
     ? Math.round((grammarElemRatingValues.reduce((sum, value) => sum + value, 0) / grammarElemRatingValues.length / 5) * 100)
@@ -1225,6 +2033,15 @@ function App() {
   const grammarElemVisitedUnitsCount = Object.keys(grammarElemVisitedUnits).length;
   const grammarElemProgressPercent = grammarElemUnitNumbers.length > 0
     ? Math.round((grammarElemVisitedUnitsCount / grammarElemUnitNumbers.length) * 100)
+    : 0;
+
+  const americanAccentRatingValues = Object.values(americanAccentPageRatings);
+  const americanAccentScorePercent = americanAccentRatingValues.length > 0
+    ? Math.round((americanAccentRatingValues.reduce((sum, value) => sum + value, 0) / americanAccentRatingValues.length / 5) * 100)
+    : null;
+  const americanAccentVisitedPagesCount = Object.keys(visitedAmericanAccentPages).length;
+  const americanAccentProgressPercent = AMERICAN_ACCENT_ALL_PDF_PAGES.length > 0
+    ? Math.round((americanAccentVisitedPagesCount / AMERICAN_ACCENT_ALL_PDF_PAGES.length) * 100)
     : 0;
 
   // Caderno de vocabulário ("My Words"): um único array JSON por usuário
@@ -1275,28 +2092,60 @@ function App() {
       due: Date.now(),
     };
     persistWordbook([entry, ...wordbookEntries]);
+    // Aquece o cache de pronúncia (ver pronunciationTts.js) em segundo
+    // plano, pra o áudio já estar pronto quando o usuário clicar no 🔊 —
+    // silenciosamente ignorado se falhar (o clique manual tenta de novo).
+    fetch(`/pronunciation-audio/${encodeURIComponent(trimmedWord)}`).catch(() => {});
   };
 
-  const handleDeleteWord = (id) => {
-    persistWordbook(wordbookEntries.filter((entry) => entry.id !== id));
+  const handleDeleteWord = async (id) => {
+    const entry = wordbookEntries.find((item) => item.id === id);
+    const proceed = await askConfirm(
+      `Delete "${entry?.word || 'this word'}" from My Words? This cannot be undone.`,
+      { confirmLabel: 'Delete' },
+    );
+    if (!proceed) return;
+    persistWordbook(wordbookEntries.filter((item) => item.id !== id));
   };
 
   // Autoavaliação do flashcard: "again" volta ao primeiro degrau da escada
   // de intervalos, "good" sobe um degrau, "easy" sobe dois.
   const handleGradeWord = (id, grade) => {
-    persistWordbook(wordbookEntries.map((entry) => {
-      if (entry.id !== id) return entry;
-      const currentStep = Number.isInteger(entry.step) ? entry.step : 0;
+    // "Clear today's reviews" (DailyGoalCard) também conta um flashcard do My
+    // Words graduado — o card "Today's Review" já mostra "Practice N words"
+    // junto com as revisões de curso, como se fossem a mesma coisa (mesmo
+    // título, mesma contagem "N items"), então só marcar pra um dos dois
+    // tipos seria inconsistente com o que a tela promete. Mesmo critério de
+    // "estava vencido" usado em wordbookDueCount: (entry.due ?? 0) <= agora,
+    // checado ANTES de sobrescrever o `due` com a próxima data.
+    const entry = wordbookEntries.find((item) => item.id === id);
+    const wasDue = Boolean(entry) && (entry.due ?? 0) <= Date.now();
+    persistWordbook(wordbookEntries.map((item) => {
+      if (item.id !== id) return item;
+      const currentStep = Number.isInteger(item.step) ? item.step : 0;
       const nextStep = grade === 'again'
         ? 0
         : Math.min(FLASHCARD_STEPS_DAYS.length - 1, currentStep + (grade === 'easy' ? 2 : 1));
-      return { ...entry, step: nextStep, due: Date.now() + FLASHCARD_STEPS_DAYS[nextStep] * DAY_MS };
+      return { ...item, step: nextStep, due: Date.now() + FLASHCARD_STEPS_DAYS[nextStep] * DAY_MS };
     }));
+    if (wasDue) {
+      markDailyGoalDone('reviews');
+    }
   };
 
   const handleUpdateWordMeaning = (id, meaning) => {
     persistWordbook(wordbookEntries.map((entry) => (
       entry.id === id ? { ...entry, meaning } : entry
+    )));
+  };
+
+  // Botão "Edit" da lista do My Words — diferente de handleUpdateWordMeaning
+  // (só significado, usado no flashcard de prática), este aceita qualquer
+  // combinação de campos (word/meaning/example/image) de uma vez, vindos do
+  // formulário de edição do card na lista (ver WordbookPage).
+  const handleUpdateWordEntry = (id, updates) => {
+    persistWordbook(wordbookEntries.map((entry) => (
+      entry.id === id ? { ...entry, ...updates } : entry
     )));
   };
 
@@ -1341,6 +2190,7 @@ function App() {
       } catch (error) {
         // Armazenamento indisponível — progresso não sobrevive a recarregar.
       }
+      markDailyGoalDone('newUnit');
       return next;
     });
   }, [selectedUnit, activePage, userName]);
@@ -1367,6 +2217,7 @@ function App() {
       } catch (error) {
         // Armazenamento indisponível — progresso não sobrevive a recarregar.
       }
+      markDailyGoalDone('newUnit');
       return next;
     });
   }, [selectedAmerican1Unit, selectedAmerican1Section, activePage, userName]);
@@ -1389,9 +2240,38 @@ function App() {
       } catch (error) {
         // Armazenamento indisponível — progresso não sobrevive a recarregar.
       }
+      markDailyGoalDone('newUnit');
       return next;
     });
   }, [selectedGrammarElemUnit, activePage, userName]);
+
+  // American Accent: marca TODAS as páginas da tela atual como visitadas (uma
+  // tela pode cobrir 2+ páginas reais do livro — ver AMERICAN_ACCENT_SCREENS).
+  useEffect(() => {
+    if (activePage !== 'american-accent-reader' || !selectedAmericanAccentScreenId || !userName) {
+      return;
+    }
+    const screen = AMERICAN_ACCENT_SCREEN_BY_ID[selectedAmericanAccentScreenId];
+    if (!screen) return;
+    setVisitedAmericanAccentPages((prev) => {
+      const alreadyAllVisited = screen.pdfPages.every((page) => prev[page]);
+      if (alreadyAllVisited) return prev;
+      const next = { ...prev };
+      screen.pdfPages.forEach((page) => {
+        next[page] = true;
+      });
+      try {
+        window.localStorage.setItem(
+          userKey(userName, 'americanAccent-visitedPages'),
+          JSON.stringify(Object.keys(next).map(Number)),
+        );
+      } catch (error) {
+        // Armazenamento indisponível — progresso não sobrevive a recarregar.
+      }
+      markDailyGoalDone('newUnit');
+      return next;
+    });
+  }, [selectedAmericanAccentScreenId, activePage, userName]);
 
   // "Continue where you left off": grava a última unit/seção aberta DE CADA
   // curso (um botão por curso na tela Courses) + timestamp (pra Home saber
@@ -1410,6 +2290,9 @@ function App() {
     } else if (activePage === 'grammarElem-unit' && selectedGrammarElemUnit) {
       course = 'grammarElem';
       entry = { unit: selectedGrammarElemUnit, timestamp: Date.now() };
+    } else if (activePage === 'american-accent-reader' && selectedAmericanAccentScreenId) {
+      course = 'americanAccent';
+      entry = { screenId: selectedAmericanAccentScreenId, timestamp: Date.now() };
     } else {
       return;
     }
@@ -1422,7 +2305,7 @@ function App() {
       }
       return next;
     });
-  }, [activePage, selectedUnit, selectedAmerican1Unit, selectedAmerican1Section, selectedGrammarElemUnit, userName]);
+  }, [activePage, selectedUnit, selectedAmerican1Unit, selectedAmerican1Section, selectedGrammarElemUnit, selectedAmericanAccentScreenId, userName]);
 
   // Restaurar posição ao recarregar (F5): sem router, um reload sempre
   // jogava de volta pra Home — grava a página atual + toda unit/seção
@@ -1453,10 +2336,13 @@ function App() {
       selectedGrammarElemUnit,
       selectedGrammarElemAppendix,
       selectedGrammarElemAdditional,
+      selectedAmericanAccentScreenId,
       selectedListeningSource,
       selectedListeningTrack,
       selectedDictationSource,
       selectedDictationTrack,
+      selectedSpeakingSource,
+      selectedSpeakingTrack,
     };
     try {
       window.sessionStorage.setItem(SESSION_POSITION_KEY, JSON.stringify(position));
@@ -1490,10 +2376,13 @@ function App() {
     selectedGrammarElemUnit,
     selectedGrammarElemAppendix,
     selectedGrammarElemAdditional,
+    selectedAmericanAccentScreenId,
     selectedListeningSource,
     selectedListeningTrack,
     selectedDictationSource,
     selectedDictationTrack,
+    selectedSpeakingSource,
+    selectedSpeakingTrack,
     userName,
   ]);
 
@@ -1525,10 +2414,13 @@ function App() {
       setSelectedGrammarElemUnit(state.selectedGrammarElemUnit ?? null);
       setSelectedGrammarElemAppendix(state.selectedGrammarElemAppendix ?? null);
       setSelectedGrammarElemAdditional(state.selectedGrammarElemAdditional ?? null);
+      setSelectedAmericanAccentScreenId(state.selectedAmericanAccentScreenId ?? null);
       setSelectedListeningSource(state.selectedListeningSource ?? null);
       setSelectedListeningTrack(state.selectedListeningTrack ?? null);
       setSelectedDictationSource(state.selectedDictationSource ?? null);
       setSelectedDictationTrack(state.selectedDictationTrack ?? null);
+      setSelectedSpeakingSource(state.selectedSpeakingSource ?? null);
+      setSelectedSpeakingTrack(state.selectedSpeakingTrack ?? null);
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -1671,6 +2563,14 @@ function App() {
   // dentro de uma unit, e esconde o botão "‹ Back to Unit" (ver JSX).
   const handleOpenAmerican1SoundBank = (event) => {
     event.preventDefault();
+    // Mesma trava de acesso do resto do menu (ver handleCourses) — sem isso
+    // um visitante sem cadastro conseguia abrir o Sound Bank (áudio/PDF de
+    // verdade) direto pelo menu lateral, que fica sempre visível mesmo
+    // deslogado.
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
     setSelectedAmerican1Reference({ type: 'sound', pages: [166, 167] });
     setShowAmerican1ReferenceAnswers(false);
     setActivePage('american1-reference');
@@ -1711,6 +2611,47 @@ function App() {
 
   const handleBackToGrammarElemUnit = () => {
     setActivePage('grammarElem-unit');
+  };
+
+  const handleAmericanAccent = (event) => {
+    event.preventDefault();
+    // Mesma trava de acesso do resto do menu (ver handleOpenAmerican1SoundBank)
+    // — o drawer lateral fica sempre visível mesmo deslogado.
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
+    setActivePage('americanAccent');
+    setSelectedAmericanAccentScreenId(null);
+    setActiveCourseId('americanAccent');
+    setUnitSearchQuery('');
+  };
+
+  const openAmericanAccentScreen = (screenId) => {
+    setActivePage('american-accent-reader');
+    setSelectedAmericanAccentScreenId(screenId);
+  };
+
+  const handleAmericanAccentScreenSelect = (event, screenId) => {
+    event.preventDefault();
+    openAmericanAccentScreen(screenId);
+  };
+
+  const handleBackToAmericanAccent = () => {
+    setActivePage('americanAccent');
+    setSelectedAmericanAccentScreenId(null);
+  };
+
+  const handlePreviousAmericanAccentScreen = () => {
+    const index = AMERICAN_ACCENT_SCREENS.findIndex((screen) => screen.id === selectedAmericanAccentScreenId);
+    if (index <= 0) return;
+    setSelectedAmericanAccentScreenId(AMERICAN_ACCENT_SCREENS[index - 1].id);
+  };
+
+  const handleNextAmericanAccentScreen = () => {
+    const index = AMERICAN_ACCENT_SCREENS.findIndex((screen) => screen.id === selectedAmericanAccentScreenId);
+    if (index === -1 || index >= AMERICAN_ACCENT_SCREENS.length - 1) return;
+    setSelectedAmericanAccentScreenId(AMERICAN_ACCENT_SCREENS[index + 1].id);
   };
 
   // Appendixes: ficam depois da última unit na lista, mas são uma trilha à
@@ -1775,6 +2716,11 @@ function App() {
   // hub, mesmo se já havia uma fonte/track selecionada de uma visita anterior.
   const handleOpenListening = (event) => {
     event.preventDefault();
+    // Mesma trava de acesso do resto do menu (ver handleCourses).
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
     setActivePage('listening');
     setActiveCourseId(null);
   };
@@ -1818,6 +2764,11 @@ function App() {
   // fazendo no Listening, e vice-versa.
   const handleOpenDictation = (event) => {
     event.preventDefault();
+    // Mesma trava de acesso do resto do menu (ver handleCourses).
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
     setActivePage('dictation');
     setActiveCourseId(null);
   };
@@ -1853,6 +2804,117 @@ function App() {
     setSelectedDictationTrack(null);
   };
 
+  // Tela "Speaking" do menu principal: hub -> fonte -> track, mesmo padrão
+  // do Listening/Dictation (mesmos LISTENING_SOURCES) — o usuário repete a
+  // fala em voz alta em vez de ler ou digitar (ver SpeakingExercise).
+  const handleOpenSpeaking = (event) => {
+    event.preventDefault();
+    // Mesma trava de acesso do resto do menu (ver handleCourses).
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
+    setActivePage('speaking');
+    setActiveCourseId(null);
+  };
+
+  // Tela "Ask AI" do menu principal: Q&A avulso de gramática via Gemini.
+  const handleOpenAskAi = (event) => {
+    event.preventDefault();
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
+    setActivePage('ask-ai');
+    setActiveCourseId(null);
+  };
+
+  // Atalho pra "Ask Adele" a partir de qualquer tela de leitura (mesmo FAB
+  // do "+ Word", ver render mais abaixo) — antes só dava pra chegar em
+  // Adele pelo menu, sem nenhuma ponte com a leitura de onde a dúvida de
+  // gramática realmente surge (achado de revisão de UX, 2026-07-26). Igual
+  // ao +Word, pré-preenche com o texto selecionado no PDF, se houver.
+  const handleAskAdeleShortcut = (event) => {
+    event.preventDefault();
+    const selection = (window.getSelection?.().toString() || '').trim().replace(/\s+/g, ' ');
+    if (selection) {
+      setAskAiQuestion((current) => current || selection);
+    }
+    setActivePage('ask-ai');
+    setActiveCourseId(null);
+  };
+
+  const handleAskAiSubmit = async () => {
+    const question = askAiQuestion.trim();
+    if (!question || askAiStatus === 'loading') return;
+    setAskAiStatus('loading');
+    setAskAiErrorMessage('');
+    try {
+      const response = await fetch('/api/ask-grammar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question,
+          previousQuestion: askAiLastExchange?.question,
+          previousAnswer: askAiLastExchange?.answer,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || 'Request failed');
+      }
+      setAskAiAnswer(data.answer || '');
+      setAskAiLastExchange({ question, answer: data.answer || '' });
+      setAskAiQuestion('');
+      setAskAiStatus('idle');
+    } catch (error) {
+      setAskAiStatus('error');
+      setAskAiErrorMessage('Could not get an answer right now. Please try again.');
+    }
+  };
+
+  // "Start a new topic": zera a memória do último turno (ver
+  // askAiLastExchange) sem sair da tela, pra perguntar algo sem viés do
+  // contexto anterior.
+  const handleAskAiReset = () => {
+    setAskAiLastExchange(null);
+    setAskAiAnswer('');
+    setAskAiQuestion('');
+    setAskAiStatus('idle');
+    setAskAiErrorMessage('');
+  };
+
+  const handleOpenSpeakingSource = (source) => {
+    setSelectedSpeakingSource(source.id);
+    setActivePage('speaking-tracks');
+    setSpeakingSearchQuery('');
+    setHideMasteredSpeaking(false);
+  };
+
+  const handleOpenSpeakingTrack = (track) => {
+    setSelectedSpeakingTrack(track.id);
+    setActivePage('speaking-exercise');
+  };
+
+  const handleNextSpeakingTrack = () => {
+    const source = LISTENING_SOURCES.find((item) => item.id === selectedSpeakingSource);
+    const tracks = source?.tracks || [];
+    const index = tracks.findIndex((item) => item.id === selectedSpeakingTrack);
+    if (index === -1 || index >= tracks.length - 1) return;
+    setSelectedSpeakingTrack(tracks[index + 1].id);
+  };
+
+  const handleBackToSpeakingHub = () => {
+    setActivePage('speaking');
+    setSelectedSpeakingSource(null);
+    setSelectedSpeakingTrack(null);
+  };
+
+  const handleBackToSpeakingTracks = () => {
+    setActivePage('speaking-tracks');
+    setSelectedSpeakingTrack(null);
+  };
+
   // Abre um item vencido do "Today's Review" direto na tela onde ele é
   // estudado (e reavaliado — é a reavaliação que agenda a próxima repetição).
   const handleOpenReviewItem = (item) => {
@@ -1885,6 +2947,11 @@ function App() {
       setSelectedUnit(unit);
       setActiveCourseId('vocabulary');
       setActivePage('unit');
+    } else if (item.course === 'americanAccent') {
+      const screen = AMERICAN_ACCENT_SCREEN_BY_ID[item.id];
+      if (!screen) return;
+      setActiveCourseId('americanAccent');
+      openAmericanAccentScreen(screen.id);
     }
   };
 
@@ -1924,6 +2991,70 @@ function App() {
       return;
     }
     setActivePage('wordbook');
+    setSelectedUnit(null);
+    setSelectedAmerican1Unit(null);
+    setSelectedAmerican1Section(null);
+    setSelectedGrammarElemUnit(null);
+    setSelectedGrammarElemAppendix(null);
+    setSelectedGrammarElemAdditional(null);
+    setActiveCourseId(null);
+  };
+
+  // Tela "My Notes": todas as anotações dos 3 cursos (+ referências/
+  // Transcriptions do American1, Appendixes/Additional do Grammar Elem)
+  // numa lista só, com preview e clique pra abrir onde a nota foi escrita —
+  // mesma trava de acesso de Wordbook/Profile/Dashboard.
+  const handleOpenMyNotes = (event) => {
+    event.preventDefault();
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
+    setActivePage('my-notes');
+    setMyNotesSearchQuery('');
+    setSelectedUnit(null);
+    setSelectedAmerican1Unit(null);
+    setSelectedAmerican1Section(null);
+    setSelectedGrammarElemUnit(null);
+    setSelectedGrammarElemAppendix(null);
+    setSelectedGrammarElemAdditional(null);
+    setActiveCourseId(null);
+  };
+
+  // Reabre o lugar exato onde uma nota foi escrita, a partir do "kind" e
+  // dos parâmetros guardados em cada entrada de collectAllNotesEntries.
+  const handleOpenNoteEntry = (event, entry) => {
+    event.preventDefault();
+    if (entry.kind === 'vocabulary-unit') {
+      openVocabularyUnit(entry.unit);
+    } else if (entry.kind === 'american1-unit') {
+      openAmerican1Section(entry.unit, entry.section);
+    } else if (entry.kind === 'american1-ref') {
+      const ref = american1ReferenceByTypeAndPage(entry.refType, entry.refPage);
+      if (ref) handleOpenAmerican1Reference(ref);
+    } else if (entry.kind === 'american1-transcriptions') {
+      handleOpenAmerican1Transcriptions();
+    } else if (entry.kind === 'grammarElem-unit') {
+      openGrammarElemUnit(entry.unit);
+    } else if (entry.kind === 'grammarElem-appendix') {
+      handleGrammarElemAppendixSelect(event, entry.appendixNumber);
+    } else if (entry.kind === 'grammarElem-additional') {
+      handleGrammarElemAdditionalSelect(event, entry.additionalNumber);
+    } else if (entry.kind === 'americanAccent-page') {
+      setActiveCourseId('americanAccent');
+      openAmericanAccentScreen(entry.screenId);
+    }
+  };
+
+  // Tela "Grammar & Vocabulary Exercises" (ver GrammarVocabExercises.js) —
+  // mesma trava de acesso do resto do menu.
+  const handleOpenGrammarVocabExercises = (event) => {
+    event.preventDefault();
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
+    setActivePage('grammar-vocab-exercises');
     setSelectedUnit(null);
     setSelectedAmerican1Unit(null);
     setSelectedAmerican1Section(null);
@@ -1983,6 +3114,7 @@ function App() {
 
     const existing = registeredUsers.find((name) => name.toLowerCase() === trimmed.toLowerCase());
     const canonicalName = existing || trimmed;
+    const isNewRegistration = !existing;
 
     if (!existing) {
       const isFirstEverUser = registeredUsers.length === 0;
@@ -2002,7 +3134,20 @@ function App() {
     }
     setRegisterNameInput('');
     setRegisterError('');
-    setActivePage('courses');
+    // Oferece vincular a pasta de backup em TODO cadastro DE VERDADE novo
+    // (não ao "continuar como" um nome já existente) — pedido explícito do
+    // dono, sempre pergunta de novo, MESMO se já houver uma pasta linkada e
+    // funcionando (era condicionado a "!backupFolderHandle" antes; isso
+    // bloqueava silenciosamente a oferta pra qualquer 2º+ cadastro no mesmo
+    // navegador, incluindo o caso real deste projeto de um handle salvo mas
+    // quebrado depois de mover a pasta no disco). A tela em si (ver
+    // 'backup-setup' abaixo) mostra o nome da pasta já linkada, se houver,
+    // e avisa que escolher outra troca o vínculo do NAVEGADOR inteiro (não
+    // é por nome cadastrado — ver CLAUDE.md). Pedir aqui e não
+    // silenciosamente no fundo porque showDirectoryPicker() exige um gesto
+    // do usuário.
+    const shouldOfferBackupFolder = isNewRegistration && isBackupFolderSupported();
+    setActivePage(shouldOfferBackupFolder ? 'backup-setup' : 'home');
   };
 
   const handleContinueAs = (name) => {
@@ -2012,7 +3157,7 @@ function App() {
     } catch (error) {
       // Armazenamento indisponível — sessão fica só nesta aba.
     }
-    setActivePage('courses');
+    setActivePage('home');
   };
 
   // "Log out": limpa só o ponteiro de usuário ativo — a lista de usuários e
@@ -2151,64 +3296,23 @@ function App() {
     });
   };
 
+  // Ordem numérica pra dentro de um mesmo course/kind (Unit 10 não pode vir
+  // antes de Unit 2 numa ordenação de texto) — cobre qualquer kind que
+  // carregue unit/appendixNumber/additionalNumber/refPage.
+  const notesEntrySortNumber = (entry) => (
+    entry.unit ?? entry.appendixNumber ?? entry.additionalNumber ?? entry.refPage ?? entry.page ?? 0
+  );
+
   // Junta as anotações ("My Notes") de todas as units num único .txt e
-  // dispara o download. As notas são salvas como HTML (negrito/marca-texto),
-  // então convertemos para texto puro antes de exportar. `courseFilter`
-  // ('vocabulary' | 'american1' | undefined) limita o export a um curso —
-  // usado pelos botões de export separados por curso no Profile.
+  // dispara o download — mesma varredura de collectAllNotesEntries, usada
+  // também pela tela "My Notes" (MyNotesPage). `courseFilter`
+  // ('vocabulary' | 'american1' | 'grammarElem' | undefined) limita o
+  // export a um curso — usado pelos botões de export separados por curso
+  // no Profile.
   const handleExportNotes = (courseFilter) => {
     if (!userName) return;
     try {
-      const entries = [];
-      const prefix = userKey(userName, 'notes:');
-      for (let i = 0; i < window.localStorage.length; i += 1) {
-        const key = window.localStorage.key(i);
-        if (!key || !key.startsWith(prefix)) continue;
-
-        // Três notações possíveis depois do prefixo: "<unit>" (curso
-        // Vocabulary), "american1:<unit>" (UnitNotes da seção) ou
-        // "american1-ref:<type>:<page>" (UnitNotes de uma página de
-        // referência — Grammar/Vocabulary/Sound Bank/Communication/Writing,
-        // cada uma com sua própria anotação, independente da seção) — cada
-        // uma vira um título diferente no export.
-        const remainder = key.slice(prefix.length);
-        const american1Match = remainder.match(/^american1:(\d+)$/);
-        const american1RefMatch = remainder.match(/^american1-ref:([a-z]+):(\d+)$/);
-        const html = window.localStorage.getItem(key) || '';
-
-        if (american1RefMatch) {
-          const [, refType, refPage] = american1RefMatch;
-          entries.push({
-            course: 'american1',
-            unit: `ref-${refType}-${refPage}`,
-            title: `American English A1 - ${AMERICAN1_REFERENCE_LABELS[refType] || refType} p.${refPage}`,
-            html,
-          });
-        } else if (american1Match) {
-          entries.push({
-            course: 'american1',
-            unit: Number(american1Match[1]),
-            title: `American English A1 - Unit ${american1Match[1]}`,
-            html,
-          });
-        } else if (remainder === 'american1-transcriptions') {
-          entries.push({
-            course: 'american1',
-            unit: 'transcriptions',
-            title: 'American English A1 - Transcriptions',
-            html,
-          });
-        } else {
-          const unit = Number(remainder);
-          entries.push({
-            course: 'vocabulary',
-            unit,
-            title: `Unit ${unit}${unitTable[unit] ? ` - ${unitTable[unit]}` : ''}`,
-            html,
-          });
-        }
-      }
-
+      const entries = collectAllNotesEntries(userName);
       const filteredEntries = courseFilter
         ? entries.filter((entry) => entry.course === courseFilter)
         : entries;
@@ -2220,27 +3324,13 @@ function App() {
 
       filteredEntries.sort((a, b) => (
         a.course.localeCompare(b.course)
-        || (typeof a.unit === 'number' && typeof b.unit === 'number' ? a.unit - b.unit : 0)
-        || String(a.unit).localeCompare(String(b.unit))
+        || a.kind.localeCompare(b.kind)
+        || notesEntrySortNumber(a) - notesEntrySortNumber(b)
       ));
-
-      // O editor de notas quebra cada linha em uma <div> própria (e Shift+Enter
-      // vira <br>) — textContent ignora essas fronteiras de bloco e junta tudo
-      // sem espaço nenhum, então precisamos inserir "\n" nós mesmos antes de
-      // extrair o texto.
-      const htmlToText = (html) => {
-        const container = document.createElement('div');
-        container.innerHTML = html;
-        container.querySelectorAll('br').forEach((br) => br.replaceWith('\n'));
-        container.querySelectorAll('div, p').forEach((el) => el.append('\n'));
-        return (container.textContent || '')
-          .replace(/\n{3,}/g, '\n\n')
-          .trim();
-      };
 
       const content = filteredEntries
         .map(({ title, html }) => {
-          const text = htmlToText(html) || '(empty)';
+          const text = noteHtmlToText(html) || '(empty)';
           return `${title}\n${'-'.repeat(title.length)}\n${text}\n`;
         })
         .join('\n');
@@ -2253,7 +3343,9 @@ function App() {
         ? 'my-notes-american-english-level-1.txt'
         : courseFilter === 'vocabulary'
           ? 'my-notes-vocabulary-pre-intermediate.txt'
-          : 'my-notes.txt';
+          : courseFilter === 'grammarElem'
+            ? 'my-notes-grammar-english-level-1.txt'
+            : 'my-notes.txt';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -2276,24 +3368,11 @@ function App() {
   const handleExportBackup = () => {
     if (!userName) return;
     try {
-      const prefix = userKey(userName, '');
-      const data = {};
-      for (let i = 0; i < window.localStorage.length; i += 1) {
-        const key = window.localStorage.key(i);
-        if (!key || !key.startsWith(prefix)) continue;
-        data[key.slice(prefix.length)] = window.localStorage.getItem(key);
-      }
-      if (Object.keys(data).length === 0) {
-        window.alert('Nothing to back up yet — no progress saved for this user.');
+      const backup = buildBackupPayload(userName);
+      if (!backup) {
+        showToast('Nothing to back up yet — no progress saved for this user.', 'error');
         return;
       }
-      const backup = {
-        app: 'lets-learn-english-backup',
-        version: 1,
-        userName,
-        exportedAt: new Date().toISOString(),
-        data,
-      };
       const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -2305,64 +3384,275 @@ function App() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (error) {
-      window.alert('Could not export your backup.');
+      showToast('Could not export your backup.', 'error');
     }
   };
 
-  // Restaura um backup gerado por handleExportBackup — sempre nas chaves do
-  // usuário ATIVO agora (não necessariamente o mesmo "userName" salvo no
-  // arquivo: o cenário típico é reinstalar/trocar de navegador, recadastrar
-  // o mesmo nome ali, e importar por cima). Escreve direto no localStorage
-  // e recarrega a página em vez de tentar sincronizar manualmente cada
-  // pedaço de estado React espalhado pelo app — muito mais simples e sem
-  // risco de esquecer algum setState.
+  // Núcleo compartilhado entre "Import backup (.json)" (upload manual) e
+  // "Restore from folder" (pasta vinculada) — mesma validação/confirmação/
+  // escrita nas duas, só muda de onde o texto do JSON veio. Sempre nas
+  // chaves do usuário ATIVO agora (não necessariamente o mesmo "userName"
+  // salvo no arquivo: o cenário típico é reinstalar/trocar de navegador,
+  // recadastrar o mesmo nome ali, e importar por cima). Escreve direto no
+  // localStorage e recarrega a página em vez de tentar sincronizar
+  // manualmente cada pedaço de estado React espalhado pelo app.
+  const applyBackupJson = async (text) => {
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch (error) {
+      showToast("Could not read this file — make sure it's a backup .json exported from this app.", 'error');
+      return;
+    }
+    if (!parsed || typeof parsed.data !== 'object' || parsed.data === null) {
+      showToast("This file doesn't look like a Let's Learn English backup.", 'error');
+      return;
+    }
+    const keys = Object.keys(parsed.data).filter((k) => typeof parsed.data[k] === 'string');
+    if (keys.length === 0) {
+      showToast('This backup file is empty.', 'error');
+      return;
+    }
+    const fromDifferentUser = parsed.userName && parsed.userName !== userName;
+    const warning = fromDifferentUser
+      ? `This backup was exported from "${parsed.userName}". `
+      : '';
+    const proceed = await askConfirm(
+      `${warning}Import ${keys.length} saved item(s) into "${userName}"? This will overwrite any matching progress, notes, answers and ratings already saved for this user on this browser. This cannot be undone.`,
+      { confirmLabel: 'Import' },
+    );
+    if (!proceed) return;
+    try {
+      keys.forEach((relativeKey) => {
+        window.localStorage.setItem(userKey(userName, relativeKey), parsed.data[relativeKey]);
+      });
+    } catch (error) {
+      showToast('Could not write the backup to this browser (storage may be full or unavailable).', 'error');
+      return;
+    }
+    showToast('Backup imported. The page will reload to apply it.', 'success');
+    // Pequeno atraso pro toast (não-bloqueante) dar tempo de aparecer antes
+    // do reload — o window.alert() antigo bloqueava sozinho até o clique.
+    setTimeout(() => window.location.reload(), 1200);
+  };
+
   const handleImportBackupFile = (event) => {
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file || !userName) return;
     const reader = new FileReader();
-    reader.onload = () => {
-      let parsed;
-      try {
-        parsed = JSON.parse(String(reader.result));
-      } catch (error) {
-        window.alert("Could not read this file — make sure it's a backup .json exported from this app.");
-        return;
-      }
-      if (!parsed || typeof parsed.data !== 'object' || parsed.data === null) {
-        window.alert("This file doesn't look like a Let's Learn English backup.");
-        return;
-      }
-      const keys = Object.keys(parsed.data).filter((k) => typeof parsed.data[k] === 'string');
-      if (keys.length === 0) {
-        window.alert('This backup file is empty.');
-        return;
-      }
-      const fromDifferentUser = parsed.userName && parsed.userName !== userName;
-      const warning = fromDifferentUser
-        ? `This backup was exported from "${parsed.userName}". `
-        : '';
-      if (!window.confirm(
-        `${warning}Import ${keys.length} saved item(s) into "${userName}"? This will overwrite any matching progress, notes, answers and ratings already saved for this user on this browser. This cannot be undone.`,
-      )) {
-        return;
-      }
-      try {
-        keys.forEach((relativeKey) => {
-          window.localStorage.setItem(userKey(userName, relativeKey), parsed.data[relativeKey]);
-        });
-      } catch (error) {
-        window.alert('Could not write the backup to this browser (storage may be full or unavailable).');
-        return;
-      }
-      window.alert('Backup imported. The page will reload to apply it.');
-      window.location.reload();
-    };
-    reader.onerror = () => {
-      window.alert('Could not read this file.');
-    };
+    reader.onload = () => applyBackupJson(String(reader.result));
+    reader.onerror = () => showToast('Could not read this file.', 'error');
     reader.readAsText(file);
   };
+
+  // Backup automático em pasta local vinculada (File System Access API) —
+  // ver comentário em buildBackupPayload/isBackupFolderSupported (topo do
+  // arquivo) pro porquê dessa abordagem em vez de e-mail/login Google.
+  const handleChooseBackupFolder = async () => {
+    if (!isBackupFolderSupported()) return;
+    try {
+      const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+      await saveBackupFolderHandle(handle);
+      setBackupFolderHandle(handle);
+      setBackupFolderNeedsPermission(false);
+      await handleSaveBackupToFolder({ handle, silent: false });
+    } catch (error) {
+      // AbortError = usuário cancelou o seletor de pasta, não é erro de verdade.
+      if (error?.name !== 'AbortError') {
+        showToast('Could not link that folder.', 'error');
+      }
+    }
+  };
+
+  // Tela "backup-setup" (logo após um cadastro novo, ver handleRegisterSubmit)
+  // — os dois botões dela sempre seguem pra Home depois, dê certo, cancele,
+  // ou dê erro escolher a pasta; a diferença de handleChooseBackupFolder
+  // (usado em My Profile) é só essa navegação automática no final.
+  const handleChooseBackupFolderAndContinue = async () => {
+    await handleChooseBackupFolder();
+    setActivePage('home');
+  };
+
+  const handleSkipBackupSetup = () => {
+    setActivePage('home');
+  };
+
+  const handleReconnectBackupFolder = async () => {
+    if (!backupFolderHandle) return;
+    try {
+      const permission = await backupFolderHandle.requestPermission({ mode: 'readwrite' });
+      if (permission === 'granted') {
+        setBackupFolderNeedsPermission(false);
+      } else {
+        showToast('Permission was not granted — the folder stays linked, but backups will not run until you allow access again.', 'error');
+      }
+    } catch (error) {
+      showToast('Could not reconnect to that folder.', 'error');
+    }
+  };
+
+  const handleUnlinkBackupFolder = async () => {
+    try {
+      await clearBackupFolderHandle();
+    } catch (error) {
+      // Sem IndexedDB não tem o que desfazer — segue o baile mesmo assim.
+    }
+    setBackupFolderHandle(null);
+    setBackupFolderNeedsPermission(false);
+    setLastFolderBackupAt(null);
+  };
+
+  // `silent` diferencia o autosave periódico (falha calada — não faz
+  // sentido interromper o usuário por causa de um save em segundo plano)
+  // do clique manual em "Save backup now" (sempre avisa o que aconteceu).
+  const handleSaveBackupToFolder = async ({ handle, silent = false } = {}) => {
+    const targetHandle = handle || backupFolderHandle;
+    if (!targetHandle || !userName) return;
+    const payload = buildBackupPayload(userName);
+    if (!payload) {
+      if (!silent) showToast('Nothing to back up yet — no progress saved for this user.', 'error');
+      return;
+    }
+    try {
+      const permission = await targetHandle.queryPermission({ mode: 'readwrite' });
+      if (permission !== 'granted') {
+        setBackupFolderNeedsPermission(true);
+        if (!silent) showToast('This app needs permission to write to the linked folder again — click "Reconnect folder" below.', 'error');
+        return;
+      }
+      const fileHandle = await targetHandle.getFileHandle(backupFileNameFor(userName), { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(JSON.stringify(payload, null, 2));
+      await writable.close();
+      setLastFolderBackupAt(Date.now());
+      if (!silent) showToast(`Saving your progress to "${targetHandle.name}".`, 'success');
+    } catch (error) {
+      if (!silent) showToast('Could not save the backup to the linked folder.', 'error');
+    }
+  };
+
+  // Botão "Save progress now" do Progress Dashboard — mesma ação de "Save
+  // backup now" do My Profile, só que acessível de um lugar mais visível
+  // (pedido do dono: o autosave silencioso não deixa claro que está
+  // funcionando, e às vezes simplesmente pára — ex. permissão expirada
+  // depois de mover/recriar a pasta vinculada). Sem status permanente na
+  // tela (pedido do dono) — mas TODO clique dá algum retorno visível agora
+  // (popup, mesmo no sucesso) — "silent" demais deixava parecer que o botão
+  // não fazia nada (relatado pelo dono depois da 1ª versão, que só avisava
+  // quando a pasta não estava conectada e ficava muda no resto).
+  // askConfirm (diálogo próprio, não window.confirm) nos dois casos "não
+  // conectada": o clique em "OK"/"Choose folder"/"Reconnect" do PRÓPRIO
+  // diálogo é um gesto do usuário de verdade, então ainda vale pra abrir
+  // showDirectoryPicker/requestPermission logo em seguida.
+  const handleSaveProgressFromDashboard = async () => {
+    if (!backupFolderHandle) {
+      const proceed = await askConfirm(
+        'No backup folder linked yet — choose one now to save your progress?',
+        { confirmLabel: 'Choose folder' },
+      );
+      if (proceed) await handleChooseBackupFolder();
+      return;
+    }
+    if (backupFolderNeedsPermission) {
+      const proceed = await askConfirm(
+        `The linked backup folder ("${backupFolderHandle.name}") needs permission again — reconnect now?`,
+        { confirmLabel: 'Reconnect' },
+      );
+      if (!proceed) return;
+      try {
+        const permission = await backupFolderHandle.requestPermission({ mode: 'readwrite' });
+        if (permission === 'granted') {
+          setBackupFolderNeedsPermission(false);
+          await handleSaveBackupToFolder();
+        } else {
+          showToast('Permission was not granted — the folder stays linked, but backups will not run until you allow access again.', 'error');
+        }
+      } catch (error) {
+        showToast('Could not reconnect to that folder.', 'error');
+      }
+      return;
+    }
+    await handleSaveBackupToFolder();
+  };
+
+  const handleRestoreFromFolder = async () => {
+    if (!backupFolderHandle || !userName) return;
+    try {
+      const permission = await backupFolderHandle.queryPermission({ mode: 'readwrite' });
+      if (permission !== 'granted') {
+        setBackupFolderNeedsPermission(true);
+        showToast('This app needs permission to read the linked folder again — click "Reconnect folder" below.', 'error');
+        return;
+      }
+      const fileHandle = await backupFolderHandle.getFileHandle(backupFileNameFor(userName));
+      const file = await fileHandle.getFile();
+      const text = await file.text();
+      applyBackupJson(text);
+    } catch (error) {
+      if (error?.name === 'NotFoundError') {
+        showToast(`No backup file found in the linked folder for "${userName}" yet — click "Save backup now" first.`, 'error');
+      } else {
+        showToast('Could not read the backup from the linked folder.', 'error');
+      }
+    }
+  };
+
+  // Recupera a pasta vinculada (se houver) do IndexedDB uma vez, ao abrir o
+  // app — `queryPermission` (ao contrário de `requestPermission`) não
+  // precisa de gesto do usuário, então dá pra checar em silêncio se a
+  // permissão ainda vale. Se não valer mais (navegador reiniciado, por
+  // exemplo), guarda o handle mesmo assim e marca "precisa reconectar" —
+  // some com um clique em "Reconnect folder", sem precisar escolher a
+  // pasta nem perder o vínculo de novo.
+  useEffect(() => {
+    if (!isBackupFolderSupported()) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const handle = await loadBackupFolderHandle();
+        if (!handle || cancelled) return;
+        const permission = await handle.queryPermission({ mode: 'readwrite' });
+        if (cancelled) return;
+        setBackupFolderHandle(handle);
+        setBackupFolderNeedsPermission(permission !== 'granted');
+      } catch (error) {
+        // IndexedDB indisponível ou handle corrompido — trata como não vinculado.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Autosave periódico enquanto uma pasta estiver vinculada e com permissão
+  // válida — 5 minutos é um meio-termo entre "não perder muito trabalho se
+  // o navegador fechar sem aviso" e "não ficar escrevendo no disco toda
+  // hora". Silencioso de propósito (`silent: true`) — não faz sentido
+  // interromper o usuário por causa de um save em segundo plano.
+  useEffect(() => {
+    if (!backupFolderHandle || backupFolderNeedsPermission || !userName) return undefined;
+    const interval = setInterval(() => {
+      handleSaveBackupToFolder({ silent: true });
+    }, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [backupFolderHandle, backupFolderNeedsPermission, userName]);
+
+  // Autosave também ao trocar de unit/seção (não só no timer) — pedido do
+  // dono, pra não depender só dos 5 minutos se o navegador fechar logo
+  // depois de uma sessão curta de estudo. Dispara em QUALQUER troca (não só
+  // a 1ª visita, ao contrário de markDailyGoalDone('newUnit')) porque o que
+  // importa aqui é capturar o que o usuário acabou de fazer (nota, resposta,
+  // avaliação...) antes de sair da tela, mesmo numa unit já visitada antes.
+  // Dependências de propósito só nos seletores de unit/seção — os outros 3
+  // (backupFolderHandle/backupFolderNeedsPermission/userName) mudam bem
+  // menos, então checar seu valor ATUAL dentro do efeito (via closure, sem
+  // precisar deles na lista de deps) evita disparos extras que não vêm de
+  // navegação de verdade.
+  useEffect(() => {
+    if (!backupFolderHandle || backupFolderNeedsPermission || !userName) return;
+    handleSaveBackupToFolder({ silent: true });
+  }, [selectedUnit, selectedAmerican1Unit, selectedAmerican1Section, selectedGrammarElemUnit]);
 
   const handleResetProgress = () => {
     if (!window.confirm('Reset your unit progress? This cannot be undone.')) {
@@ -2530,6 +3820,55 @@ function App() {
     removeLocalStorageKeysWithPrefix('answers:grammarElem');
   };
 
+  // Equivalentes pro American Accent — sem "Answers" (não tem exercício
+  // escrito, é só leitura+áudio), chave de progresso guarda NÚMEROS DE
+  // PÁGINA (não units, ver visitedAmericanAccentPages).
+  const handleResetAmericanAccentProgress = () => {
+    if (!window.confirm('Reset your American Accent page progress? This cannot be undone.')) {
+      return;
+    }
+    setVisitedAmericanAccentPages({});
+    clearLastVisitedForCourse('americanAccent');
+    try {
+      window.localStorage.removeItem(userKey(userName, 'americanAccent-visitedPages'));
+    } catch (error) {
+      // Armazenamento indisponível.
+    }
+  };
+
+  const handleResetAmericanAccentSelfEvaluation = () => {
+    if (!window.confirm('Reset your American Accent self-evaluation score and every star rating you gave? This cannot be undone.')) {
+      return;
+    }
+    setAmericanAccentPageRatings({});
+    removeLocalStorageKeysWithPrefix('americanAccent-rating:');
+    removeLocalStorageKeysWithPrefix('review:americanAccent:');
+  };
+
+  const handleResetAmericanAccentNotes = () => {
+    if (!window.confirm('Reset your American Accent "My Notes" for every page? This cannot be undone.')) {
+      return;
+    }
+    removeLocalStorageKeysWithPrefix('notes:americanAccent');
+  };
+
+  const handleResetAmericanAccentAll = () => {
+    if (!window.confirm('Reset EVERYTHING for American Accent — progress, self-evaluation and page notes? This cannot be undone.')) {
+      return;
+    }
+    setVisitedAmericanAccentPages({});
+    setAmericanAccentPageRatings({});
+    clearLastVisitedForCourse('americanAccent');
+    try {
+      window.localStorage.removeItem(userKey(userName, 'americanAccent-visitedPages'));
+    } catch (error) {
+      // Armazenamento indisponível.
+    }
+    removeLocalStorageKeysWithPrefix('americanAccent-rating:');
+    removeLocalStorageKeysWithPrefix('review:americanAccent:');
+    removeLocalStorageKeysWithPrefix('notes:americanAccent');
+  };
+
   const toggleProfileCourse = (courseId) => {
     setExpandedProfileCourses((prev) => ({ ...prev, [courseId]: !prev[courseId] }));
   };
@@ -2650,16 +3989,78 @@ function App() {
   // página de teste do Course 2...), não só nas telas de unit/exercícios.
   const insideCourse = Boolean(selectedUnit) || Boolean(selectedAmerican1Unit)
     || Boolean(selectedGrammarElemUnit) || Boolean(selectedGrammarElemAppendix)
-    || Boolean(selectedGrammarElemAdditional);
+    || Boolean(selectedGrammarElemAdditional) || Boolean(selectedAmericanAccentScreenId);
   const visitedUnitsCount = Object.keys(visitedUnits).length;
+
+  // Status por unit dos 3 cursos (mesma lógica das 3 grades de unit e do
+  // Progress Dashboard — getUnitBadgeStatus/getVocabularyUnitBadgeStatus,
+  // somados por tallyUnitStatuses) computado uma vez aqui, ANTES de
+  // findNextUnvisitedByCourse, pra alimentar tanto a ordem "cruzando os 3
+  // cursos" da trilha sugerida (ROADMAP item 3) quanto o "% de domínio
+  // geral" (Dashboard e o resumo em DailyGoalCard) — sem duplicar o cálculo
+  // em cada lugar que precisa dele. NÃO chamar isso de "% do A1": só
+  // American1 e Grammar Elem são A1 de verdade — o Vocabulary (English
+  // Vocabulary B) é Pre-Intermediate/Intermediate, um nível acima (pasta de
+  // origem "Pre Intermediate and Intermediate"), e ele entra nessa soma
+  // também.
+  const vocabularyStatuses = unitItems.map((unit) => (
+    getVocabularyUnitBadgeStatus(unit.number, Boolean(visitedUnits[unit.number]), exerciseRatings)
+  ));
+  // Por SEÇÃO (A/B/C/Practical English/Review and Check), não por unit —
+  // pedido do dono: "1/12 units started" era enganoso, já que uma unit conta
+  // como "started" com só 1 das várias seções visitadas. A avaliação em
+  // estrelas continua por UNIT (não existe rating por seção — ver
+  // UnitNotes/american1UnitRatings), então toda seção de uma unit herda a
+  // MESMA rating pra decidir "rated"/"mastered"; só o "visited" é granular
+  // por seção (american1VisitedSections já é por seção). american1SectionsTotal
+  // (== american1Index.length) é a soma de sections por unit, não o número
+  // de units.
+  const american1Statuses = american1UnitNumbers.flatMap((unit) => {
+    const sections = american1SectionsByUnit[unit] || [];
+    const rating = american1UnitRatings[unit] || 0;
+    return sections.map((section) => (
+      getUnitBadgeStatus(Boolean(american1VisitedSections[`${unit}|${section.section}`]), rating)
+    ));
+  });
+  const grammarElemStatuses = grammarElemUnitNumbers.map((unit) => (
+    getUnitBadgeStatus(Boolean(grammarElemVisitedUnits[unit]), grammarElemUnitRatings[unit] || 0)
+  ));
+  // total/tally contam PÁGINAS REAIS (AMERICAN_ACCENT_ALL_PDF_PAGES), não
+  // telas — uma tela de 2 páginas soma 2 no progresso. Rating é por TELA
+  // (americanAccentPageRatings, chave screen.id) — toda página de uma tela
+  // herda a mesma nota, igual ao American1 (seção herda a rating da unit).
+  const americanAccentStatuses = AMERICAN_ACCENT_ALL_PDF_PAGES.map((page) => {
+    const screen = AMERICAN_ACCENT_SCREENS.find((item) => item.pdfPages.includes(page));
+    const rating = screen ? americanAccentPageRatings[screen.id] || 0 : 0;
+    return getUnitBadgeStatus(Boolean(visitedAmericanAccentPages[page]), rating);
+  });
+  // Ordem = COURSE_LEVEL_ORDER (Beginner antes de Intermediate — American1,
+  // Grammar Elem, Vocabulary), não mais a ordem de implementação — o
+  // Progress Dashboard lista "Progress by course" direto nessa ordem.
+  // unitLabel: só American1 conta por "sections" agora (ver acima); os
+  // outros 2 continuam por "units" (rótulo default do DashboardCourseRow).
+  const courseProgressById = {
+    vocabulary: { id: 'vocabulary', title: courses.vocabulary.title, level: courses.vocabulary.level, total: unitItems.length, tally: tallyUnitStatuses(vocabularyStatuses) },
+    american1: { id: 'american1', title: courses.american1.title, level: courses.american1.level, total: american1SectionsTotal, tally: tallyUnitStatuses(american1Statuses), unitLabel: 'sections' },
+    grammarElem: { id: 'grammarElem', title: courses.grammarElem.title, level: courses.grammarElem.level, total: GRAMMAR_ELEM_UNIT_COUNT, tally: tallyUnitStatuses(grammarElemStatuses) },
+    americanAccent: { id: 'americanAccent', title: courses.americanAccent.title, level: courses.americanAccent.level, total: AMERICAN_ACCENT_ALL_PDF_PAGES.length, tally: tallyUnitStatuses(americanAccentStatuses), unitLabel: 'pages' },
+  };
+  const courseProgress = COURSE_LEVEL_ORDER.map((id) => courseProgressById[id]);
+  const overallMasteredTotal = courseProgress.reduce((sum, course) => sum + course.tally.mastered, 0);
+  const overallUnitsTotal = courseProgress.reduce((sum, course) => sum + course.total, 0);
+  const overallMasteryPercent = overallUnitsTotal > 0 ? Math.round((overallMasteredTotal / overallUnitsTotal) * 100) : 0;
 
   // "Today's Plan" (Home): um empurrão de "por onde começar" pra quem senta
   // pra estudar sem saber — mistura 1 sugestão de conteúdo novo + até 2
   // revisões vencidas (mesma fonte do ReviewCard) + 1 sugestão de listening.
-  // "Novo" e "listening" apontam pra cursos DIFERENTES quando possível (só
-  // repetem o mesmo curso se os outros dois já estiverem 100% visitados) —
-  // dá pra reaproveitar a mesma busca de "próxima unit não visitada" pros
-  // dois, só pegando o 1º e o 2º candidato da lista.
+  // ROADMAP item 3 ("trilha de estudo"): a sugestão de conteúdo novo não é
+  // mais "sempre Vocabulary primeiro, depois American1, depois Grammar" —
+  // os 3 candidatos (1 por curso, se houver algo não visitado) são
+  // ordenados pelo % de units VISITADAS de cada curso, do mais atrasado pro
+  // mais adiantado, cruzando o progresso dos 3 em vez de tratar cada um
+  // isoladamente. Continua pegando só o 1º candidato pra "Learn something
+  // new" — o 2º slot do plano agora é uma sugestão de Listening de verdade
+  // (ver findUnpracticedListeningTrack), não mais o 2º curso desta lista.
   const findNextUnvisitedByCourse = () => {
     const nextVocabUnit = unitItems.find((unit) => !visitedUnits[unit.number]);
     let nextAmerican1 = null;
@@ -2672,10 +4073,17 @@ function App() {
       }
     }
     const nextGrammarElemUnit = grammarElemUnitNumbers.find((unit) => !grammarElemVisitedUnits[unit]);
+    // Por TELA (não por página solta) — é o que dá pra abrir de fato; uma
+    // tela conta como "não visitada" se qualquer uma das páginas dela ainda
+    // não foi vista.
+    const nextAmericanAccentScreen = AMERICAN_ACCENT_SCREENS.find((screen) => (
+      screen.pdfPages.some((page) => !visitedAmericanAccentPages[page])
+    ));
 
     const candidates = [];
     if (nextVocabUnit) {
       candidates.push({
+        courseId: 'vocabulary',
         label: `Unit ${nextVocabUnit.number}: ${nextVocabUnit.label}`,
         sublabel: 'English Vocabulary B',
         onOpen: () => openVocabularyUnit(nextVocabUnit.number),
@@ -2689,6 +4097,7 @@ function App() {
       // vira "Unit 2Review and Check: Review and Check 1&2".
       const isLetterSection = /^[A-C]$/.test(nextAmerican1.section);
       candidates.push({
+        courseId: 'american1',
         label: isLetterSection
           ? `Unit ${nextAmerican1.unit}${nextAmerican1.section}: ${nextAmerican1.title}`
           : `Unit ${nextAmerican1.unit}: ${nextAmerican1.title}`,
@@ -2698,12 +4107,55 @@ function App() {
     }
     if (nextGrammarElemUnit) {
       candidates.push({
+        courseId: 'grammarElem',
         label: `Unit ${nextGrammarElemUnit}`,
         sublabel: 'Grammar English A1',
         onOpen: () => openGrammarElemUnit(nextGrammarElemUnit),
       });
     }
+    if (nextAmericanAccentScreen) {
+      candidates.push({
+        courseId: 'americanAccent',
+        label: `${americanAccentPrintedPageLabel(nextAmericanAccentScreen)}${nextAmericanAccentScreen.topic ? `: ${nextAmericanAccentScreen.topic}` : ''}`,
+        sublabel: 'American Accent',
+        onOpen: () => openAmericanAccentScreen(nextAmericanAccentScreen.id),
+      });
+    }
+
+    const visitedPercentByCourse = {};
+    courseProgress.forEach((course) => {
+      const visitedCount = course.total - course.tally.unvisited;
+      visitedPercentByCourse[course.id] = course.total > 0 ? visitedCount / course.total : 1;
+    });
+    candidates.sort((a, b) => visitedPercentByCourse[a.courseId] - visitedPercentByCourse[b.courseId]);
+
     return candidates;
+  };
+
+  // 2º slot do "Today's Plan": a primeira faixa de Listening/Dictation (em
+  // QUALQUER dos 2 cursos que têm, na ordem de LISTENING_SOURCES) que o
+  // usuário nunca tentou nem em Listening nem em Dictation — antes esse slot
+  // era só o 2º candidato de findNextUnvisitedByCourse (rotulado "Practice
+  // listening" mas na prática podia ser outra unit de LEITURA de um curso
+  // diferente, não uma faixa de áudio de verdade).
+  const findUnpracticedListeningTrack = () => {
+    if (!userName) return null;
+    for (const source of LISTENING_SOURCES) {
+      const track = source.tracks.find((item) => (
+        !loadListeningStats(userName, item.id) && !loadDictationStats(userName, item.id) && !loadSpeakingStats(userName, item.id)
+      ));
+      if (track) {
+        return {
+          label: listeningTrackLabel(track),
+          sublabel: source.title,
+          onOpen: () => {
+            handleOpenListeningSource(source);
+            handleOpenListeningTrack(track);
+          },
+        };
+      }
+    }
+    return null;
   };
 
   // Busca nas 3 grades de unit ("Em qual unit ficava phrasal verbs?"): filtra
@@ -2722,10 +4174,36 @@ function App() {
   const filteredGrammarElemUnitNumbers = unitSearchNormalized
     ? grammarElemUnitNumbers.filter((unit) => getGrammarElemUnitTitle(unit).toLowerCase().includes(unitSearchNormalized) || String(unit).includes(unitSearchNormalized))
     : grammarElemUnitNumbers;
+  // Sem "unit" nenhuma nesse curso — busca por capítulo (nome + tópico) e,
+  // pra achar conteúdo específico (ex. "linking"), pelo subtítulo de cada
+  // tela de leitura (screen.topic, ver american_accent_index.json).
+  const filteredAmericanAccentChapters = unitSearchNormalized
+    ? AMERICAN_ACCENT_CHAPTERS.filter((chapter) => (
+      chapter.name.toLowerCase().includes(unitSearchNormalized)
+      || (chapter.topic || '').toLowerCase().includes(unitSearchNormalized)
+    ))
+    : AMERICAN_ACCENT_CHAPTERS;
+  const filteredAmericanAccentScreens = unitSearchNormalized
+    ? AMERICAN_ACCENT_SCREENS.filter((screen) => (screen.topic || '').toLowerCase().includes(unitSearchNormalized))
+    : [];
 
   const unvisitedCandidates = userName ? findNextUnvisitedByCourse() : [];
   const planNewUnit = unvisitedCandidates[0] || null;
-  const planListening = unvisitedCandidates[1] || null;
+  const planListening = userName ? findUnpracticedListeningTrack() : null;
+
+  // "Today's Goal" (ROADMAP item 3): 3 componentes togglináveis
+  // (dailyGoalPrefs), todos marcados permanentemente assim que acontecem
+  // pela 1ª vez no dia (ver markDailyGoalDone) — "reviews" só quando o
+  // usuário reavalia algo que JÁ estava vencido (ver scheduleReview), não
+  // quando a fila simplesmente está vazia (senão usuário novo, sem nada
+  // agendado ainda, ganhava esse item de graça).
+  const dailyGoalAllItems = [
+    { key: 'newUnit', label: 'Learn a new unit', done: dailyGoalToday.newUnit, enabled: dailyGoalPrefs.newUnit },
+    { key: 'reviews', label: "Clear today's reviews", done: dailyGoalToday.reviews, enabled: dailyGoalPrefs.reviews },
+    { key: 'listening', label: 'Practice Listening or Dictation', done: dailyGoalToday.listening, enabled: dailyGoalPrefs.listening },
+  ];
+  const dailyGoalItems = dailyGoalAllItems.filter((item) => item.enabled);
+  const dailyGoalCompletedCount = dailyGoalItems.filter((item) => item.done).length;
 
   // "Continue where you left off": um botão por curso (tela Courses, usa
   // lastVisitedByCourse[courseId] direto) + um só na Home (o curso com o
@@ -2738,6 +4216,8 @@ function App() {
       openAmerican1Section(entry.unit, entry.section);
     } else if (course === 'grammarElem') {
       openGrammarElemUnit(entry.unit);
+    } else if (course === 'americanAccent') {
+      openAmericanAccentScreen(entry.screenId);
     }
   };
   const formatLastVisitedLabel = (course, entry) => {
@@ -2747,6 +4227,12 @@ function App() {
       return /^[A-C]$/.test(entry.section)
         ? `Unit ${entry.unit}${entry.section} · ${courses.american1.title}`
         : `Unit ${entry.unit} (${entry.section}) · ${courses.american1.title}`;
+    }
+    if (course === 'americanAccent') {
+      const screen = AMERICAN_ACCENT_SCREEN_BY_ID[entry.screenId];
+      return screen
+        ? `${americanAccentPrintedPageLabel(screen)} · ${courses.americanAccent.title}`
+        : courses.americanAccent.title;
     }
     return `Unit ${entry.unit} · ${courses.grammarElem.title}`;
   };
@@ -2774,11 +4260,16 @@ function App() {
           ? `Grammar Elementary Appendix ${selectedGrammarElemAppendix}`
           : selectedGrammarElemAdditional
             ? `Grammar Elementary Additional Exercise ${selectedGrammarElemAdditional}`
-            : '';
+            : selectedAmericanAccentScreenId
+              ? (() => {
+                  const screen = AMERICAN_ACCENT_SCREEN_BY_ID[selectedAmericanAccentScreenId];
+                  return screen ? `American Accent ${americanAccentPrintedPageLabel(screen)}` : 'American Accent';
+                })()
+              : '';
 
   return (
     <div
-      className={`app-shell${['vocabulary', 'american1', 'grammarElem', 'courses'].includes(activePage) ? ' app-shell--allow-grow' : ''}`}
+      className={`app-shell${['vocabulary', 'american1', 'grammarElem', 'courses', 'home'].includes(activePage) ? ' app-shell--allow-grow' : ''}`}
       style={{ '--page-hero-bg': `url(${process.env.PUBLIC_URL}/openCourse.png)` }}
     >
       <header className="app-header">
@@ -2818,16 +4309,35 @@ function App() {
           {/* Menu único e idêntico em qualquer lugar do app, dentro ou fora
               de um curso — não tem mais uma lista "insideCourse" diferente
               (que só tinha Courses/All Units/My Words/My Profile). */}
+          {/* Agrupado em 4 blocos (Learn/Practice/Tools/Account) desde
+              2026-07-26 — antes era uma lista só de 12 itens sem nenhuma
+              hierarquia visual, difícil de escanear pra quem chega novo
+              (achado de revisão de UX). Só reorganiza visualmente com
+              divisores + rótulo pequeno; nenhum destino/handler mudou.
+              American Accent perdeu o atalho direto que só ELE tinha (os
+              outros 3 cursos sempre viveram só dentro de "Courses") — ficava
+              inconsistente sem motivo claro pro usuário; agora os 4 cursos
+              são acessados do mesmo jeito. */}
           <ol>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleHome(event); setMobileMenuOpen(false); }}><IconHome /><span>Home</span></a></li>
+            <li className="side-drawer-divider" role="separator" />
+            <li className="side-drawer-group-label">Learn</li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleCourses(event); setMobileMenuOpen(false); }}><IconCourses /><span>Courses</span></a></li>
-            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenWordbook(event); setMobileMenuOpen(false); }}><IconWords /><span>My Words</span></a></li>
+            <li className="side-drawer-divider" role="separator" />
+            <li className="side-drawer-group-label">Practice</li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenListening(event); setMobileMenuOpen(false); }}><IconHeadphones /><span>Listening</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenDictation(event); setMobileMenuOpen(false); }}><IconText /><span>Dictation</span></a></li>
-            <li className="side-drawer-item"><a href="#link-3" onClick={() => setMobileMenuOpen(false)}><IconMic /><span>Speaking</span></a></li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenSpeaking(event); setMobileMenuOpen(false); }}><IconMic /><span>Speaking</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenAmerican1SoundBank(event); setMobileMenuOpen(false); }}><IconSound /><span>Sound Bank</span></a></li>
-            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenDashboard(event); setMobileMenuOpen(false); }}><IconDashboard /><span>Progress</span></a></li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenGrammarVocabExercises(event); setMobileMenuOpen(false); }}><IconQuiz /><span>Grammar &amp; Vocabulary Exercises</span></a></li>
             <li className="side-drawer-divider" role="separator" />
+            <li className="side-drawer-group-label">Tools</li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenWordbook(event); setMobileMenuOpen(false); }}><IconWords /><span>My Words</span></a></li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenMyNotes(event); setMobileMenuOpen(false); }}><IconNotes /><span>My Notes</span></a></li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenAskAi(event); setMobileMenuOpen(false); }}><IconChat /><span>Ask Adele</span></a></li>
+            <li className="side-drawer-divider" role="separator" />
+            <li className="side-drawer-group-label">Account</li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenDashboard(event); setMobileMenuOpen(false); }}><IconDashboard /><span>Progress</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenProfile(event); setMobileMenuOpen(false); }}><IconProfile /><span>My Profile</span></a></li>
           </ol>
         </nav>
@@ -3081,7 +4591,7 @@ function App() {
             />
             {unitSearchNormalized ? (
               <div className="unified-search-results">
-                {filteredUnitItems.length === 0 && filteredAmerican1UnitNumbers.length === 0 && filteredGrammarElemUnitNumbers.length === 0 ? (
+                {filteredUnitItems.length === 0 && filteredAmerican1UnitNumbers.length === 0 && filteredGrammarElemUnitNumbers.length === 0 && filteredAmericanAccentScreens.length === 0 ? (
                   <p className="unit-search-empty">No units match "{unitSearchQuery}" in any course.</p>
                 ) : (
                   <>
@@ -3147,27 +4657,39 @@ function App() {
                         </div>
                       </section>
                     )}
+                    {filteredAmericanAccentScreens.length > 0 && (
+                      <section className="unified-search-group">
+                        <h3 className="unified-search-group-title">{courses.americanAccent.title}</h3>
+                        <div className="vocabulary-list" role="list">
+                          {filteredAmericanAccentScreens.map((screen) => {
+                            const chapter = AMERICAN_ACCENT_CHAPTERS.find((item) => item.id === screen.chapter);
+                            return (
+                              <a
+                                key={`americanAccent-${screen.id}`}
+                                className="vocabulary-link"
+                                href={`#americanAccent-${screen.id}`}
+                                onClick={(event) => { event.preventDefault(); setActiveCourseId('americanAccent'); openAmericanAccentScreen(screen.id); }}
+                              >
+                                <UnitBadgeDot status={screen.pdfPages.every((page) => visitedAmericanAccentPages[page]) ? 'mastered' : screen.pdfPages.some((page) => visitedAmericanAccentPages[page]) ? 'visited' : 'unvisited'} />
+                                <span>{americanAccentPrintedPageLabel(screen)}</span>
+                                <small>{chapter ? chapter.name : ''} — {screen.topic}</small>
+                              </a>
+                            );
+                          })}
+                        </div>
+                      </section>
+                    )}
                   </>
                 )}
               </div>
             ) : (
               <div className="course-links">
-                <div className="course-link-row">
-                  <a className="course-link" href="#link-vocabulary" onClick={handleVocabulary}>
-                    <span>{courses.vocabulary.title}</span>
-                    <small>{courses.vocabulary.description}</small>
-                  </a>
-                  {lastVisitedByCourse.vocabulary && (
-                    <button
-                      type="button"
-                      className="continue-cta course-continue-cta"
-                      onClick={() => openLastVisitedEntry('vocabulary', lastVisitedByCourse.vocabulary)}
-                    >
-                      Continue where you left off
-                      <small>{formatLastVisitedLabel('vocabulary', lastVisitedByCourse.vocabulary)}</small>
-                    </button>
-                  )}
-                </div>
+                {/* Agrupado por nível (Beginner/Intermediate — ver comentário em `courses`
+                    acima) — American English A1 e Grammar English A1 são A1 de verdade;
+                    English Vocabulary B é Pré-Intermediário/Intermediário, apesar do "B" no
+                    nome não deixar isso óbvio. Ordem pedida pelo dono: American, Grammar,
+                    Vocabulary (não mais a ordem antiga, Vocabulary primeiro). */}
+                <span className="course-level-heading">Beginner</span>
                 <div className="course-link-row">
                   <a className="course-link" href="#link-american1" onClick={handleAmerican1}>
                     <span>{courses.american1.title}</span>
@@ -3200,11 +4722,206 @@ function App() {
                     </button>
                   )}
                 </div>
+                <span className="course-level-heading">Intermediate</span>
+                <div className="course-link-row">
+                  <a className="course-link" href="#link-vocabulary" onClick={handleVocabulary}>
+                    <span>{courses.vocabulary.title}</span>
+                    <small>{courses.vocabulary.description}</small>
+                  </a>
+                  {lastVisitedByCourse.vocabulary && (
+                    <button
+                      type="button"
+                      className="continue-cta course-continue-cta"
+                      onClick={() => openLastVisitedEntry('vocabulary', lastVisitedByCourse.vocabulary)}
+                    >
+                      Continue where you left off
+                      <small>{formatLastVisitedLabel('vocabulary', lastVisitedByCourse.vocabulary)}</small>
+                    </button>
+                  )}
+                </div>
+                <div className="course-link-row">
+                  <a className="course-link" href="#link-americanAccent" onClick={handleAmericanAccent}>
+                    <span>{courses.americanAccent.title}</span>
+                    <small>{courses.americanAccent.description}</small>
+                  </a>
+                  {lastVisitedByCourse.americanAccent && (
+                    <button
+                      type="button"
+                      className="continue-cta course-continue-cta"
+                      onClick={() => openLastVisitedEntry('americanAccent', lastVisitedByCourse.americanAccent)}
+                    >
+                      Continue where you left off
+                      <small>{formatLastVisitedLabel('americanAccent', lastVisitedByCourse.americanAccent)}</small>
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>
         </main>
-      ) : activePage === 'american1' ? (
+      ) : activePage === 'americanAccent' ? (
+        <main className="landing-page vocabulary-mode vocabulary-grid-mode" id="link-americanAccent">
+          <div className="landing-panel vocabulary-page vocabulary-grid-mode">
+            <h2 className="vocabulary-title">{courses.americanAccent.title}</h2>
+            <span className="american-accent-intro">
+              Mastering the American Accent — pick a chapter to start reading. Progress is tracked
+              per book page, not per chapter.
+            </span>
+            <UnitSearchBox
+              value={unitSearchQuery}
+              onChange={setUnitSearchQuery}
+              placeholder="Search chapters... (e.g. linking)"
+            />
+            {unitSearchNormalized && filteredAmericanAccentChapters.length === 0 && filteredAmericanAccentScreens.length === 0 ? (
+              <p className="unit-search-empty">No chapters or pages match "{unitSearchQuery}".</p>
+            ) : null}
+            <div className="vocabulary-list" role="list">
+              {filteredAmericanAccentChapters.map((chapter) => {
+                const chapterScreens = AMERICAN_ACCENT_SCREENS.filter((screen) => screen.chapter === chapter.id);
+                const chapterPages = chapterScreens.flatMap((screen) => screen.pdfPages);
+                const visitedCount = chapterPages.filter((page) => visitedAmericanAccentPages[page]).length;
+                const firstScreen = chapterScreens[0];
+                return (
+                  <a
+                    key={chapter.id}
+                    className="vocabulary-link"
+                    href={`#american-accent-chapter-${chapter.id}`}
+                    onClick={(event) => firstScreen && handleAmericanAccentScreenSelect(event, firstScreen.id)}
+                  >
+                    <UnitBadgeDot status={visitedCount === 0 ? 'unvisited' : visitedCount >= chapterPages.length ? 'mastered' : 'visited'} />
+                    <span>{chapter.name}</span>
+                    <small>{chapter.topic ? titleCase(chapter.topic) : `p. ${chapter.startPrintedPage}–${chapter.endPrintedPage}`}</small>
+                  </a>
+                );
+              })}
+            </div>
+            {unitSearchNormalized && filteredAmericanAccentScreens.length > 0 && (
+              <>
+                <h3 className="unified-search-group-title">Matching pages</h3>
+                <div className="vocabulary-list" role="list">
+                  {filteredAmericanAccentScreens.map((screen) => {
+                    const chapter = AMERICAN_ACCENT_CHAPTERS.find((item) => item.id === screen.chapter);
+                    return (
+                      <a
+                        key={screen.id}
+                        className="vocabulary-link"
+                        href={`#american-accent-${screen.id}`}
+                        onClick={(event) => handleAmericanAccentScreenSelect(event, screen.id)}
+                      >
+                        <UnitBadgeDot status={screen.pdfPages.every((page) => visitedAmericanAccentPages[page]) ? 'mastered' : screen.pdfPages.some((page) => visitedAmericanAccentPages[page]) ? 'visited' : 'unvisited'} />
+                        <span>{americanAccentPrintedPageLabel(screen)}</span>
+                        <small>{chapter ? chapter.name : ''} — {screen.topic}</small>
+                      </a>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+        </main>
+      ) : activePage === 'american-accent-reader' ? (() => {
+        const screen = AMERICAN_ACCENT_SCREEN_BY_ID[selectedAmericanAccentScreenId];
+        const chapter = screen ? AMERICAN_ACCENT_CHAPTERS.find((item) => item.id === screen.chapter) : null;
+        const screenIndex = screen ? AMERICAN_ACCENT_SCREENS.findIndex((item) => item.id === screen.id) : -1;
+
+        return (
+          <main
+            className="main-panels"
+            ref={layoutRef}
+            style={{
+              gridTemplateColumns: sidePanelVisible
+                ? `minmax(${MIN_CENTER_WIDTH}px, 1fr) 14px ${rightWidth}px`
+                : `minmax(${MIN_CENTER_WIDTH}px, 1fr)`,
+            }}
+          >
+            <section className="pdf-panel">
+              <div className="pdf-toolbar pdf-toolbar-left american-accent-toolbar">
+                <div className="pdf-toolbar-nav">
+                  <button type="button" className="upload-button all-units-link" onClick={handleBackToAmericanAccent}>
+                    All Chapters
+                  </button>
+                  <button
+                    type="button"
+                    className="upload-button"
+                    onClick={handlePreviousAmericanAccentScreen}
+                    disabled={screenIndex <= 0}
+                  >
+                    Previous Page
+                  </button>
+                  <button
+                    type="button"
+                    className="upload-button"
+                    onClick={handleNextAmericanAccentScreen}
+                    disabled={screenIndex === -1 || screenIndex >= AMERICAN_ACCENT_SCREENS.length - 1}
+                  >
+                    Next Page
+                  </button>
+                </div>
+                {/* Player fixo no topo, não ancorado sobre o PDF — diferente do
+                    Vocabulary/American1 (ver decisão registrada em conversa: uma
+                    página deste livro pode ter 2-3 faixas, então um botão por
+                    coordenada não escala aqui; mesmo padrão do Grammar Elem. */}
+                {screen && screen.tracks.length > 0 && (
+                  <div className="reference-links" role="group" aria-label="Page audio">
+                    {screen.tracks.map((trackNumber) => (
+                      <SimpleAudioPlayer
+                        key={trackNumber}
+                        label={`Track ${trackNumber}`}
+                        src={americanAccentScreenAudioUrl(trackNumber)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {screen && (
+                <div className="section-info">
+                  <strong>
+                    {courses.americanAccent.title}
+                    {' · '}
+                    {chapter ? chapter.name : ''}
+                    {chapter?.topic ? ` (${titleCase(chapter.topic)})` : ''}
+                    {' · '}
+                    {americanAccentPrintedPageLabel(screen)}
+                    {screen.topic ? ` (${screen.topic})` : ''}
+                  </strong>
+                </div>
+              )}
+
+              {screen ? (
+                <PdfWorkspace key={screen.id} fileUrl={americanAccentScreenPdfUrl(screen)} defaultScale={1.3} />
+              ) : (
+                <div className="pdf-empty-state">
+                  <p className="eyebrow">No page</p>
+                  <h1>No page selected</h1>
+                </div>
+              )}
+            </section>
+
+            <button
+              className={`resize-handle${sidePanelVisible ? '' : ' is-hidden'}`}
+              type="button"
+              aria-label="Resize right column"
+              onPointerDown={startPanelResize}
+            />
+
+            <aside className={`side-panel right-panel${sidePanelVisible ? '' : ' is-hidden'}`}>
+              <div className="panel-content related-panel">
+                {screen && (
+                  <UnitNotes
+                    key={screen.id}
+                    unit={screen.id}
+                    userName={userName}
+                    storageKeyBase={`notes:americanAccent:${screen.id}`}
+                    rating={americanAccentPageRatings[screen.id] || 0}
+                    onRate={(value) => handleRateAmericanAccentPage(screen.id, value)}
+                  />
+                )}
+              </div>
+            </aside>
+          </main>
+        );
+      })() : activePage === 'american1' ? (
         <main className="landing-page vocabulary-mode vocabulary-grid-mode" id="link-american1">
           <div className="landing-panel vocabulary-page vocabulary-grid-mode">
             <h2 className="vocabulary-title">American English A1</h2>
@@ -3772,22 +5489,23 @@ function App() {
               )}
 
               {showAmerican1Answers && answersUrl && (
-                <div className="section-answers-strip">
-                  <div className="section-answers-strip-head">
-                    <span>Teacher's Book answers</span>
-                    <button
-                      type="button"
-                      className="section-answers-strip-close"
-                      onClick={() => setShowAmerican1Answers(false)}
-                      aria-label="Close answers"
-                    >
-                      ✕
-                    </button>
+                <>
+                  <button
+                    type="button"
+                    className="study-answers-resize-handle"
+                    aria-label="Resize answers area"
+                    onPointerDown={startAnswersResize}
+                  />
+
+                  <div
+                    className="section-answers-strip section-answers-strip--resizable"
+                    style={answersPanelHeight ? { height: answersPanelHeight, maxHeight: answersPanelHeight, flex: '0 0 auto' } : undefined}
+                  >
+                    <div className="section-answers-strip-frame">
+                      <PdfWorkspace key={answersUrl} fileUrl={answersUrl} initialTool="hand" />
+                    </div>
                   </div>
-                  <div className="section-answers-strip-frame">
-                    <PdfWorkspace key={answersUrl} fileUrl={answersUrl} initialTool="hand" />
-                  </div>
-                </div>
+                </>
               )}
             </section>
 
@@ -3801,10 +5519,10 @@ function App() {
             <aside className={`side-panel right-panel${sidePanelVisible ? '' : ' is-hidden'}`}>
               <div className="panel-content related-panel">
                 <UnitNotes
-                  key={selectedAmerican1Unit}
+                  key={`${selectedAmerican1Unit}-${activeSection?.section}`}
                   unit={selectedAmerican1Unit}
                   userName={userName}
-                  storageKeyBase={`notes:american1:${selectedAmerican1Unit}`}
+                  storageKeyBase={`notes:american1:${selectedAmerican1Unit}:${activeSection?.section}`}
                   hasAnswers={Boolean(answersUrl)}
                   showAnswers={showAmerican1Answers}
                   onToggleAnswers={() => setShowAmerican1Answers((prev) => !prev)}
@@ -3885,22 +5603,23 @@ function App() {
               )}
 
               {showAmerican1ReferenceAnswers && referenceAnswersUrl && (
-                <div className="section-answers-strip">
-                  <div className="section-answers-strip-head">
-                    <span>Teacher's Book answers</span>
-                    <button
-                      type="button"
-                      className="section-answers-strip-close"
-                      onClick={() => setShowAmerican1ReferenceAnswers(false)}
-                      aria-label="Close answers"
-                    >
-                      ✕
-                    </button>
+                <>
+                  <button
+                    type="button"
+                    className="study-answers-resize-handle"
+                    aria-label="Resize answers area"
+                    onPointerDown={startAnswersResize}
+                  />
+
+                  <div
+                    className="section-answers-strip section-answers-strip--resizable"
+                    style={answersPanelHeight ? { height: answersPanelHeight, maxHeight: answersPanelHeight, flex: '0 0 auto' } : undefined}
+                  >
+                    <div className="section-answers-strip-frame">
+                      <PdfWorkspace key={referenceAnswersUrl} fileUrl={referenceAnswersUrl} initialTool="hand" />
+                    </div>
                   </div>
-                  <div className="section-answers-strip-frame">
-                    <PdfWorkspace key={referenceAnswersUrl} fileUrl={referenceAnswersUrl} initialTool="hand" />
-                  </div>
-                </div>
+                </>
               )}
             </section>
 
@@ -3984,17 +5703,28 @@ function App() {
             <p className="eyebrow">Listening</p>
             <h1>Choose a listening source</h1>
             <div className="course-links">
-              {LISTENING_SOURCES.map((source) => (
-                <div className="course-link-row" key={source.id}>
-                  <a
-                    className="course-link"
-                    href="#0"
-                    onClick={(event) => { event.preventDefault(); handleOpenListeningSource(source); }}
-                  >
-                    <span>{source.title}</span>
-                    <small>{source.description}</small>
-                  </a>
-                </div>
+              {LISTENING_SOURCES.map((source, index) => (
+                <Fragment key={source.id}>
+                  {courses[source.id]?.level && courses[source.id].level !== courses[LISTENING_SOURCES[index - 1]?.id]?.level && (
+                    <span className="course-level-heading">{courses[source.id].level}</span>
+                  )}
+                  <div className="course-link-row">
+                    <a
+                      className="course-link"
+                      href="#0"
+                      onClick={(event) => { event.preventDefault(); handleOpenListeningSource(source); }}
+                    >
+                      {/* Descrição fixa daqui (não source.description) — esse campo do
+                          JSON é reaproveitado por Dictation/Speaking também, e o do
+                          American Accent foi escrito pensando no Dictation ("Dictation
+                          practice..."), o que ficava errado exibido aqui no Listening
+                          (bug real reportado pelo dono, 2026-07-26). Mesmo padrão que
+                          Dictation/Speaking já usavam, só que hardcoded pro Listening. */}
+                      <span>{source.title}</span>
+                      <small>Fill in the blank exercises — listen to the audio and complete the missing words.</small>
+                    </a>
+                  </div>
+                </Fragment>
               ))}
             </div>
           </div>
@@ -4012,6 +5742,7 @@ function App() {
           return (
             listeningTrackLabel(track).toLowerCase().includes(listeningSearchNormalized)
             || String(track.number).includes(listeningSearchNormalized)
+            || String(track.trackNumber || '').includes(listeningSearchNormalized)
           );
         });
         return (
@@ -4048,7 +5779,7 @@ function App() {
                         href="#0"
                         onClick={(event) => { event.preventDefault(); handleOpenListeningTrack(track); }}
                       >
-                        <span>Listening Exercise n. {track.number} ({listeningTrackLabel(track)})</span>
+                        <span>{`Listening Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (${listeningTrackLabel(track)})`}</span>
                         <small>{track.sentences.length} sentences · fill in the blank</small>
                         {stats && (
                           <small className="listening-track-stats">
@@ -4080,7 +5811,7 @@ function App() {
         const trackIndex = tracks.findIndex((item) => item.id === selectedListeningTrack);
         const hasNextTrack = trackIndex !== -1 && trackIndex < tracks.length - 1;
         return (
-          <main className="landing-page landing-page--courses vocabulary-mode listening-mode">
+          <main className="landing-page landing-page--courses vocabulary-mode listening-mode listening-exercise-scroll-mode">
             <div className="landing-panel course-links-panel listening-panel listening-exercise-panel">
               <div className="listening-exercise-nav">
                 <button type="button" className="upload-button" onClick={handleBackToListeningTracks}>
@@ -4096,7 +5827,7 @@ function App() {
               <h1>
                 {track ? (
                   <>
-                    {`Listening Exercise n. ${track.number} (`}
+                    {`Listening Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (`}
                     {track.unit ? (
                       <span
                         className="listening-unit-link"
@@ -4117,7 +5848,13 @@ function App() {
                 ) : 'Exercise'}
               </h1>
               {track ? (
-                <ListeningClozeExercise key={track.id} track={track} userName={userName} onAddWord={handleAddWord} />
+                <ListeningClozeExercise
+                  key={track.id}
+                  track={track}
+                  userName={userName}
+                  onAddWord={handleAddWord}
+                  onPracticed={() => markDailyGoalDone('listening')}
+                />
               ) : (
                 <p>Exercise not found.</p>
               )}
@@ -4133,20 +5870,25 @@ function App() {
               Listen to the audio without reading the text first, then type what you hear.
             </p>
             <div className="course-links">
-              {LISTENING_SOURCES.map((source) => (
-                <div className="course-link-row" key={source.id}>
-                  <a
-                    className="course-link"
-                    href="#0"
-                    onClick={(event) => { event.preventDefault(); handleOpenDictationSource(source); }}
-                  >
-                    {/* Mesmo LISTENING_SOURCES do Listening (mesmos tracks/áudio), mas o
-                        título/descrição aqui são só de exibição — nunca escritos de volta
-                        no JSON, então a tela do Listening continua com o texto original. */}
-                    <span>{source.title.replace(/^Listening/, 'Dictation')}</span>
-                    <small>Same audio as Listening, without the text — you type what you hear.</small>
-                  </a>
-                </div>
+              {LISTENING_SOURCES.map((source, index) => (
+                <Fragment key={source.id}>
+                  {courses[source.id]?.level && courses[source.id].level !== courses[LISTENING_SOURCES[index - 1]?.id]?.level && (
+                    <span className="course-level-heading">{courses[source.id].level}</span>
+                  )}
+                  <div className="course-link-row">
+                    <a
+                      className="course-link"
+                      href="#0"
+                      onClick={(event) => { event.preventDefault(); handleOpenDictationSource(source); }}
+                    >
+                      {/* Mesmo LISTENING_SOURCES do Listening (mesmos tracks/áudio), mas o
+                          título/descrição aqui são só de exibição — nunca escritos de volta
+                          no JSON, então a tela do Listening continua com o texto original. */}
+                      <span>{source.title.replace(/^Listening/, 'Dictation')}</span>
+                      <small>Same audio as Listening, without the text — you type what you hear.</small>
+                    </a>
+                  </div>
+                </Fragment>
               ))}
             </div>
           </div>
@@ -4164,6 +5906,7 @@ function App() {
           return (
             listeningTrackLabel(track).toLowerCase().includes(dictationSearchNormalized)
             || String(track.number).includes(dictationSearchNormalized)
+            || String(track.trackNumber || '').includes(dictationSearchNormalized)
           );
         });
         return (
@@ -4200,7 +5943,7 @@ function App() {
                         href="#0"
                         onClick={(event) => { event.preventDefault(); handleOpenDictationTrack(track); }}
                       >
-                        <span>Dictation Exercise n. {track.number} ({listeningTrackLabel(track)})</span>
+                        <span>{`Dictation Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (${listeningTrackLabel(track)})`}</span>
                         <small>{track.sentences.length} sentences · type what you hear</small>
                         {stats && (
                           <small className="listening-track-stats">
@@ -4246,10 +5989,224 @@ function App() {
               </div>
               <p className="eyebrow">{source ? source.title.replace(/^Listening/, 'Dictation') : 'Dictation'}</p>
               <h1>
-                {track ? `Dictation Exercise n. ${track.number} (${listeningTrackLabel(track)})` : 'Exercise'}
+                {track
+                  ? `Dictation Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (${listeningTrackLabel(track)})`
+                  : 'Exercise'}
               </h1>
               {track ? (
-                <DictationExercise key={track.id} track={track} userName={userName} />
+                <DictationExercise
+                  key={track.id}
+                  track={track}
+                  userName={userName}
+                  onPracticed={() => markDailyGoalDone('listening')}
+                />
+              ) : (
+                <p>Exercise not found.</p>
+              )}
+            </div>
+          </main>
+        );
+      })() : activePage === 'speaking' ? (
+        <main className="landing-page landing-page--courses vocabulary-mode listening-mode speaking-mode">
+          <div className="landing-panel course-links-panel listening-panel">
+            <p className="eyebrow">Speaking</p>
+            <h1>Choose a speaking source</h1>
+            <p className="listening-instructions">
+              Listen to a sentence, then press the microphone and repeat it out loud — your
+              browser transcribes what you said and compares it with the original.
+            </p>
+            {!SPEECH_RECOGNITION_SUPPORTED && (
+              <p className="speaking-unsupported">
+                Speech recognition isn't available in this browser. Try Chrome or Edge on
+                desktop or Android to practice Speaking.
+              </p>
+            )}
+            <div className="course-links">
+              {LISTENING_SOURCES.map((source, index) => (
+                <Fragment key={source.id}>
+                  {courses[source.id]?.level && courses[source.id].level !== courses[LISTENING_SOURCES[index - 1]?.id]?.level && (
+                    <span className="course-level-heading">{courses[source.id].level}</span>
+                  )}
+                  <div className="course-link-row">
+                    <a
+                      className="course-link"
+                      href="#0"
+                      onClick={(event) => { event.preventDefault(); handleOpenSpeakingSource(source); }}
+                    >
+                      {/* Mesmo LISTENING_SOURCES do Listening/Dictation (mesmos tracks/áudio),
+                          título só de exibição — nunca escrito de volta no JSON. */}
+                      <span>{source.title.replace(/^Listening/, 'Speaking')}</span>
+                      <small>Same audio as Listening — you repeat it out loud instead of typing.</small>
+                    </a>
+                  </div>
+                </Fragment>
+              ))}
+            </div>
+          </div>
+        </main>
+      ) : activePage === 'ask-ai' ? (
+        <main className="landing-page landing-page--courses vocabulary-mode ask-ai-mode">
+          <div className="landing-panel course-links-panel ask-ai-panel">
+            <div className="ask-ai-header">
+              <span className="ask-ai-mascot"><AdeleMascot /></span>
+              <div>
+                <p className="eyebrow">Ask Adele</p>
+                <h1>Ask Adele about everything in English</h1>
+              </div>
+            </div>
+            <p className="listening-instructions">
+              Adele is your American English tutor — ask her anything about grammar,
+              vocabulary, pronunciation, idioms, or usage. If your question itself has a
+              mistake, she'll correct it first. She sometimes ends with a quick challenge for
+              you to try — answer it as your next question and she'll check it.
+            </p>
+            <textarea
+              className="dictation-textarea ask-ai-textarea"
+              value={askAiQuestion}
+              onChange={(event) => setAskAiQuestion(event.target.value)}
+              placeholder={askAiLastExchange
+                ? 'Your answer, or a new question...'
+                : 'e.g. When do I use "have been" vs "had been"?'}
+              rows={4}
+            />
+            <div className="ask-ai-actions-row">
+              <button
+                type="button"
+                className="show-answers-btn"
+                onClick={handleAskAiSubmit}
+                disabled={!askAiQuestion.trim() || askAiStatus === 'loading'}
+              >
+                {askAiStatus === 'loading' ? (
+                  <span className="ask-ai-thinking">
+                    Thinking
+                    <span className="ask-ai-thinking-dots"><span>.</span><span>.</span><span>.</span></span>
+                  </span>
+                ) : 'Ask'}
+              </button>
+              {askAiLastExchange && (
+                <button type="button" className="ghost-button" onClick={handleAskAiReset}>
+                  Start a new topic
+                </button>
+              )}
+            </div>
+            {askAiStatus === 'error' && (
+              <p className="ask-ai-error">{askAiErrorMessage}</p>
+            )}
+            {askAiAnswer && (
+              <div className="ask-ai-answer">
+                <p className="eyebrow">Answer</p>
+                <div className="ask-ai-answer-body">{renderAdeleMarkdown(askAiAnswer)}</div>
+              </div>
+            )}
+          </div>
+        </main>
+      ) : activePage === 'speaking-tracks' ? (() => {
+        const source = LISTENING_SOURCES.find((item) => item.id === selectedSpeakingSource);
+        const speakingSearchNormalized = speakingSearchQuery.trim().toLowerCase();
+        const allSpeakingTracks = (source?.tracks || []).map((track) => ({
+          track,
+          stats: loadSpeakingStats(userName, track.id),
+        }));
+        const visibleSpeakingTracks = allSpeakingTracks.filter(({ track, stats }) => {
+          if (hideMasteredSpeaking && stats?.lastScorePercent === 100) return false;
+          if (!speakingSearchNormalized) return true;
+          return (
+            listeningTrackLabel(track).toLowerCase().includes(speakingSearchNormalized)
+            || String(track.number).includes(speakingSearchNormalized)
+            || String(track.trackNumber || '').includes(speakingSearchNormalized)
+          );
+        });
+        return (
+          <main className="landing-page landing-page--courses vocabulary-mode listening-mode listening-tracks-mode speaking-mode">
+            <div className="landing-panel course-links-panel listening-panel listening-tracks-mode">
+              <button type="button" className="upload-button" onClick={handleBackToSpeakingHub}>
+                ‹ Back to Speaking
+              </button>
+              <p className="eyebrow">{source ? source.title.replace(/^Listening/, 'Speaking') : 'Speaking'}</p>
+              <h1>Choose an exercise</h1>
+              <div className="listening-tracks-controls">
+                <UnitSearchBox
+                  value={speakingSearchQuery}
+                  onChange={setSpeakingSearchQuery}
+                  placeholder="Search by unit or exercise number..."
+                />
+                <button
+                  type="button"
+                  className={`upload-button listening-hide-mastered-toggle${hideMasteredSpeaking ? ' is-active' : ''}`}
+                  onClick={() => setHideMasteredSpeaking((current) => !current)}
+                >
+                  {hideMasteredSpeaking ? '✓ Hiding 100% score' : 'Hide 100% score'}
+                </button>
+              </div>
+              {visibleSpeakingTracks.length === 0 && (
+                <p className="unit-search-empty">No exercises match your filters.</p>
+              )}
+              <div className="course-links">
+                {visibleSpeakingTracks.map(({ track, stats }) => {
+                  return (
+                    <div className="course-link-row" key={track.id}>
+                      <a
+                        className="course-link"
+                        href="#0"
+                        onClick={(event) => { event.preventDefault(); handleOpenSpeakingTrack(track); }}
+                      >
+                        <span>{`Speaking Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (${listeningTrackLabel(track)})`}</span>
+                        <small>{track.sentences.length} sentences · repeat what you hear</small>
+                        {stats && (
+                          <small className="listening-track-stats">
+                            Done {stats.attempts}× · Last score: {stats.lastScorePercent}%
+                          </small>
+                        )}
+                      </a>
+                      {stats && (
+                        <button
+                          type="button"
+                          className="continue-cta course-continue-cta"
+                          onClick={() => handleOpenSpeakingTrack(track)}
+                        >
+                          Try again
+                          <small>Last score: {stats.lastScorePercent}%</small>
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </main>
+        );
+      })() : activePage === 'speaking-exercise' ? (() => {
+        const source = LISTENING_SOURCES.find((item) => item.id === selectedSpeakingSource);
+        const tracks = source?.tracks || [];
+        const track = tracks.find((item) => item.id === selectedSpeakingTrack);
+        const trackIndex = tracks.findIndex((item) => item.id === selectedSpeakingTrack);
+        const hasNextTrack = trackIndex !== -1 && trackIndex < tracks.length - 1;
+        return (
+          <main className="landing-page landing-page--courses vocabulary-mode listening-mode speaking-mode listening-exercise-scroll-mode">
+            <div className="landing-panel course-links-panel listening-panel listening-exercise-panel">
+              <div className="listening-exercise-nav">
+                <button type="button" className="upload-button" onClick={handleBackToSpeakingTracks}>
+                  ‹ Back to Exercises
+                </button>
+                {hasNextTrack && (
+                  <button type="button" className="upload-button" onClick={handleNextSpeakingTrack}>
+                    Next Speaking
+                  </button>
+                )}
+              </div>
+              <p className="eyebrow">{source ? source.title.replace(/^Listening/, 'Speaking') : 'Speaking'}</p>
+              <h1>
+                {track
+                  ? `Speaking Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (${listeningTrackLabel(track)})`
+                  : 'Exercise'}
+              </h1>
+              {track ? (
+                <SpeakingExercise
+                  key={track.id}
+                  track={track}
+                  userName={userName}
+                  onPracticed={() => markDailyGoalDone('listening')}
+                />
               ) : (
                 <p>Exercise not found.</p>
               )}
@@ -4264,7 +6221,23 @@ function App() {
             onDelete={handleDeleteWord}
             onGrade={handleGradeWord}
             onUpdateMeaning={handleUpdateWordMeaning}
+            onUpdateEntry={handleUpdateWordEntry}
           />
+        </main>
+      ) : activePage === 'my-notes' ? (
+        <main className="landing-page vocabulary-mode my-notes-mode">
+          <MyNotesPage
+            userName={userName}
+            searchQuery={myNotesSearchQuery}
+            onSearchChange={setMyNotesSearchQuery}
+            onOpenEntry={handleOpenNoteEntry}
+            askConfirm={askConfirm}
+            showToast={showToast}
+          />
+        </main>
+      ) : activePage === 'grammar-vocab-exercises' ? (
+        <main className="landing-page vocabulary-mode gve-mode">
+          <GrammarVocabExercisesPage userName={userName} />
         </main>
       ) : activePage === 'profile' ? (
         <main className="landing-page vocabulary-mode profile-mode">
@@ -4406,6 +6379,48 @@ function App() {
               </div>
             )}
 
+            <div className="profile-course-head">
+              <h2 className="profile-course-heading">{courses.americanAccent.title}</h2>
+              <button
+                type="button"
+                className="profile-course-toggle"
+                onClick={() => toggleProfileCourse('americanAccent')}
+                aria-expanded={Boolean(expandedProfileCourses.americanAccent)}
+                aria-label={expandedProfileCourses.americanAccent ? 'Collapse' : 'Expand'}
+              >
+                {expandedProfileCourses.americanAccent ? '−' : '+'}
+              </button>
+            </div>
+            <p className="landing-meta">
+              Your Score: <strong>{americanAccentScorePercent !== null ? `${americanAccentScorePercent}%` : '—'}</strong>
+              {' '}({americanAccentRatingValues.length} page{americanAccentRatingValues.length === 1 ? '' : 's'} self-rated)
+              {' '}· Progress: <strong>{americanAccentProgressPercent}%</strong>
+            </p>
+            {expandedProfileCourses.americanAccent && (
+              <div className="profile-reset-list">
+                <button type="button" className="profile-reset-btn primary" onClick={() => handleExportNotes('americanAccent')}>
+                  <span>Export lesson notes (.txt)</span>
+                  <small>Downloads "My Notes" from every page as a single plain-text file.</small>
+                </button>
+                <button type="button" className="profile-reset-btn" onClick={handleResetAmericanAccentProgress}>
+                  <span>Reset page progress</span>
+                  <small>Clears which pages count toward "Your Progress".</small>
+                </button>
+                <button type="button" className="profile-reset-btn" onClick={handleResetAmericanAccentSelfEvaluation}>
+                  <span>Reset self-evaluation</span>
+                  <small>Clears "Your Score" and every star rating given per page.</small>
+                </button>
+                <button type="button" className="profile-reset-btn" onClick={handleResetAmericanAccentNotes}>
+                  <span>Reset lesson notes</span>
+                  <small>Clears "My Notes" for every page.</small>
+                </button>
+                <button type="button" className="profile-reset-btn danger" onClick={handleResetAmericanAccentAll}>
+                  <span>Reset All</span>
+                  <small>Everything above, all at once.</small>
+                </button>
+              </div>
+            )}
+
             <p className="landing-meta profile-section-divider">
               Everything below is stored only in this browser (no account, no server) — these
               buttons erase it for good.
@@ -4439,6 +6454,59 @@ function App() {
             </p>
             {expandedProfileCourses.backup && (
               <div className="profile-reset-list">
+                {isBackupFolderSupported() ? (
+                  !backupFolderHandle ? (
+                    <button type="button" className="profile-reset-btn primary" onClick={handleChooseBackupFolder}>
+                      <span>Link a backup folder</span>
+                      <small>Choose a folder once (Chrome/Edge) — the app saves a backup there
+                        automatically from now on (every 5 min while linked, and also whenever
+                        you switch units), and can restore from it later. Good pick: a folder
+                        already synced to the cloud (OneDrive, Google Drive...), so it survives
+                        even if this computer is lost.</small>
+                    </button>
+                  ) : (
+                    <div className="profile-backup-folder">
+                      <p className="landing-meta profile-backup-folder-status">
+                        📁 Backup folder linked ("{backupFolderHandle.name}")
+                        {backupFolderNeedsPermission
+                          ? ' — permission needed again'
+                          : lastFolderBackupAt
+                            ? ` — last saved ${new Date(lastFolderBackupAt).toLocaleString()}`
+                            : ' — not saved yet'}
+                      </p>
+                      {backupFolderNeedsPermission ? (
+                        <button type="button" className="profile-reset-btn primary" onClick={handleReconnectBackupFolder}>
+                          <span>Reconnect folder</span>
+                          <small>The browser needs you to confirm access to the linked folder again
+                            (this can happen after restarting it).</small>
+                        </button>
+                      ) : (
+                        <>
+                          <button type="button" className="profile-reset-btn primary" onClick={() => handleSaveBackupToFolder()}>
+                            <span>Save backup now</span>
+                            <small>Writes the latest backup for "{userName}" to the linked folder right away.</small>
+                          </button>
+                          <button type="button" className="profile-reset-btn primary" onClick={handleRestoreFromFolder}>
+                            <span>Restore from folder</span>
+                            <small>Reads the backup for "{userName}" from the linked folder and imports it here. Overwrites matching data.</small>
+                          </button>
+                        </>
+                      )}
+                      <button type="button" className="profile-reset-btn" onClick={handleUnlinkBackupFolder}>
+                        <span>Unlink folder</span>
+                        <small>Stops automatic saves — doesn't delete the backup file already there.</small>
+                      </button>
+                    </div>
+                  )
+                ) : (
+                  <p className="landing-meta">
+                    Automatic folder backup needs Chrome or Edge — use Export/Import below instead.
+                  </p>
+                )}
+                <button type="button" className="profile-reset-btn primary" onClick={() => handleExportNotes()}>
+                  <span>Download all notes (.txt)</span>
+                  <small>Downloads "My Notes" from all 3 courses — units, reference pages, appendixes and additional exercises — as a single plain-text file.</small>
+                </button>
                 <button type="button" className="profile-reset-btn primary" onClick={handleExportBackup}>
                   <span>Export full backup (.json)</span>
                   <small>Downloads everything for "{userName}": progress, notes, answers, ratings and My Words.</small>
@@ -4459,29 +6527,17 @@ function App() {
         // dentro de uma IIFE (mesmo padrão de american1-unit/listening-tracks
         // logo abaixo) só pra poder calcular essas listas locais antes do
         // JSX, sem virar mais um punhado de consts soltos no corpo de App().
+        // `courseProgress`/`overallMasteryPercent` já vêm computados lá em
+        // cima (compartilhados com o Today's Goal da Home — ver ROADMAP
+        // item 3), não duplicados aqui.
         const listeningTracks = LISTENING_SOURCES.flatMap((source) => source.tracks);
         const listeningAttempted = listeningTracks.filter((track) => Boolean(loadListeningStats(userName, track.id))).length;
         const dictationAttempted = listeningTracks.filter((track) => Boolean(loadDictationStats(userName, track.id))).length;
-
-        // Mesma lógica de status das 3 grades de unit (getUnitBadgeStatus/
-        // getVocabularyUnitBadgeStatus) — nunca reinventada aqui, só somada
-        // por status via tallyUnitStatuses.
-        const vocabularyStatuses = unitItems.map((unit) => (
-          getVocabularyUnitBadgeStatus(unit.number, Boolean(visitedUnits[unit.number]), exerciseRatings)
-        ));
-        const american1Statuses = american1UnitNumbers.map((unit) => {
-          const visited = Object.keys(american1VisitedSections).some((key) => key.startsWith(`${unit}|`));
-          return getUnitBadgeStatus(visited, american1UnitRatings[unit] || 0);
-        });
-        const grammarElemStatuses = grammarElemUnitNumbers.map((unit) => (
-          getUnitBadgeStatus(Boolean(grammarElemVisitedUnits[unit]), grammarElemUnitRatings[unit] || 0)
-        ));
-
-        const courseProgress = [
-          { id: 'vocabulary', title: courses.vocabulary.title, total: unitItems.length, tally: tallyUnitStatuses(vocabularyStatuses) },
-          { id: 'american1', title: courses.american1.title, total: american1UnitNumbers.length, tally: tallyUnitStatuses(american1Statuses) },
-          { id: 'grammarElem', title: courses.grammarElem.title, total: GRAMMAR_ELEM_UNIT_COUNT, tally: tallyUnitStatuses(grammarElemStatuses) },
-        ];
+        // Speaking existia como modo próprio (tracks/stats/namespace igual
+        // Listening/Dictation) mas nunca tinha entrado nesse resumo — a tela
+        // promete "everything you've studied" e ficava sem ele (falha real
+        // apontada em revisão, 2026-07-25/26). Mesmo padrão dos outros 2.
+        const speakingAttempted = listeningTracks.filter((track) => Boolean(loadSpeakingStats(userName, track.id))).length;
 
         return (
           <main className="landing-page vocabulary-mode dashboard-mode">
@@ -4491,10 +6547,13 @@ function App() {
               wordbookDueCount={wordbookDueCount}
               reviewQueueCount={reviewQueue.length}
               courseProgress={courseProgress}
+              overallMasteryPercent={overallMasteryPercent}
               listeningAttempted={listeningAttempted}
               listeningTotal={listeningTracks.length}
               dictationAttempted={dictationAttempted}
               dictationTotal={listeningTracks.length}
+              speakingAttempted={speakingAttempted}
+              speakingTotal={listeningTracks.length}
               lastVisitedByCourse={lastVisitedByCourse}
               onOpenLastVisited={openLastVisitedEntry}
               formatLastVisitedLabel={formatLastVisitedLabel}
@@ -4503,6 +6562,9 @@ function App() {
               onContinueLastVisited={handleContinueLastVisited}
               onOpenWordbook={handleOpenWordbook}
               onOpenCourses={handleCourses}
+              backupFolderHandle={backupFolderHandle}
+              backupFolderNeedsPermission={backupFolderNeedsPermission}
+              onSaveProgressNow={handleSaveProgressFromDashboard}
             />
           </main>
         );
@@ -4559,6 +6621,41 @@ function App() {
             </form>
           </div>
         </main>
+      ) : activePage === 'backup-setup' ? (
+        <main className="landing-page">
+          <div className="landing-panel register-panel">
+            <p className="eyebrow">Welcome, {userName}</p>
+            <h1>Back up your progress automatically?</h1>
+            <p className="landing-meta">
+              Everything you do here — units visited, notes, ratings, My Words — lives only in
+              this browser. Clearing the cache, a browser update, or moving to a new computer
+              can erase months of progress without warning.
+            </p>
+            <p className="landing-meta">
+              Choose a folder once and the app saves a backup there by itself from now on.
+              Picking a folder that's already synced to the cloud (OneDrive, Google Drive...)
+              means your progress survives even if this computer is lost.
+            </p>
+            {backupFolderHandle && (
+              <p className="landing-meta">
+                {backupFolderNeedsPermission
+                  ? <>This browser already has a folder linked ("{backupFolderHandle.name}"), but it needs
+                      permission again — choosing it below reconnects it.</>
+                  : <>This browser is already saving to a folder named "{backupFolderHandle.name}". Choosing a
+                      folder below replaces it for every name registered on this browser, not just
+                      "{userName}".</>}
+              </p>
+            )}
+            <div className="register-form">
+              <button type="button" className="show-answers-btn" onClick={handleChooseBackupFolderAndContinue}>
+                Choose a folder
+              </button>
+              <button type="button" className="register-reset-all-btn" onClick={handleSkipBackupSetup}>
+                Maybe later — I'll set this up in My Profile
+              </button>
+            </div>
+          </div>
+        </main>
       ) : (
         <main className="landing-page landing-page--home">
           <div className="home-hero">
@@ -4592,6 +6689,15 @@ function App() {
                 onSeeAllReviews={handleCourses}
               />
             )}
+            {userName && (
+              <DailyGoalCard
+                items={dailyGoalItems}
+                completedCount={dailyGoalCompletedCount}
+                allItems={dailyGoalAllItems}
+                onTogglePref={handleToggleDailyGoalPref}
+                overallMasteryPercent={overallMasteryPercent}
+              />
+            )}
           </div>
         </main>
       )}
@@ -4613,8 +6719,53 @@ function App() {
       )}
 
       {userName && insideCourse && (!PAGES_WITH_SIDE_PANEL.includes(activePage) || sidePanelVisible) && (
-        <WordQuickAdd contextLabel={studyContextLabel} onAdd={handleAddWord} />
+        <>
+          <button
+            type="button"
+            className="ask-adele-fab"
+            onClick={handleAskAdeleShortcut}
+            title="Ask Adele about this (select text first to fill in your question)"
+          >
+            <span className="ask-adele-fab-mascot"><AdeleMascot /></span>
+            Ask Adele
+          </button>
+          <WordQuickAdd contextLabel={studyContextLabel} onAdd={handleAddWord} />
+        </>
       )}
+      <Toast toast={toast} />
+      <ConfirmDialog dialog={confirmDialog} onChoice={handleConfirmDialogChoice} />
+    </div>
+  );
+}
+
+// Substituem window.alert (Toast) e window.confirm (ConfirmDialog) só no
+// fluxo de Backup & Restore (ver showToast/askConfirm em App()) — o resto
+// do app continua com os nativos, não é um refactor geral. Renderizados uma
+// vez só, fora do ternário de activePage, pra funcionar em qualquer tela.
+function Toast({ toast }) {
+  if (!toast) return null;
+  return (
+    <div className={`app-toast app-toast--${toast.tone}`} role="status" key={toast.id}>
+      {toast.message}
+    </div>
+  );
+}
+
+function ConfirmDialog({ dialog, onChoice }) {
+  if (!dialog) return null;
+  return (
+    <div className="app-confirm-overlay" role="presentation">
+      <div className="app-confirm-dialog" role="alertdialog" aria-modal="true">
+        <p className="app-confirm-message">{dialog.message}</p>
+        <div className="app-confirm-actions">
+          <button type="button" className="app-confirm-btn app-confirm-btn--cancel" onClick={() => onChoice(false)}>
+            {dialog.cancelLabel}
+          </button>
+          <button type="button" className="app-confirm-btn app-confirm-btn--confirm" onClick={() => onChoice(true)}>
+            {dialog.confirmLabel}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -4772,6 +6923,100 @@ function TodayPlanCard({ newUnit, listening, reviewQueue, onOpenReviewItem, onSe
   );
 }
 
+// "Today's Goal" (ROADMAP item 3, trilha de estudo — parte 2 e um resumo da
+// parte 3): meta diária configurável (quais dos 3 componentes contam,
+// togglável aqui mesmo) + "você domina X% do A1", derivado do mesmo
+// courseProgress do Progress Dashboard. `editing` é estado local (não
+// persiste) — só controla se os checkboxes de customização estão à mostra.
+// Explica, por item, o que exatamente marca aquele componente da meta como
+// cumprido — texto tem que casar com a lógica real (markDailyGoalDone e o
+// hook em scheduleReview), senão a explicação engana o usuário.
+const DAILY_GOAL_EXPLANATIONS = {
+  newUnit: 'You get this the first time today that you open a unit you\'ve never visited '
+    + 'before, in any of the 3 courses (English Vocabulary B, American English A1, or '
+    + 'Grammar English A1). Reopening a unit you already visited doesn\'t count.',
+  reviews: 'You get this when you re-rate an item that was already due for spaced review. '
+    + 'Find due items either in the "Review" line of Today\'s Plan above (Home), or in the '
+    + '"Today\'s Review" card at the top of the Courses screen (menu → Courses) — open one '
+    + 'from either place and give it a new star rating. Rating something for the first time '
+    + 'isn\'t a "review", so it doesn\'t count toward this.',
+  listening: 'You get this the first time today that you finish checking a Listening exercise '
+    + '(press "Check answers" after filling in at least one blank) or a Dictation exercise '
+    + '(press "Check my answer").',
+};
+
+function DailyGoalCard({ items, completedCount, allItems, onTogglePref, overallMasteryPercent }) {
+  const [editing, setEditing] = useState(false);
+  const [openInfoKey, setOpenInfoKey] = useState(null);
+
+  if (items.length === 0 && !editing) {
+    return null;
+  }
+
+  const allDone = items.length > 0 && completedCount === items.length;
+
+  return (
+    <section className="daily-goal-card" aria-label="Today's goal">
+      <div className="plan-card-head daily-goal-head">
+        <h2>Today's Goal</h2>
+        {items.length > 0 && (
+          <span className="daily-goal-count">{completedCount}/{items.length} done</span>
+        )}
+      </div>
+      <p className="plan-card-hint">
+        You've mastered <strong>{overallMasteryPercent}%</strong> of your courses so far.
+      </p>
+      {items.length > 0 && (
+        <ul className="daily-goal-items">
+          {items.map((item) => (
+            <li key={item.key} className={`daily-goal-item${item.done ? ' is-done' : ''}`}>
+              <span className={`daily-goal-check${item.done ? ' is-done' : ''}`} aria-hidden="true">{item.done ? '✓' : ''}</span>
+              <span className="daily-goal-item-label">{item.label}</span>
+              <button
+                type="button"
+                className="daily-goal-info-btn"
+                onClick={() => setOpenInfoKey((prev) => (prev === item.key ? null : item.key))}
+                aria-expanded={openInfoKey === item.key}
+                aria-label={`How do I complete "${item.label}"?`}
+              >
+                i
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {/* Um popover só, embaixo da lista inteira (não um por item) — dentro
+          de cada <li> ele ficava perto demais dos vizinhos (só 6px de gap) e
+          cobria o botão "i" do item de baixo, bloqueando o clique nele. */}
+      {openInfoKey && DAILY_GOAL_EXPLANATIONS[openInfoKey] && (
+        <div className="daily-goal-info-popover" role="tooltip">
+          <p>{DAILY_GOAL_EXPLANATIONS[openInfoKey]}</p>
+        </div>
+      )}
+      {allDone && (
+        <p className="daily-goal-complete">🎉 Goal complete for today!</p>
+      )}
+      <button type="button" className="plan-more-link" onClick={() => setEditing((prev) => !prev)}>
+        {editing ? 'Done editing' : 'Customize goal'}
+      </button>
+      {editing && (
+        <div className="daily-goal-edit-options">
+          {allItems.map((item) => (
+            <label key={item.key} className="daily-goal-edit-option">
+              <input
+                type="checkbox"
+                checked={item.enabled}
+                onChange={() => onTogglePref(item.key)}
+              />
+              {item.label}
+            </label>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 // Título/subtítulo de um item da fila "Today's Review", conforme o curso.
 const reviewItemLabel = (item) => {
   if (item.course === 'vocabulary') {
@@ -4860,13 +7105,13 @@ function ReviewCard({ items, dueWordsCount, onOpenItem, onOpenWords, embedded })
 const DASHBOARD_BAR_SEGMENTS = ['visited', 'rated', 'mastered'];
 const DASHBOARD_LEGEND_ORDER = ['unvisited', 'visited', 'rated', 'mastered'];
 
-function DashboardCourseRow({ title, total, tally, continueEntry, continueLabel, onContinue }) {
+function DashboardCourseRow({ title, total, tally, unitLabel = 'units', continueEntry, continueLabel, onContinue }) {
   const safeTotal = total || 1;
   return (
     <div className="dashboard-course-row">
       <div className="dashboard-course-head">
         <h3>{title}</h3>
-        <span className="dashboard-course-count">{total - tally.unvisited}/{total} units started</span>
+        <span className="dashboard-course-count">{total - tally.unvisited}/{total} {unitLabel} started</span>
       </div>
       <div
         className="dashboard-progress-bar"
@@ -4914,10 +7159,13 @@ function DashboardPage({
   wordbookDueCount,
   reviewQueueCount,
   courseProgress,
+  overallMasteryPercent,
   listeningAttempted,
   listeningTotal,
   dictationAttempted,
   dictationTotal,
+  speakingAttempted,
+  speakingTotal,
   lastVisitedByCourse,
   onOpenLastVisited,
   formatLastVisitedLabel,
@@ -4926,6 +7174,9 @@ function DashboardPage({
   onContinueLastVisited,
   onOpenWordbook,
   onOpenCourses,
+  backupFolderHandle,
+  backupFolderNeedsPermission,
+  onSaveProgressNow,
 }) {
   const masteredTotal = courseProgress.reduce((sum, course) => sum + course.tally.mastered, 0);
   const unitsTotal = courseProgress.reduce((sum, course) => sum + course.total, 0);
@@ -4936,15 +7187,26 @@ function DashboardPage({
       <h1>{userName ? `${userName}'s Progress` : 'Your Progress'}</h1>
       <p>
         A snapshot of everything you've studied so far — units, My Words, spaced review,
-        Listening and Dictation, all in one place.
+        Listening, Dictation and Speaking, all in one place.
       </p>
 
-      {mostRecentLastVisited && (
-        <button type="button" className="landing-cta continue-cta dashboard-hero-continue" onClick={onContinueLastVisited}>
-          Continue where you left off
-          <small>{lastVisitedLabel}</small>
-        </button>
-      )}
+      <div className="dashboard-hero-row">
+        {mostRecentLastVisited && (
+          <button type="button" className="landing-cta continue-cta dashboard-hero-continue" onClick={onContinueLastVisited}>
+            Continue where you left off
+            <small>{lastVisitedLabel}</small>
+          </button>
+        )}
+        {isBackupFolderSupported() && (
+          <button type="button" className="upload-button dashboard-save-progress-btn" onClick={onSaveProgressNow}>
+            {!backupFolderHandle
+              ? 'Set up backup folder'
+              : backupFolderNeedsPermission
+                ? 'Reconnect folder'
+                : 'Save progress now'}
+          </button>
+        )}
+      </div>
 
       <div className="dashboard-stats">
         <button type="button" className="dashboard-stat-tile" onClick={onOpenWordbook}>
@@ -4960,8 +7222,11 @@ function DashboardPage({
           <span className="dashboard-stat-label">Reviews due</span>
         </button>
         <div className="dashboard-stat-tile dashboard-stat-tile--static">
-          <span className="dashboard-stat-value">{masteredTotal}/{unitsTotal}</span>
-          <span className="dashboard-stat-label">Units mastered (all courses)</span>
+          <span className="dashboard-stat-value">
+            {masteredTotal}/{unitsTotal}
+            <small className="dashboard-stat-subvalue">{overallMasteryPercent}%</small>
+          </span>
+          <span className="dashboard-stat-label">Units mastered (all courses) — overall mastery</span>
         </div>
         <div className="dashboard-stat-tile dashboard-stat-tile--static">
           <span className="dashboard-stat-value">{listeningAttempted}/{listeningTotal}</span>
@@ -4971,22 +7236,35 @@ function DashboardPage({
           <span className="dashboard-stat-value">{dictationAttempted}/{dictationTotal}</span>
           <span className="dashboard-stat-label">Dictation exercises practiced</span>
         </div>
+        <div className="dashboard-stat-tile dashboard-stat-tile--static">
+          <span className="dashboard-stat-value">{speakingAttempted}/{speakingTotal}</span>
+          <span className="dashboard-stat-label">Speaking exercises practiced</span>
+        </div>
       </div>
 
       <h2 className="dashboard-section-title">Progress by course</h2>
       <div className="dashboard-courses">
-        {courseProgress.map((course) => {
+        {courseProgress.map((course, index) => {
           const entry = lastVisitedByCourse[course.id];
+          // Mesmo rótulo "Beginner"/"Intermediate" das telas Courses/
+          // Listening/Dictation — só na 1ª linha de cada grupo (courseProgress
+          // já vem ordenado por nível, ver COURSE_LEVEL_ORDER).
+          const showLevelHeading = index === 0 || courseProgress[index - 1].level !== course.level;
           return (
-            <DashboardCourseRow
-              key={course.id}
-              title={course.title}
-              total={course.total}
-              tally={course.tally}
-              continueEntry={entry}
-              continueLabel={entry ? formatLastVisitedLabel(course.id, entry) : ''}
-              onContinue={() => onOpenLastVisited(course.id, entry)}
-            />
+            <Fragment key={course.id}>
+              {showLevelHeading && course.level && (
+                <span className="course-level-heading">{course.level}</span>
+              )}
+              <DashboardCourseRow
+                title={course.title}
+                total={course.total}
+                tally={course.tally}
+                unitLabel={course.unitLabel}
+                continueEntry={entry}
+                continueLabel={entry ? formatLastVisitedLabel(course.id, entry) : ''}
+                onContinue={() => onOpenLastVisited(course.id, entry)}
+              />
+            </Fragment>
           );
         })}
       </div>
@@ -5098,6 +7376,146 @@ function ImageDropZone({ image, onChange, compact }) {
   );
 }
 
+// URLs de referência externa pra uma palavra — compartilhadas entre o clique
+// na palavra do flashcard (startEditingMeaning, abre os dois juntos) e os
+// botões "See in Dictionary"/"Spoken in phrases" da lista do WordbookPage
+// (abrem um de cada vez).
+function cambridgeDictionaryUrlFor(word) {
+  const normalizedWord = encodeURIComponent(word.trim().toLowerCase());
+  return `https://dictionary.cambridge.org/dictionary/english/${normalizedWord}`;
+}
+function youglishUrlFor(word) {
+  const normalizedWord = encodeURIComponent(word.trim().toLowerCase());
+  return `https://youglish.com/pronounce/${normalizedWord}/english/us`;
+}
+// Google Translate (EN→PT) para termos de mais de uma palavra — o Cambridge
+// Dictionary busca só palavras/expressões fixas cadastradas no dicionário
+// dele; frases soltas ("untidy is a mess") não acham nada útil lá. O "\n"
+// no final do texto reproduz como o próprio Google Translate monta a URL
+// quando o usuário digita ali (confirmado testando manualmente).
+function googleTranslateUrlFor(text) {
+  const encoded = encodeURIComponent(`${text.trim()}\n`);
+  return `https://translate.google.com/?sl=en&tl=pt&text=${encoded}&op=translate`;
+}
+const isSingleWordEntry = (text) => text.trim().split(/\s+/).filter(Boolean).length <= 1;
+// Escolhe Cambridge Dictionary (uma palavra/expressão fixa) ou Google
+// Translate (mais de uma palavra) — usado em todo lugar que antes ia direto
+// pro Cambridge (lista do My Words, botão "?" dos formulários de
+// adicionar/editar, clique na palavra do flashcard de prática).
+function wordReferenceUrlFor(text) {
+  return isSingleWordEntry(text) ? cambridgeDictionaryUrlFor(text) : googleTranslateUrlFor(text);
+}
+function wordReferenceLabel(text) {
+  return isSingleWordEntry(text) ? 'See in Dictionary' : 'Translate';
+}
+
+// Ícone 🔊 ao lado de cada entrada do My Words (palavra OU frase — o TTS do
+// Google lê as duas igual bem, diferente da 1ª versão desta feature que
+// raspava o Cambridge Dictionary e só cobria palavra única): toca a
+// pronúncia em inglês, servida pelo nosso próprio proxy (ver setupProxy.js
+// + pronunciationTts.js — nunca aponta pra URL do Google diretamente,
+// mesmo padrão de todo áudio deste app).
+//
+// Estados: idle -> loading (clicou, aguardando o servidor gerar/baixar na
+// 1ª vez ou servir do cache) -> playing (tocando) -> volta pra idle no fim,
+// ou error se a requisição falhou (rede/servidor — não existe mais um
+// "404 não encontrado" permanente como no Cambridge, qualquer texto válido
+// gera algum áudio). Desabilitado durante loading/playing pra não disparar
+// dois <audio> tocando por cima um do outro com cliques repetidos.
+function WordAudioButton({ word }) {
+  const [status, setStatus] = useState('idle');
+  const audioRef = useRef(null);
+
+  useEffect(() => () => {
+    audioRef.current?.pause();
+  }, []);
+
+  const handleClick = () => {
+    if (status === 'loading' || status === 'playing') return;
+    setStatus('loading');
+    const audio = new Audio(`/pronunciation-audio/${encodeURIComponent(word)}`);
+    audioRef.current = audio;
+    audio.addEventListener('playing', () => setStatus('playing'));
+    audio.addEventListener('ended', () => setStatus('idle'));
+    audio.addEventListener('error', () => setStatus('error'));
+    audio.play().catch(() => setStatus('error'));
+  };
+
+  const titleByStatus = {
+    idle: `Play pronunciation of "${word}"`,
+    loading: 'Loading pronunciation…',
+    playing: 'Playing…',
+    error: 'Could not load pronunciation — click to try again',
+  };
+
+  return (
+    <button
+      type="button"
+      className={`word-audio-btn${status !== 'idle' ? ` word-audio-btn--${status}` : ''}`}
+      title={titleByStatus[status]}
+      aria-label={titleByStatus[status]}
+      onClick={handleClick}
+      disabled={status === 'loading' || status === 'playing'}
+    >
+      <IconSpeaker />
+    </button>
+  );
+}
+
+// Palavras curtas/funcionais que NUNCA viram lacuna ao mascarar — senão
+// esconder "the"/"or"/"in" de uma frase deixaria o exemplo ilegível sem
+// proteger nada. "usa"/"uk" entram porque aparecem em anotação de
+// dicionário ("...or neighbour in the USA"), não são a palavra-alvo.
+const MASK_SKIP_WORDS = new Set([
+  'the', 'and', 'or', 'in', 'on', 'at', 'to', 'of', 'for', 'a', 'an',
+  'is', 'are', 'was', 'were', 'be', 'it', 'as', 'my', 'your', 'his', 'her',
+  'usa', 'uk', 'us', 'etc', 'noun', 'verb', 'adj',
+]);
+
+// Esconde a palavra/expressão-alvo dentro da frase mostrada na FRENTE do
+// flashcard com imagem — sem isso a pista entrega a resposta de graça e
+// anula o "Or try to spell it here" (bug de UX apontado pelo dono,
+// 2026-07-25, com "mow the lawn" escrito por extenso logo acima da caixa).
+//
+// Passou por 2 rodadas de correção. A 1ª versão casava só a string INTEIRA
+// como salva, e falhava em dois casos reais do caderno do dono
+// (2026-07-26):
+//   1. palavra salva com anotação junto — "neighbor. or neighbour in the
+//      USA" nunca aparece assim na frase, então nada era escondido e
+//      "neighbor" ficava à mostra;
+//   2. flexão — palavra salva "pen", frase com "pens": o \b no fim impedia
+//      o casamento.
+// Agora mascara em duas passadas: a expressão inteira primeiro (preserva o
+// caso "mow the lawn") e depois cada palavra significativa dela, aceitando
+// sufixo de flexão (s/es/ed/ing).
+const maskWordInExample = (example, word) => {
+  const trimmedWord = (word || '').trim();
+  if (!example || !trimmedWord) return example;
+  const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const toMask = (match) => '_'.repeat(Math.max(3, match.length));
+
+  // 1ª passada: a expressão inteira, exatamente como salva.
+  let masked = example.replace(new RegExp(`\\b${escapeRe(trimmedWord)}\\b`, 'gi'), toMask);
+
+  // 2ª passada: cada palavra significativa da expressão, com flexão.
+  // Roda DEPOIS da 1ª de propósito: o que já virou "____" não casa mais,
+  // então não há risco de mascarar duas vezes o mesmo trecho.
+  trimmedWord.split(/[^a-zA-Z'-]+/).forEach((token) => {
+    const t = token.replace(/^[-']+|[-']+$/g, '');
+    if (t.length < 3 || MASK_SKIP_WORDS.has(t.toLowerCase())) return;
+    // Sufixo simples cobre "pen->pens", mas não radical que muda: "study"
+    // vira "studies"/"studied" (y->i) e "make" vira "making" (cai o e).
+    // Sem lematização de verdade — só essas duas trocas, que respondem pela
+    // maioria dos casos e não exigem dicionário.
+    const alternativas = [`${escapeRe(t)}(s|es|ed|ing)?`];
+    if (/y$/i.test(t)) alternativas.push(`${escapeRe(t.slice(0, -1))}(ies|ied)`);
+    if (/e$/i.test(t)) alternativas.push(`${escapeRe(t.slice(0, -1))}(ing|ed)`);
+    masked = masked.replace(new RegExp(`\\b(?:${alternativas.join('|')})\\b`, 'gi'), toMask);
+  });
+
+  return masked;
+};
+
 // Página "My Words": caderno de vocabulário pessoal do usuário. Lista as
 // palavras salvas (com significado/exemplo/contexto/imagem), permite
 // adicionar e apagar, e tem o modo de prática por flashcards. Again/Good/Easy
@@ -5110,7 +7528,7 @@ function ImageDropZone({ image, onChange, compact }) {
 //   invertido de propósito (pedido do usuário): força o aluno a olhar a
 //   imagem, ler o significado, e tentar lembrar/reconhecer a palavra em
 //   inglês antes de revelar, em vez de só reconhecer a tradução.
-function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
+function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUpdateEntry }) {
   const [word, setWord] = useState('');
   const [meaning, setMeaning] = useState('');
   const [example, setExample] = useState('');
@@ -5119,9 +7537,53 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
   const [practiceIndex, setPracticeIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [finished, setFinished] = useState(false);
+  // true quando a sessão atual veio do botão "view larger" de UM card (ver
+  // startPracticeSingle), não do "Practice words" de verdade — usado por
+  // gradeCard pra pular a tela "Session complete!" nesse caso.
+  const [isSingleView, setIsSingleView] = useState(false);
   const [editingMeaning, setEditingMeaning] = useState(false);
   const [meaningDraft, setMeaningDraft] = useState('');
   const meaningInputRef = useRef(null);
+  // "Or try to spell it here" (pedido do dono, 2026-07-25) — só faz sentido
+  // no flashcard COM imagem (frente esconde a palavra; sem imagem a frente
+  // já mostra a palavra direto, então não há nada pra soletrar). Comparação
+  // simples (trim + case-insensitive), reseta junto com `flipped` toda vez
+  // que o card muda (ver startPractice/startPracticeSingle/gradeCard/"Stop
+  // practicing").
+  const [spellAttempt, setSpellAttempt] = useState('');
+  const [spellFeedback, setSpellFeedback] = useState(null); // null | 'correct' | 'incorrect'
+  // Botão "Edit" de cada card da LISTA (diferente de editingMeaning acima,
+  // que é só o significado dentro do flashcard de prática) — edita
+  // word/meaning/example/image de uma vez, num form inline substituindo o
+  // conteúdo normal do card.
+  const [editingEntryId, setEditingEntryId] = useState(null);
+  const [editDraft, setEditDraft] = useState({ word: '', meaning: '', example: '', image: null });
+
+  const startEditingEntry = (entry) => {
+    setEditingEntryId(entry.id);
+    setEditDraft({
+      word: entry.word,
+      meaning: entry.meaning || '',
+      example: entry.example || '',
+      image: entry.image || null,
+    });
+  };
+
+  const cancelEditingEntry = () => {
+    setEditingEntryId(null);
+  };
+
+  const saveEditingEntry = () => {
+    const trimmedWord = editDraft.word.trim();
+    if (!trimmedWord) return;
+    onUpdateEntry(editingEntryId, {
+      word: trimmedWord,
+      meaning: editDraft.meaning.trim(),
+      example: editDraft.example.trim(),
+      image: editDraft.image,
+    });
+    setEditingEntryId(null);
+  };
 
   // Focar o input do significado manualmente (em vez de autoFocus): abrir o
   // dicionario externo (ver startEditingMeaning) tira o foco da JANELA pra
@@ -5171,12 +7633,49 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
       .catch(() => window.alert('Could not read that image from the clipboard.'));
   };
 
+  // Mesma ideia de handleFormPaste, mas pro form de EDIÇÃO de uma entrada já
+  // existente (editDraft, não o "word"/"image" do form de adicionar) — só
+  // faltava aqui, por isso colar imagem não funcionava editando (bug real
+  // reportado pelo dono, 2026-07-25): o bloco de edição era um <div> sem
+  // onPaste nenhum, diferente do form de adicionar e do WordQuickAdd.
+  const handleEditFormPaste = (event) => {
+    const file = getImageFileFromClipboardEvent(event);
+    if (!file) return;
+    event.preventDefault();
+    resizeImageFileToDataUrl(file)
+      .then((dataUrl) => setEditDraft((draft) => ({ ...draft, image: dataUrl })))
+      .catch(() => window.alert('Could not read that image from the clipboard.'));
+  };
+
   const startPractice = () => {
     setPracticeIds(dueEntries.map((entry) => entry.id));
     setPracticeIndex(0);
     setFlipped(false);
+    setSpellAttempt('');
+    setSpellFeedback(null);
     setFinished(false);
     setEditingMeaning(false);
+    setIsSingleView(false);
+  };
+
+  // Botão "view larger" de um card da lista: mesmo flashcard grande do modo
+  // Practice, só que com UM card só (o clicado) — reaproveita o mesmo
+  // practicing/currentCard/gradeCard de baixo, então "Again/Good/Easy"
+  // continua funcionando normalmente se o usuário quiser avaliar por ali
+  // mesmo; "Stop practicing" volta pra lista sem precisar avaliar nada.
+  // isSingleView marca esse caso pra gradeCard NÃO mostrar a tela "Session
+  // complete!" ao terminar — essa tela é sobre uma SESSÃO de revisão de
+  // verdade (várias palavras vencidas), não faz sentido depois de só abrir
+  // uma palavra pra olhar de perto.
+  const startPracticeSingle = (entry) => {
+    setPracticeIds([entry.id]);
+    setPracticeIndex(0);
+    setFlipped(false);
+    setSpellAttempt('');
+    setSpellFeedback(null);
+    setFinished(false);
+    setEditingMeaning(false);
+    setIsSingleView(true);
   };
 
   const practicing = Array.isArray(practiceIds) && practiceIds.length > 0 && !finished;
@@ -5186,28 +7685,35 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
     if (!currentCard) return;
     onGrade(currentCard.id, grade);
     setFlipped(false);
+    setSpellAttempt('');
+    setSpellFeedback(null);
     setEditingMeaning(false);
     if (practiceIndex < practiceIds.length - 1) {
       setPracticeIndex(practiceIndex + 1);
+    } else if (isSingleView) {
+      setPracticeIds(null);
     } else {
       setFinished(true);
       setPracticeIds(null);
     }
   };
 
+  const handleCheckSpelling = () => {
+    if (!currentCard) return;
+    const isCorrect = spellAttempt.trim().toLowerCase() === currentCard.word.trim().toLowerCase();
+    setSpellFeedback(isCorrect ? 'correct' : 'incorrect');
+  };
+
   const startEditingMeaning = () => {
     if (!currentCard) return;
     setMeaningDraft(currentCard.meaning || '');
     setEditingMeaning(true);
-    const normalizedWord = encodeURIComponent(currentCard.word.trim().toLowerCase());
-    const dictionaryUrl = `https://dictionary.cambridge.org/dictionary/english/${normalizedWord}`;
-    const pronunciationUrl = `https://youglish.com/pronounce/${normalizedWord}/english/us`;
     // Dois window.open seguidos: alguns navegadores bloqueiam o segundo
     // popup se nao acharem que ainda faz parte do mesmo gesto do usuario —
     // por isso os dois ficam aqui dentro do handler de click, sincronos,
     // sem nenhum await/setTimeout no meio.
-    window.open(dictionaryUrl, '_blank', 'noopener,noreferrer');
-    window.open(pronunciationUrl, '_blank', 'noopener,noreferrer');
+    window.open(wordReferenceUrlFor(currentCard.word), '_blank', 'noopener,noreferrer');
+    window.open(youglishUrlFor(currentCard.word), '_blank', 'noopener,noreferrer');
   };
 
   const saveMeaningDraft = () => {
@@ -5324,30 +7830,84 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
 
             {hasImage ? (
               <>
-                {/* Frente: imagem + significado juntos, palavra escondida —
-                    força o aluno a identificar a palavra a partir dos dois,
-                    em vez de só reconhecer a tradução (ver comentário acima
-                    do componente). */}
+                {/* Frente: imagem + significado + frase de exemplo juntos,
+                    palavra escondida — força o aluno a identificar a
+                    palavra a partir dos três pistas, em vez de só
+                    reconhecer a tradução (ver comentário acima do
+                    componente). Frase de exemplo ANTES do "from Unit X"
+                    (pedido do dono, 2026-07-25) — pista mais forte, faz
+                    mais sentido lida antes do contexto de onde a palavra
+                    veio. */}
                 <img src={currentCard.image} alt="" className="flashcard-image" />
                 {renderMeaningBlock('flashcard-meaning--prompt')}
+                {currentCard.example && (
+                  <p className="flashcard-example">
+                    “{(flipped || spellFeedback)
+                      ? currentCard.example
+                      : maskWordInExample(currentCard.example, currentCard.word)}”
+                  </p>
+                )}
                 {currentCard.context && <p className="flashcard-context">from {currentCard.context}</p>}
                 {flipped ? (
                   <div className="flashcard-back">
-                    <p className="flashcard-word">{currentCard.word}</p>
-                    {currentCard.example && <p className="flashcard-example">“{currentCard.example}”</p>}
+                    <p className="flashcard-word flashcard-word-row">
+                      <WordAudioButton word={currentCard.word} />
+                      {currentCard.word}
+                    </p>
                     {gradeButtons}
                   </div>
                 ) : (
-                  <div className="flashcard-actions">
-                    <button type="button" className="show-answers-btn" onClick={() => setFlipped(true)}>
-                      Show word
-                    </button>
-                  </div>
+                  <>
+                    {/* "Or try to spell it here" (pedido do dono,
+                        2026-07-25): só faz sentido nesta variante (com
+                        imagem) — a variante sem imagem já mostra a palavra
+                        na frente, não há nada pra soletrar. Comparação
+                        simples (trim + case-insensitive); não força o
+                        flip sozinho, só dá feedback — o aluno decide
+                        quando clicar "Show word". */}
+                    <div className="flashcard-spell">
+                      <span className="flashcard-spell-label">Or try to spell it here:</span>
+                      <div className="flashcard-spell-row">
+                        <input
+                          type="text"
+                          className="flashcard-spell-input"
+                          value={spellAttempt}
+                          onChange={(event) => { setSpellAttempt(event.target.value); setSpellFeedback(null); }}
+                          onKeyDown={(event) => { if (event.key === 'Enter') handleCheckSpelling(); }}
+                          placeholder="Type the word..."
+                        />
+                        <button
+                          type="button"
+                          className="upload-button flashcard-spell-check"
+                          onClick={handleCheckSpelling}
+                          disabled={!spellAttempt.trim()}
+                        >
+                          Check
+                        </button>
+                      </div>
+                      {spellFeedback === 'correct' && (
+                        <p className="flashcard-spell-feedback flashcard-spell-feedback--correct">✓ Correct!</p>
+                      )}
+                      {spellFeedback === 'incorrect' && (
+                        <p className="flashcard-spell-feedback flashcard-spell-feedback--incorrect">
+                          Not quite — try again, or reveal it below.
+                        </p>
+                      )}
+                    </div>
+                    <div className="flashcard-actions">
+                      <button type="button" className="show-answers-btn" onClick={() => setFlipped(true)}>
+                        Show word
+                      </button>
+                    </div>
+                  </>
                 )}
               </>
             ) : (
               <>
-                <p className="flashcard-word">{currentCard.word}</p>
+                <p className="flashcard-word flashcard-word-row">
+                  <WordAudioButton word={currentCard.word} />
+                  {currentCard.word}
+                </p>
                 {currentCard.context && <p className="flashcard-context">from {currentCard.context}</p>}
                 {flipped ? (
                   <div className="flashcard-back">
@@ -5372,6 +7932,8 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
                 onClick={() => {
                   setPracticeIds(null);
                   setFlipped(false);
+    setSpellAttempt('');
+    setSpellFeedback(null);
                 }}
               >
                 Stop practicing
@@ -5419,13 +7981,30 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
               value={word}
               onChange={(event) => setWord(event.target.value)}
             />
-            <input
-              type="text"
-              className="wordbook-input"
-              placeholder="Meaning / translation"
-              value={meaning}
-              onChange={(event) => setMeaning(event.target.value)}
-            />
+            <div className="wordbook-input-with-help">
+              <input
+                type="text"
+                className="wordbook-input"
+                placeholder="Meaning / translation"
+                value={meaning}
+                onChange={(event) => setMeaning(event.target.value)}
+              />
+              {word.trim() ? (
+                <a
+                  href={wordReferenceUrlFor(word)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="wordbook-input-help"
+                  title={isSingleWordEntry(word)
+                    ? `Look up "${word.trim()}" in the Cambridge Dictionary`
+                    : `Translate "${word.trim()}" with Google Translate`}
+                >
+                  ?
+                </a>
+              ) : (
+                <span className="wordbook-input-help wordbook-input-help--disabled" aria-hidden="true">?</span>
+              )}
+            </div>
             <ImageDropZone image={image} onChange={setImage} />
             <input
               type="text"
@@ -5447,32 +8026,222 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning }) {
                 text in the reading PDF first fills the word in for you.
               </p>
             ) : (
-              sortedEntries.map((entry) => (
-                <div key={entry.id} className="wordbook-entry">
-                  {entry.image && <img src={entry.image} alt="" className="wordbook-entry-thumb" />}
-                  <div className="wordbook-entry-main">
-                    <span className="wordbook-entry-word">{entry.word}</span>
-                    {entry.meaning && <p className="wordbook-entry-meaning">{entry.meaning}</p>}
-                    {entry.example && <p className="wordbook-entry-example">“{entry.example}”</p>}
-                    <p className="wordbook-entry-meta">
-                      {entry.context ? `${entry.context} · ` : ''}
-                      {formatDue(entry)}
-                    </p>
+              sortedEntries.map((entry) => {
+                const isEditing = editingEntryId === entry.id;
+                return (
+                  <div key={entry.id} className="wordbook-entry">
+                    {isEditing ? (
+                      <div className="wordbook-entry-edit" onPaste={handleEditFormPaste}>
+                        <ImageDropZone
+                          image={editDraft.image}
+                          onChange={(nextImage) => setEditDraft((draft) => ({ ...draft, image: nextImage }))}
+                          compact
+                        />
+                        <input
+                          type="text"
+                          className="wordbook-input"
+                          placeholder="Word or expression"
+                          value={editDraft.word}
+                          onChange={(event) => setEditDraft((draft) => ({ ...draft, word: event.target.value }))}
+                        />
+                        <input
+                          type="text"
+                          className="wordbook-input"
+                          placeholder="Meaning / translation"
+                          value={editDraft.meaning}
+                          onChange={(event) => setEditDraft((draft) => ({ ...draft, meaning: event.target.value }))}
+                        />
+                        <input
+                          type="text"
+                          className="wordbook-input"
+                          placeholder="Example sentence (optional)"
+                          value={editDraft.example}
+                          onChange={(event) => setEditDraft((draft) => ({ ...draft, example: event.target.value }))}
+                        />
+                        <div className="wordbook-entry-edit-actions">
+                          <button
+                            type="button"
+                            className="show-answers-btn"
+                            onClick={saveEditingEntry}
+                            disabled={!editDraft.word.trim()}
+                          >
+                            Save
+                          </button>
+                          <button type="button" className="wordbook-entry-link" onClick={cancelEditingEntry}>
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        {entry.image && <img src={entry.image} alt="" className="wordbook-entry-thumb" />}
+                        <div className="wordbook-entry-main">
+                          <span className="wordbook-entry-word-row">
+                            <WordAudioButton word={entry.word} />
+                            <span className="wordbook-entry-word">{entry.word}</span>
+                          </span>
+                          {entry.meaning && <p className="wordbook-entry-meaning">{entry.meaning}</p>}
+                          {entry.example && <p className="wordbook-entry-example">“{entry.example}”</p>}
+                          <p className="wordbook-entry-meta">
+                            {entry.context ? `${entry.context} · ` : ''}
+                            {formatDue(entry)}
+                          </p>
+                          <div className="wordbook-entry-links">
+                            <a
+                              href={wordReferenceUrlFor(entry.word)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="wordbook-entry-link"
+                            >
+                              {wordReferenceLabel(entry.word)}
+                            </a>
+                            <a
+                              href={youglishUrlFor(entry.word)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="wordbook-entry-link"
+                            >
+                              Spoken in phrases
+                            </a>
+                            <button
+                              type="button"
+                              className="wordbook-entry-link"
+                              onClick={() => startEditingEntry(entry)}
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        </div>
+                        <div className="wordbook-entry-corner-actions">
+                          <button
+                            type="button"
+                            className="wordbook-expand"
+                            title={`View "${entry.word}" larger`}
+                            aria-label={`View "${entry.word}" larger`}
+                            onClick={() => startPracticeSingle(entry)}
+                          >
+                            <IconMaximize />
+                          </button>
+                          <button
+                            type="button"
+                            className="wordbook-delete"
+                            title={`Delete "${entry.word}"`}
+                            aria-label={`Delete "${entry.word}"`}
+                            onClick={() => onDelete(entry.id)}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
-                  <button
-                    type="button"
-                    className="wordbook-delete"
-                    title={`Delete "${entry.word}"`}
-                    aria-label={`Delete "${entry.word}"`}
-                    onClick={() => onDelete(entry.id)}
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </>
+      )}
+    </div>
+  );
+}
+
+// Tela "My Notes": todas as anotações ("My Notes") dos 3 cursos numa lista
+// só — cada card mostra ONDE a nota foi escrita e uma prévia do texto;
+// clicar leva direto pra lá (ver handleOpenNoteEntry em App()), o botão ✕
+// apaga (com confirmação — ver askConfirm em App(), mesmo diálogo estilizado
+// do fluxo de Backup & Restore, não window.confirm nativo). Reaproveita
+// collectAllNotesEntries/noteHtmlToText, a mesma varredura usada pelo
+// export de notas do Profile. `refreshToken` força o useMemo a reler o
+// localStorage depois de um delete (a lista em si não é estado React).
+function MyNotesPage({ userName, searchQuery, onSearchChange, onOpenEntry, askConfirm, showToast }) {
+  const [refreshToken, setRefreshToken] = useState(0);
+  const allEntries = useMemo(() => collectAllNotesEntries(userName), [userName, refreshToken]);
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredEntries = normalizedQuery
+    ? allEntries.filter((entry) => (
+      entry.title.toLowerCase().includes(normalizedQuery)
+      || noteHtmlToText(entry.html).toLowerCase().includes(normalizedQuery)
+    ))
+    : allEntries;
+
+  const entriesByCourse = {};
+  filteredEntries.forEach((entry) => {
+    (entriesByCourse[entry.course] ||= []).push(entry);
+  });
+  const notesEntrySortNumber = (entry) => (
+    entry.unit ?? entry.appendixNumber ?? entry.additionalNumber ?? entry.refPage ?? entry.page ?? 0
+  );
+  Object.values(entriesByCourse).forEach((list) => {
+    list.sort((a, b) => a.kind.localeCompare(b.kind) || notesEntrySortNumber(a) - notesEntrySortNumber(b));
+  });
+
+  const handleDelete = async (event, entry) => {
+    event.preventDefault();
+    const proceed = await askConfirm(`Delete this note ("${entry.title}")? This cannot be undone.`, { confirmLabel: 'Delete' });
+    if (!proceed) return;
+    try {
+      window.localStorage.removeItem(entry.key);
+      setRefreshToken((token) => token + 1);
+      showToast('Note deleted.', 'success');
+    } catch (error) {
+      showToast('Could not delete that note.', 'error');
+    }
+  };
+
+  return (
+    <div className="landing-panel my-notes-panel">
+      <p className="eyebrow">My Notes</p>
+      <h1>All your notes</h1>
+      <p className="landing-meta">
+        Every note you've written across all 3 courses, in one place — click a card to jump straight back to where you wrote it.
+      </p>
+      <UnitSearchBox
+        value={searchQuery}
+        onChange={onSearchChange}
+        placeholder="Search your notes..."
+      />
+      {allEntries.length === 0 ? (
+        <p className="my-notes-empty">
+          No notes yet. Look for "My Notes" while reading any unit, reference page, appendix or
+          additional exercise — whatever you write there shows up here.
+        </p>
+      ) : filteredEntries.length === 0 ? (
+        <p className="unit-search-empty">No notes match your search.</p>
+      ) : (
+        <div className="my-notes-list">
+          {COURSE_LEVEL_ORDER.filter((courseId) => entriesByCourse[courseId]?.length).map((courseId) => (
+            <Fragment key={courseId}>
+              <span className="course-level-heading">{courses[courseId].level}</span>
+              <h2 className="my-notes-course-title">{courses[courseId].title}</h2>
+              {entriesByCourse[courseId].map((entry) => {
+                const preview = noteHtmlToText(entry.html);
+                return (
+                  <div key={entry.key} className="my-notes-card">
+                    <a
+                      href="#0"
+                      className="my-notes-card-link"
+                      onClick={(event) => onOpenEntry(event, entry)}
+                    >
+                      <span className="my-notes-card-title">{entry.title}</span>
+                      <span className="my-notes-card-preview">
+                        {preview.length > 180 ? `${preview.slice(0, 180)}…` : preview}
+                      </span>
+                    </a>
+                    <button
+                      type="button"
+                      className="my-notes-card-delete"
+                      title="Delete this note"
+                      aria-label={`Delete note: ${entry.title}`}
+                      onClick={(event) => handleDelete(event, entry)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                );
+              })}
+            </Fragment>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -5548,13 +8317,30 @@ function WordQuickAdd({ contextLabel, onAdd }) {
             onChange={(event) => setWord(event.target.value)}
             autoFocus
           />
-          <input
-            type="text"
-            className="wordbook-input"
-            placeholder="Meaning / translation"
-            value={meaning}
-            onChange={(event) => setMeaning(event.target.value)}
-          />
+          <div className="wordbook-input-with-help">
+            <input
+              type="text"
+              className="wordbook-input"
+              placeholder="Meaning / translation"
+              value={meaning}
+              onChange={(event) => setMeaning(event.target.value)}
+            />
+            {word.trim() ? (
+              <a
+                href={wordReferenceUrlFor(word)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="wordbook-input-help"
+                title={isSingleWordEntry(word)
+                  ? `Look up "${word.trim()}" in the Cambridge Dictionary`
+                  : `Translate "${word.trim()}" with Google Translate`}
+              >
+                ?
+              </a>
+            ) : (
+              <span className="wordbook-input-help wordbook-input-help--disabled" aria-hidden="true">?</span>
+            )}
+          </div>
           <ImageDropZone image={image} onChange={setImage} compact />
           <input
             type="text"
@@ -5949,7 +8735,7 @@ function AudioPlayerControls({ src }) {
         onEnded={() => setIsPlaying(false)}
         onTimeUpdate={handleTimeUpdate}
       />
-      <button type="button" className="ap-btn" title="Play/Pause" onClick={togglePlay}>
+      <button type="button" className="ap-btn" title="Play/Pause (tip: Ctrl+Space also works anywhere on this page, even while typing in My Notes)" onClick={togglePlay}>
         {isPlaying ? <IconPause /> : <IconPlay />}
       </button>
       <button type="button" className="ap-btn" title="Back 5 seconds" onClick={rewindFive}>
@@ -6041,7 +8827,7 @@ function SimpleAudioPlayer({ src, label }) {
 // progresso arrastável e tempo atual/total. O <audio> continua sendo um
 // elemento real dentro do componente — Ctrl+Space, auto-pause e "Replay
 // last part" (Dictation) o encontram via querySelector('audio') como antes.
-const WIDE_PLAYER_SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+const WIDE_PLAYER_SPEEDS = [0.5, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2];
 
 function formatPlayerTime(seconds) {
   if (!Number.isFinite(seconds)) return '0:00';
@@ -6050,7 +8836,7 @@ function formatPlayerTime(seconds) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-function WideAudioPlayer({ src, label }) {
+function WideAudioPlayer({ src, label, onReplayLastPart, autoPauseEnabled, onToggleAutoPause }) {
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -6059,7 +8845,6 @@ function WideAudioPlayer({ src, label }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loopStart, setLoopStart] = useState(null);
   const [loopEnd, setLoopEnd] = useState(null);
-  const [loopAll, setLoopAll] = useState(false);
 
   useEffect(() => {
     if (!menuOpen) return undefined;
@@ -6160,7 +8945,6 @@ function WideAudioPlayer({ src, label }) {
         ref={audioRef}
         src={src}
         preload="metadata"
-        loop={loopAll}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onTimeUpdate={handleTimeUpdate}
@@ -6204,15 +8988,41 @@ function WideAudioPlayer({ src, label }) {
       >
         A-B
       </button>
-      <button
-        type="button"
-        className={`wide-player-btn wide-player-btn--text${loopAll ? ' is-looping' : ''}`}
-        onClick={() => setLoopAll((current) => !current)}
-        title={loopAll ? 'Stop repeating the whole audio' : 'Repeat the whole audio when it ends'}
-      >
-        ⟳
-      </button>
-
+      {/* "Replay last part" (Listening/Speaking — ver ListeningClozeExercise/
+          SpeakingExercise, que passam handleReplayLastSegment aqui) agora
+          vive DENTRO do player, mesmo alinhamento/tamanho dos outros botões
+          — pedido do dono, 2026-07-26: antes era um botão largo separado
+          embaixo do player, destoando do resto da barra. Opcional (só
+          aparece se o consumidor passar a prop) — o Dictation continua com
+          o próprio botão, agrupado com o toggle de auto-pause, que faz
+          sentido ficar separado ali. Mesma cor/tamanho do Play
+          (wide-player-btn--main, pedido do dono) — só o símbolo muda. */}
+      {onReplayLastPart && (
+        <button
+          type="button"
+          className="wide-player-btn wide-player-btn--main"
+          onClick={onReplayLastPart}
+          title="Replay last part"
+        >
+          ↺
+        </button>
+      )}
+      {/* Toggle de auto-pause (Listening/Speaking — mesma feature que já
+          existia só no Dictation, ver useAudioAutoPause) — verde, mesmo
+          tamanho do Play (pedido do dono, 2026-07-26), pra distinguir das
+          outras ações do player sem quebrar o alinhamento da fileira.
+          Aceso (verde cheio) = ligado; apagado (verde meio transparente) =
+          desligado, sem mudar de tamanho nenhuma hora. */}
+      {onToggleAutoPause && (
+        <button
+          type="button"
+          className={`wide-player-btn wide-player-btn--green${autoPauseEnabled ? '' : ' is-off'}`}
+          onClick={onToggleAutoPause}
+          title={autoPauseEnabled ? 'Auto-pause on — click to turn off' : 'Auto-pause off — click to turn on'}
+        >
+          <IconPause />
+        </button>
+      )}
       <div className="wide-player-speed">
         <button
           type="button"
@@ -6241,38 +9051,25 @@ function WideAudioPlayer({ src, label }) {
   );
 }
 
-// Tela do exercício de Dictation: mesmo áudio/track do Listening, mas sem
-// mostrar o texto antes — o usuário ouve (com play/pause/repetir A-B/
-// velocidade, reaproveitando AudioPlayerControls) e digita tudo numa caixa
-// só. "Check" compara com o texto completo (todas as sentences do track
-// juntas) via LCS palavra-a-palavra (ver scoreDictationAnswer) e destaca
-// cada palavra esperada em verde (acertou, apareceu na ordem certa) ou
-// vermelho (errou/faltou), sem nunca alterar nada do ListeningClozeExercise.
-function DictationExercise({ track, userName }) {
-  const [typedText, setTypedText] = useState('');
-  const [checked, setChecked] = useState(false);
-  const [result, setResult] = useState(null);
-  const audioBarRef = useRef(null);
-  // Auto-pause: pontos (em segundos) onde o áudio pausa sozinho pra dar
-  // tempo de escrever — detectados por análise de silêncio dos MP3s (script
-  // Python offline, ver dictation_pause_points.json; piloto: só 2 tracks).
-  // Ctrl+Space (atalho que já existia) retoma do ponto onde parou.
-  const hasAutoPause = (dictationPausePoints[track.id] || []).length > 0;
-  const [autoPauseEnabled, setAutoPauseEnabled] = useState(true);
+// Pausa automática nos silêncios entre frases — extraído do que era só do
+// Dictation (2026-07-26, quando o dono pediu a mesma coisa pro Listening e
+// pro Speaking) pra não triplicar a mesma lógica de detecção nos 3
+// exercícios. `audioBarRef` é a ref já existente em cada um (aponta pro
+// container que tem o <audio> renderizado pelo WideAudioPlayer dentro).
+// Cruzamento checado via requestAnimationFrame (~60x/s), não pelo evento
+// 'timeupdate' (só dispara a cada ~250ms — atraso suficiente pra
+// audio.pause() vazar pro comecinho da fala seguinte em falas coladas, já
+// visto no American1). `prevTimeRef` é o que garante que a pausa dispara só
+// no CRUZAMENTO do ponto (nunca por proximidade — proximidade re-pausava
+// em cima do ponto ao usar "Replay last part").
+function useAudioAutoPause(audioBarRef, trackId, enabled) {
+  const hasAutoPause = (dictationPausePoints[trackId] || []).length > 0;
   const [isAutoPaused, setIsAutoPaused] = useState(false);
   // Fim do áudio: sem esse aviso o usuário não distingue "pausou sozinho no
   // meio" de "acabou" — a última pausa automática cai perto do fim, e ao dar
   // play de novo o áudio recomeça do zero, o que parecia um bug.
   const [audioEnded, setAudioEnded] = useState(false);
-  // Posição do timeupdate ANTERIOR — a pausa só dispara quando a reprodução
-  // CRUZA um ponto (prev < p <= atual), nunca por simplesmente estar perto
-  // dele. Isso evita o insta-repause ao retomar em cima de um ponto e,
-  // principalmente, ao usar "Replay last part" (que volta exatamente pra um
-  // ponto de pausa — a versão anterior, baseada em janela de proximidade,
-  // re-pausava ali mesmo e o replay parecia não funcionar).
   const prevTimeRef = useRef(0);
-
-  const fullText = track.sentences.join(' ');
 
   // Sinaliza o fim do áudio (independente do auto-pause estar ligado).
   useEffect(() => {
@@ -6289,33 +9086,34 @@ function DictationExercise({ track, userName }) {
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('play', handlePlay);
     };
-  }, [track.id]);
+  }, [audioBarRef, trackId]);
 
   useEffect(() => {
-    if (!hasAutoPause || !autoPauseEnabled) return undefined;
+    if (!hasAutoPause || !enabled) return undefined;
     const audio = audioBarRef.current?.querySelector('audio');
     if (!audio) return undefined;
-    const pausePoints = dictationPausePoints[track.id] || [];
+    const pausePoints = dictationPausePoints[trackId] || [];
 
-    const handleTimeUpdate = () => {
+    let rafId = requestAnimationFrame(function checkCrossing() {
       const t = audio.currentTime;
       const prev = prevTimeRef.current;
       prevTimeRef.current = t;
-      if (audio.paused) return;
-      // Só um avanço normal de reprodução conta como cruzamento (timeupdate
-      // dispara a cada ~250ms; um delta maior que 2s é um seek, não playback).
-      if (t <= prev || t - prev > 2) return;
-      for (const p of pausePoints) {
-        if (prev < p && t >= p) {
-          audio.pause();
-          setIsAutoPaused(true);
-          break;
+      // Só um avanço normal de reprodução conta como cruzamento (um delta
+      // maior que 2s é um seek, não playback).
+      if (!audio.paused && t > prev && t - prev <= 2) {
+        for (const p of pausePoints) {
+          if (prev < p && t >= p) {
+            audio.pause();
+            setIsAutoPaused(true);
+            break;
+          }
         }
       }
-    };
+      rafId = requestAnimationFrame(checkCrossing);
+    });
     // Depois de um seek (arrastar o cursor, Replay last part), o "anterior"
-    // passa a ser a nova posição — senão o próximo timeupdate enxergaria um
-    // falso cruzamento gigante do ponto antigo até aqui.
+    // passa a ser a nova posição — senão o próximo check enxergaria um falso
+    // cruzamento gigante do ponto antigo até aqui.
     const handleSeeked = () => {
       prevTimeRef.current = audio.currentTime;
     };
@@ -6324,15 +9122,45 @@ function DictationExercise({ track, userName }) {
       setIsAutoPaused(false);
     };
 
-    audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('seeked', handleSeeked);
     audio.addEventListener('play', handlePlay);
     return () => {
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      cancelAnimationFrame(rafId);
       audio.removeEventListener('seeked', handleSeeked);
       audio.removeEventListener('play', handlePlay);
     };
-  }, [hasAutoPause, autoPauseEnabled, track.id]);
+  }, [audioBarRef, hasAutoPause, enabled, trackId]);
+
+  return { hasAutoPause, isAutoPaused, audioEnded };
+}
+
+// Tela do exercício de Dictation: mesmo áudio/track do Listening, mas sem
+// mostrar o texto antes — o usuário ouve (com play/pause/repetir A-B/
+// velocidade, reaproveitando AudioPlayerControls) e digita tudo numa caixa
+// só. "Check" compara com o texto completo (todas as sentences do track
+// juntas) via LCS palavra-a-palavra (ver scoreDictationAnswer) e destaca
+// cada palavra esperada em verde (acertou, apareceu na ordem certa) ou
+// vermelho (errou/faltou), sem nunca alterar nada do ListeningClozeExercise.
+function DictationExercise({ track, userName, onPracticed }) {
+  const [typedText, setTypedText] = useState('');
+  const [checked, setChecked] = useState(false);
+  const [result, setResult] = useState(null);
+  const audioBarRef = useRef(null);
+  // Auto-pause: pontos (em segundos) onde o áudio pausa sozinho pra dar
+  // tempo de escrever — detectados por análise de silêncio dos MP3s (script
+  // Python offline, ver dictation_pause_points.json; cobre todo o English
+  // Vocabulary B e o American English A1 — American1 usa limiares mais
+  // sensíveis pro corte de frases longas, já que o diálogo é mais contínuo,
+  // com menos silêncio real entre falas, e descarta só a 1ª pausa do início
+  // (CD+track falado), não 2 como no cabeçalho "Unit N letra. Título" do
+  // Vocabulary). Lógica de detecção compartilhada (ver useAudioAutoPause,
+  // extraído daqui em 2026-07-26 quando o Listening/Speaking ganharam a
+  // mesma feature).
+  // Ctrl+Space (atalho que já existia) retoma do ponto onde parou.
+  const [autoPauseEnabled, setAutoPauseEnabled] = useState(true);
+  const { hasAutoPause, isAutoPaused, audioEnded } = useAudioAutoPause(audioBarRef, track.id, autoPauseEnabled);
+
+  const fullText = track.sentences.map(stripDictationSpeakerLabel).join(' ');
 
   const handleCheck = () => {
     if (!typedText.trim()) return;
@@ -6340,6 +9168,7 @@ function DictationExercise({ track, userName }) {
     setResult(scored);
     setChecked(true);
     saveDictationAttempt(userName, track.id, scored.scorePercent);
+    if (onPracticed) onPracticed();
   };
 
   // "Try again" NÃO apaga mais o texto — o usuário continua de onde parou
@@ -6365,33 +9194,37 @@ function DictationExercise({ track, userName }) {
     audio.play();
   };
 
-  // Mesmo atalho do Listening (ver ListeningClozeExercise): Ctrl+Space
-  // pausa/toca o áudio sem sair do textarea — aqui é ainda mais necessário,
-  // já que o usuário fica o tempo todo digitando (Space sozinho precisa
-  // continuar sendo um espaço normal no texto).
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.code !== 'Space') return;
-      const tag = document.activeElement?.tagName;
-      const blocksPlainSpace = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'BUTTON';
-      if (!event.ctrlKey && blocksPlainSpace) return;
-      const audio = audioBarRef.current?.querySelector('audio');
-      if (!audio) return;
-      event.preventDefault();
-      if (audio.paused) {
-        audio.play();
-      } else {
-        audio.pause();
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  // Ctrl+Space (Space sozinho fora de campo de texto) pausa/toca o áudio —
+  // agora tratado por um atalho GLOBAL em App() que vale a página inteira,
+  // não só este textarea (ver useEffect "handleGlobalAudioShortcut").
 
   return (
     <div className="dictation-exercise">
+      {/* Replay last part + auto-pause agora dentro do próprio player, mesmo
+          alinhamento/tamanho do Play (mesmo tratamento já dado ao Listening
+          e ao Speaking, ver WideAudioPlayer) — pedido do dono, 2026-07-26,
+          o Dictation ainda estava com os botões largos separados embaixo,
+          diferente dos outros dois agora. */}
       <div className="listening-audio-bar" ref={audioBarRef}>
-        <WideAudioPlayer src={track.audio} />
+        <WideAudioPlayer
+          src={track.audio}
+          onReplayLastPart={handleReplayLastSegment}
+          autoPauseEnabled={hasAutoPause ? autoPauseEnabled : undefined}
+          onToggleAutoPause={hasAutoPause ? () => setAutoPauseEnabled((current) => !current) : undefined}
+        />
+        {hasAutoPause && (
+          <span
+            className={`dictation-autopause-hint${audioEnded
+              ? ' dictation-autopause-hint--ended'
+              : isAutoPaused && autoPauseEnabled ? ' dictation-autopause-hint--paused' : ''}`}
+          >
+            {audioEnded
+              ? '🏁 End of audio — Ctrl+Space to play it again'
+              : isAutoPaused && autoPauseEnabled
+                ? '⏸ Paused — press Ctrl+Space to continue'
+                : 'The audio pauses by itself at natural breaks (green button to turn off).'}
+          </span>
+        )}
       </div>
       <p className="listening-instructions">
         Listen carefully (replay as many times as you need) and type everything you hear below.
@@ -6401,36 +9234,6 @@ function DictationExercise({ track, userName }) {
       <p className="listening-instructions">
         If you hear "for example", type "e.g.".
       </p>
-      {hasAutoPause && (
-        <div className="dictation-autopause-row">
-          <button
-            type="button"
-            className={`upload-button listening-hide-mastered-toggle${autoPauseEnabled ? ' is-active' : ''}`}
-            onClick={() => setAutoPauseEnabled((current) => !current)}
-          >
-            {autoPauseEnabled ? '✓ Auto-pause on' : 'Auto-pause off'}
-          </button>
-          <button
-            type="button"
-            className="upload-button"
-            onClick={handleReplayLastSegment}
-            title="Listen to the current part again, from the previous pause"
-          >
-            ↺ Replay last part
-          </button>
-          <span
-            className={`dictation-autopause-hint${audioEnded
-              ? ' dictation-autopause-hint--ended'
-              : isAutoPaused && autoPauseEnabled ? ' dictation-autopause-hint--paused' : ''}`}
-          >
-            {audioEnded
-              ? '🏁 End of audio — Ctrl+Space plays it again from the start'
-              : isAutoPaused && autoPauseEnabled
-                ? '⏸ Paused — press Ctrl+Space to continue'
-                : 'The audio pauses by itself at natural breaks so you can write.'}
-          </span>
-        </div>
-      )}
       <textarea
         className="dictation-textarea"
         value={typedText}
@@ -6464,7 +9267,11 @@ function DictationExercise({ track, userName }) {
               index > 0 ? ' ' : null,
               <span
                 key={index}
-                className={wordResult.correct ? 'dictation-word-correct' : 'dictation-word-wrong'}
+                className={
+                  wordResult.correct === null
+                    ? 'dictation-word-neutral'
+                    : wordResult.correct ? 'dictation-word-correct' : 'dictation-word-wrong'
+                }
               >
                 {wordResult.word}
               </span>,
@@ -6475,6 +9282,305 @@ function DictationExercise({ track, userName }) {
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+// SpeechRecognition só existe no Chrome/Edge (roda em nuvem, precisa de
+// internet) — não existe no Firefox/Safari. Checado uma vez no carregamento
+// do módulo (não muda em runtime) e reaproveitado tanto no hub quanto no
+// fallback do exercício, ao contrário de tentar usar a API e deixar quebrar.
+const SPEECH_RECOGNITION_SUPPORTED =
+  typeof window !== 'undefined' && Boolean(window.SpeechRecognition || window.webkitSpeechRecognition);
+
+// O reconhecedor de voz do Chrome/Edge às vezes TRANSCREVE "number 9" como
+// "#9" (abreviação do próprio reconhecedor antes de um dígito) — o usuário
+// pronunciou a palavra "number" normalmente, só a transcrição que diverge do
+// texto original. Sem essa expansão, "number" (e às vezes o dígito também,
+// dependendo de como o LCS casa o token colado) perdiam pontos mesmo falados
+// certo. Só afeta a PONTUAÇÃO da fala (ver handleSpeechResult) — o texto
+// bruto reconhecido continua exibido em "You said: ..." sem alteração, pra
+// não esconder o que o reconhecedor realmente devolveu.
+function expandSpokenNumberShorthand(transcript) {
+  return transcript.replace(/#(\d+)/g, 'number $1');
+}
+
+// Falas que pedem pra SOLETRAR uma palavra letra por letra (ex.
+// "D-A-R-L-Y", "B-E-Z-E-R-A") não dá pra pontuar com confiança — o
+// reconhecedor tenta interpretar as letras soltas como uma palavra e
+// devolve qualquer coisa (ex. "DARL"), mesmo com o usuário pronunciando
+// cada letra certinho. Só 4 falas em todo o corpus (359 tracks) têm esse
+// padrão. Em vez de mexer em scoreDictationAnswer (compartilhada com o
+// Dictation, onde o usuário ouve com o próprio ouvido e consegue soletrar
+// de volta com confiança — lá o problema não existe), essas palavras viram
+// neutras (nem verde nem vermelho, fora do score) só no lado do Speaking,
+// mesmo tratamento que pontuação solta já recebe em scoreDictationAnswer.
+// Se a fala inteira for só a palavra soletrada, o score cai pra 100% por
+// falta de qualquer coisa scorable (mesma regra de m===0 do
+// scoreDictationAnswer) — não é ideal, mas é mais honesto que fingir que dá
+// pra avaliar isso pelo reconhecimento de voz.
+const SPOKEN_SPELLING_TOKEN_RE = /^[A-Za-z](-[A-Za-z])+$/;
+
+function neutralizeUnscorableSpeakingWords(scored) {
+  let scorableCount = 0;
+  let correctCount = 0;
+  const wordResults = scored.wordResults.map((wordResult) => {
+    if (wordResult.correct === null) return wordResult;
+    const bareWord = wordResult.word.replace(/[.,!?"'’;:()]/g, '');
+    if (SPOKEN_SPELLING_TOKEN_RE.test(bareWord)) {
+      return { ...wordResult, correct: null };
+    }
+    scorableCount += 1;
+    if (wordResult.correct) correctCount += 1;
+    return wordResult;
+  });
+  const scorePercent = scorableCount === 0 ? 100 : Math.round((correctCount / scorableCount) * 100);
+  return { scorePercent, wordResults };
+}
+
+// Tela "Speaking" (shadowing, fase 1 do ROADMAP item 4): o usuário ouve o
+// áudio do track como referência, lê a fala em destaque e clica no
+// microfone pra repetir em voz alta — o navegador transcreve
+// (SpeechRecognition, nuvem) e a transcrição é comparada com o texto
+// original pela MESMA lógica de pontuação do Dictation (scoreDictationAnswer,
+// LCS palavra-a-palavra): aqui não é "escreva", é "fale", mas o critério de
+// acerto é idêntico, incluindo a limpeza de rótulo de personagem
+// (stripDictationSpeakerLabel) — a voz do áudio não fala "Jenny:", então não
+// faz sentido cobrar isso na fala também.
+//
+// Diferente do Listening/Dictation, aqui NÃO existe áudio isolado por fala —
+// os tracks têm um único MP3 do trecho inteiro, sem timestamp por frase
+// (dictation_pause_points.json marca só pausas de silêncio, não front bumpa
+// 1:1 com o array `sentences`). O player toca o áudio inteiro só como
+// referência; a prática em si (gravar/pontuar) roda fala por fala,
+// independente de onde o áudio está tocando.
+function SpeakingExercise({ track, userName, onPracticed }) {
+  const [recordingIndex, setRecordingIndex] = useState(null);
+  const [micError, setMicError] = useState(null);
+  const [resultsBySentence, setResultsBySentence] = useState({});
+  const recognitionRef = useRef(null);
+  const audioBarRef = useRef(null);
+  // Auto-pause (mesma feature do Dictation, ver useAudioAutoPause) — pedido
+  // do dono, 2026-07-26, pra dar um instante entre falas de referência
+  // antes da próxima começar, igual já acontecia no Dictation.
+  const [autoPauseEnabled, setAutoPauseEnabled] = useState(true);
+  const { hasAutoPause, isAutoPaused, audioEnded } = useAudioAutoPause(audioBarRef, track.id, autoPauseEnabled);
+  // true só quando o próprio usuário clicou pra parar (stopRecording) — o
+  // reconhecedor do navegador pode disparar 'onend' sozinho no meio de uma
+  // fala mais longa (silêncio breve, limite interno do Chrome) mesmo com
+  // continuous=true; sem essa flag, isso derrubava a gravação antes do
+  // usuário terminar de falar (bug real reportado pelo dono, 2026-07-26).
+  // Só reiniciamos automaticamente quando 'onend' dispara SEM essa flag —
+  // do jeito que o usuário pediu, "só fecha se ele reapertar o botão".
+  const stoppedByUserRef = useRef(true);
+  const transcriptRef = useRef('');
+
+  // Troca de track: descarta gravação em andamento e os resultados da
+  // tentativa anterior — senão a fala 1 do track novo mostraria, por um
+  // instante, o resultado da fala 1 do track anterior.
+  useEffect(() => {
+    stoppedByUserRef.current = true;
+    recognitionRef.current?.abort();
+    setRecordingIndex(null);
+    setMicError(null);
+    setResultsBySentence({});
+  }, [track.id]);
+
+  // Desmontar a tela (sair do exercício) com o microfone ainda gravando não
+  // pode deixar o reconhecimento rodando em segundo plano.
+  useEffect(() => () => {
+    stoppedByUserRef.current = true;
+    recognitionRef.current?.abort();
+  }, []);
+
+  const handleSpeechResult = (sentenceIndex, transcript) => {
+    const targetText = stripDictationSpeakerLabel(track.sentences[sentenceIndex]);
+    const rawScored = scoreDictationAnswer(expandSpokenNumberShorthand(transcript), targetText);
+    const scored = neutralizeUnscorableSpeakingWords(rawScored);
+    setResultsBySentence((prev) => ({ ...prev, [sentenceIndex]: { ...scored, transcript } }));
+    saveSpeakingAttempt(userName, track.id, scored.scorePercent);
+    if (onPracticed) onPracticed();
+  };
+
+  const startRecording = (sentenceIndex) => {
+    const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognitionCtor) return;
+    stoppedByUserRef.current = true;
+    recognitionRef.current?.abort();
+    transcriptRef.current = '';
+    const recognition = new SpeechRecognitionCtor();
+    recognition.lang = 'en-US';
+    // continuous=true pra não cortar a fala no primeiro silêncio breve — só
+    // termina de verdade quando o usuário reaperta o botão (stopRecording).
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event) => {
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        if (event.results[i].isFinal) {
+          const piece = event.results[i][0]?.transcript || '';
+          transcriptRef.current = transcriptRef.current ? `${transcriptRef.current} ${piece}` : piece;
+        }
+      }
+    };
+    recognition.onerror = (event) => {
+      // 'aborted' dispara sempre que a gente mesma chama .abort() (troca de
+      // fala, saída da tela) — não é um erro de verdade. 'no-speech' é
+      // comum em modo contínuo durante um silêncio normal e se resolve
+      // sozinho (onend reinicia); não vale assustar o usuário com nenhum
+      // dos dois. Permissão negada É terminal — aí sim conta como "parado".
+      if (event.error === 'not-allowed' || event.error === 'permission-denied') {
+        stoppedByUserRef.current = true;
+        setMicError(event.error);
+      } else if (event.error !== 'aborted' && event.error !== 'no-speech') {
+        setMicError(event.error);
+      }
+    };
+    recognition.onend = () => {
+      if (!stoppedByUserRef.current) {
+        // O motor fechou sozinho (não foi o usuário) — reabre na hora,
+        // mantendo o transcript já acumulado, pra continuar ouvindo.
+        try {
+          recognition.start();
+          return;
+        } catch (error) {
+          // Já em outro estado / mic sumiu — desiste de reabrir.
+        }
+      }
+      const finalTranscript = transcriptRef.current.trim();
+      if (finalTranscript) {
+        handleSpeechResult(sentenceIndex, finalTranscript);
+      }
+      setRecordingIndex(null);
+    };
+    recognitionRef.current = recognition;
+    setMicError(null);
+    stoppedByUserRef.current = false;
+    setRecordingIndex(sentenceIndex);
+    recognition.start();
+  };
+
+  const stopRecording = () => {
+    stoppedByUserRef.current = true;
+    recognitionRef.current?.stop();
+  };
+
+  // "Replay last part" (mesma lógica do Dictation, ver handleReplayLastSegment
+  // em DictationExercise) — troca o antigo "Repeat whole audio" (loopAll do
+  // WideAudioPlayer, removido) por repetir só o trecho que acabou de tocar,
+  // usando os mesmos pontos de pausa por detecção de silêncio.
+  const handleReplayLastSegment = () => {
+    const audio = audioBarRef.current?.querySelector('audio');
+    if (!audio) return;
+    const points = dictationPausePoints[track.id] || [];
+    const before = points.filter((p) => p < audio.currentTime - 1.0);
+    audio.currentTime = before.length > 0 ? before[before.length - 1] : 0;
+    audio.play();
+  };
+
+  if (!SPEECH_RECOGNITION_SUPPORTED) {
+    return (
+      <div className="speaking-exercise">
+        <p className="speaking-unsupported">
+          Speech recognition isn't available in this browser. Try Chrome or Edge on desktop or
+          Android to practice Speaking.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="speaking-exercise">
+      <div className="listening-audio-bar" ref={audioBarRef}>
+        <WideAudioPlayer
+          src={track.audio}
+          onReplayLastPart={handleReplayLastSegment}
+          autoPauseEnabled={hasAutoPause ? autoPauseEnabled : undefined}
+          onToggleAutoPause={hasAutoPause ? () => setAutoPauseEnabled((current) => !current) : undefined}
+        />
+        {hasAutoPause && (
+          <span
+            className={`dictation-autopause-hint${audioEnded
+              ? ' dictation-autopause-hint--ended'
+              : isAutoPaused && autoPauseEnabled ? ' dictation-autopause-hint--paused' : ''}`}
+          >
+            {audioEnded
+              ? '🏁 End of audio — Ctrl+Space to play it again'
+              : isAutoPaused && autoPauseEnabled
+                ? '⏸ Paused — press Ctrl+Space to continue'
+                : 'The audio pauses by itself at natural breaks (green button to turn off).'}
+          </span>
+        )}
+      </div>
+      <p className="listening-instructions">
+        Listen to the audio above as a reference, then press the microphone next to a sentence
+        and repeat it out loud. Your browser needs microphone access and an internet connection
+        to recognize your speech.
+      </p>
+      {micError && (
+        <p className="speaking-mic-error">
+          {micError === 'not-allowed' || micError === 'permission-denied'
+            ? 'Microphone access was denied — allow it in your browser settings and try again.'
+            : micError === 'no-speech'
+              ? "Didn't catch any speech — try again, a bit closer to the mic."
+              : `Speech recognition error: ${micError}.`}
+        </p>
+      )}
+      {/* Lista rolável à parte — o player acima fica sempre visível mesmo
+          com muitas falas (pedido do dono, 2026-07-26). Speaking não tem
+          barra de botões no fim (score é por fala, não em lote), então só
+          precisa dessa div a mais. */}
+      <div className="listening-exercise-scrollbody">
+      <ol className="speaking-sentences">
+        {track.sentences.map((sentence, index) => {
+          const text = stripDictationSpeakerLabel(sentence);
+          const result = resultsBySentence[index];
+          const isRecording = recordingIndex === index;
+          return (
+            <li key={index} className="speaking-sentence">
+              <div className="speaking-sentence-head">
+                <span className="listening-sentence-number">{index + 1}</span>
+                <span className="speaking-sentence-text">{text}</span>
+                <button
+                  type="button"
+                  className={`speaking-mic-btn${isRecording ? ' is-recording' : ''}`}
+                  onClick={() => (isRecording ? stopRecording() : startRecording(index))}
+                  disabled={recordingIndex !== null && !isRecording}
+                  title={isRecording ? 'Stop' : 'Repeat this sentence out loud'}
+                >
+                  {isRecording ? '⏹ Listening…' : '🎤 Speak'}
+                </button>
+              </div>
+              {result && (
+                <div className="dictation-result speaking-result">
+                  <p className="dictation-score">
+                    Score: <strong>{result.scorePercent}%</strong>
+                  </p>
+                  <p className="dictation-correct-text">
+                    {result.wordResults.map((wordResult, wIndex) => [
+                      wIndex > 0 ? ' ' : null,
+                      <span
+                        key={wIndex}
+                        className={
+                          wordResult.correct === null
+                            ? 'dictation-word-neutral'
+                            : wordResult.correct ? 'dictation-word-correct' : 'dictation-word-wrong'
+                        }
+                      >
+                        {wordResult.word}
+                      </span>,
+                    ])}
+                  </p>
+                  <p className="speaking-transcript-hint">
+                    You said: “{result.transcript || '(nothing recognized)'}”
+                  </p>
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+      </div>
     </div>
   );
 }
@@ -6493,11 +9599,14 @@ const LISTENING_STOPWORDS = new Set([
 ]);
 
 // Tira um rótulo de falante do início da fala (ex.: "A: ", "Teacher: ",
-// "Student 1: ") — nunca vira lacuna nem conta pro tamanho da fala.
+// "Student 1: ") — nunca vira lacuna nem conta pro tamanho da fala. Sempre
+// retorna label:'' agora (nunca mais exibido — pedido do dono, os
+// personagens do diálogo apareciam soltos no meio do exercício de
+// Listening) — o texto é só REMOVIDO, igual o Dictation já fazia
+// (stripDictationSpeakerLabel, incluindo os rótulos SEM dois-pontos do
+// American1 como "Teacher"/"Student 2", que esse regex sozinho não pegava).
 function splitListeningSpeakerLabel(text) {
-  const match = text.match(/^([A-Z][a-zA-Z]*(?:\s\d+)?:\s+)/);
-  if (!match) return { label: '', rest: text };
-  return { label: match[1], rest: text.slice(match[1].length) };
+  return { label: '', rest: stripDictationSpeakerLabel(text) };
 }
 
 // Preserva os espaços como tokens próprios, pra recompor o texto original
@@ -6506,8 +9615,12 @@ function tokenizeListeningText(text) {
   return text.split(/(\s+)/).filter((token) => token.length > 0);
 }
 
+function stripListeningTokenPunctuation(token) {
+  return token.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
+}
+
 function isListeningBlankCandidate(token) {
-  const stripped = token.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
+  const stripped = stripListeningTokenPunctuation(token);
   if (stripped.length < 3) return false;
   return /^\d+$/.test(stripped) || !LISTENING_STOPWORDS.has(stripped.toLowerCase());
 }
@@ -6523,13 +9636,30 @@ function pickRandomIndices(candidates, count) {
   return picked.sort((a, b) => a - b);
 }
 
+// A extração de palavras-alvo (vocabulary_target_words.json) guarda a forma
+// EXATA como a palavra aparece em negrito no PDF ("nouns", plural) — mas a
+// mesma fala às vezes reusa a palavra no singular noutro exemplo ("night is
+// a noun"). Casamento exato perdia esses casos; esse fallback tenta
+// singular/plural (só ±"s", sem lematização de verdade) antes de desistir.
+function listeningWordMatchesTarget(word, targetWords) {
+  if (targetWords.has(word)) return true;
+  if (word.endsWith('s') && targetWords.has(word.slice(0, -1))) return true;
+  if (targetWords.has(`${word}s`)) return true;
+  return false;
+}
+
 // Monta o modelo de uma fala: quantas lacunas ela ganha depende do tamanho
 // (falas curtas — menos de 10 palavras — ganham 1; falas mais longas ganham
 // mais, cerca de 1 a cada 6 palavras) e QUAIS palavras viram lacuna é
 // sorteado toda vez que a função roda — chamada de dentro de um useMemo sem
 // dependência persistida, então cada visita à tela sorteia palavras
 // diferentes, evitando que o usuário decore a resposta certa.
-function buildListeningSentenceModel(text) {
+// `targetWords` (Set, só existe no Vocabulary — ver vocabulary_target_words.json)
+// muda esse sorteio: em vez de aleatório, a lacuna cai em TODA palavra da
+// fala que estiver em destaque/negrito no PDF da unit (pode dar zero lacunas
+// numa fala sem nenhuma palavra-alvo, ou várias numa fala que é literalmente
+// a lista de definições da unit — ambos os casos são esperados).
+function buildListeningSentenceModel(text, targetWords = null) {
   const { label, rest } = splitListeningSpeakerLabel(text);
   const tokens = tokenizeListeningText(rest);
   const wordIndices = [];
@@ -6540,11 +9670,18 @@ function buildListeningSentenceModel(text) {
   let candidates = wordIndices.filter((i) => isListeningBlankCandidate(tokens[i]));
   if (candidates.length === 0) candidates = wordIndices;
 
-  const blankCount = Math.max(
-    1,
-    Math.min(candidates.length, wordIndices.length < 10 ? 1 : Math.ceil(wordIndices.length / 6))
-  );
-  const blankTokenIndices = new Set(pickRandomIndices(candidates, blankCount));
+  let blankTokenIndices;
+  if (targetWords) {
+    blankTokenIndices = new Set(
+      candidates.filter((i) => listeningWordMatchesTarget(stripListeningTokenPunctuation(tokens[i]).toLowerCase(), targetWords))
+    );
+  } else {
+    const blankCount = Math.max(
+      1,
+      Math.min(candidates.length, wordIndices.length < 10 ? 1 : Math.ceil(wordIndices.length / 6))
+    );
+    blankTokenIndices = new Set(pickRandomIndices(candidates, blankCount));
+  }
 
   const parts = tokens.map((token, i) => {
     if (!blankTokenIndices.has(i)) return { type: 'text', value: token };
@@ -6558,6 +9695,18 @@ function buildListeningSentenceModel(text) {
 }
 
 const normalizeListeningAnswer = (text) => text.trim().toLowerCase().replace(/[.,!?"'’]/g, '');
+
+// Uma lacuna sem NENHUMA letra (só dígitos/traços/pontuação — ex.: "40",
+// "970-555-3784", telefones/quantias) nunca deveria virar "vocabulário" no
+// My Words: (1) não é uma palavra de verdade pra aprender, e (2) o áudio
+// fala os números separados ("nine seven oh...", "forty"), nunca o texto
+// exato do gabarito com traço — então o aluno não tem como acertar por
+// ouvido mesmo entendendo perfeitamente, o que inflava o caderno de erros
+// com "palavras" impossíveis de acertar (bug real reportado pelo dono,
+// 2026-07-26, com prints mostrando várias entradas "970-555-3784" no My
+// Words). O exercício continua cobrando o número normalmente — só o
+// auto-envio pro My Words é que ignora essas lacunas.
+const isNumericOnlyToken = (word) => !/[a-zA-Z]/.test(word);
 
 // Histórico de tentativas de um exercício de Listening (quantas vezes o
 // usuário conferiu as respostas e a pontuação da última vez) — mostrado na
@@ -6621,20 +9770,103 @@ function saveDictationAttempt(userName, trackId, scorePercent) {
   }
 }
 
+// Mesmo padrão de estatísticas do Listening/Dictation, namespace próprio
+// "speaking:". Diferente dos outros dois (que pontuam o track inteiro de
+// uma vez), o Speaking pontua fala por fala (ver SpeakingExercise) — cada
+// tentativa de UMA fala atualiza o mesmo registro por track (attempts soma
+// cada fala repetida, lastScorePercent é o score da fala mais recente), pra
+// caber no mesmo "Done N× · Last score: X%" já usado na lista de exercícios.
+const speakingStatsKey = (userName, trackId) => userKey(userName, `speaking:${trackId}:stats`);
+
+function loadSpeakingStats(userName, trackId) {
+  if (!userName) return null;
+  try {
+    const raw = window.localStorage.getItem(speakingStatsKey(userName, trackId));
+    return raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function saveSpeakingAttempt(userName, trackId, scorePercent) {
+  if (!userName) return;
+  try {
+    const prev = loadSpeakingStats(userName, trackId);
+    const next = {
+      attempts: (prev?.attempts || 0) + 1,
+      lastScorePercent: scorePercent,
+      lastAttemptAt: new Date().toISOString(),
+    };
+    window.localStorage.setItem(speakingStatsKey(userName, trackId), JSON.stringify(next));
+  } catch (error) {
+    // Armazenamento indisponível — segue funcionando, só sem estatística.
+  }
+}
+
 // Compara o texto digitado com o texto correto palavra por palavra (LCS —
 // maior subsequência comum — em vez de comparar índice a índice, pra não
 // penalizar o resto da frase inteira só porque uma palavra foi pulada ou
 // adicionada no meio). Cada palavra é normalizada (minúsculas, sem
 // pontuação) antes de comparar. Retorna o score em % e a lista de palavras
 // esperadas marcadas como certas/erradas, pra destacar visualmente.
+// English Vocabulary B e American English A1 às vezes escrevem quem fala
+// cada frase no começo do texto ("A: ...", "Jenny: ...", "Teacher OK...") —
+// é uma convenção de transcrição, a voz do áudio não fala esse nome, então
+// comparar contra ele penalizava o aluno por não digitar o personagem.
+// Removido do texto usado pra CORRIGIR o Dictation (ver fullText em
+// DictationExercise) E do texto exibido pelo Listening
+// (splitListeningSpeakerLabel reaproveita esta mesma função — antes só
+// cobria rótulo com dois-pontos, os personagens sem dois-pontos do
+// American1 ficavam soltos no meio do exercício, pedido do dono pra tirar).
+const DICTATION_LABEL_COLON_RE = /^[A-Z][A-Za-z0-9 ]{0,24}:\s*/;
+// Rótulos sem dois-pontos (só aparecem no American English A1) — lista
+// fechada, levantada manualmente em listening_american1.json. Não trocar por
+// uma regra genérica tipo "qualquer palavra maiúscula no início": isso
+// apagaria começos de frase legítimos como "JetBlue flight..." ou
+// "Room 11 was...".
+const DICTATION_NO_COLON_LABELS = [
+  'Teacher', 'Student 1', 'Student 2', 'Receptionist', 'Rob', 'Jenny', 'Mom',
+  'Police officer', 'Announcer', 'Announcement', 'David', 'Kate', 'Waiter',
+  'Justin', 'Naomi', 'Amanda', 'Reader', 'Jack', 'Liz', 'Contestant 1', 'Host',
+  'Alan',
+];
+
+function stripDictationSpeakerLabel(sentence) {
+  const colonMatch = sentence.match(DICTATION_LABEL_COLON_RE);
+  if (colonMatch) {
+    return sentence.slice(colonMatch[0].length);
+  }
+  const label = DICTATION_NO_COLON_LABELS.find((name) => sentence.startsWith(`${name} `));
+  return label ? sentence.slice(label.length + 1) : sentence;
+}
+
 function normalizeDictationWord(word) {
   return word.toLowerCase().replace(/[.,!?"'’;:()]/g, '');
 }
 
+// Token sem NENHUMA letra/dígito (ex.: um "—" solto entre frases, separado
+// por espaços dos dois lados) — nunca é uma "palavra" que o aluno digitaria,
+// então não deveria contar nem como certo nem como errado. Antes disso, um
+// travessão desses virava um "wordResult" impossível de acertar (o aluno
+// nunca digita "—"), sempre vermelho, contra o próprio aviso do Dictation
+// ("Punctuation and capitalization don't matter").
+const isDictationPunctuationOnlyToken = (word) => !/[a-zA-Z0-9]/.test(word);
+
 function scoreDictationAnswer(typedText, correctText) {
   const typedWords = typedText.trim().split(/\s+/).filter(Boolean).map(normalizeDictationWord);
-  const correctWords = correctText.trim().split(/\s+/).filter(Boolean);
-  const correctNormalized = correctWords.map(normalizeDictationWord);
+  const correctWordsAll = correctText.trim().split(/\s+/).filter(Boolean);
+
+  // Só os tokens com letra/dígito de verdade entram no casamento/na nota —
+  // os demais (pontuação solta) ficam de fora do LCS mas continuam
+  // aparecendo no texto reconstruído abaixo, sem cor (nem verde nem
+  // vermelho — `wordResult.correct === null` no render).
+  const scorableIndices = [];
+  const correctNormalized = [];
+  correctWordsAll.forEach((word, index) => {
+    if (isDictationPunctuationOnlyToken(word)) return;
+    scorableIndices.push(index);
+    correctNormalized.push(normalizeDictationWord(word));
+  });
 
   // LCS por programação dinâmica, com dp[i][j] = LCS de typedWords[i:] com
   // correctNormalized[j:] (SUFIXOS, não prefixos) — permite recuperar os
@@ -6658,12 +9890,12 @@ function scoreDictationAnswer(typedText, correctText) {
     }
   }
 
-  const matched = new Array(m).fill(false);
+  const matchedScorable = new Array(m).fill(false);
   let i = 0;
   let j = 0;
   while (i < n && j < m) {
     if (typedWords[i] === correctNormalized[j]) {
-      matched[j] = true;
+      matchedScorable[j] = true;
       i += 1;
       j += 1;
     } else if (dp[i + 1][j] >= dp[i][j + 1]) {
@@ -6675,7 +9907,14 @@ function scoreDictationAnswer(typedText, correctText) {
     }
   }
 
-  const wordResults = correctWords.map((word, index) => ({ word, correct: matched[index] }));
+  // Remonta pro tamanho de correctWordsAll: `null` = token de pontuação,
+  // fora do casamento (nem verde nem vermelho no render).
+  const matchedByOriginalIndex = new Array(correctWordsAll.length).fill(null);
+  scorableIndices.forEach((originalIndex, k) => {
+    matchedByOriginalIndex[originalIndex] = matchedScorable[k];
+  });
+
+  const wordResults = correctWordsAll.map((word, index) => ({ word, correct: matchedByOriginalIndex[index] }));
   const scorePercent = m === 0 ? 100 : Math.round((dp[0][0] / m) * 100);
   return { scorePercent, wordResults };
 }
@@ -6686,56 +9925,66 @@ function scoreDictationAnswer(typedText, correctText) {
 // corrigidas todas de uma vez pelo botão "Check answers" no final. A barra de
 // espaço toca/pausa o áudio sempre que o foco não estiver num campo de texto
 // (senão digitar um espaço dentro de uma resposta pausaria o áudio).
-function ListeningClozeExercise({ track, userName, onAddWord }) {
+function ListeningClozeExercise({ track, userName, onAddWord, onPracticed }) {
+  // Só o Vocabulary tem `unit` no track (American1 usa cd/track) — e só o
+  // Vocabulary tem palavras-alvo extraídas (vocabulary_target_words.json,
+  // negrito do PDF de leitura da unit); American1 ainda não tem esse dado,
+  // então o toggle "Only Unit Words" nem aparece lá.
+  const isVocabularyTrack = Boolean(track.unit);
   // regenerateKey só existe pra forçar o useMemo a sortear de novo — não
   // representa nenhum dado real, só entra na dependência pra invalidar o
   // cache quando o usuário pede "Do it again with other words".
   const [regenerateKey, setRegenerateKey] = useState(0);
+  const [wordMode, setWordMode] = useState('random'); // 'random' | 'unitWords'
+  // track.targetWords (só American Accent, tracks de pares mínimos — ex.
+  // pest/past, letter/ladder — ver listening_american_accent.json) SEMPRE
+  // vence, sem toggle nenhum: o pedido do dono foi "esconda sempre essas
+  // palavras", diferente do "Only Unit Words" do Vocabulary, que é opcional.
+  const targetWordSet = useMemo(() => {
+    if (track.targetWords) return new Set(track.targetWords);
+    if (!isVocabularyTrack || wordMode !== 'unitWords') return null;
+    const words = vocabularyTargetWords[String(track.unit)];
+    return words ? new Set(words) : null;
+  }, [isVocabularyTrack, wordMode, track.unit, track.targetWords]);
   const sentenceModels = useMemo(
-    () => track.sentences.map((text) => buildListeningSentenceModel(text)),
-    [track.id, regenerateKey]
+    () => track.sentences.map((text) => buildListeningSentenceModel(text, targetWordSet)),
+    [track.id, regenerateKey, targetWordSet]
   );
   const [answers, setAnswers] = useState({});
   const [checked, setChecked] = useState(false);
   const [showAnswers, setShowAnswers] = useState(false);
   const [addedWordsCount, setAddedWordsCount] = useState(0);
   const audioBarRef = useRef(null);
+  // Auto-pause (mesma feature do Dictation, ver useAudioAutoPause) — pedido
+  // do dono, 2026-07-26.
+  const [autoPauseEnabled, setAutoPauseEnabled] = useState(true);
+  const { hasAutoPause, isAutoPaused, audioEnded } = useAudioAutoPause(audioBarRef, track.id, autoPauseEnabled);
 
   useEffect(() => {
     setAnswers({});
     setChecked(false);
     setShowAnswers(false);
-  }, [track.id, regenerateKey]);
+  }, [track.id, regenerateKey, wordMode]);
 
   const handleRegenerate = () => {
     setRegenerateKey((key) => key + 1);
   };
 
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.code !== 'Space') return;
-      // Dentro de um campo de resposta (ou botão focado), o Space sozinho
-      // precisa continuar digitando um espaço normal (respostas de mais de
-      // uma palavra) — só Ctrl+Space pausa/toca ali. Fora de campo de
-      // texto, o Space sozinho já basta, sem precisar do Ctrl.
-      // (Alt+Space foi tentado antes, mas no Windows o Alt sozinho já ativa
-      // o menu do navegador antes do evento chegar aqui — Ctrl não tem esse
-      // problema.)
-      const tag = document.activeElement?.tagName;
-      const blocksPlainSpace = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'BUTTON';
-      if (!event.ctrlKey && blocksPlainSpace) return;
-      const audio = audioBarRef.current?.querySelector('audio');
-      if (!audio) return;
-      event.preventDefault();
-      if (audio.paused) {
-        audio.play();
-      } else {
-        audio.pause();
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  // "Replay last part" (mesma lógica do Dictation, ver handleReplayLastSegment
+  // em DictationExercise) — troca o antigo "Repeat whole audio" (loopAll do
+  // WideAudioPlayer, removido) por repetir só o trecho que acabou de tocar.
+  const handleReplayLastSegment = () => {
+    const audio = audioBarRef.current?.querySelector('audio');
+    if (!audio) return;
+    const points = dictationPausePoints[track.id] || [];
+    const before = points.filter((p) => p < audio.currentTime - 1.0);
+    audio.currentTime = before.length > 0 ? before[before.length - 1] : 0;
+    audio.play();
+  };
+
+  // Ctrl+Space (Space sozinho fora de campo de texto) pausa/toca o áudio —
+  // agora tratado por um atalho GLOBAL em App() que vale a página inteira
+  // (ver useEffect "handleGlobalAudioShortcut"), não só este exercício.
 
   const handleChange = (key, value) => {
     setAnswers((prev) => ({ ...prev, [key]: value }));
@@ -6756,21 +10005,28 @@ function ListeningClozeExercise({ track, userName, onAddWord }) {
         const value = answers[`${sentenceIndex}:${blankIdx}`] || '';
         if (value.trim() && normalizeListeningAnswer(value) === normalizeListeningAnswer(part.word)) {
           correct += 1;
-        } else if (value.trim()) {
+        } else if (value.trim() && !isNumericOnlyToken(part.word)) {
           // Usuário respondeu algo, mas errou — capturar pro caderno de erros
+          // (não pra lacunas 100% numéricas, ver isNumericOnlyToken acima)
           const sentenceFull = model.label + model.parts.map((p) => (p.type === 'blank' ? p.word : p.value)).join('');
-          missedWords.push({ word: part.word, context: sentenceFull });
+          missedWords.push({ word: part.word, example: sentenceFull });
         }
       });
     });
     if (total > 0) {
       saveListeningAttempt(userName, track.id, Math.round((correct / total) * 100));
+      if (onPracticed) onPracticed();
     }
-    // Adicionar palavras erradas ao My Words
+    // Adicionar palavras erradas ao My Words. A frase vai em `example` (não
+    // em `context`, como ia antes): `context` é o rótulo curto de PROCEDÊNCIA
+    // ("American Accent p. 6") e é renderizado a 12,5px, então a frase inteira
+    // caía lá minúscula e ilegível no flashcard — bug real reportado pelo dono
+    // (2026-07-26), 4 das 18 entradas do caderno dele estavam assim.
     if (missedWords.length > 0 && onAddWord) {
       const uniqueMissed = Array.from(new Map(missedWords.map((w) => [normalizeListeningAnswer(w.word), w])).values());
-      uniqueMissed.forEach(({ word, context }) => {
-        onAddWord({ word, meaning: '', example: '', context });
+      const origem = `Listening — ${listeningTrackLabel(track)}`;
+      uniqueMissed.forEach(({ word, example }) => {
+        onAddWord({ word, meaning: '', example, context: origem });
       });
       setAddedWordsCount(uniqueMissed.length);
       setTimeout(() => setAddedWordsCount(0), 4000);
@@ -6789,9 +10045,54 @@ function ListeningClozeExercise({ track, userName, onAddWord }) {
         Listen to the audio and type the missing word(s) in each sentence — press Space (or
         Ctrl+Space while typing in a blank) to pause/play the audio, then press Check answers.
       </p>
+      {isVocabularyTrack && (
+        <div className="exercise-tabs listening-word-mode-tabs" role="tablist" aria-label="Which words become blanks">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={wordMode === 'unitWords'}
+            className={`exercise-tab${wordMode === 'unitWords' ? ' is-active' : ''}`}
+            onClick={() => setWordMode('unitWords')}
+          >
+            Only Unit Words
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={wordMode === 'random'}
+            className={`exercise-tab${wordMode === 'random' ? ' is-active' : ''}`}
+            onClick={() => setWordMode('random')}
+          >
+            Random Words
+          </button>
+        </div>
+      )}
       <div className="listening-audio-bar" ref={audioBarRef}>
-        <WideAudioPlayer src={track.audio} />
+        <WideAudioPlayer
+          src={track.audio}
+          onReplayLastPart={handleReplayLastSegment}
+          autoPauseEnabled={hasAutoPause ? autoPauseEnabled : undefined}
+          onToggleAutoPause={hasAutoPause ? () => setAutoPauseEnabled((current) => !current) : undefined}
+        />
+        {hasAutoPause && (
+          <span
+            className={`dictation-autopause-hint${audioEnded
+              ? ' dictation-autopause-hint--ended'
+              : isAutoPaused && autoPauseEnabled ? ' dictation-autopause-hint--paused' : ''}`}
+          >
+            {audioEnded
+              ? '🏁 End of audio — Ctrl+Space to play it again'
+              : isAutoPaused && autoPauseEnabled
+                ? '⏸ Paused — press Ctrl+Space to continue'
+                : 'The audio pauses by itself at natural breaks (green button to turn off).'}
+          </span>
+        )}
       </div>
+      {/* Lista rolável à parte (ver .listening-exercise-scrollbody no CSS):
+          o player acima e a barra de "Check answers" abaixo do map ficam
+          SEMPRE visíveis, só as falas rolam — pedido do dono (2026-07-26),
+          o player sumia de vista em exercícios com muitas falas. */}
+      <div className="listening-exercise-scrollbody">
       <ol className="listening-sentences">
         {sentenceModels.map((model, sentenceIndex) => {
           let blankIndexInSentence = -1;
@@ -6799,7 +10100,6 @@ function ListeningClozeExercise({ track, userName, onAddWord }) {
             <li key={sentenceIndex} className="listening-sentence">
               <span className="listening-sentence-number">{sentenceIndex + 1}</span>
               <span className="listening-sentence-text">
-                {model.label}
                 {model.parts.map((part, partIndex) => {
                   if (part.type === 'text') {
                     return <span key={partIndex}>{part.value}</span>;
@@ -6847,6 +10147,7 @@ function ListeningClozeExercise({ track, userName, onAddWord }) {
           );
         })}
       </ol>
+      </div>
       <div className="listening-check-all">
         <button type="button" className="show-answers-btn" onClick={handleCheckAll}>
           Check answers

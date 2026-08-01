@@ -26,7 +26,6 @@
    nunca atrapalhar cliques. */
 .landing-page.landing-page--courses,
 .landing-page.vocabulary-mode.wordbook-mode,
-.landing-page.vocabulary-mode.my-notes-mode,
 .landing-page.vocabulary-mode.profile-mode,
 .landing-page.vocabulary-mode.dashboard-mode {
   position: relative;
@@ -34,7 +33,6 @@
 
 .landing-page.landing-page--courses::before,
 .landing-page.vocabulary-mode.wordbook-mode::before,
-.landing-page.vocabulary-mode.my-notes-mode::before,
 .landing-page.vocabulary-mode.profile-mode::before,
 .landing-page.vocabulary-mode.dashboard-mode::before {
   content: '';
@@ -54,7 +52,6 @@
 
 .landing-panel.course-links-panel,
 .landing-panel.wordbook-panel,
-.landing-panel.my-notes-panel,
 .landing-panel.profile-panel,
 .landing-panel.dashboard-panel {
   position: relative;
@@ -86,13 +83,7 @@
   gap: 11px;
   min-height: 60px;
   padding: 10px 22px 10px;
-  /* Opaco (não rgba translúcido) — é sticky, então qualquer conteúdo que
-     role por baixo (ex. a foto do hero na Home) sangrava através dos 10%
-     de transparência. Passava despercebido enquanto a Home nunca rolava;
-     virou visível assim que ganhou app-shell--allow-grow. Mesma regra de
-     "card sobre --page-hero-bg precisa de fundo opaco" já documentada no
-     CLAUDE.md, só que aplicada ao próprio header. */
-  background: rgb(24, 15, 43);
+  background: rgba(24, 15, 43, 0.9);
   border-bottom: 1px solid rgba(255, 255, 255, 0.16);
   color: #fff;
   box-shadow: 0 12px 32px rgba(21, 10, 45, 0.26);
@@ -286,21 +277,6 @@
   list-style: none;
 }
 
-/* Legenda de cada bloco (Learn/Practice/Tools/Account) — reduz a lista
-   plana de 12 itens (sem hierarquia nenhuma) a grupos escaneáveis, sem
-   virar submenu nem mudar nenhum destino (achado de revisão de UX,
-   2026-07-26). */
-.side-drawer-group-label {
-  margin: 2px 14px 4px;
-  padding: 0 4px;
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  list-style: none;
-}
-
 .main-panels { display: grid; flex-grow: 1; overflow: hidden; }
 
 html,
@@ -352,16 +328,6 @@ body {
   min-height: 0;
 }
 
-/* Mesmo tratamento do wordbook-mode acima (mesma causa raiz: min-height
-   herdado de .landing-page maior que o espaço real disponível) — a lista
-   de notas (.my-notes-list) é quem rola, não a página. */
-.landing-page.vocabulary-mode.my-notes-mode {
-  padding-top: 16px;
-  align-items: stretch;
-  overflow: hidden;
-  min-height: 0;
-}
-
 .landing-page.landing-page--home,
 .landing-page.landing-page--courses {
   background: var(--landing-light-gradient);
@@ -373,19 +339,9 @@ body {
    altura mínima maior que o espaço realmente disponível e cria overflow/
    scroll na página mesmo com conteúdo que já caberia (mesma causa raiz
    corrigida em .landing-page.vocabulary-mode.wordbook-mode). min-height:0
-   deixa o flex encolher pro tamanho real disponível.
-   align-items:flex-start (em vez do center herdado de .landing-page) +
-   padding-top + overflow:auto: com o TodayPlanCard/DailyGoalCard visíveis
-   (usuário logado), o conteúdo passou a ficar mais alto que a viewport em
-   telas menores — sem isso, ele só era CORTADO (nunca dava pra rolar pra
-   ver o resto), e ainda por cima align-items:center escondia metade do
-   corte atrás do header sticky (mesmo bug já documentado em
-   .app-shell--allow-grow/.landing-page--courses — mesmo tratamento aqui). */
+   deixa o flex encolher pro tamanho real disponível. */
 .landing-page.landing-page--home {
   min-height: 0;
-  align-items: flex-start;
-  padding-top: 56px;
-  overflow: auto;
 }
 
 /* Tela "Courses": sem isso, o align-items:center padrão de .landing-page
@@ -533,20 +489,6 @@ body {
   color: #1b3a5e;
 }
 
-/* Texto de introdução do hub do American Accent — precisa de cor opaca
-   explícita, senão herda `.landing-panel p` (branco translúcido, quase
-   invisível em painel claro — ver "Quirks & Gotchas" no CLAUDE.md). Usa
-   <span display:block> em vez de <p> de propósito, pelo mesmo motivo. */
-.landing-panel.vocabulary-page .american-accent-intro {
-  display: block;
-  margin: -8px 0 18px;
-  color: rgba(27, 58, 94, 0.75);
-  font-size: 1rem;
-  font-weight: 400;
-  text-transform: none;
-  letter-spacing: normal;
-}
-
 .landing-panel.vocabulary-page .vocabulary-link {
   color: #1b3a5e;
   background: rgba(27, 58, 94, 0.05);
@@ -607,17 +549,6 @@ body {
   color: #fff;
 }
 
-/* "Let's set up your profile" (register) / "Back up your progress
-   automatically?" (backup-setup) — as duas usam .landing-panel.register-panel
-   — 30% menor que o h1 padrão de .landing-panel, pedido do dono (o tamanho
-   base é pensado pra títulos curtos tipo "Progress"; nessas duas o texto é
-   mais longo e ficava grande demais). Escopado só a .register-panel — as
-   outras telas com .landing-panel h1 (Dashboard, Profile...) continuam no
-   tamanho padrão. */
-.register-panel h1 {
-  font-size: clamp(1.75rem, 2.66vw, 2.94rem);
-}
-
 .vocabulary-title {
   margin-top: 0;
   text-align: left;
@@ -634,37 +565,6 @@ body {
   display: grid;
   gap: 18px;
   padding: 16px 0 4px;
-}
-
-/* "Beginner"/"Intermediate" — aviso de nível pedido pelo dono (English
-   Vocabulary B não é A1 como os outros dois, ver comentário em `courses`,
-   App.js), padronizado (mesma classe, mesmo visual) em TODA tela que lista
-   cursos: Courses, hubs de Listening/Dictation e "Progress by course" no
-   Dashboard. Cola no card/linha de baixo (margin-top maior que
-   margin-bottom) pra ficar claro que é um rótulo DAQUELE grupo, não uma
-   separação neutra.
-   É um <span> (com display:block), não <p> — de propósito: várias regras
-   antigas tipo `.landing-panel p`/`.landing-panel.listening-panel p`/
-   `.landing-panel.dashboard-panel > p` (tema roxo escuro herdado) têm mais
-   especificidade que uma classe só, e cada painel tem sua própria variante
-   dessa regra — bater a especificidade de UMA é fácil, bater TODAS de uma
-   vez (pra funcionar igual em toda tela) é uma corrida sem fim. Elemento
-   diferente (span, não p) escapa da armadilha inteira — mesmo problema já
-   documentado no CLAUDE.md, "Layout/CSS", resolvido aqui de forma mais
-   definitiva do que só aumentar especificidade. */
-.course-level-heading {
-  display: block;
-  margin: 4px 0 -6px;
-  /* Mesmo tamanho/peso do título dos cursos (.course-link span: 1.05rem/700)
-     — pedido do dono, era menor e em caixa alta (11px/800/uppercase) antes,
-     destoando do resto da tela. */
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--purple-700);
-}
-
-.course-level-heading:first-child {
-  margin-top: 0;
 }
 
 /* Cada curso na tela Courses ganha sua própria linha (card + botão
@@ -882,21 +782,6 @@ body {
   flex-direction: column;
   gap: 12px;
   margin-top: 24px;
-}
-
-/* Pasta de backup vinculada (File System Access API) — um sub-grupo dentro
-   de .profile-reset-list (status + 1-3 botões), com seu próprio gap em vez
-   de depender do gap do pai, já que é um único item flex ali (ver
-   .course-level-heading em App.js pra outro caso do mesmo tipo de
-   problema). */
-.profile-backup-folder {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.profile-backup-folder-status {
-  margin: 0;
 }
 
 /* Separa os resets/exports de cada curso no Profile — cada curso tem seu
@@ -1132,48 +1017,8 @@ body {
   max-width: 640px;
 }
 
-/* Mesmo fix de cor herdada do tema roxo escuro (.landing-panel p, ver
-   Quirks & Gotchas no CLAUDE.md) — sem isso o eyebrow/h1/parágrafos da tela
-   "My Notes" ficam quase invisíveis (branco sobre o fundo claro). */
-.landing-panel.my-notes-panel .eyebrow {
-  color: var(--purple-700);
-}
-
-.landing-panel.my-notes-panel h1 {
-  margin: 0 0 10px;
-  font-size: clamp(1.8rem, 2.6vw, 2.4rem);
-  color: #1b3a5e;
-}
-
-/* max-width mais largo que o padrão de outros painéis (640px) de propósito
-   — o texto é uma frase só e o painel aqui é largo (900px, ver
-   .my-notes-panel); 640px forçava uma quebra de linha feia bem no meio da
-   frase ("...jump straight / back to where..."). */
-.landing-panel.my-notes-panel > p {
-  color: rgba(27, 58, 94, 0.75);
-  max-width: 100%;
-}
-
-/* "Continue where you left off" + "Save progress now" lado a lado — o
-   segundo reaproveita a mesma ação do My Profile, só mais visível (pedido
-   do dono: o autosave é silencioso demais, não dá pra saber se está
-   funcionando). Sem status permanente na tela — só popup, e só quando a
-   pasta não está conectada (ver handleSaveProgressFromDashboard); o botão
-   muda de rótulo conforme o estado, então não precisa de texto extra. */
-.dashboard-hero-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-  margin: 18px 0 4px;
-}
-
 .dashboard-hero-continue {
-  margin: 0;
-}
-
-.dashboard-save-progress-btn {
-  margin-bottom: 0;
+  margin: 18px 0 4px;
 }
 
 /* Grade de KPIs (My Words/revisões/prática) — auto-fit encolhe pra 2-3
@@ -1222,16 +1067,6 @@ body {
   font-size: 1.7rem;
   font-weight: 800;
   color: #1b3a5e;
-}
-
-/* "% de domínio geral" (ROADMAP item 3, os 3 cursos somados — não é só o
-   A1, o Vocabulary é Pre-Intermediate/Intermediate) — pendurado junto do
-   valor "X/Y units mastered" em vez de virar um 7º tile próprio. */
-.dashboard-stat-subvalue {
-  margin-left: 6px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--purple-700);
 }
 
 .dashboard-stat-label {
@@ -1339,16 +1174,13 @@ body {
 }
 
 /* Sem uppercase/letter-spacing do .eyebrow padrão (achado agressivo demais
-   pra essa tela) — só uma legenda discreta acima do título. Tamanho igual
-   ao título dos cursos/.course-level-heading (1.05rem/700) — era 14px,
-   pedido do dono pra não ficar pequeno demais perto de "Beginner"/
-   "Intermediate" logo abaixo. */
+   pra essa tela) — só uma legenda discreta acima do título. */
 .landing-panel.listening-panel .eyebrow {
   color: var(--purple-700);
   text-transform: none;
   letter-spacing: normal;
   font-weight: 700;
-  font-size: 1.4rem;
+  font-size: 14px;
 }
 
 /* O h1 padrão de .landing-panel (clamp de até 4.2rem, peso do sans-serif do
@@ -1476,70 +1308,10 @@ body {
   max-width: 780px;
 }
 
-/* Player sempre visível mesmo em exercícios com muitas falas (Listening e
-   Speaking) — mesmo tratamento de "uma rolagem só, dentro do painel" já
-   usado em .listening-tracks-mode (ver comentário lá): sem isso, a página
-   inteira rolava junto (app-shell tem height:100vh fixo, overflow:visible
-   é o padrão herdado de .listening-mode), empurrando o player pra fora da
-   tela — bug real reportado pelo dono (2026-07-26), com screenshot
-   mostrando o player sumido de vista numa tela de 15 falas. Dictation não
-   precisa disso (é só um textarea, nunca cresce tanto), só Listening/
-   Speaking, que têm uma fala por linha. */
-.landing-page.vocabulary-mode.listening-mode.listening-exercise-scroll-mode {
-  overflow: hidden;
-  align-items: stretch;
-  /* .landing-page.landing-page--courses (regra pensada pra tela "Courses",
-     que essas telas também carregam a classe de) aplica 130px de
-     padding-top — sobra demais aqui, empurrando o player pra baixo sem
-     necessidade (pedido do dono, 2026-07-26: "o player pode ficar mais
-     pra cima"). Precisa da MESMA especificidade (4 classes) daquela regra
-     de overflow/align-items acima pra realmente vencer. */
-  padding-top: 24px;
-}
-
-.landing-panel.listening-exercise-panel {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* ELO QUE FALTAVA: .listening-exercise/.speaking-exercise (a div própria
-   que ListeningClozeExercise/SpeakingExercise devolvem) fica ENTRE o painel
-   flex e o .listening-exercise-scrollbody — sem virar TAMBÉM um item flex
-   com flex:1/min-height:0, o "flex:1" do scrollbody não tinha efeito
-   nenhum (propriedade flex só faz algo em filho DIRETO de um flex
-   container; a div do meio, sem isso, media pelo conteúdo, ignorando a
-   altura disponível do painel) — bug real reportado pelo dono, 2026-07-26,
-   a rolagem interna simplesmente não acontecia. */
-.listening-exercise,
-.speaking-exercise {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.listening-exercise-scrollbody {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
 /* Instruções do Listening: fora da barra do player (que fica só com o
    player, igual ao Dictation), logo abaixo do título — com um respiro até
    a barra. */
 .listening-exercise > .listening-instructions {
-  margin: 0 0 16px;
-}
-
-/* Toggle "Only Unit Words / Random Words" (só aparece pro Vocabulary — ver
-   isVocabularyTrack em ListeningClozeExercise). Reaproveita .exercise-tab/
-   .exercise-tabs (mesmo visual das abas de seção do American1), mas essas
-   nascem pensadas pra ficar dentro de uma toolbar (margin-left: 24px) — aqui
-   é um bloco próprio antes da barra do player, então zera essa margem. */
-.listening-word-mode-tabs {
   margin: 0 0 16px;
 }
 
@@ -1604,38 +1376,12 @@ body {
   border-radius: 12px;
   background: linear-gradient(135deg, var(--purple-700), var(--purple-500));
   color: #fff;
-  font-size: 20px;
 }
 
 .wide-player-btn--main:hover {
   background: linear-gradient(135deg, var(--purple-700), var(--purple-500));
   color: #fff;
   filter: saturate(1.1) brightness(1.05);
-}
-
-/* Toggle de auto-pause (Listening/Speaking/ver useAudioAutoPause) — mesmo
-   tamanho do Play/Replay (--main), verde em vez de roxo, pedido do dono
-   2026-07-26. .is-off (desligado) fica esmaecido, sem mudar de tamanho. */
-.wide-player-btn--green {
-  width: 44px;
-  height: 44px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #0e9f4e, #19c964);
-  color: #fff;
-}
-
-.wide-player-btn--green:hover {
-  filter: saturate(1.1) brightness(1.05);
-}
-
-.wide-player-btn--green.is-off {
-  background: rgba(14, 159, 78, 0.2);
-  color: rgba(14, 159, 78, 0.75);
-}
-
-.wide-player-btn--green.is-off:hover {
-  background: rgba(14, 159, 78, 0.3);
 }
 
 .wide-player-btn--text {
@@ -1668,10 +1414,8 @@ body {
 }
 
 .wide-player-seek {
-  /* Reduzida de 160/120 pra caber os botões novos (Replay last part +
-     auto-pause) na mesma linha sem quebrar (pedido do dono, 2026-07-26). */
-  flex: 1 1 80px;
-  min-width: 60px;
+  flex: 1 1 160px;
+  min-width: 120px;
   accent-color: var(--purple-500);
   cursor: pointer;
 }
@@ -1735,11 +1479,22 @@ body {
   gap: 16px;
 }
 
-/* Dica de auto-pause — só aparece nos tracks que têm pontos de pausa
-   gerados (dictation_pause_points.json); toggle + "Replay last part" agora
-   vivem dentro do próprio player (ver WideAudioPlayer), não mais numa linha
-   separada com botões largos (removida, 2026-07-26 — Dictation ganhou o
-   mesmo tratamento já dado ao Listening/Speaking). */
+/* Linha do auto-pause (toggle + dica) — só aparece nos tracks que têm
+   pontos de pausa gerados (dictation_pause_points.json). */
+.dictation-autopause-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Zera o margin-bottom herdado de ".listening-panel .upload-button" (20px)
+   — sem isso, o botão fica deslocado pra cima em relação à dica/pílula de
+   pausa, que está centralizada verticalmente na linha. */
+.dictation-autopause-row .upload-button {
+  margin-bottom: 0;
+}
+
 .dictation-autopause-hint {
   font-size: 13px;
   color: rgba(27, 58, 94, 0.65);
@@ -1838,284 +1593,11 @@ body {
   color: #1a7a3d;
 }
 
-/* Token de pontuação solta (ex.: um "—" separado por espaços) — não conta
-   pro score (o aluno nunca "digita" isso), então não fica nem verde nem
-   vermelho, só o texto normal. */
-.dictation-word-neutral {
-  color: inherit;
-}
-
 .dictation-word-wrong {
   color: #c0392b;
   text-decoration: underline;
   text-decoration-color: rgba(192, 57, 43, 0.45);
   text-underline-offset: 3px;
-}
-
-/* Tela "Speaking" — reaproveita .dictation-result/.dictation-score/
-   .dictation-correct-text/.dictation-word-* diretamente (mesmo critério de
-   pontuação, mesma cor de acerto/erro), só o layout por-frase é próprio
-   (lista de cartões, não um textarea único). */
-.speaking-exercise {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.speaking-unsupported {
-  margin: 0;
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: rgba(27, 58, 94, 0.06);
-  border: 1px solid rgba(27, 58, 94, 0.15);
-  color: #1b3a5e;
-  font-size: 15px;
-}
-
-/* ==== Ask AI (Q&A avulso de gramática, via Gemini — ver App.js/setupProxy.js) ==== */
-
-.ask-ai-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  max-width: 640px;
-  text-align: left;
-}
-
-/* .landing-panel base (tema roxo escuro original) deixa .eyebrow/h1/p quase
-   brancos e sem a fonte Quicksand — sem um override ".landing-panel
-   .ask-ai-panel" aqui (mesmo padrão já usado por .listening-panel/
-   .profile-panel/etc.), ".landing-panel p" (classe+tag, mais específico que
-   uma classe sozinha) vence a cascata e o texto fica ilegível sobre o fundo
-   claro. Bug real reportado pelo dono (2026-07-25), mesma causa já
-   documentada em CLAUDE.md pra esse tipo de tela. */
-.landing-panel.ask-ai-panel .eyebrow {
-  color: var(--purple-700);
-}
-
-.landing-panel.ask-ai-panel h1 {
-  color: #1b3a5e;
-  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-weight: 600;
-  font-size: clamp(1.5rem, 2.2vw, 2rem);
-  line-height: 1.25;
-}
-
-.landing-panel.ask-ai-panel p {
-  color: rgba(27, 58, 94, 0.75);
-  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
-
-/* Render do markdown-lite da resposta (ver renderAdeleMarkdown, App.js) —
-   ".landing-panel.ask-ai-panel p" acima já cobre os <p>, mas h3/ul/li/strong
-   são elementos novos que essa regra não alcança; explícito aqui em vez de
-   confiar em herança, mesmo padrão do resto do arquivo. */
-.landing-panel.ask-ai-panel .ask-ai-answer-body p {
-  color: #1b3a5e;
-  margin: 0 0 8px;
-  font-size: 15.5px;
-  line-height: 1.6;
-}
-
-.landing-panel.ask-ai-panel .ask-ai-answer-body p:last-child {
-  margin-bottom: 0;
-}
-
-.landing-panel.ask-ai-panel .ask-ai-answer-body h3 {
-  margin: 14px 0 6px;
-  color: var(--purple-700);
-  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.landing-panel.ask-ai-panel .ask-ai-answer-body h3:first-child {
-  margin-top: 0;
-}
-
-.landing-panel.ask-ai-panel .ask-ai-answer-body ul {
-  margin: 0 0 8px;
-  padding-left: 22px;
-}
-
-.landing-panel.ask-ai-panel .ask-ai-answer-body li {
-  color: #1b3a5e;
-  margin-bottom: 4px;
-}
-
-.landing-panel.ask-ai-panel .ask-ai-answer-body strong {
-  color: #12294a;
-}
-
-.landing-panel.ask-ai-panel .ask-ai-answer-body .ask-ai-answer-quote {
-  padding-left: 12px;
-  border-left: 3px solid rgba(109, 66, 216, 0.35);
-  font-style: italic;
-  color: rgba(27, 58, 94, 0.75);
-}
-
-.ask-ai-answer-divider {
-  margin: 14px 0;
-  border: none;
-  border-top: 1px dashed rgba(27, 58, 94, 0.2);
-}
-
-.ask-ai-actions-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.ask-ai-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  text-align: left;
-}
-
-.ask-ai-mascot {
-  flex: 0 0 auto;
-  display: inline-flex;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 2px solid rgba(109, 66, 216, 0.25);
-  box-shadow: 0 4px 14px rgba(27, 58, 94, 0.15);
-}
-
-.ask-ai-mascot svg {
-  width: 100%;
-  height: 100%;
-}
-
-.ask-ai-header h1 {
-  margin: 4px 0 0;
-}
-
-.ask-ai-textarea {
-  min-height: 100px;
-}
-
-.ask-ai-panel .show-answers-btn {
-  align-self: flex-start;
-}
-
-/* "Adele is thinking..." — indicador vivo no lugar do texto estático
-   "Asking…" (as respostas ficaram mais longas/ricas desde que ela ganhou
-   personalidade, a espera passou a ser perceptível — achado de revisão de
-   UX, 2026-07-26). 3 pontos pulsando em sequência, CSS puro. */
-.ask-ai-thinking {
-  display: inline-flex;
-  align-items: center;
-}
-
-.ask-ai-thinking-dots span {
-  display: inline-block;
-  animation: ask-ai-dot-pulse 1.2s infinite;
-  opacity: 0.3;
-}
-
-.ask-ai-thinking-dots span:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.ask-ai-thinking-dots span:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes ask-ai-dot-pulse {
-  0%, 60%, 100% { opacity: 0.3; }
-  30% { opacity: 1; }
-}
-
-.ask-ai-error {
-  margin: 0;
-  color: #c0392b;
-  font-size: 14.5px;
-}
-
-.ask-ai-answer {
-  padding: 16px 18px;
-  border-radius: 14px;
-  background: #f3f5f7;
-  border: 1px solid rgba(27, 58, 94, 0.12);
-}
-
-.speaking-mic-error {
-  margin: 0;
-  padding: 10px 14px;
-  border-radius: 10px;
-  background: rgba(192, 57, 43, 0.08);
-  border: 1px solid rgba(192, 57, 43, 0.25);
-  color: #c0392b;
-  font-size: 14px;
-}
-
-.speaking-sentences {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.speaking-sentence {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: rgba(27, 58, 94, 0.04);
-  border: 1px solid rgba(27, 58, 94, 0.1);
-}
-
-.speaking-sentence-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-}
-
-.speaking-sentence-text {
-  flex: 1 1 320px;
-  color: #1b3a5e;
-  line-height: 1.5;
-  font-size: 1.05rem;
-}
-
-.speaking-mic-btn {
-  flex: 0 0 auto;
-  border: none;
-  border-radius: 999px;
-  padding: 8px 16px;
-  font-weight: 700;
-  font-size: 14px;
-  color: #fff;
-  background: linear-gradient(135deg, var(--purple-700), var(--purple-500));
-  cursor: pointer;
-}
-
-.speaking-mic-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-/* Reaproveita a mesma animação de pulso do "paused" do Dictation — mesma
-   ideia de "algo precisa da sua atenção agora", só a cor muda pra vermelho
-   (gravando) em vez de roxo (pausado). */
-.speaking-mic-btn.is-recording {
-  background: linear-gradient(135deg, #c0392b, #e6584a);
-  animation: dictation-paused-pulse 1.2s ease-in-out infinite;
-}
-
-.speaking-transcript-hint {
-  margin: 0;
-  font-size: 13px;
-  font-style: italic;
-  color: rgba(27, 58, 94, 0.65);
 }
 
 .listening-sentences {
@@ -2704,20 +2186,6 @@ body {
   flex-shrink: 0;
 }
 
-/* American Accent: até 7 faixas na mesma página (ver AMERICAN_ACCENT_SCREENS
-   em App.js), quebrando .reference-links em 2-3 linhas — .pdf-toolbar tem
-   align-items:center por padrão, então os botões All Chapters/Previous/Next
-   ficavam se recentralizando verticalmente conforme o número de linhas de
-   track mudava de página pra página (pedido do dono: eles têm que ficar
-   sempre no mesmo canto superior esquerdo, não "flutuar"). */
-.pdf-toolbar.american-accent-toolbar {
-  align-items: flex-start;
-}
-
-.american-accent-toolbar .pdf-toolbar-nav {
-  padding-top: 4px;
-}
-
 .pdf-toolbar-nav .upload-button {
   min-height: 28px;
   padding: 0 14px;
@@ -2871,12 +2339,30 @@ body {
   background: #fff;
 }
 
-/* American English A1 (tela de unit): a área de respostas já ganha um
-   .study-answers-resize-handle (linha fina + pílula de arraste) logo acima —
-   a borda grossa fixa de .section-answers-strip ficaria como uma segunda
-   linha redundante, então essa variante zera a borda e deixa só o handle. */
-.section-answers-strip--resizable {
-  border-top: none;
+.section-answers-strip-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: var(--soft);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--purple-900);
+  flex: 0 0 auto;
+}
+
+.section-answers-strip-close {
+  border: none;
+  background: transparent;
+  color: var(--purple-700);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 4px;
+}
+
+.section-answers-strip-close:hover {
+  color: var(--purple-900);
 }
 
 .section-answers-strip-frame {
@@ -3863,163 +3349,6 @@ body {
   color: var(--purple-500);
 }
 
-/* ==== "Today's Goal" (ROADMAP item 3, trilha de estudo) — card na Home,
-   logo abaixo de "Today's Plan"; mesmo visual de .plan-card (mesmo
-   contexto: sobre a imagem da Home, sem o problema de fundo translúcido
-   vazando que existe nas telas com --page-hero-bg). ==== */
-
-.daily-goal-card {
-  width: 100%;
-  max-width: 1120px;
-  text-align: left;
-  padding: 22px 24px;
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(27, 58, 94, 0.1);
-  box-shadow: 0 18px 48px rgba(30, 58, 95, 0.12);
-  margin-top: 16px;
-}
-
-.daily-goal-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.daily-goal-count {
-  flex: 0 0 auto;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--purple-700);
-}
-
-.daily-goal-items {
-  list-style: none;
-  margin: 10px 0 0;
-  padding: 0;
-  display: grid;
-  gap: 6px;
-}
-
-.daily-goal-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: rgba(27, 58, 94, 0.05);
-  font-size: 13.5px;
-  color: rgba(27, 58, 94, 0.75);
-}
-
-.daily-goal-item.is-done {
-  color: #1b3a5e;
-  font-weight: 700;
-  background: rgba(139, 92, 246, 0.12);
-}
-
-/* Checkbox desenhado em CSS (não emoji ⬜/✅) — fonte de emoji varia demais
-   entre plataformas/navegadores pro quadrado vazio ficar legível. */
-.daily-goal-check {
-  flex: 0 0 auto;
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
-  border: 1.5px solid rgba(27, 58, 94, 0.35);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 900;
-  line-height: 1;
-  color: #fff;
-}
-
-.daily-goal-check.is-done {
-  background: var(--purple-700);
-  border-color: var(--purple-700);
-}
-
-.daily-goal-item-label {
-  flex: 1;
-}
-
-/* "i" de explicação por item — mesmo visual do .unit-badge-legend-info-btn,
-   mas SEM popover próprio: com os itens colados (6px de gap), um popover
-   por linha cobria o botão "i" do vizinho de baixo e travava o clique nele
-   (bug real, pego testando). O popover é um só, fora do <li>, embaixo da
-   lista inteira — ver .daily-goal-info-popover mais abaixo. */
-.daily-goal-info-btn {
-  flex: 0 0 auto;
-  width: 18px;
-  height: 18px;
-  border-radius: 999px;
-  border: 1.5px solid rgba(27, 58, 94, 0.35);
-  background: transparent;
-  color: rgba(27, 58, 94, 0.65);
-  font-size: 11px;
-  font-style: italic;
-  font-weight: 700;
-  font-family: Georgia, 'Times New Roman', serif;
-  line-height: 1;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-
-.daily-goal-info-btn:hover,
-.daily-goal-info-btn[aria-expanded="true"] {
-  border-color: var(--purple-500);
-  color: var(--purple-500);
-}
-
-.daily-goal-info-popover {
-  margin-top: 10px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: #fff;
-  border: 1px solid rgba(27, 58, 94, 0.15);
-  box-shadow: 0 4px 16px rgba(27, 58, 94, 0.1);
-  font-size: 12.5px;
-  line-height: 1.5;
-  font-weight: 400;
-  text-align: left;
-}
-
-.daily-goal-info-popover p {
-  margin: 0;
-  /* .landing-panel p (regra global mais antiga) força texto branco — sem
-     isso o popover fica com texto invisível sobre o próprio fundo branco. */
-  color: #1b3a5e;
-}
-
-.daily-goal-complete {
-  margin: 10px 0 0;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--purple-700);
-}
-
-.daily-goal-edit-options {
-  display: grid;
-  gap: 6px;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px dashed rgba(27, 58, 94, 0.15);
-}
-
-.daily-goal-edit-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12.5px;
-  color: rgba(27, 58, 94, 0.75);
-  cursor: pointer;
-}
-
 /* ==== "Today's Review" (revisão espaçada) — card na Home e no Courses ==== */
 
 .review-card {
@@ -4230,42 +3559,6 @@ body {
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
 }
 
-/* "?" dentro do campo de significado, ao adicionar uma palavra — link pro
-   Cambridge Dictionary da palavra já digitada no campo "Word or expression"
-   (mesmo padrão de dicionário externo já usado no flashcard de prática, ver
-   startEditingMeaning). Cinza/inerte enquanto a palavra ainda não foi
-   digitada (não dá pra montar uma URL de busca vazia). */
-.wordbook-input-with-help {
-  position: relative;
-}
-
-.wordbook-input-with-help .wordbook-input {
-  width: 100%;
-  padding-right: 38px;
-  box-sizing: border-box;
-}
-
-.wordbook-input-help {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-weight: 800;
-  font-size: 22px;
-  color: #c0392b;
-  text-decoration: none;
-  line-height: 1;
-}
-
-.wordbook-input-help:hover {
-  text-decoration: underline;
-}
-
-.wordbook-input-help--disabled {
-  color: rgba(27, 58, 94, 0.25);
-  cursor: default;
-}
-
 /* Área de imagem-mnemônica (upload/drag&drop/paste) — ver ImageDropZone. */
 .image-dropzone {
   grid-column: 1 / -1;
@@ -4304,14 +3597,14 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   color: rgba(27, 58, 94, 0.65);
   text-align: center;
 }
 
 .image-dropzone-hint small {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 500;
   color: rgba(27, 58, 94, 0.45);
 }
@@ -4407,10 +3700,10 @@ body {
 
 .wordbook-entry-thumb {
   flex: 0 0 auto;
-  width: 88px;
-  height: 88px;
+  width: 48px;
+  height: 48px;
   object-fit: cover;
-  border-radius: 12px;
+  border-radius: 8px;
   border: 1px solid rgba(27, 58, 94, 0.15);
   background: #fff;
 }
@@ -4426,50 +3719,6 @@ body {
 .wordbook-entry-word {
   font-weight: 800;
   font-size: 19px;
-}
-
-.wordbook-entry-word-row {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* Ícone 🔊 de pronúncia (ver WordAudioButton, App.js) — mesma linguagem
-   visual do .wordbook-expand (botão discreto, ganha cor no hover). */
-.word-audio-btn {
-  flex: 0 0 auto;
-  border: none;
-  background: transparent;
-  color: rgba(27, 58, 94, 0.45);
-  cursor: pointer;
-  padding: 3px;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.word-audio-btn:hover:not(:disabled) {
-  color: var(--purple-700);
-  background: rgba(91, 63, 217, 0.1);
-}
-
-.word-audio-btn--loading {
-  color: var(--purple-500);
-  animation: word-audio-pulse 900ms ease-in-out infinite;
-}
-
-.word-audio-btn--playing {
-  color: var(--purple-700);
-}
-
-.word-audio-btn--error {
-  color: rgba(192, 57, 43, 0.6);
-}
-
-@keyframes word-audio-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
 }
 
 .wordbook-entry .wordbook-entry-meaning {
@@ -4489,75 +3738,6 @@ body {
   margin: 6px 0 0;
   font-size: 13.5px;
   color: rgba(27, 58, 94, 0.55);
-}
-
-.wordbook-entry-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.wordbook-entry-link {
-  display: inline-block;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #5b3fd9;
-  background: rgba(91, 63, 217, 0.1);
-  border: 1px solid rgba(91, 63, 217, 0.25);
-  border-radius: 999px;
-  padding: 4px 10px;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.wordbook-entry-link:hover {
-  background: rgba(91, 63, 217, 0.18);
-}
-
-/* Form inline do botão "Edit" de cada card — substitui o conteúdo normal
-   do card (thumb/word/meaning/example/links) em vez de abrir um modal, pra
-   ficar no mesmo lugar/contexto que o usuário já está olhando. */
-.wordbook-entry-edit {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.wordbook-entry-edit-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 2px;
-}
-
-/* Botões do canto superior direito do card ("view larger" + delete) —
-   pedido do dono: ver a palavra grande, do mesmo jeito que aparece no modo
-   Practice, sem precisar clicar em "Practice N words" (que pega TODAS as
-   vencidas, não só essa). Reaproveita o próprio flashcard de prática pra
-   isso (ver startPracticeSingle) — não é uma tela nova. */
-.wordbook-entry-corner-actions {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.wordbook-expand {
-  flex: 0 0 auto;
-  border: none;
-  background: transparent;
-  color: rgba(27, 58, 94, 0.45);
-  cursor: pointer;
-  padding: 4px 6px;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-}
-
-.wordbook-expand:hover {
-  color: var(--purple-700);
-  background: rgba(91, 63, 217, 0.1);
 }
 
 .wordbook-delete {
@@ -4588,7 +3768,6 @@ body {
 
 .flashcard--done {
   padding: 22px;
-  margin-bottom: 18px;
 }
 
 .flashcard .flashcard-progress {
@@ -4604,26 +3783,10 @@ body {
   color: #1b3a5e;
 }
 
-/* 🔊 na palavra do flashcard (ver WordAudioButton, App.js) — ouvir a
-   pronúncia bem no momento de tentar lembrar a palavra, não só na lista do
-   My Words (achado de revisão de UX, 2026-07-26). inline-flex (não flex)
-   pra continuar respeitando o text-align:center herdado do .flashcard. */
-.flashcard .flashcard-word-row {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* 12,5px era pequeno demais: as entradas salvas automaticamente pelo
-   Listening ANTES da correcao de 2026-07-26 guardaram a frase inteira aqui
-   (e nao em `example`), e ficavam ilegiveis. As novas ja vao pro campo
-   certo, mas as antigas continuam no caderno — este tamanho as resgata sem
-   precisar migrar dado nenhum. */
 .flashcard .flashcard-context {
   margin: 6px 0 0;
-  font-size: 14px;
-  line-height: 1.5;
-  color: rgba(27, 58, 94, 0.6);
+  font-size: 12.5px;
+  color: rgba(27, 58, 94, 0.55);
 }
 
 .flashcard-back {
@@ -4688,80 +3851,10 @@ body {
   font-weight: 700;
 }
 
-/* Tamanho explicito (antes so herdava ~1rem): a frase de exemplo e a PISTA
-   principal do card com imagem — o dono leu ela e reportou "escrito muito
-   pequeno" (2026-07-26). Agora fica maior que o texto corrido, so abaixo do
-   significado. */
 .flashcard .flashcard-example {
   margin: 10px 0 0;
   font-style: italic;
-  font-size: 1.1rem;
-  line-height: 1.55;
-  color: rgba(27, 58, 94, 0.8);
-}
-
-/* "Or try to spell it here" (ver WordbookPage, variante com imagem do
-   flashcard) — caixa de tentativa de soletrar a palavra antes de revelar. */
-.flashcard-spell {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px dashed rgba(27, 58, 94, 0.2);
-}
-
-.flashcard-spell-label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 13px;
-  font-weight: 700;
-  color: rgba(27, 58, 94, 0.6);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.flashcard-spell-row {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-}
-
-.flashcard-spell-input {
-  flex: 1 1 auto;
-  max-width: 260px;
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(27, 58, 94, 0.25);
-  font-family: inherit;
-  font-size: 1rem;
-  color: #1b3a5e;
-  box-sizing: border-box;
-}
-
-.flashcard-spell-input:focus {
-  outline: none;
-  border-color: var(--purple-500);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
-}
-
-.flashcard-spell-check {
-  flex: 0 0 auto;
-}
-
-/* ".flashcard .flashcard-X" (2 classes) — precisa vencer ".landing-panel p"
-   (classe+tag, mais específico que uma classe sozinha), mesmo motivo já
-   documentado em .flashcard-example/.flashcard-context acima (a cor branca
-   do tema roxo escuro original venceria por especificidade senão). */
-.flashcard .flashcard-spell-feedback {
-  margin: 10px 0 0;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.flashcard .flashcard-spell-feedback--correct {
-  color: #0e9f4e;
-}
-
-.flashcard .flashcard-spell-feedback--incorrect {
-  color: #c0392b;
+  color: rgba(27, 58, 94, 0.75);
 }
 
 .flashcard-actions {
@@ -4826,49 +3919,6 @@ body {
   transform: translateY(-1px);
 }
 
-/* Atalho pra "Ask Adele" nas telas de leitura (ver handleAskAdeleShortcut,
-   App.js) — empilhado ACIMA do "+ Word" (mesmo right, bottom maior), nunca
-   os dois sobrepostos. */
-.ask-adele-fab {
-  position: fixed;
-  right: 22px;
-  bottom: 78px;
-  z-index: 60;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 20px 8px 8px;
-  border: none;
-  border-radius: 999px;
-  background: #fff;
-  border: 1px solid rgba(109, 66, 216, 0.3);
-  color: var(--purple-700);
-  font-weight: 800;
-  font-size: 14px;
-  cursor: pointer;
-  box-shadow: 0 14px 36px rgba(30, 58, 95, 0.22);
-  transition: background 140ms, transform 140ms;
-}
-
-.ask-adele-fab:hover {
-  background: rgba(109, 66, 216, 0.08);
-  transform: translateY(-1px);
-}
-
-.ask-adele-fab-mascot {
-  flex: 0 0 auto;
-  display: inline-flex;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  overflow: hidden;
-}
-
-.ask-adele-fab-mascot svg {
-  width: 100%;
-  height: 100%;
-}
-
 .word-quickadd {
   position: fixed;
   right: 22px;
@@ -4927,218 +3977,4 @@ body {
 .ap-btn.ap-btn-ab.is-looping {
   background: rgba(109, 66, 216, 0.22);
   color: var(--purple-700);
-}
-
-/* Toast + ConfirmDialog — substituem window.alert/window.confirm no fluxo
-   de Backup & Restore (ver showToast/askConfirm em App()). Fixed, fora do
-   fluxo normal do layout, então funcionam em qualquer tela sem depender de
-   onde o botão que os disparou está. */
-/* Centro da tela (não mais rodapé) — pedido do dono: perto do rodapé
-   passava despercebido, some sozinho embaixo da página em vez de chamar
-   atenção. */
-.app-toast {
-  position: fixed;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2000;
-  max-width: min(92vw, 480px);
-  padding: 16px 24px;
-  border-radius: 14px;
-  background: #1b3a5e;
-  color: #fff;
-  font-size: 15.5px;
-  font-weight: 600;
-  line-height: 1.5;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
-  text-align: center;
-  animation: app-toast-in 220ms ease-out;
-}
-
-@keyframes app-toast-in {
-  from { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
-  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-}
-
-.app-toast--success {
-  background: linear-gradient(135deg, #0e9f4e, #19c964);
-}
-
-.app-toast--error {
-  background: linear-gradient(135deg, #b23a2b, #d9483a);
-}
-
-.app-toast--info {
-  background: linear-gradient(135deg, var(--purple-700), var(--purple-500));
-}
-
-.app-confirm-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 2100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(24, 15, 43, 0.55);
-  padding: 20px;
-}
-
-.app-confirm-dialog {
-  width: 100%;
-  max-width: 420px;
-  background: #fff;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-  animation: app-confirm-in 180ms ease-out;
-}
-
-/* Keyframes próprio (não reaproveitar app-toast-in): este diálogo é
-   centralizado pelo flex do .app-confirm-overlay (align-items/justify-
-   content: center), não por position:fixed + left/top:50% como o Toast —
-   herdar o translate(-50%,-50%) do Toast deslocava a caixa inteira pra
-   longe do centro durante os 180ms da animação, que "saltava" de volta pro
-   centro certo assim que a animação terminava (bug real reportado pelo
-   dono, 2026-07-24). Sem transform de posição aqui, só o scale do efeito. */
-@keyframes app-confirm-in {
-  from { opacity: 0; transform: scale(0.92); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.app-confirm-message {
-  margin: 0 0 20px;
-  color: #1b3a5e;
-  font-size: 15.5px;
-  line-height: 1.6;
-}
-
-.app-confirm-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.app-confirm-btn {
-  border: none;
-  border-radius: 10px;
-  padding: 10px 18px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.app-confirm-btn--cancel {
-  background: rgba(27, 58, 94, 0.08);
-  color: #1b3a5e;
-}
-
-.app-confirm-btn--cancel:hover {
-  background: rgba(27, 58, 94, 0.14);
-}
-
-.app-confirm-btn--confirm {
-  background: linear-gradient(135deg, var(--purple-700), var(--purple-500));
-  color: #fff;
-}
-
-.app-confirm-btn--confirm:hover {
-  filter: brightness(1.08);
-}
-
-/* Tela "My Notes" — mesmo esqueleto do My Words (.wordbook-panel/-list):
-   painel estica pra altura disponível (align-items:stretch em
-   .my-notes-mode), só a lista rola. background OPACO (não o
-   rgba(255,255,255,0.09) herdado de .landing-panel, pensado pro tema roxo
-   escuro original) — sem isso a imagem borrada de fundo vazava por todo o
-   painel, deixando o texto quase ilegível (Decisões Imutáveis, item 7 do
-   CLAUDE.md — esqueci de aplicar aqui na primeira versão). */
-.landing-panel.my-notes-panel {
-  max-height: none;
-  background: #fbfcfd;
-  border: 1px solid rgba(27, 58, 94, 0.1);
-}
-
-.my-notes-panel {
-  max-width: 900px;
-  display: flex;
-  flex-direction: column;
-}
-
-.my-notes-empty {
-  margin: 16px 0 0;
-  color: rgba(27, 58, 94, 0.65);
-  font-size: 16px;
-  line-height: 1.6;
-}
-
-.my-notes-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  padding-right: 4px;
-  margin-top: 14px;
-}
-
-.my-notes-course-title {
-  margin: 10px 0 2px;
-  font-size: 18px;
-  font-weight: 800;
-  color: #1b3a5e;
-}
-
-.my-notes-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px 16px;
-  border-radius: 14px;
-  background: #f3f5f7;
-  border: 1px solid rgba(27, 58, 94, 0.12);
-}
-
-.my-notes-card:hover {
-  background: #eceff2;
-  border-color: rgba(27, 58, 94, 0.22);
-}
-
-.my-notes-card-link {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.my-notes-card-title {
-  font-weight: 700;
-  font-size: 17px;
-  color: var(--purple-700);
-}
-
-.my-notes-card-preview {
-  font-size: 15.5px;
-  line-height: 1.5;
-  color: rgba(27, 58, 94, 0.75);
-  white-space: pre-line;
-}
-
-.my-notes-card-delete {
-  flex: 0 0 auto;
-  border: none;
-  background: transparent;
-  color: rgba(27, 58, 94, 0.45);
-  cursor: pointer;
-  font-size: 15px;
-  padding: 2px 6px;
-  border-radius: 6px;
-}
-
-.my-notes-card-delete:hover {
-  color: #c0392b;
-  background: rgba(192, 57, 43, 0.08);
 }

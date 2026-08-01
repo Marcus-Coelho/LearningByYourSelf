@@ -4,62 +4,136 @@ Lista do que o dono do projeto decidiu implementar, em ordem. Só entra aqui o q
 explicitamente aprovado — críticas/sugestões não aceitas ficam de fora de propósito.
 Ao concluir um item, marcar `[x]` e anotar a data/commit.
 
-## 1. [~] Auto-pause nos áudios (Listening e Dictation) — PILOTO IMPLEMENTADO
+## 1. [~] Auto-pause nos áudios (Listening e Dictation) — DADOS COMPLETOS, FALTA VALIDAR
 
 Pausar o áudio automaticamente nos silêncios reais entre frases, dando tempo do usuário
 escrever o que ouviu; `Ctrl+Space` retoma de onde parou.
 
-**Status (2026-07-16, commits `788db9d`/`6d28319`): piloto aprovado pelo dono, funcionando
-nos 2 primeiros tracks do Dictation** (`unit4-a`/`unit4-b`, English Vocabulary B). O que já
-existe:
+**Status (2026-07-19): pontos de pausa gerados pros 307 tracks do English Vocabulary B e
+pros 52 tracks do American English A1 no Dictation** (piloto original aprovado pelo dono em
+2026-07-16, commits `788db9d`/`6d28319`, era só `unit4-a`/`unit4-b`). O que já existe:
 - Pontos de pausa detectados offline por análise de silêncio (Python: `soundfile`+`numpy`,
   sem ffmpeg — limiar -35dB relativo ao pico, silêncio ≥ 0.85s = pausa de frase, trechos
-  > 15s divididos na maior pausa interna, primeira pausa descartada por ser o fim do
-  cabeçalho falado "A... Parts of speech" dos áudios do Vocabulary). Dados em
+  > 8s divididos recursivamente na maior pausa interna disponível — reduzido de 15s/0.4s
+  depois que o dono notou trechos longos demais pra escrever de uma vez; American1 usa piso
+  de 0.15s em vez de 0.4s pro corte interno, porque o diálogo é bem mais contínuo, com menos
+  silêncio real entre falas que a leitura do Vocabulary). Descarte do cabeçalho falado do
+  início: Vocabulary descarta até 2 pausas iniciais ("Unit N letra. Título"), American1
+  descarta só 1 (o áudio fala só "CD X Track Y"). Dados em
   `meu-leitor-pdf/src/dictation_pause_points.json`; o script gerador vive no scratchpad da
   sessão (mesma política dos outros geradores — não persiste no repo, os parâmetros estão
   documentados aqui e no PROJECT_SUMMARY.md).
 - No player: pausa por detecção de **cruzamento** do ponto (não proximidade — ver
   PROJECT_SUMMARY, houve um bug real de insta-repause), toggle on/off, pílula roxa pulsante
   "Paused — Ctrl+Space to continue", pílula verde de fim de áudio, botão "↺ Replay last part".
+- Limitação conhecida, sem solução acústica possível: uns 6-7 tracks do American1 (a maioria
+  no CD2, ex. `cd2-track10`) têm trechos com silêncio real zero (diálogo gravado sem
+  intervalo entre falas) — ficam sem divisão extra mesmo no limiar mais sensível; 2 tracks do
+  Vocabulary (`unit15-c`, `unit37-b`) ficam sem nenhum ponto por terem só 2-3 frases curtas
+  sem pausa ≥ 0.85s entre elas. Auto-pause simplesmente não dispara nesses casos — comportamento
+  seguro (áudio toca normal), não um erro.
 
 **Falta para fechar o item**:
-- Gerar pontos para os demais tracks do Vocabulary (rodar o mesmo detector nos ~305 MP3s
-  restantes e validar por amostragem).
-- Definir a dinâmica dos áudios do American1 (estrutura de fala diferente — sem cabeçalho
-  falado "letra+título"; os parâmetros/regras de descarte precisam ser recalibrados).
+- Validar por amostragem os pontos gerados (Vocabulary completo + American1 completo) —
+  ainda não ouvido track a track pelo dono.
 - Decidir se o Listening também ganha auto-pause (a infraestrutura de pontos serve igual).
 
-## 2. [ ] Sorteio de lacunas do Listening priorizando as palavras-alvo da unit
+## 2. [x] Sorteio de lacunas do Listening priorizando as palavras-alvo da unit — 2026-07-19
 
-Hoje o sorteio de lacunas (`buildListeningSentenceModel` em `App.js`) evita stopwords
-(`LISTENING_STOPWORDS`) mas não sabe qual é o vocabulário que a unit ensina — pode apagar uma
-palavra qualquer em vez da palavra-alvo (ex.: na unit de Food, apagar algo genérico em vez de
-"aubergine").
+Implementado como um toggle **"Only Unit Words" / "Random Words"** na tela de exercício do
+Listening (`ListeningClozeExercise`, `App.js`) — só aparece no English Vocabulary B
+(`isVocabularyTrack = Boolean(track.unit)`; American1 não tem `unit` no track e ainda não tem
+palavras-alvo extraídas, então o toggle simplesmente não renderiza lá, comportamento igual a
+antes). "Random Words" é o sorteio antigo, inalterado; "Only Unit Words" blanka TODA palavra
+da fala que estiver em destaque/negrito no PDF `_L` da unit (não um subconjunto sorteado) —
+pode dar zero lacunas numa fala sem vocabulário-alvo, ou várias numa fala que é a própria
+lista de definições da unit (esperado nos dois casos).
 
-- Objetivo: as lacunas devem cair preferencialmente nas palavras-alvo da unit (o vocabulário
-  em destaque/negrito no PDF da unit), com as demais palavras como fallback.
-- Provável necessidade de um novo índice de dados: lista de palavras-alvo por unit (extraível
-  dos PDFs `_L` via PyMuPDF, pelo estilo/negrito da fonte — mesmo tipo de extração já feita em
-  `grammar_elem_index.json`), cruzada com as `sentences` de cada track na hora de sortear.
-- Não alterar o formato dos JSONs de tracks existentes sem necessidade — um arquivo novo de
-  "palavras-alvo por unit" é menos invasivo.
+- **Dados**: `vocabulary_target_words.json`, um array de palavras por unit (1-100), extraído
+  via PyMuPDF dos 100 `_L.pdf` — bold/black com `size < 16` (abaixo das abas de seção A-E,
+  títulos de seção e do cabeçalho gigante do número da unit, todos ≥ 16.6), frases de até 4
+  palavras (acima disso normalmente é uma instrução em negrito, não vocabulário), sem
+  stopwords (mesma lista de `LISTENING_STOPWORDS`, duplicada no script por não ter import
+  compartilhado). Script no scratchpad da sessão (mesma política dos outros geradores).
+- **Casamento**: exato primeiro, com fallback simples de singular/plural (±"s") — o PDF marca
+  a palavra em negrito só na primeira aparição (ex. "nouns", plural), mas a mesma fala às
+  vezes reusa a forma singular num exemplo seguinte ("night is a **noun**"); sem esse
+  fallback esses casos ficavam sem lacuna.
+- Verificado via Playwright ad-hoc: toggle aparece só no Vocabulary, `unit4-a` em "Only Unit
+  Words" gera 26 lacunas nas 7 falas (todas palavras-alvo reais: pronoun, nouns, verbs,
+  adjectives, adverb, prepositions, article, conjunction, link word — confirmado revelando
+  "Show answers"), volta a 24 aleatórias em "Random Words"; American1 sem o toggle, sem
+  regressão nos blanks aleatórios; zero erros no console.
 
-## 3. [ ] Trilha de estudo (resolver "não existe trilha, só biblioteca")
+## 3. [x] Trilha de estudo (resolver "não existe trilha, só biblioteca") — 2026-07-20
 
-O app não responde "o que eu devo estudar hoje e por quê" — não há sequência sugerida, meta
-diária, nem noção de "você domina X% do nível A1".
+As 3 partes implementadas na Home, em cima do que já existia (`TodayPlanCard`) mais um card
+novo (`DailyGoalCard`):
 
-- Objetivo em três partes (podem ser fases separadas):
-  1. **Sequência sugerida**: uma ordem de estudo recomendada cruzando os 3 cursos (não só
-     "próxima unit não visitada" por curso, que é o que o Today's Plan já faz).
-  2. **Meta diária**: alvo configurável (ex.: 1 unit nova + revisões do dia + 1 listening),
-     com indicação visível de "meta de hoje cumprida".
-  3. **% de domínio do nível**: "você domina X% do A1" — derivável do que já existe
-     (`getUnitBadgeStatus`/`tallyUnitStatuses`, usados pelo Progress Dashboard).
-- Pontos de partida no código: `TodayPlanCard` (Home), `findNextUnvisitedByCourse`,
-  Progress Dashboard (`activePage === 'dashboard'`), fila de revisão (`loadDueReviews`).
-- Persistência: seguir o padrão `u:<nome>:<chave>` do `localStorage` (ver CLAUDE.md).
+1. **Sequência sugerida cruzando os 3 cursos**: `findNextUnvisitedByCourse` não sugere mais
+   sempre Vocabulary primeiro — os 3 candidatos (1 por curso, se houver algo não visitado) são
+   ordenados pelo **% de units visitadas** de cada curso, do mais atrasado pro mais
+   adiantado. Verificado ao vivo: depois de visitar a Unit 1 do Vocabulary, a sugestão seguinte
+   já apontou pro American1 (ainda 0% visitado) em vez de continuar no Vocabulary. O 2º slot do
+   plano ("Practice listening") também deixou de ser só o 2º curso da lista — agora é uma
+   busca de verdade (`findUnpracticedListeningTrack`) pela primeira faixa de Listening/Dictation
+   (nos 2 cursos, 359 tracks) que o usuário nunca tentou em nenhum dos dois modos.
+2. **Meta diária configurável** (`DailyGoalCard`, abaixo do Today's Plan): 3 componentes
+   togglináveis via "Customize goal" — aprender uma unit nova, zerar as revisões do dia,
+   praticar Listening/Dictation. Todos os 3 são marcados uma vez e nunca desmarcados dentro do
+   mesmo dia, em `u:<nome>:dailyGoal:<YYYY-MM-DD>` (data LOCAL, não `toISOString`/UTC) — um dia
+   novo já nasce zerado porque a própria chave muda, sem lógica de "virou meia-noite". Marcado
+   automaticamente: ao visitar uma unit NUNCA visitada antes (hook nos 3 `useEffect` que já
+   marcavam `visitedUnits`/`american1VisitedSections`/`grammarElemVisitedUnits`), ao terminar
+   um Listening ou Dictation (`onPracticed`, novo prop em `ListeningClozeExercise`/
+   `DictationExercise`), e ao REAVALIAR um item que já estava vencido em `reviewQueue` (hook
+   dentro de `scheduleReview`, único ponto usado pelas 4 telas de autoavaliação — **não** é
+   `reviewQueue.length === 0`, ver "Correção 2026-07-20" abaixo). Preferência de quais
+   componentes contam fica em `u:<nome>:dailyGoalPrefs`, independente do progresso do dia.
+3. **% de domínio geral**: pendurado no tile "Units mastered (all courses) — overall mastery"
+   do Progress Dashboard (não virou um 7º tile) e repetido como frase no `DailyGoalCard` da
+   Home ("You've mastered X% of your courses so far") — mastered/total somados dos 3
+   `courseProgress` (mesmos `getUnitBadgeStatus`/`getVocabularyUnitBadgeStatus`/
+   `tallyUnitStatuses` de sempre). Esse cálculo foi içado pra cima no corpo de `App()` (antes
+   só existia dentro da IIFE do Dashboard) — agora é compartilhado entre a Home e o Dashboard,
+   sem duplicar a lógica. **Não chamar de "% do A1"** — só American1 e Grammar Elem são A1 de
+   verdade, o Vocabulary (English Vocabulary B) é Pre-Intermediate/Intermediate (pasta de
+   origem "Pre Intermediate and Intermediate") e entra nessa soma também.
+
+**Correção 2026-07-20** (2 problemas que o dono notou testando um usuário recém-criado):
+- "Today's Goal" mostrava 1/3 já no primeiro acesso, sem o usuário ter feito nada — porque
+  "Clear today's reviews" tinha sido implementado como `reviewQueue.length === 0` ("nada
+  pendente" = "feito"), e um usuário novo nunca tem nada agendado, então a fila já nasce
+  vazia. Trocado por uma flag de verdade (`dailyGoalToday.reviews`), marcada só quando o
+  usuário reavalia um item que JÁ estava na fila de vencidos (checado dentro de
+  `scheduleReview`, comparando `course`+`id` contra `reviewQueue` no momento da avaliação) —
+  reavaliar conteúdo novo (nunca esteve na fila) não conta.
+- O rótulo "A1 level mastery" foi copiado direto da redação original deste item ("você domina
+  X% do nível A1") sem checar se os 3 cursos são A1 de verdade — não são (ver item 3 acima).
+  Renomeado pra "overall mastery" / "your courses" nos dois lugares onde aparecia (Dashboard e
+  DailyGoalCard); a conta em si (soma dos 3 cursos) não mudou, só o nome.
+
+Verificado via Playwright ad-hoc (dev server local, não persistido): usuário novo mostra 0/3
+(antes da correção mostrava 1/3) e a frase "You've mastered 0% of your courses so far."
+(antes "...of the A1 level..."); visita de unit → "Learn a new unit" vira ✓; conclusão de um
+Listening → "Practice Listening or Dictation" vira ✓ e mostra "🎉 Goal complete for today!";
+uma revisão vencida (injetada via localStorage, simulando o passar do tempo) fica
+**des**marcada até o usuário efetivamente reavaliá-la, só então "Clear today's reviews" vira
+✓; desmarcar um componente em "Customize goal" tira ele da lista e sobrevive a um reload;
+Dashboard mostra "Units mastered (all courses) — overall mastery"; zero erros no console em
+qualquer etapa.
+
+**Correção 2026-07-24** (dono relatou "Clear today's reviews" não marcando mesmo reavaliando o
+item vencido): a comparação de "estava vencido" em `scheduleReview` checava contra o STATE
+`reviewQueue`, que só recarrega quando `activePage` muda de valor — navegar entre units com
+"Next Unit"/"Previous Unit" nunca muda esse valor (fica sempre a mesma string), então uma
+revisão que vencesse no meio de uma sessão de navegação assim deixava `reviewQueue`
+desatualizado indefinidamente, e o check nunca reconhecia o item como tendo estado vencido.
+Reproduzido de propósito (rate → navega por Next/Previous sem trocar de tela → injeta due no
+passado → volta e reavalia → `dailyGoal` gravava `reviews:false`) antes de corrigir. Trocado
+pra checar direto o localStorage (fonte de verdade, sempre atual) em vez do state — mesmo
+teste depois da correção grava `reviews:true`; reavaliação de conteúdo NUNCA vencido continua
+corretamente não contando (sem regressão).
 
 ## 4. [ ] Speaking (shadowing com reconhecimento de voz do Edge/Chrome)
 
@@ -86,23 +160,27 @@ Listening/Dictation (`LISTENING_SOURCES`).
   (`window.SpeechRecognition || window.webkitSpeechRecognition`) e mostrar um aviso claro em
   vez de quebrar.
 
-## 5. [ ] Contador de tempo de estudo + streak de dias (Dashboard)
+## 5. [~] 4º curso: American Accent (livro "Mastering the American Accent") — 2026-07-23, EM ANDAMENTO
 
-Parte da sugestão original do Dashboard que ficou de fora quando ele foi implementado:
-"sequência de dias (streak), tempo de estudo — motivação visível". O Progress Dashboard
-atual mostra palavras/revisões/units/exercícios, mas **não mede tempo nem dias seguidos**,
-porque o app não tem nenhum registro de atividade diária — essa infraestrutura precisa ser
-criada primeiro (foi deliberadamente pulada na implementação do Dashboard pra não inventar
-logging sem aprovação do dono).
+Curso novo de pronúncia (9 capítulos, sem unit) pedido pelo dono. Ver seção "4. American
+Accent" em CLAUDE.md pra arquitetura completa e PROJECT_SUMMARY.md pro histórico
+passo-a-passo (extração de dados, bugs achados, decisões de design). Resumo do que já está
+pronto:
 
-- **O que criar**: um log leve de atividade em `localStorage` (padrão `u:<nome>:<chave>`,
-  ver CLAUDE.md) — ex.: minutos ativos por dia (`activity:<YYYY-MM-DD>` → minutos), gravado
-  de tempos em tempos enquanto o usuário está numa tela de estudo (leitura, exercícios,
-  Listening, Dictation), com detecção de ociosidade (não contar tempo com a aba aberta e o
-  usuário longe — ex.: parar de somar depois de N min sem interação/áudio tocando).
-- **O que mostrar no Dashboard**: tempo de estudo de hoje/da semana e o streak (dias
-  seguidos com pelo menos X min de estudo). Possível cartão extra nos stat tiles existentes.
-- **Decisões em aberto** (perguntar ao dono antes de implementar): cronômetro visível
-  durante o estudo ou registro silencioso que só aparece no Dashboard? Qual o mínimo de
-  minutos pra um dia contar no streak?
-- Como qualquer chave nova `u:<nome>:*`, entra automaticamente no backup/restore existente.
+- **Leitura completa**: 9 capítulos, telas agrupadas por página real do livro (140 páginas),
+  player fixo no topo, progresso por página, self-evaluation, reset de progresso, busca (no
+  curso e na busca unificada), My Notes, "Continue where you left off" e "Learn something new"
+  — paridade total com os outros 3 cursos.
+- **Dictation/Listening/Speaking Wave 1**: 53 faixas ("Practice Sentences"/"Sentence Pairs for
+  Practice"/"Sentences for Practice"), com pontos de pausa automática e, pra faixas de pares
+  mínimos identificadas, lacuna forçada nas palavras que confundem (`track.targetWords`).
+
+**Falta pra fechar o item**:
+- **Wave 2** (Practice Dialogues, formato `a.`/`b.` — ver conversa da sessão de
+  2026-07-23 sobre esse plano) — ainda não implementada.
+- **Wave 3** (Practice Paragraph/Story/faixas multi-bloco tipo a 376, casal de contrações) —
+  deliberadamente adiada (texto mais arriscado de extrair automaticamente, precisa de mais
+  revisão manual), ver avaliação registrada na sessão.
+- Validar por amostragem as 53 faixas do Wave 1 já publicadas (o dono já corrigiu várias — 71,
+  100, 129, 217, 331, 333, 335, 337, 361 — sob demanda ao encontrar problema, não uma varredura
+  sistemática ouvindo tudo).

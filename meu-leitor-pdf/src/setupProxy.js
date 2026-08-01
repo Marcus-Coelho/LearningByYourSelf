@@ -2,6 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const { PDFDocument } = require('pdf-lib');
+const { getPronunciationAudioPath } = require('./pronunciationTts');
+const { askGrammarQuestion } = require('./geminiGrammarHelper');
 
 // Serves audio and PDFs straight from the source material folder, so they
 // never need to be copied into public/ (and therefore never end up in git).
@@ -449,4 +451,110 @@ module.exports = function (app) {
   app.use('/grammar-elem-pages', notFoundOn404);
   app.use('/grammar-elem-audio', express.static(path.join(grammarElemRoot, 'audio_files'), { fallthrough: false }));
   app.use('/grammar-elem-audio', notFoundOn404);
+
+  // Curso "American Accent" (livro "Mastering the American Accent", Lisa
+  // Mojsin): PDF único de 211 páginas + 390 faixas de áudio já pré-recortadas
+  // por conceito (sem merge de PDF nem detecção visual de selo como o
+  // American1 precisou — cada faixa já é um arquivo próprio, e o número
+  // "Track N" impresso no livro bate 1:1 com o número no início do nome do
+  // arquivo, ver gerador do índice).
+  //
+  // Resolvido por TENTATIVA, em ordem (2026-07-26, quando o app passou a ser
+  // copiado pro pendrive pra rodar em outro computador): primeiro como pasta
+  // IRMÃ das outras 3 dentro da árvore do projeto — é assim na cópia
+  // portátil, que precisa ser autocontida —, e só então no caminho absoluto
+  // original em Documentos/A_INGLES/LIVROS/, onde a pasta ainda mora no PC
+  // do dono. Assim as duas cópias funcionam sem edição manual: quem achar
+  // primeiro, vence. Se nenhum existir, cai no caminho relativo mesmo (as
+  // rotas respondem 404, e só esse curso fica indisponível — o resto do app
+  // segue normal).
+  const AMERICAN_ACCENT_DIR_NAME = '3. Mastering the American Accent';
+  const americanAccentCandidates = [
+    path.join(__dirname, '..', '..', AMERICAN_ACCENT_DIR_NAME),
+    path.join('C:\\Users\\marcu\\OneDrive\\Documentos\\A_INGLES\\LIVROS', AMERICAN_ACCENT_DIR_NAME),
+  ];
+  const americanAccentRoot = americanAccentCandidates.find((dir) => fs.existsSync(dir))
+    || americanAccentCandidates[0];
+  const americanAccentPdfPath = path.join(americanAccentRoot, 'Mastering the American Accent ( PDFDrive ).pdf');
+
+  app.use('/american-accent-audio', express.static(americanAccentRoot, { fallthrough: false }));
+  app.use('/american-accent-audio', notFoundOn404);
+
+  // Uma "tela" de leitura pode cobrir 1+ páginas do livro (ver
+  // american_accent_index.json/screens — quando o conteúdo de uma faixa
+  // atravessa a quebra de página impressa, ex. a track 346 nas páginas 116-
+  // 117, as duas páginas do PDF viram uma tela só). Sempre mesclado sob
+  // demanda com pdf-lib a partir do MESMO PDF fonte de 211 páginas — ao
+  // contrário do American1/Grammar Elem, aqui não há arquivo solto por
+  // página, então não precisa achar/ordenar arquivos, só copiar as páginas
+  // certas de um PDF só. :pdfPages vem como "123-124-125" (número de página
+  // do PDF, 1-based, separado por hífen — ver App.js).
+  app.get('/american-accent-pages/:pdfPages', async (req, res) => {
+    const pageNumbers = req.params.pdfPages.split('-').map(Number);
+    if (pageNumbers.length === 0 || pageNumbers.some((n) => !Number.isInteger(n) || n < 1)) {
+      res.status(400).end();
+      return;
+    }
+    try {
+      const bytes = fs.readFileSync(americanAccentPdfPath);
+      const source = await PDFDocument.load(bytes);
+      const merged = await PDFDocument.create();
+      const copiedPages = await merged.copyPages(source, pageNumbers.map((n) => n - 1));
+      copiedPages.forEach((p) => merged.addPage(p));
+      const mergedBytes = await merged.save();
+      res.type('application/pdf').send(Buffer.from(mergedBytes));
+    } catch (error) {
+      res.status(404).end();
+    }
+  });
+
+  // Ícone 🔊 do My Words (ver App.js, WordAudioButton): serve o mp3 de
+  // pronúncia (palavra OU frase) gerado via Google Translate TTS na
+  // primeira vez que é pedido, cacheado localmente depois (ver
+  // pronunciationTts.js — nunca aponta o front-end pra URL do Google
+  // diretamente). Só funciona sob `npm start` (mesma limitação de sempre —
+  // não há servidor de produção).
+  app.get('/pronunciation-audio/:text', async (req, res) => {
+    try {
+      const filePath = await getPronunciationAudioPath(req.params.text);
+      if (!filePath) {
+        res.status(404).end();
+        return;
+      }
+      res.type('audio/mpeg').sendFile(filePath);
+    } catch (error) {
+      res.status(502).end();
+    }
+  });
+
+  // Tela "Ask AI" (menu principal): pergunta de gramática -> resposta do
+  // Gemini (ver App.js, geminiGrammarHelper.js). Único endpoint deste app
+  // que recebe corpo JSON, daí o express.json() escopado só nele (as outras
+  // rotas usam GET com parâmetro de rota, sem precisar disso). Precisa de
+  // `GEMINI_API_KEY` em meu-leitor-pdf/.env.local (gitignored) — sem ela,
+  // responde 500 com uma mensagem explicando o que falta.
+  app.post('/api/ask-grammar', express.json(), async (req, res) => {
+    const question = String(req.body?.question || '').trim();
+    if (!question) {
+      res.status(400).json({ error: 'Missing question' });
+      return;
+    }
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      res.status(500).json({ error: 'GEMINI_API_KEY not set — see meu-leitor-pdf/.env.local' });
+      return;
+    }
+    // Memória de só o último turno (ver App.js, askAiLastExchange) — o
+    // cliente reenvia a pergunta/resposta anteriores a cada request, o
+    // servidor não guarda nada entre requisições.
+    const previousExchange = (req.body?.previousQuestion && req.body?.previousAnswer)
+      ? { question: String(req.body.previousQuestion), answer: String(req.body.previousAnswer) }
+      : null;
+    try {
+      const answer = await askGrammarQuestion(question, apiKey, previousExchange);
+      res.json({ answer });
+    } catch (error) {
+      res.status(502).json({ error: 'Could not reach Gemini right now. Please try again.' });
+    }
+  });
 };

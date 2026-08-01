@@ -661,7 +661,473 @@ voltou ao normal — a correção lê como prosa corrida colorida.
   fala "for example", o texto de correção tem "e.g." — sem a dica, pontos perdidos injustos).
 - ROADMAP.md ganhou o item 5 (contador de tempo de estudo + streak no Dashboard — parte da
   sugestão original do Dashboard que ficou de fora por exigir infraestrutura de log de
-  atividade que ainda não existe).
+  atividade que ainda não existe). **Descartado pelo dono em 2026-07-20** ("não vou mais
+  implementar isso") — removido do ROADMAP.md, não será feito.
+
+## Auto-pause completo (Vocabulary + American1), rótulos de personagem no Dictation, resize do American1 (2026-07-19)
+
+Continuação do item 1 do ROADMAP.md (a partir do piloto de 2 tracks descrito acima) mais uma
+limpeza no texto de correção do Dictation e um ajuste de UI no American English A1. Sem
+commit de script gerador (mesma política dos outros — script Python fica só no scratchpad da
+sessão, dados persistem em `dictation_pause_points.json`).
+
+### Vocabulary: pontos de pausa pros ~305 tracks restantes + recalibração do limiar de corte
+O script do piloto não estava no repo (política padrão), então foi reconstruído a partir dos
+parâmetros já documentados aqui/ROADMAP e calibrado batendo contra os valores exatos do
+piloto (`unit4-a`/`unit4-b`, já aprovados pelo dono) até reproduzi-los quase perfeitamente:
+- **Offset do ponto dentro do silêncio**: descoberto por engenharia reversa — o ponto de
+  pausa não é o início do silêncio puro, é `início_do_silêncio + 0.3s` (um buffer de
+  segurança, provavelmente pra não cortar em cima da cauda/reverb da última consoante). Sem
+  esse offset, os pontos batiam sistematicamente ~0.3s cedo demais.
+- **Descarte do cabeçalho**: o texto original ("a primeira pausa é descartada") não bate
+  literalmente com os dados — `unit4-a`/`unit4-b` têm CADA UM 2 silêncios no início (cabeçalho
+  falado "Unit N letra" + "Título", cada um com sua própria pausa), não 1. Descartar só a
+  primeira deixava um ponto espúrio sobrando por volta de 2.8s. Corrigido pra descartar até 2
+  pausas iniciais, mas só enquanto cada uma for precedida por um trecho curto (< 3s) — sem
+  esse teto, tracks estilo lista de vocabulário (palavra, pausa, palavra, pausa...) tinham
+  TODOS os pontos apagados, porque cada palavra em si já é um "trecho curto".
+- **Recalibração pedida pelo dono**: depois de rodar os ~305 tracks, o dono notou que os
+  trechos ainda ficavam longos demais pra escrever de cabeça. Simulação mostrou que baixar só
+  o piso do corte interno (0.4s → 0.3s) não mudava NADA (377 trechos > 8s antes e depois —
+  dentro de um trecho > 15s já sempre havia um candidato ≥ 0.4s disponível, então baixar o
+  piso não desbloqueava nada de novo). A alavanca real era o limiar que decide SE um trecho é
+  dividido: baixado de 15s pra **8s** (mantendo o piso do corte interno em 0.4s pro
+  Vocabulary), reduzindo de 377 pra ~125 trechos internos > 8s (média caiu de ~10.7s pra
+  4.17s). `unit4-a`/`unit4-b` foram regenerados junto (não deixados no valor antigo do
+  piloto) porque unit4-a é literalmente o exemplo que motivou essa regra (a lista gigante de
+  "pronoun; nouns; verbs..." de 36s corridos).
+- 2 tracks (`unit15-c`, `unit37-b`) ficam sem nenhum ponto — só 2-3 frases curtas, sem
+  silêncio ≥ 0.85s entre elas; comportamento aceito (auto-pause só não dispara ali).
+
+### American English A1: dinâmica recalibrada (52 tracks do Dictation)
+O dono corrigiu a suposição do ROADMAP de que os áudios do American1 não têm cabeçalho falado
+— eles têm, só que mais curto ("CD X Track Y", não "Unit N letra. Título"), então precisa de
+**só 1** pausa inicial descartada, não 2 (parametrizado via `max_header_pauses`, default 2 pro
+Vocabulary, 1 pro American1).
+- **Diálogo bem mais contínuo que o Vocabulary**: vários tracks (`cd2-track10/11/12`,
+  `cd5-track51`) não tinham NENHUM silêncio ≥ 0.4s em trechos de 40-100s — o corte recursivo
+  não achava onde dividir e o track inteiro ficava com 1 ponto só. Baixar o piso do corte
+  interno pra **0.15s** (só pro American1, Vocabulary continua em 0.4s) resolveu os 4 casos
+  sem piorar a distribuição geral (média de trecho interno foi de 5.33s pra 4.97s). Uns 6-7
+  tracks (a maioria no CD2) continuam com trechos longos (até 38s) mesmo assim — são áudios
+  de diálogo gravados sem NENHUM intervalo de edição entre falas, não tem sinal acústico pra
+  detectar ali, aceito como limitação.
+- **Guarda de silêncio final**: vários tracks têm um silêncio de cauda perto do fim do
+  arquivo (após a última frase, antes do arquivo realmente acabar) que virava um "ponto de
+  pausa" inútil a ~1-3s do fim. Filtro novo: nunca gerar ponto no último 1s do arquivo.
+- Caminho dos arquivos de áudio: `American English Level 1/audio_files_{1..5}/` (CD1..CD5,
+  mesmo mapeamento do `setupProxy.js`), nomes vêm URL-encoded em `listening_american1.json`
+  (precisa `urllib.parse.unquote` no lado do script gerador).
+
+### Rótulos de personagem removidos do texto de correção do Dictation
+O dono notou que o texto usado pra comparar a digitação do aluno incluía quem fala cada frase
+("A: A cheese and tomato sandwich, please." / "B: That's 7 dollars and 20 cents.") — o áudio
+não fala esse rótulo, é só convenção de transcrição, então cobrar isso do aluno penalizava
+injustamente (o rótulo aparecia como palavra "faltando", em vermelho).
+- **Padrão com dois-pontos** ("A: ...", "Jenny: ...", "WAITER: ..."): regex genérica
+  `^[A-Z][A-Za-z0-9 ]{0,24}:\s*`, cobre 690/760 frases do American1 e ~39 do Vocabulary
+  (`unit48-d`, `unit31-c`, etc.) — seguro, sem falso positivo encontrado nos dois cursos.
+- **Padrão sem dois-pontos** (só existe no American1 — "Rob Hi. My name's...", "Teacher OK.
+  Can you be quiet...", "Student 1 What page?"): **não dá** pra generalizar como "qualquer
+  palavra maiúscula no início" — isso apagaria começos de frase legítimos e reais como
+  "JetBlue flight to Los Angeles...", "Room 11 was on the top floor.", "The train waiting at
+  platform 13...". A solução foi revisar as 70 frases sem dois-pontos do American1 uma a uma
+  e montar uma lista fechada de 22 rótulos confirmados (Teacher, Rob, Jenny, Mom, Host,
+  Receptionist, Police officer, Announcer, etc.) — testada contra as 2378 frases do Vocabulary
+  também, zero falso positivo.
+- Só mexe no texto usado pra CORRIGIR (`fullText` em `DictationExercise`) — o Listening
+  continua mostrando `track.sentences` sem essa limpeza, já que lá o rótulo nunca aparecia
+  como "errado" (não tem digitação pra comparar, só lacunas).
+
+### American1: painel de respostas redimensionável, sem a linha/cabeçalho fixos
+A faixa "Show Answers" (Teacher's Book) na tela de unit do American1 tinha uma borda grossa
+fixa separando do leitor e uma altura travada em 26% — diferente do Vocabulary/Grammar Elem,
+que já usavam o padrão `.study-answers-resize-handle` (linha fina + pílula de arraste,
+altura ajustável e persistida em `answersPanelHeight`). Igualado ao mesmo padrão; a borda fixa
+virou uma classe modificadora (`.section-answers-strip--resizable`) que zera a borda só onde
+o handle já provê a linha, sem afetar o Grammar Elem (que usa a mesma classe base sem o
+modificador). Também removida a faixa de cabeçalho "Teacher's Book answers" + botão ✕ — o
+toggle que já existe no painel de notas lateral (`UnitNotes`) continua fechando o painel, então
+o cabeçalho local era redundante.
+
+### Ajuste menor
+- Texto da pílula de fim de áudio no Dictation: "Ctrl+Space plays it again from the start" →
+  "Ctrl+Space to plays it again" (pedido do dono).
+
+## Listening: toggle "Only Unit Words / Random Words" — item 2 do ROADMAP (2026-07-19)
+
+`buildListeningSentenceModel` sorteava lacunas totalmente aleatórias (evitando só
+`LISTENING_STOPWORDS`), sem saber qual vocabulário a unit ensina. Implementado como toggle na
+tela de exercício (`ListeningClozeExercise`), **só no English Vocabulary B**:
+`isVocabularyTrack = Boolean(track.unit)` — American1 não tem `unit` no track (usa
+`cd`/`track`) e ainda não tem palavras-alvo extraídas (não há bold/negrito diferenciado
+naquele PDF do jeito que há no Vocabulary), então o toggle não renderiza lá, sem mudança de
+comportamento.
+
+- **Extração das palavras-alvo** (`vocabulary_target_words.json`, um array por unit 1-100):
+  PyMuPDF nos 100 `_L.pdf` de leitura, pegando spans em negrito (`Bold`/`Black` no nome da
+  fonte) — só que "negrito" sozinho pega demais: também pega a letra da seção (A/B/C..., 16.6
+  pt), o título da seção ("Parts of speech", 17.3pt) e o cabeçalho gigante do número da unit
+  (31.8-51.1pt). Inspecionado o PDF de várias units com `size`/`bbox` pra achar o corte: corpo
+  do texto em negrito nunca passa de ~15.2pt nas ~10 units amostradas, enquanto os elementos
+  de layout começam em 16.6pt — usado `size < 16` como filtro. Também descartadas frases de
+  mais de 4 palavras (uns poucos spans são instruções inteiras em negrito, não vocabulário,
+  ex. "Correct the spelling mistakes. Use a dictionary...") e aplicado o mesmo
+  `LISTENING_STOPWORDS` do runtime (duplicado no script Python — sem import compartilhado
+  entre o gerador e o `App.js`).
+- **"Only Unit Words" blanka TODA ocorrência**, não um subconjunto sorteado — o objetivo aqui
+  é treinar o vocabulário da unit, não variar a dificuldade; uma fala sem nenhuma palavra-alvo
+  fica com zero lacunas (ex. exemplos genéricos tipo "It was a cold night..."), e a fala que é
+  literalmente a lista de definições da unit pode ficar com 8+ lacunas na mesma frase — os
+  dois são o comportamento esperado, não bugs.
+- **Fallback de singular/plural**: o PDF marca a palavra em negrito só na primeira aparição
+  (ex. "chair, window... are all **nouns**", plural), mas a mesma unit costuma reusar a forma
+  singular num exemplo seguinte ("night is a **noun**"). Casamento exato perdia esse segundo
+  caso — adicionado fallback simples (±"s", sem lematização de verdade) que resolveu sem
+  precisar reprocessar os dados.
+- Verificado via Playwright ad-hoc (script no scratchpad, não persistido): logado, navegado
+  até Listening → English Vocabulary B → unit 4A; toggle visível, "Only Unit Words" gera 26
+  lacunas nas 7 falas, todas revelando (via "Show answers") palavras-alvo reais da unit
+  (pronoun, nouns, verbs, adjectives, adverb, prepositions, article, conjunction, link word);
+  "Random Words" volta a se comportar como antes (24 lacunas aleatórias). No American1, sem
+  toggle e sem regressão nos blanks aleatórios. Zero erros no console em qualquer um dos dois
+  cursos.
+
+## Trilha de estudo (Today's Plan mais esperto + Today's Goal + % de domínio) — item 3 do ROADMAP (2026-07-20)
+
+O `TodayPlanCard` já existia (Home), mas era ingênuo: "conteúdo novo" era sempre
+Vocabulary→American1→GrammarElem em ordem fixa (só pulava um curso se ele já estivesse
+100% visitado), e o slot "Practice listening" não tinha nada a ver com Listening de
+verdade — era só o 2º candidato daquela mesma lista fixa, então podia (e costumava) apontar
+pra uma unit de LEITURA de outro curso, rotulada "Practice listening" só por acidente de
+posição no array. Sem meta diária, sem % de domínio visível em lugar nenhum.
+
+### Sequência sugerida cruzando os 3 cursos
+`findNextUnvisitedByCourse` ganhou `courseId` em cada candidato e agora ordena os 3 (quando
+existem) pelo **% de units já visitadas** de cada curso — o mais atrasado vem primeiro. Isso
+exigiu içar o cálculo de `courseProgress` (status por unit dos 3 cursos, via
+`getUnitBadgeStatus`/`getVocabularyUnitBadgeStatus`/`tallyUnitStatuses` — a mesma lógica que
+já alimentava só o Progress Dashboard) pra ANTES da definição da função, no corpo de `App()`,
+onde antes só existia dentro da IIFE de `activePage === 'dashboard'`. A IIFE do Dashboard foi
+simplificada pra reaproveitar esse mesmo `courseProgress` em vez de recalculá-lo — os dois
+lugares (Home e Dashboard) agora leem do mesmo lugar, sem duas fontes de verdade.
+
+Testado ao vivo: usuário novo, os 3 cursos em 0% — 1º candidato é Vocabulary (ordem original,
+empate desfeito pela ordem do array). Depois de visitar a Unit 1 do Vocabulary (agora 1%
+visitado), a sugestão seguinte trocou pro American1 (ainda 0%) automaticamente, sem reload —
+confirma que a "trilha" reage ao progresso real, não é uma ordem fixa disfarçada.
+
+O 2º slot ("Practice listening") ganhou uma função própria, `findUnpracticedListeningTrack`:
+percorre `LISTENING_SOURCES` (American1 primeiro, depois Vocabulary — mesma ordem já
+declarada) e retorna a primeira faixa sem estatística NEM em `loadListeningStats` NEM em
+`loadDictationStats` (ou seja, nunca tentada em nenhum dos 2 modos). Reaproveita
+`handleOpenListeningSource`/`handleOpenListeningTrack` já existentes pra navegar — sem
+duplicar a lógica de abrir uma faixa.
+
+### "Today's Goal" — meta diária configurável (`DailyGoalCard`, novo componente)
+Card novo na Home, logo abaixo do Today's Plan, mesmo visual (`.plan-card`-like, fundo
+translúcido — sem problema aqui porque a Home não usa o `--page-hero-bg` compartilhado das
+telas "leves", só a própria imagem de fundo). 3 componentes, cada um togglável
+independentemente via um link "Customize goal" que revela checkboxes:
+- **"Learn a new unit"** — marcado a primeira vez que uma unit NUNCA visitada é aberta no dia,
+  via um hook novo (`markDailyGoalDone('newUnit')`) dentro dos 3 `useEffect` que já existiam
+  pra marcar `visitedUnits`/`american1VisitedSections`/`grammarElemVisitedUnits` (só no ramo
+  que efetivamente marca `true` pela 1ª vez, não em toda reabertura de uma unit já visitada).
+- **"Clear today's reviews"** — **não tem flag própria**, é derivado ao vivo de
+  `reviewQueue.length === 0`. Decisão deliberada: "revisões do dia" já tem uma fonte de
+  verdade perfeita (a fila em si); inventar um contador separado só daria mais uma coisa pra
+  dessincronizar.
+- **"Practice Listening or Dictation"** — marcado via um `onPracticed` novo, passado como prop
+  pra `ListeningClozeExercise` e `DictationExercise`, chamado depois de `saveListeningAttempt`/
+  `saveDictationAttempt` (só quando há pelo menos 1 lacuna respondida, no caso do Listening).
+
+**Persistência**: `u:<nome>:dailyGoal:<YYYY-MM-DD>` (data LOCAL — `getFullYear`/`getMonth`/
+`getDate`, não `toISOString`, que usa UTC e erraria o dia perto da meia-noite pra fusos não-UTC)
+guarda `{newUnit, listening}` (bool, nunca desmarcado — só "vira false de novo" naturalmente
+quando o dia muda, porque a CHAVE muda, sem precisar de lógica de reset). `u:<nome>:
+dailyGoalPrefs` guarda quais dos 3 componentes contam pra meta, independente do que já foi
+cumprido — os dois recarregam ao trocar de usuário, como todo o resto do padrão `userKey`.
+
+**Checkbox**: a 1ª versão usava emoji (⬜ vazio / ✅ feito) — o ⬜ renderizava como um quadrado
+sólido colorido no Chromium do ambiente de teste (fonte de emoji inconsistente entre
+plataformas). Trocado por um checkbox desenhado em CSS puro (quadradinho com borda, preenche
+de roxo com um "✓" de texto quando feito) — sem depender de fonte de emoji nenhuma.
+
+### % de domínio geral (rótulo original "A1", corrigido no mesmo dia — ver abaixo)
+`overallMasteredTotal`/`overallUnitsTotal`/`overallMasteryPercent` (soma de `mastered`/`total`
+dos 3 `courseProgress`) computados junto com o resto, no corpo de `App()`. Aparece em dois
+lugares sem inventar um 7º stat tile no Dashboard: pendurado como um `<small>` dentro do
+próprio tile "Units mastered (all courses)" (texto "0/227 0%", por exemplo) e como frase no
+`DailyGoalCard` da Home.
+
+Verificado via Playwright ad-hoc (não persistido, script no scratchpad): fluxo completo
+registro→visita de unit→"Learn a new unit" marca✓→Listening completo→"Practice Listening or
+Dictation" marca ✓ e mostra "🎉 Goal complete for today!"→desmarcar "listening" em "Customize
+goal" tira o item da lista→sobrevive a reload (pref e progresso do dia persistem
+corretamente); Dashboard mostrando "0/227 0%" e "0/359" pros tiles de Listening/Dictation
+praticados (307 Vocabulary + 52 American1). Zero erros no console em qualquer etapa.
+
+### Correção — "1/3 de graça" e rótulo "A1" errado (mesmo dia, 2026-07-20)
+O dono testou com um usuário recém-criado (deletou o antigo, recomeçou do zero) e notou 2
+problemas na primeira versão acima:
+
+1. **"Today's Goal" mostrava 1/3 sem o usuário ter feito nada.** Causa: "Clear today's
+   reviews" tinha sido implementado como `done: reviewQueue.length === 0` — "não há nada
+   pendente" contava como "feito". Um usuário novo nunca tem NENHUMA revisão agendada ainda
+   (nada foi avaliado), então a fila nasce vazia e o item aparecia com check de graça no
+   primeiro acesso. Pedido ao dono duas alternativas (esconder o item quando não há nada
+   pendente, vs. só marcar quando o usuário revisar de verdade) — escolheu a segunda.
+   **Correção**: `dailyGoalToday` ganhou uma 3ª flag, `reviews` (antes só `newUnit`/
+   `listening`), marcada dentro de `scheduleReview` — o único ponto por onde passam as 4 telas
+   de autoavaliação (`handleRateExercise`/`handleRateVocabularyUnit`/
+   `handleRateAmerican1Unit`/`handleRateGrammarElemUnit`) — comparando `course`+`id` contra o
+   `reviewQueue` (state) NO MOMENTO da reavaliação: só marca se o item avaliado já estava
+   vencido ali. Reavaliar algo que nunca esteve na fila (ex.: 1ª nota de uma unit nova) não
+   conta como "revisão".
+2. **Rótulo "A1 level mastery" estava errado.** Copiado direto da redação original do ROADMAP
+   ("você domina X% do nível A1") sem verificar se os 3 cursos são realmente A1. Não são: só
+   American English A1 e Grammar English A1 são A1 de verdade — o English Vocabulary B é
+   Pre-Intermediate/Intermediate (a própria pasta de origem do material se chama "Pre
+   Intermediate and Intermediate"), um nível acima. Como o cálculo soma os 3 cursos, chamar o
+   resultado de "% do A1" estava incorreto. Pedido ao dono como corrigir (renomear pra algo
+   genérico, calcular só com os 2 cursos A1, ou mostrar os dois números) — escolheu renomear
+   mantendo a soma dos 3. **Correção**: variáveis renomeadas `levelMastered/Units/Percent` →
+   `overallMastered/Units/Percent` (só nome, conta idêntica); texto do Dashboard "— A1 level
+   mastery" → "— overall mastery"; frase do `DailyGoalCard` "of the A1 level so far" → "of
+   your courses so far".
+
+Verificado via Playwright ad-hoc (script no scratchpad, dev server local): usuário novo agora
+mostra "0/3 done" (antes "1/3") e "You've mastered 0% of your courses so far." (antes "...of
+the A1 level..."); uma revisão vencida injetada via localStorage (simulando o passar do
+tempo, já que o intervalo mínimo real é 1 dia) fica **des**marcada em "Clear today's reviews"
+até o usuário abrir o item pelo "Review" do Today's Plan e reavaliá-lo — só então vira ✓;
+Dashboard mostrando "Units mastered (all courses) — overall mastery". Zero erros no console.
+
+## Home rolável + "Unit X" no título do Dictation (2026-07-20)
+
+### Home não rolava com o 2º card (`DailyGoalCard`) na tela
+`.app-shell` tem `height: 100vh` fixo; telas que precisam crescer além disso usam a classe
+`app-shell--allow-grow` (aplicada via JS, lista de `activePage` em `App.js`) + `align-items:
+flex-start` no seletor da própria tela — sem isso o conteúdo excedente é só CORTADO, sem
+nenhuma barra de rolagem aparecer em lugar nenhum (nem a página, nem nenhum container
+interno). A Home nunca precisou disso até agora — com só o `TodayPlanCard`, o conteúdo quase
+sempre cabia. Adicionar o `DailyGoalCard` embaixo dele mudou isso: em janelas mais baixas (ou
+com os dois cards cheios de itens), a segunda metade do `DailyGoalCard` ficava invisível, sem
+jeito de ver.
+- **Correção**: `'home'` adicionado à lista de `activePage` que ganha `app-shell--allow-grow`
+  (`App.js`); `.landing-page.landing-page--home` ganhou `align-items: flex-start` (era
+  `center`, herdado da regra base — centralizar conteúdo mais alto que a viewport escondia a
+  metade de cima atrás do header `sticky`, mesmo bug já documentado nas outras telas
+  `allow-grow`), `padding-top: 56px` (repõe visualmente o espaço perdido da centralização) e
+  `overflow: auto`.
+- Verificado via Playwright em viewport pequeno (1000×650, força overflow mesmo com pouco
+  conteúdo): `scrollHeight` (1134px) > `clientHeight` (650px) confirma que a página agora É
+  rolável; depois de rolar, `DailyGoalCard` fica totalmente visível e o header continua
+  `sticky` no topo (não "perde a referência"). Testado também sem login e num viewport normal
+  (1440×900) — sem regressão visual em nenhum dos dois.
+
+### "Unit 1A" no título do Dictation (American English A1)
+O título "Dictation Exercise n. 1 (1-13)" não dizia a qual unit aquele CD/track pertence — o
+JSON de tracks do American1 (`listening_american1.json`) só tem `cd`/`track`/`number`, sem
+campo `unit`/`section` (diferente do Vocabulary, que já tem `track.unit`/`track.letter` e por
+isso já mostrava a unit dentro do parêntese, ex. "unit 4A" — não mexido, ficaria redundante).
+- **Fonte do dado**: `american1_audio_anchors.json` já é indexado POR unit e cada âncora
+  carrega `cd`/`track`/`section` do áudio ancorado — bastou inverter esse índice (`cd:track` →
+  `{unit, section}`) uma vez, no carregamento do módulo (`AMERICAN1_CD_TRACK_TO_UNIT`,
+  `App.js`), sem gerar nenhum arquivo novo. Seção de 1 letra (A/B/C) cola direto no número
+  ("Unit 8A", mesmo formato usado no resto do app); seção especial ("Practical
+  English"/"Review and Check") fica separada por espaço.
+- **Correção de formato (mesmo dia)**: a 1ª versão só mostrava "Unit 8" (sem a letra da
+  seção) — o dono pediu "Unit 8A" mesmo.
+- **Cobertura**: 48 dos 52 tracks do American1 acharam a unit automaticamente (verificado em
+  Python antes de implementar). Os 4 restantes (`cd2-track11`, `cd2-track35`, `cd4-track7`,
+  `cd4-track8`) não têm âncora indexada em `american1_audio_anchors.json` (vivem só no
+  apêndice/exercício, não no texto de leitura ancorado) — o dono informou a unit/seção
+  manualmente em vez de investigar, adicionadas como um `Object.assign` de override logo
+  depois do índice invertido: `cd2-track11`→3B, `cd2-track35`→4A, `cd4-track7`/`cd4-track8`→8A.
+  Sem override e sem âncora, a função (`dictationTrackUnitLabel`) só retorna string vazia,
+  sem erro nem crash.
+- Título final: `Dictation Exercise n. 1 Unit 1A (1-13)` — verificado ao vivo (lista de
+  exercícios), incluindo os 4 overrides manuais, todos batendo com o que o dono informou.
+
+## Correção de scoring do Dictation (travessão solto) + "Unit 1A" também no Listening (2026-07-20)
+
+Dono reportou (com um trecho real de texto do American1, cd2-track35 — Unit 4A) que digitar a
+resposta certa ainda dava errado por causa de um "—" isolado no meio do texto ("She's a hair
+stylist — she does my hair for free!"). E pediu 2 ajustes de formato/escopo do que acabou de
+ser implementado em cima: mostrar a letra da seção junto (`dictationTrackUnitLabel`, que só
+tinha "Unit 8" sem a letra — corrigido em `PROJECT_SUMMARY`/`ROADMAP` já na rodada anterior) e
+levar o mesmo "Unit 1A" pro Listening, que tinha ficado de fora de propósito na 1ª versão.
+
+### Travessão solto derrubava o score injustamente
+`correctText.split(/\s+/)` tokeniza por espaço — um "—" cercado de espaços dos dois lados vira
+seu próprio "token", e como `normalizeDictationWord` só tira `.,!?"'’;:()` (sem travessão),
+esse token nunca casava com nada que o aluno digitasse (ninguém digita "—" mesmo) — sempre
+ficava vermelho e contava contra a nota, direto contra o próprio aviso da tela ("Punctuation
+and capitalization don't matter").
+- **Correção**: `scoreDictationAnswer` agora separa os tokens de `correctText` em dois grupos
+  antes do LCS — os que têm pelo menos 1 letra/dígito (`isDictationPunctuationOnlyToken`
+  filtra o resto) entram no casamento e na nota normalmente; os que são só pontuação ficam de
+  fora dos dois, mas continuam aparecendo no texto reconstruído da correção, só que sem cor
+  (`correct: null` no `wordResult`, renderizado com a classe nova `.dictation-word-neutral`
+  em vez de `.dictation-word-correct`/`.dictation-word-wrong`).
+- Verificado ao vivo com o texto exato reportado (cd2-track35, os 2 "—" do trecho): digitando
+  a resposta certa SEM os travessões (do jeito que qualquer aluno digitaria na prática), score
+  vai a 100%, `.dictation-word-wrong` fica vazio, os 2 travessões aparecem em
+  `.dictation-word-neutral`.
+
+### "Unit 1A" também no Listening (American1)
+Mesma função (renomeada de `dictationTrackUnitLabel` pra `american1TrackUnitLabel`, já que
+deixou de ser exclusiva do Dictation) aplicada nos 2 lugares do Listening que montam o título
+("Choose an exercise" e o cabeçalho do exercício, esse último com a lógica extra do link
+clicável só pro Vocabulary — `openVocabularyUnit`). Vocabulary continua sem duplicar (já
+mostra a unit dentro do parêntese) — verificado ao vivo nos 2 cursos, sem regressão.
+
+## Botão "i" explicando cada item do Today's Goal (2026-07-20)
+
+Dono pediu um ícone "i" na frente de cada um dos 3 itens do `DailyGoalCard` (Home), que ao
+clicar mostra como aquele item específico é marcado como feito — reaproveitado o mesmo padrão
+visual/interativo já usado em `UnitBadgeLegend` (botão "i" circular, popover que abre/fecha em
+clique, `aria-expanded`).
+
+- **Bug pego testando**: a 1ª versão punha um popover DENTRO de cada `<li>` (`position:
+  absolute`, relativo ao próprio item) — como os itens ficam colados (6px de gap), o popover
+  do item de cima cobria o botão "i" do item de baixo e travava o clique nele (Playwright
+  reportou "element intercepts pointer events" ao tentar abrir o 2º popover com o 1º ainda
+  aberto). **Correção**: um popover só, fora da lista (`<ul>`), logo abaixo dela — mostra a
+  explicação do item cujo "i" foi clicado por último (`openInfoKey`), empurrando o resto do
+  card pra baixo em vez de flutuar por cima de nada.
+- Texto de cada popover tem que casar com a lógica REAL de quando aquele componente é marcado
+  (não é só documentação solta, é a explicação que o usuário vê) — "Learn a new unit" cita
+  explicitamente os 3 cursos e que reabrir uma unit já visitada não conta; "Clear today's
+  reviews" deixa claro que só reavaliar algo que JÁ estava vencido conta (mesma distinção da
+  correção do item 3 do ROADMAP, ver seção acima); "Practice Listening or Dictation" cita os
+  2 botões que disparam ("Check answers"/"Check my answer").
+- Verificado via Playwright: 3 botões "i" na tela, clicar em cada um mostra só o popover
+  daquele item (nunca mais de 1 aberto ao mesmo tempo), clicar de novo no mesmo fecha. Zero
+  erros no console depois da correção do overlap.
+
+## Avaliação de UX + aviso de nível "Beginner"/"Intermediate" (2026-07-20)
+
+Pedido: uma avaliação geral de usabilidade/navegação/aprendizado (feita navegando o app de
+verdade via Playwright, não só lendo código — pegou 2 problemas reais: link "Speaking" morto
+no menu, sem feedback nenhum ao clicar; header sangrando através da foto do hero ao rolar a
+Home, corrigido na mesma hora tornando `.app-header` opaco). A partir dessa avaliação, o dono
+pediu o aviso de nível que ela recomendou como prioridade.
+
+### `courses[id].level` + `COURSE_LEVEL_ORDER`
+American English A1 e Grammar English A1 são "Beginner" (A1 de verdade); English Vocabulary B
+é "Intermediate" (pasta de origem "Pre Intermediate and Intermediate", nível acima, apesar do
+"B" no nome não deixar isso óbvio). Os 2 dados novos vivem em `courses` (App.js) — um `level`
+por curso — e numa constante nova, `COURSE_LEVEL_ORDER = ['american1', 'grammarElem',
+'vocabulary']`, a ordem "por nível" pedida (Beginner antes de Intermediate), usada em 4 lugares:
+- **Courses**: cards agrupados com um rótulo "BEGINNER"/"INTERMEDIATE" acima de cada grupo,
+  reordenados (American → Grammar → Vocabulary, não mais a ordem antiga com Vocabulary
+  primeiro).
+- **Listening/Dictation (hubs)**: mesmo rótulo acima de cada fonte (`LISTENING_SOURCES` já
+  vinha na ordem certa, não precisou reordenar, só rotular).
+- **Progress Dashboard**: `courseProgress` reordenado pra bater com `COURSE_LEVEL_ORDER`
+  (antes seguia a ordem de implementação) + mesmo rótulo acima de cada grupo, aparecendo só na
+  1ª linha de cada nível (`showLevelHeading`, compara com o item anterior no array já
+  ordenado).
+
+### Bug pego no meio do caminho: rótulo quase invisível
+A 1ª versão do rótulo (`<p className="course-level-heading">`) saiu com `color:
+rgba(27, 58, 94, 0.75)` em vez do roxo pretendido — cada painel (`listening-panel`,
+`dashboard-panel`...) tem sua PRÓPRIA regra `.landing-panel.<painel> p` (tema herdado) com
+mais especificidade que uma classe só, e como o rótulo aparece em VÁRIOS painéis, bater a
+especificidade de um não bastava, teria que bater a de todos. Resolvido trocando `<p>` por
+`<span>` (com `display:block`) — essas regras antigas só alvejam `p`, então um elemento
+diferente escapa da armadilha inteira de uma vez, sem precisar de uma guerra de especificidade
+por painel. Documentado no CLAUDE.md como padrão geral pra qualquer texto novo que precise
+aparecer em mais de uma tela.
+
+Verificado via Playwright nas 4 telas: texto e ordem batendo em Courses/Listening/Dictation/
+Dashboard, cor roxa vívida (`var(--purple-700)`) confirmada via `getComputedStyle` depois da
+correção, zero erros no console.
+
+### Ajustes de tamanho pedidos depois
+- "Beginner"/"Intermediate": era 11px/800/uppercase (estilo "eyebrow" pequeno), trocado pro
+  mesmo tamanho/peso do título dos cursos (1.05rem/700, sem uppercase) — o dono achou pequeno
+  demais perto do resto da tela.
+- "Listening"/"Dictation" (eyebrow das 6 telas de Listening+Dictation — hub/tracks/exercício
+  de cada um): mesmo pedido, mas a 1ª tentativa (adicionar `.listening-panel .eyebrow` com
+  1.05rem) não teve efeito NENHUM visualmente — só descoberto quando o dono mandou um
+  screenshot mostrando que continuava pequeno. Causa: já existia uma regra MAIS específica
+  pra essa combinação exata (`.landing-panel.listening-panel .eyebrow`, 3 classes, com
+  `font-size: 14px` fixo) que vencia a minha (2 classes) por especificidade, então minha regra
+  nunca chegava a aplicar — corrigido editando a regra existente direto (removendo a nova, que
+  virou morta) em vez de empilhar mais uma por cima. Depois disso, ainda achou pequeno — settou
+  em 1.4rem (mais perto do h1 "Choose a listening/dictation source", que é
+  `clamp(1.5rem, 2.2vw, 2rem)`).
+
+## Backup automático em pasta local (2026-07-20)
+
+Retomando o ponto "progresso só no navegador local" da avaliação de UX (ver seção acima) — o
+dono queria resolver de verdade, não só documentar o risco. Pediu inicialmente algo com
+e-mail/Gmail ("abrir o Gmail do usuário e anexar o arquivo"); expliquei que isso é
+tecnicamente impossível (nenhum site consegue anexar um arquivo a um compose de e-mail de
+outro domínio — bloqueio de segurança do navegador, não peculiaridade do Gmail) e propus Web
+Share API como alternativa mais próxima. Também descartada uma ideia seguinte de login com o
+Google — geraria uma dependência de OAuth/credenciais de API que não existe em lugar nenhum
+deste projeto (100% local, sem backend). A parte que sobreviveu e virou a solução final foi a
+ideia do próprio dono de "o sistema cria uma pasta no sistema pra salvar" — ele já tinha uma
+pasta pronta, dentro do OneDrive (`.../Lets_Learn_English/progressdata`), o que por acidente
+feliz também dá sincronização em nuvem de graça, sem o app precisar saber disso.
+
+- **File System Access API** (`window.showDirectoryPicker`, só Chrome/Edge — `isBackupFolderSupported`,
+  `App.js`): usuário escolhe a pasta uma vez; o handle retornado não é uma string (não cabe no
+  `localStorage`), guardado num IndexedDB próprio (`lets-learn-english-fs`) que sobrevive a
+  fechar/reabrir o navegador. `queryPermission` (sem gesto do usuário, pode rodar sozinho ao
+  carregar a página) confere se a permissão ainda vale; se não valer mais, UI mostra
+  "Reconnect folder" (que usa `requestPermission`, esse sim exige clique).
+- **Escrita automática a cada 10 min** enquanto a pasta estiver linkada e com permissão válida
+  (`useEffect` com `setInterval`, silencioso — não interrompe o usuário por um save em segundo
+  plano) + botão manual "Save backup now" (esse sim avisa com um alert). "Restore from
+  folder" lê de volta o arquivo daquele usuário específico dentro da pasta.
+- **Uma pasta só pro navegador inteiro** (é permissão de origem, não daria pra ser por usuário
+  cadastrado no app) — dentro dela, um arquivo por nome (`backupFileNameFor`), evitando
+  colisão se mais de um usuário for cadastrado neste navegador.
+- **Refatoração**: a lógica de montar o payload (`buildBackupPayload`) e de validar/aplicar um
+  JSON de backup (`applyBackupJson`) foi extraída do export/import manual que já existia, pra
+  ser reusada tanto pelo fluxo antigo (download/upload) quanto pelo novo (pasta) sem duplicar
+  nada.
+- **Sem suporte** (Firefox, Safari): a seção mostra só um aviso e cai pro export/import manual
+  — que continua existindo e funcionando em qualquer navegador, não foi substituído.
+- **Limite de teste automatizado**: `showDirectoryPicker()` abre um diálogo NATIVO do sistema
+  operacional, fora do DOM — Playwright não consegue clicar através dele. Verificado via
+  Playwright só o que dá pra verificar sem esse diálogo: o botão "Link a backup folder"
+  aparece (confirma `isBackupFolderSupported()` detectando Chromium corretamente) e as duas
+  operações que já existiam (export baixa um JSON válido com os dados certos; import lê esse
+  mesmo arquivo de volta, mostra os dialogs certos, recarrega) continuam funcionando
+  identicamente depois da refatoração — zero erros no console. A escolha da pasta em si
+  (clicar em "Link a backup folder" e navegar o diálogo do Windows) precisa ser conferida à
+  mão pelo dono.
+
+### Descoberta testando: precisava ser oferecido, não escondido (mesmo dia)
+Dono testou (Edge) e reportou "a pasta continua vazia" — perguntando o que ele tinha visto na
+tela, descobriu que nunca tinha clicado em "Link a backup folder" dentro de My Profile: **ele
+esperava que o app pedisse a pasta sozinho logo depois do cadastro**, não que existisse um
+botão pra achar nas configurações. Faz sentido — o problema original era justamente "ninguém
+lembra de fazer backup por conta própria"; enterrar a solução no mesmo lugar não resolve isso.
+- **Nova tela `backup-setup`**, entre o cadastro e a tela Courses — só aparece num cadastro
+  DE VERDADE novo (`handleRegisterSubmit`, ramo `!existing`; nunca ao "continuar como" alguém
+  já cadastrado) e só se nenhuma pasta já estiver linkada (é por navegador, não por nome — um
+  2º cadastro no mesmo navegador não precisa ser perguntado nada, o backup dele já vai
+  funcionar sozinho assim que a pasta existir). 2 botões: "Choose a folder" (mesmo fluxo de
+  My Profile, só que navega pra Courses no final, dê certo ou não) e "Maybe later".
+  `showDirectoryPicker()` exige gesto do usuário — não dava pra abrir o diálogo nativo
+  sozinho ao carregar a página, por isso a tela intermediária pedindo autorização explícita em
+  vez de um diálogo do SO surgindo do nada.
+- **Bug pego na hora de escrever o texto da tela**: 1ª versão dizia "Choose a folder once
+  (Chrome/Edge — you're set, since this is Edge)" — hardcoded assumindo Edge porque foi o
+  navegador do relato, mas essa tela aparece pra QUALQUER navegador suportado (Chrome, Edge,
+  outros Chromium), então a frase estaria errada pra quem não estivesse no Edge. Removida —
+  a tela só é alcançável quando `isBackupFolderSupported()` já é `true`, então nem precisa
+  mencionar navegador nenhum.
+- Verificado via Playwright: cadastro novo cai na tela `backup-setup` (H1 "Back up your
+  progress automatically?"), os 2 botões aparecem, "Maybe later" leva pra Courses
+  corretamente. Zero erros no console.
 
 ## Histórico de processamento de conteúdo (pré-processamento, fora do código React)
 
@@ -687,13 +1153,33 @@ voltou ao normal — a correção lê como prosa corrida colorida.
 
 ### Distribuição via pendrive + isolamento de porta (2026-07-07)
 
-Existe uma cópia espelhada do projeto num pendrive (unidade `E:\Projeto_pagina_pdf\`, rótulo `PROJETO_PDF`), usada para rodar o app noutro contexto/PC sem precisar do repositório git — é uma cópia simples de arquivos (sem `.git`, sem `node_modules` sincronizado automaticamente), atualizada manualmente copiando por cima só os arquivos que mudaram desde a última sincronização (não um mirror completo a cada vez — `node_modules`, `.git` e as pastas de material bruto, gigantes e inalteradas, ficam de fora dessa rotina).
+Existe uma cópia espelhada do projeto num pendrive (unidade `E:\Lets_Learn_English\`, rótulo `LEARN_ENGLISH`), usada para rodar o app noutro contexto/PC sem precisar do repositório git — é uma cópia simples de arquivos (sem `.git`), atualizada manualmente copiando por cima só os arquivos que mudaram desde a última sincronização (não um mirror completo a cada vez — `.git` e as pastas de material bruto, gigantes e inalteradas, ficam de fora dessa rotina). **`node_modules` VAI junto** (~1,8 GB): sem ele o outro PC precisaria de internet + `npm install` no primeiro uso (o `StartLearning.bat` faz isso sozinho se faltar, mas aí deixa de ser "plugar e usar").
 
 - **Bug descoberto ao usar o pendrive**: `StartLearning.bat`/`OpenWhenReady.ps1` sempre abriam `http://localhost:3000`, então a cópia do pendrive e a cópia do PC caíam na **mesma origem** do navegador — e `localStorage` é isolado por origem, não por pasta de arquivos no disco. Resultado: usuários cadastrados numa cópia apareciam na outra, misturados.
 - **Correção**: os dois scripts agora detectam, cada um por conta própria (`Get-Volume -DriveLetter`, sem passar argumento entre eles), se estão rodando de uma unidade fixa (HD/SSD do PC → porta 3000, comportamento inalterado) ou removível (pendrive → porta **3001**). Como a porta é recalculada a cada execução a partir de onde o script física está, e não fica salva em nenhum arquivo de configuração, copiar os mesmos `.bat`/`.ps1` do PC pro pendrive (ou vice-versa) continua funcionando corretamente dos dois lados — não precisa de uma versão "especial" do launcher só pro pendrive.
 - **Efeito colateral querido**: com origens diferentes, o `localStorage` (usuários, progresso, notas, My Words) da cópia do pendrive fica permanentemente isolado do da cópia do PC — não é um reset a cada abertura (isso apagaria o progresso feito no pendrive de uma sessão pra outra), é uma separação definitiva, como duas "instalações" diferentes do app.
 - **Limpeza dos usuários já misturados** (antes da correção): não foi possível fazer via automação — Playwright abre um perfil de navegador isolado, sem acesso ao perfil real do navegador do usuário, então não há como um agente de IA rodando localmente limpar o `localStorage` do navegador de verdade da pessoa. Precisou ser feito manualmente (Profile → "Delete this user" por usuário, ou console do DevTools com `Object.keys(localStorage).forEach(k => localStorage.removeItem(k))`).
 - **"Reset all data on this browser"** (link na tela de registro, ver "Cadastro de usuário e score" acima) nasceu diretamente dessa situação — resolve o mesmo problema (lista de "Continue as" com nomes não reconhecidos) sem precisar abrir o DevTools nem logar em cada usuário.
+
+#### Renomeação do projeto + pendrive autocontido (2026-07-26)
+
+Pedido do dono, já com o app "em uso contínuo, não mais um projeto em si": renomear a pasta
+`Projeto_pagina_pdf` → **`Lets_Learn_English`** (nome real do app; sem apóstrofo nem espaço,
+que quebrariam os caminhos nos `.bat`) e regravar o pendrive do zero pra rodar noutro PC.
+
+- **O que travava a portabilidade**: o American Accent era o único curso lido de um caminho
+  ABSOLUTO (`C:\Users\marcu\...\A_INGLES\LIVROS\...`), fora da árvore do projeto — num pendrive
+  levado pra outro computador, esse caminho simplesmente não existe. Resolvido com uma cadeia
+  de tentativas em `setupProxy.js` (pasta irmã primeiro, absoluto do PC depois; ver CLAUDE.md),
+  em vez de mover a pasta no PC ou manter duas versões do arquivo.
+- **O material do American Accent agora é copiado pra DENTRO da árvore** no pendrive, virando
+  a 4ª pasta irmã de material — é isso que torna a cópia portátil autocontida.
+- Os launchers (`StartLearning.bat`, `OpenWhenReady.ps1`, `RunHidden.vbs`) já eram 100%
+  relativos (`%~dp0`/`$PSScriptRoot`) e não precisaram de nenhuma alteração — inclusive a
+  detecção de porta fixa/removível (3000/3001) continua valendo sozinha na cópia nova.
+- **`.lnk` não sobrevive a renomeação**: atalho do Windows guarda caminho absoluto, então tanto
+  o da Área de Trabalho quanto o da raiz do pendrive tiveram que ser reapontados na mão
+  (via `WScript.Shell`) depois do rename/da cópia.
 
 ### "Today's Plan" — bloco de orientação na Home (2026-07-07)
 
@@ -705,6 +1191,166 @@ Card `TodayPlanCard`, só na Home (não na tela Courses), com até 4 sugestões 
 - Cada linha é um botão que navega direto pra tela certa. As 3 primeiras (`openVocabularyUnit`/`openAmerican1Section`/`openGrammarElemUnit`, `App.js`) são funções novas de navegação direta — **diferente** dos handlers `handleUnitSelect`/`handleAmerican1UnitSelect`/`handleGrammarElemUnitSelect` já existentes (usados pela lista de units de cada curso), que não setam `activeCourseId` porque contam com esse valor já ter sido setado um passo antes (ao clicar no link do curso, na tela Courses). Como o plano pula direto da Home pra dentro de uma unit, sem passar pela tela de lista, essas 3 funções novas setam `activeCourseId` explicitamente — senão o cabeçalho ("You are in the... Course") e o link "All Units" ficariam quebrados.
 - Cada linha some sozinha se não houver nada pra sugerir naquele slot; o card inteiro some se as 3 estiverem vazias (ex.: todo o conteúdo dos 3 cursos já visitado e nenhuma revisão vencida — só acontece depois de esgotar ~230 units/seções, não é um caso realista no curto prazo, mas o guard existe por correção).
 - Verificado via Playwright (15 checks): sem usuário o card não aparece; usuário novo mostra Vocabulary Unit 1 (novo) + American English Level 1 Unit 1A (listening, curso diferente); reatividade confirmada (depois de visitar a Unit 1, a sugestão avança pra Unit 2); com 3 revisões semeadas como vencidas, mostra só as 2 mais atrasadas + link "+1 more"; clicar no link leva pra Courses com as 3 completas; `ReviewCard` não se repete na Home.
+
+## 4º curso: American Accent (2026-07-23)
+
+Pedido do dono: transformar o livro "Mastering the American Accent" (Lisa Mojsin — PDF único
+de 211 páginas + 390 faixas de áudio já pré-recortadas por conceito, pasta fora da árvore do
+projeto) num 4º curso. Sessão longa, em várias rodadas — resumo por fase.
+
+### Fase 1 — leitura (páginas, player, progresso)
+
+- **Dados**: `american_accent_index.json` gerado via PyMuPDF — TOC embutido do PDF pros 9
+  capítulos, e um algoritmo pra decidir se cada página começa um "assunto novo" (não precisa de
+  merge com a anterior) ou continua o assunto da página anterior (precisa virar uma tela só,
+  senão uma faixa de áudio cujo conteúdo atravessa a quebra de página fica "cortada" — texto
+  numa página, mas o botão de play só nessa página, o resto sem áudio visível).
+- **Descoberta chave, 2 rodadas de bug**: a primeira versão do algoritmo confiava na ORDEM DE
+  LEITURA do `get_text()` simples do PyMuPDF pra achar o "primeiro texto da página" — errado,
+  porque essa ordem segue a ordem interna do PDF (stream de conteúdo), não a posição visual.
+  Um rodapé de página (`"Chapter One: THE VOWEL SOUNDS      7"`) às vezes aparece ANTES do
+  heading de verdade na ordem de leitura, mesmo estando visualmente no rodapé — causou merges
+  indevidos (ex. páginas 6 e 7 grudadas sem motivo). Corrigido usando posição Y real
+  (`get_text('dict')` + `bbox`) pra tudo: decidir o que é rodapé (faixa Y >= 700, não por
+  string), decidir qual é o heading real da página (linha de MENOR Y entre as não-rodapé,
+  excluindo linhas numeradas `"1. ..."` e linhas só de símbolo fonético `"/u/ /ʊ/"` — as duas
+  causaram bugs silenciosos reais, heading errado + 1ª frase de uma lista sumindo, tracks 52 e
+  129 pegos só numa varredura de sanidade depois).
+- **Exceção pontual, não generalizável**: o subtítulo "Common Spelling Patterns for /X/" quase
+  sempre é continuação da página anterior mesmo tendo tamanho de heading (16pt) — mas SÓ esse
+  subtítulo, não outros do mesmo tamanho ("Word Pairs for Practice" etc. nunca tiveram esse
+  problema reportado). Uma tentativa de generalizar "qualquer heading de tamanho <18 é
+  continuação" (achando que resolveria de vez) encolheu o livro de 94 pra 33 telas, mesclando
+  capítulos inteiros — revertida na hora.
+- **~15 exceções manuais por número de página** (`FORCE_CONTINUE_PRINTED_PAGES`/
+  `FORCE_FRESH_PRINTED_PAGES`/`EXCLUDED_PRINTED_PAGES` no gerador) descobertas por REVISÃO
+  VISUAL do dono, não por heurística nenhuma — cada uma com um motivo textual diferente (selo
+  de faixa fora da posição normal, lista numérica continuando no meio "3." em vez de "1.",
+  etc.), tratadas como override explícito em vez de tentar achar uma regra geral pra cada uma
+  (mesmo padrão de cautela usado depois pra não repetir o erro do "33 telas").
+- **UI**: player fixo no topo (não ancorado por coordenada como Vocabulary/American1 — página
+  pode ter até 7 faixas, um botão por pixel não escalava), progresso por PÁGINA REAL (não por
+  "tela" nem por unit, que não existe nesse curso), self-evaluation, reset, busca (dentro do
+  curso e na busca unificada), My Notes, "Continue where you left off", "Learn something new" —
+  todos os pontos de integração dos outros 3 cursos replicados um por um.
+- Bug de CSS pego na hora: texto de introdução do hub quase invisível (`<p>` herdando
+  `.landing-panel p { color: rgba(255,255,255,0.75) }`) — mesma armadilha já documentada em
+  CLAUDE.md, resolvida com `<span>` + cor opaca explícita.
+- Bug de UX pego na hora: botões "All Chapters"/"Previous"/"Next Page" mudavam de posição
+  verticalmente conforme o número de faixas da página crescia (`.pdf-toolbar` tem
+  `align-items: center` por padrão) — corrigido com `align-items: flex-start` escopado só a
+  essa tela.
+
+### Fase 2 — Dictation/Listening/Speaking Wave 1 (53 faixas)
+
+- **Descoberta que mudou o modelo mental**: o selo "Track N" NÃO fica agrupado no fim do bloco
+  de conteúdo (como a extração de texto simples sugeria) — fica na MARGEM da página (esquerda
+  OU direita, varia), na mesma altura Y do heading que ele narra. "Track" e o número às vezes
+  não são vizinhos na lista ordenada por Y (um heading de fonte grande no meio dos dois) —
+  casar por PROXIMIDADE Y entre "Track" e o dígito mais próximo, nunca por adjacência.
+- Extração final: para cada faixa candidata (nome de arquivo com "Practice Sentences"/
+  "Sentence Pairs for Practice"), acha o heading mais próximo do selo (a "âncora"), e o
+  conteúdo é tudo entre essa âncora e a PRÓXIMA âncora de qualquer faixa na mesma tela.
+- **Faixas puladas na 1ª extração automática**: 6 de 50 candidatas (217, 331, 333, 335, 337,
+  361) tinham anotação fonética solta ou prosa de instrução misturada no texto de um jeito que
+  a extração automática não separava direito — texto final veio direto do dono por mensagem
+  (revisão manual, não uma tentativa de limpar automaticamente o que já tinha se provado
+  ambíguo).
+- **3 faixas nunca detectadas**: nomes de arquivo com a ordem invertida "Sentences for
+  Practice" (não "Practice Sentences") — regex original só buscava a ordem normal. Achadas só
+  quando o dono apontou 2 delas (100, 255) por número; a 3ª (107) apareceu numa varredura do
+  mesmo padrão de nome.
+- **Pontos de pausa**: detecção de silêncio (`soundfile`+`numpy`, limiar relativo ao pico 90%,
+  silêncio mínimo 0.45s) — 1ª versão vazava um pouco no comecinho do som seguinte (relatado
+  pelo dono, "mesmo bug de antes" — CLAUDE.md já documentava esse padrão pro American1).
+  Corrigido com recuo fixo de 0.15s em todo ponto detectado.
+- **Pares mínimos com lacuna forçada** (`track.targetWords`): pedido do dono pra track 71
+  (pest/past, letter/ladder etc.) — sempre esconder essas palavras específicas no Listening,
+  sem toggle. Generalizado depois pras outras faixas de "Sentence Pairs for Practice" que são
+  DE VERDADE sobre confusão de som (80, 88 — vogal; 100 — vogal; 280 — acento de phrasal verb
+  vs. substantivo composto), excluindo as que são sobre outra coisa (331/333 são sobre tipo de
+  pergunta/entonação, não confusão sonora — não ganham a lacuna forçada). Track 255 (mudança de
+  acento politics/politician etc.) teve as palavras confirmadas direto na formatação **bold**
+  do PDF (`span['font']` contém "Bold"), não adivinhadas por posição de par.
+- Título do exercício nas 3 telas passou a incluir `(Track N)` — o número real da faixa no
+  livro/nome do arquivo, não só a posição sequencial "Exercise n. X" — pedido do dono porque
+  ele referencia as faixas pelo número real ao reportar problema.
+
+### Padrão geral desta sessão
+
+Praticamente toda extração de dado novo (headings, texto de frase, pontos de pausa) passou por
+pelo menos 1 rodada de "o dono testou/leu e reportou um caso errado" → investigação da causa
+raiz → fix estrutural quando generalizável, override pontual documentado quando não é. Ver
+CLAUDE.md, seção "Dados (American Accent)", pra lista consolidada dos bugs de extração já
+resolvidos (não reintroduzir se for regenerar os índices do zero).
+
+### Correções pontuais pós-lançamento (2026-07-23)
+
+3 relatos do dono depois de usar o app com o 4º curso já no ar, cada um virou um commit
+separado:
+
+- **Rótulos de personagem também no Listening**: `splitListeningSpeakerLabel` só cobria o
+  padrão com dois-pontos ("Jenny: ..."); os rótulos SEM dois-pontos do American1 ("Teacher",
+  "Student 2" — já numa lista fechada, `DICTATION_NO_COLON_LABELS`, usada só pelo Dictation)
+  ficavam soltos no meio do texto do Listening. Corrigido reaproveitando
+  `stripDictationSpeakerLabel` nos dois lugares, em vez de manter 2 implementações parecidas.
+- **My Words deletava sem confirmar**: `handleDeleteWord` nunca teve um `askConfirm`/
+  `window.confirm` (checado no histórico do git — não achei evidência de que existiu antes,
+  mas era uma falta real de qualquer forma). Agora pergunta "Delete '<palavra>' from My Words?
+  This cannot be undone." com o mesmo diálogo estilizado do delete de nota em My Notes.
+- **Painel de respostas da tela de referência inconsistente**: `american1-reference` (Grammar/
+  Vocabulary Bank) tinha sua própria barra de título ("Teacher's Book answers" + botão "✕"),
+  sem o handle de redimensionamento que as units têm. Alinhado ao padrão de
+  `american1-unit`/Grammar Elem (`study-answers-resize-handle` + `section-answers-strip
+  --resizable`, sem título nenhum — o show/hide já é feito por um botão que já existia em
+  outro lugar da tela); CSS das 2 classes que ficaram sem uso (`section-answers-strip-head`/
+  `-close`) removido.
+
+### Correções e features pontuais (2026-07-24/25)
+
+- **`reviewQueue` desatualizado em `scheduleReview`**: o check "esse item já estava vencido"
+  comparava contra o STATE `reviewQueue`, que só recarrega quando `activePage` muda de valor —
+  navegar entre units com "Next Unit"/"Previous Unit" nunca muda esse valor, então uma revisão
+  vencida no meio de uma sessão de navegação assim nunca era reconhecida. Trocado por checar o
+  `localStorage` direto (fonte de verdade sempre atual). Ver ROADMAP item 3, "Correção
+  2026-07-24", pra reprodução detalhada.
+- **Graduar flashcard vencido do My Words não marcava "Clear today's reviews"**: a UI ("Today's
+  Review" card, Courses) já apresenta revisão de curso e flashcard vencido como o mesmo
+  conceito ("1 item" contando os dois juntos), mas `handleGradeWord` nunca chamava
+  `markDailyGoalDone('reviews')` — inconsistência real entre o que a tela promete e o que o
+  código fazia. Corrigido com o mesmo critério `(entry.due ?? 0) <= agora` que
+  `wordbookDueCount` já usa.
+- **`Ctrl+Space` virou atalho GLOBAL**: antes só existia dentro do Listening/Dictation (2
+  `useEffect` locais, cada um escopado ao próprio player daquele exercício) — nas 9 telas de
+  leitura (players ancorados/simples) e com o foco dentro do editor do My Notes
+  (`contentEditable`), o atalho simplesmente não existia. Um único `useEffect` em `App()`
+  substituiu os 2 locais: procura em `document.querySelectorAll('audio')` qualquer áudio
+  tocando (pausa) ou o último que tocou via listener de `play` em capture (retoma), e trata
+  `contentEditable` igual a INPUT/TEXTAREA pra não interceptar o Space normal de digitação.
+- **Diálogo de confirmação (delete) "pulando" pro centro**: `.app-confirm-dialog` reaproveitava
+  o keyframe do Toast (`app-toast-in`), que inclui `translate(-50%,-50%)` — pensado pra um
+  elemento posicionado via `top/left:50%`, não pra este diálogo, que já é centralizado pelo
+  flex do overlay. O transform deslocava a caixa da posição certa durante os 180ms da
+  animação, que "saltava" de volta pro centro assim que a animação acabava. Keyframe próprio
+  criado, só com fade+scale, sem transform de posição.
+- **Botão "+ Word" não aparecia no American Accent**: `insideCourse` (controla quando o FAB
+  flutuante aparece) nunca checava `selectedAmericanAccentScreenId`, só os outros 3 cursos —
+  faltou na integração original do 4º curso. `studyContextLabel` (o "from ..." salvo junto com
+  a palavra) também ganhou o branch do American Accent (`American Accent p. X–Y`).
+- **Ícone 🔊 de pronúncia no My Words**: implementado 2x na mesma sessão. 1ª versão raspava o
+  Cambridge Dictionary com Playwright (Chromium headless) — pronúncia de dicionário real, mas
+  ~5-6s por palavra nova e só cobria palavra única. Trocado a pedido do dono pelo endpoint
+  clássico de Text-to-Speech do Google Translate (mesmo usado por baixo dos panos pela lib
+  Python gTTS) — ~150-350ms por entrada nova (15-20x mais rápido, medido), funciona igual bem
+  pra frase inteira, sem dependência de navegador. `playwright` e o Chromium baixado pra essa
+  feature foram desinstalados/apagados na troca. Ver seção "Pronúncia no My Words" em
+  CLAUDE.md pra arquitetura completa (cache em disco, rota, script de preload em lote).
+- **Colar imagem não funcionava editando uma palavra do My Words**: o form de "Add word" e o
+  "+Word" já tinham `onPaste` no `<form>` inteiro (cola com o cursor em qualquer campo, não só
+  na caixinha de imagem — pedido explícito de uma sessão anterior). O bloco de EDIÇÃO
+  (`wordbook-entry-edit`) nunca ganhou esse mesmo tratamento — era um `<div>` sem `onPaste`
+  nenhum, então colar simplesmente não fazia nada ali. Corrigido com um handler próprio
+  (`handleEditFormPaste`, grava em `editDraft.image`) no mesmo padrão.
 
 ## Observações para outra IA
 

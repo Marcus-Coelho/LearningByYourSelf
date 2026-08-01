@@ -17,6 +17,19 @@ Aplicação roda em `http://localhost:3000` (ou `3001` em pendrive, auto-detecta
 
 Essas pastas são ignoradas por git (`.gitignore`), não são commitadas.
 
+**Exceção — American Accent** (`3. Mastering the American Accent/`): o caminho é resolvido por
+TENTATIVA em `setupProxy.js` (não é mais um absoluto fixo, desde 2026-07-26), nesta ordem:
+1. pasta **irmã** das outras 3, dentro da árvore do projeto — é assim na cópia do pendrive, que
+   precisa ser autocontida pra rodar em qualquer PC;
+2. `C:\Users\marcu\OneDrive\Documentos\A_INGLES\LIVROS\3. Mastering the American Accent` — onde
+   a pasta ainda mora no PC do dono, fora da árvore do projeto.
+
+Quem existir primeiro vence, então as duas cópias funcionam sem nenhuma edição manual. Se
+nenhum caminho existir, só esse curso fica indisponível (rotas 404) — o resto do app roda
+normal.
+
+**Opcional — tela "Ask AI"**: precisa de `GEMINI_API_KEY` em `meu-leitor-pdf/.env.local` (copie de `.env.local.example`, chave gratuita em https://aistudio.google.com/apikey). Sem essa chave o resto do app funciona normal, só essa tela responde erro 500 explicando o que falta.
+
 `npm run build` **funciona e compila normalmente** — é usado o tempo todo durante o desenvolvimento pra verificar que uma mudança não quebrou nada (é o jeito padrão de "checar erros de sintaxe/JSX" nesse projeto, sem precisar do dev server rodando). O que **não existe** é hospedagem em produção: o build gerado não seria funcional publicado num servidor, porque `setupProxy.js` (áudio/PDF) só funciona sob `npm start` — ver "Decisões Imutáveis" abaixo.
 
 ---
@@ -28,7 +41,7 @@ Essas pastas são ignoradas por git (`.gitignore`), não são commitadas.
 ```
 meu-leitor-pdf/
 ├── src/
-│   ├── App.js (arquivo único, ~7000 linhas — tudo aqui: 3 cursos, Listening, Dictation,
+│   ├── App.js (arquivo único, ~10000 linhas — tudo aqui: 4 cursos, Listening, Dictation,
 │   │           My Words, Dashboard, Sound Bank, etc.)
 │   ├── App.css (~3700 linhas, também um arquivo único)
 │   ├── setupProxy.js (middleware do dev server — serve áudio/PDF das pastas irmãs)
@@ -40,7 +53,8 @@ meu-leitor-pdf/
 │   │   (Grammar English A1)
 │   ├── listening_vocabulary.json / listening_american1.json (tracks de Listening/Dictation)
 │   ├── dictation_pause_points.json (pontos de auto-pause do Dictation, por trackId —
-│   │   gerado por detecção de silêncio em Python; piloto: só unit4-a/b)
+│   │   gerado por detecção de silêncio em Python; cobre os 307 tracks do English
+│   │   Vocabulary B e os 52 do American English A1)
 │   └── (todos os "*_coords*.json"/"*_index*.json"/"*_anchors*.json" são índices GERADOS —
 │         não editar à mão, ver "Dados Gerados" abaixo)
 ├── package.json
@@ -60,6 +74,18 @@ meu-leitor-pdf/
 
 ## Cursos & Recursos
 
+**Nível de cada curso** (`courses[id].level`, `App.js`): American English A1 e Grammar
+English A1 são "Beginner" (CEFR A1 de verdade); English Vocabulary B é "Intermediate" (a
+pasta de origem do material se chama "Pre Intermediate and Intermediate" — nível acima dos
+outros dois, apesar do "B" no nome não deixar isso óbvio). American Accent também é
+"Intermediate" — não é sobre dificuldade de leitura, mas o livro pressupõe alguma base de
+vocabulário/gramática pra fazer sentido (é sobre refinar pronúncia, não aprender do zero).
+Avisado ao usuário (rótulo "Beginner"/"Intermediate" padronizado, classe
+`.course-level-heading`) nas telas Courses, Listening, Dictation e Progress Dashboard, sempre
+na ordem `COURSE_LEVEL_ORDER` (American1, Grammar Elem, Vocabulary, American Accent). Um novo
+curso: definir o `level` dele em `courses` e incluir o id em `COURSE_LEVEL_ORDER` já basta
+pras 4 telas acima pegarem sozinhas.
+
 ### 1. Vocabulary — "English Vocabulary B" (100 units)
 - Leitura: PDF `_L` (leitura) com áudio ancorado na margem esquerda
 - Exercícios: PDF `_E` (exercícios), recortado unit-por-unit, com gabarito
@@ -77,14 +103,108 @@ meu-leitor-pdf/
 - Índices: `grammar_elem_index.json` (títulos), `grammar_elem_appendix_index.json`,
   `grammar_elem_audio.json`
 
-### Listening (menu principal, fora dos 3 cursos)
+### 4. American Accent (livro "Mastering the American Accent", Lisa Mojsin — 9 capítulos)
+- Curso de **pronúncia**, não de conteúdo — sem "unit", é um livro corrido de 211 páginas (140
+  usadas, capítulos 1-9; a "Native Language Guide", páginas 149-210, fica fora). PDF único (não
+  um arquivo por página como os outros 3) + 390 faixas de áudio já pré-recortadas por conceito
+  (sem merge de PDF nem detecção visual de selo — cada faixa já é um arquivo próprio, e o
+  número "Track N" impresso no livro bate 1:1 com o número no início do nome do arquivo)
+- **Leitura por "tela"**, não por página fixa 1:1: `american_accent_index.json` agrupa 1+
+  páginas do PDF numa tela sempre que o conteúdo de uma faixa de áudio atravessa a quebra de
+  página impressa — ver "Dados Gerados" abaixo pra como isso é detectado e a lista de exceções
+  manuais conhecidas. Progresso é por **página real do livro** (não por tela nem por unit
+  inexistente) — visitar uma tela de 2 páginas marca as 2 pro cálculo de "Your Progress"
+- Player **fixo no topo**, não ancorado sobre o PDF (diferente do Vocabulary/American1) — uma
+  página pode ter 2-3 faixas, então um botão por coordenada não escalava; mesmo padrão do
+  Grammar Elem (link simples ao lado do conteúdo, não um selo posicionado em cima da página)
+- Identificação da tela mostra capítulo+título entre parênteses (`chapter.topic`, extraído do
+  rodapé corrido do livro) e página+subtítulo entre parênteses (`screen.topic`, o heading real
+  tamanho 18 daquela tela, "se houver") — ex. "Chapter Eight (Sound Like A True Native
+  Speaker) · p. 115–117 (Linking Words for Smoother Speech Flow)"
+- **Dictation/Listening/Speaking Wave 1** (53 faixas, `listening_american_accent.json`, dentro
+  de `LISTENING_SOURCES` — aparece nos 3 automaticamente): texto das "Practice Sentences"/
+  "Sentence Pairs for Practice"/"Sentences for Practice" extraído do PDF (âncora do selo
+  "Track N" — fica na MARGEM da página, alinhado com o heading que narra, não agrupado no fim
+  como a extração de texto simples sugere) + pontos de pausa por detecção de silêncio
+  (soundfile/numpy, recuo de 0.15s — ver "Auto-pause" no ROADMAP). Título do exercício nas 3
+  telas inclui `(Track N)` — o número real da faixa no livro, não só a posição sequencial
+- **Pares mínimos com lacuna forçada no Listening** (`track.targetWords`, tracks 71, 80, 88,
+  100, 255, 280): faixas de "Sentence Pairs for Practice" cujo par de frases muda só 1 palavra
+  parecida/confusa (ex. pest/past, lock/luck, bald/bold, fool/full) ou 1 palavra que muda de
+  acento (politics/politician — extraído direto da formatação **bold** do PDF, não chutado)
+  SEMPRE escondem essas palavras específicas no Listening, sem toggle — diferente do
+  `wordMode`/"Only Unit Words" opcional do Vocabulary. Nem toda "Sentence Pairs for Practice"
+  entra aqui — só as que são de verdade sobre confusão de som/acento (331/333/280-parcial são
+  sobre tipo de pergunta/entonação, não confusão sonora, então ficam com lacuna aleatória)
+
+### Ask AI (menu principal, fora dos 4 cursos, 2026-07-25)
+
+Tela de Q&A pra dúvidas sobre a língua inglesa em geral (gramática, vocabulário, pronúncia,
+expressões idiomáticas, uso — não só gramática, ver "Correção 2026-07-25" abaixo): um campo de
+texto, botão "Ask", resposta abaixo. A IA se chama **Adele** (americana, EUA — pedido do dono,
+2026-07-25), mascote desenhado em SVG puro (`AdeleMascot`, `App.js` — sem arquivo de imagem
+externo, mesmo espírito dos ícones do resto do app).
+- **Backend**: `POST /api/ask-grammar` (`setupProxy.js`) chama a API do Gemini
+  (`src/geminiGrammarHelper.js`, modelo `gemini-flash-latest` — alias que a Google sempre
+  aponta pro flash atual, escolhido depois de `gemini-2.5-flash` parar de aceitar contas novas
+  no meio da implementação). Nome da rota/arquivo ficou "grammar" por já existir quando o
+  escopo era mais estreito — não é mais literal, mas renomear não foi pedido.
+  - Único endpoint do projeto que recebe corpo JSON — `express.json()` escopado só nesta rota
+    (as outras usam GET com parâmetro na URL, nunca precisaram de body parser).
+- **`systemInstruction`** (2026-07-25, reescrita depois que o dono mostrou uma resposta de
+  outra IA que ele gostou): tutora completa/didática, não só uma frase curta — confirma o que
+  está certo, explica a regra, dá exemplos, **chama exceções explicitamente**, e às vezes
+  termina com um desafio curto ("fill in the blank"). Também corrige a pergunta do próprio
+  usuário se tiver erro (linha "Corrected: ..." antes de responder, só quando havia erro de
+  verdade).
+- **Memória de só o ÚLTIMO turno** (`askAiLastExchange`, `App.js`, 2026-07-25): não é chat de
+  verdade — não cresce, não persiste no `localStorage`, reseta ao sair da tela. O cliente
+  reenvia `previousQuestion`/`previousAnswer` a cada request; o servidor não guarda nada entre
+  requisições (mesmo padrão stateless de sempre, só que o cliente carrega 1 turno de contexto).
+  Existe especificamente pra Adele poder propor um desafio numa resposta e avaliar a tentativa
+  do usuário na pergunta seguinte — sem isso ela não teria como saber a que uma resposta tipo
+  "He is always tired." se refere. Botão "Start a new topic" zera essa memória na mão.
+- **Render do markdown-lite** (`renderAdeleMarkdown`, `App.js`): a resposta pode vir com
+  `### heading`, `**bold**`, `- bullet` (pedido no prompt) e também `*italic*`/`> quote`/`***`
+  como divisor (o modelo usa esses por conta própria mesmo sem pedir — mais robusto o renderer
+  cobrir do que tentar proibir via prompt, LLM não obedece restrição de formatação com 100% de
+  fidelidade). Parser feito à mão, sem lib de markdown nem `dangerouslySetInnerHTML` — só monta
+  elementos React de verdade a partir do texto, zero risco de XSS mesmo com resposta hostil.
+- **Chave**: `GEMINI_API_KEY` em `meu-leitor-pdf/.env.local` (gitignored, template em
+  `.env.local.example`). Nome SEM prefixo `REACT_APP_` de propósito — o CRA só expõe pro bundle
+  do navegador variáveis com esse prefixo; sem ele, a chave existe só no processo Node do dev
+  server (onde `setupProxy.js`/`geminiGrammarHelper.js` rodam), nunca chega no cliente. Avaliado
+  contra chamar a API direto do navegador — rejeitado porque exporia a chave no DevTools/aba de
+  rede pra qualquer um roubar.
+- Só funciona sob `npm start`, mesma limitação de sempre (não há servidor de produção). Sem a
+  chave configurada, a rota responde 500 com mensagem explicando o que falta — o resto do app
+  funciona normal.
+
+### Listening (menu principal, fora dos 4 cursos)
 - Tela própria (`activePage: 'listening' → 'listening-tracks' → 'listening-exercise'`),
   reaproveita os mesmos tracks/áudio dos cursos (`listening_vocabulary.json`/
   `listening_american1.json`, agrupados em `LISTENING_SOURCES`)
 - Exercício de "fill in the blank": mostra o texto com lacunas sorteadas, ouve e completa
+- **"Only Unit Words" / "Random Words"** (toggle, só no Vocabulary — `isVocabularyTrack =
+  Boolean(track.unit)`, American1 não tem esse campo nem palavras-alvo extraídas): "Only Unit
+  Words" blanka toda ocorrência das palavras em destaque/negrito da unit
+  (`vocabulary_target_words.json`, extraído dos `_L.pdf` via PyMuPDF); "Random Words" é o
+  sorteio original, inalterado. Ver ROADMAP item 2
 - Player: `WideAudioPlayer` (largura total — play/pause, ±5s, stop, A-B, loop do áudio
   inteiro, velocidades 0.5x-2x, barra de progresso). Usado SÓ aqui e no Dictation; o resto
   do app continua com os players compactos (pílula amarela)
+- **`Ctrl+Space` pausa/retoma QUALQUER `<audio>` tocando na página, em QUALQUER tela** —
+  atalho GLOBAL (`App.js`, `useEffect` logo no topo do componente, procura em
+  `document.querySelectorAll('audio')`), não mais dois `useEffect` locais escopados ao
+  próprio player do Listening/Dictation (removidos, 2026-07-24). Funciona também nas 9 telas
+  de leitura (players ancorados/simples, que nunca tiveram esse atalho) e com o foco dentro
+  do editor **contentEditable** do My Notes (que não é INPUT/TEXTAREA, então precisa checar
+  `document.activeElement.isContentEditable` além das 3 tags de sempre pra não interceptar o
+  Space normal de digitação ali). Space sozinho (sem Ctrl) continua funcionando fora de campo
+  de texto, igual antes. Um listener `play` em capture (`document.addEventListener('play',
+  ..., true)` — esse evento não faz bubble) guarda o último `<audio>` que tocou, pra
+  Ctrl+Space conseguir RETOMAR mesmo se a pausa anterior tiver sido por clique no botão do
+  player, não pelo teclado.
 
 ### Dictation (menu principal, "Modo Ditado")
 - Mesmíssimos `LISTENING_SOURCES`/tracks do Listening, mas **sem mostrar o texto antes** —
@@ -92,20 +212,90 @@ meu-leitor-pdf/
   destaque verde (certo)/vermelho (errado) e score em %
 - Estado/handlers/estatísticas (`localStorage` sob `dictation:<trackId>:stats`) **totalmente
   separados** do Listening (`listening:<trackId>:stats`) — nunca alterar um mexendo no outro
-- **Auto-pause (piloto)**: pausa sozinho nos silêncios entre frases
-  (`dictation_pause_points.json`, só unit4-a/b por ora — ver ROADMAP item 1), com detecção
-  por CRUZAMENTO do ponto (nunca por proximidade — proximidade re-pausava em cima do ponto
-  ao usar "Replay last part"), toggle on/off, pílulas de estado (pausado/fim do áudio) e
-  botão "↺ Replay last part". `Ctrl+Space` retoma
+- **Auto-pause**: pausa sozinho nos silêncios entre frases (`dictation_pause_points.json`,
+  cobre todo o Vocabulary e o American1 — ver ROADMAP item 1, ainda falta validar por
+  amostragem e decidir se o Listening também ganha), com detecção por CRUZAMENTO do ponto
+  (nunca por proximidade — proximidade re-pausava em cima do ponto ao usar "Replay last
+  part"), toggle on/off, pílulas de estado (pausado/fim do áudio) e botão "↺ Replay last
+  part". `Ctrl+Space` retoma (agora o atalho GLOBAL, ver Listening acima). **Cruzamento
+  checado via `requestAnimationFrame`, não
+  `timeupdate`** — o navegador só dispara `timeupdate` a cada ~250ms, atraso suficiente pra
+  `audio.pause()` vazar pro comecinho da fala seguinte em falas coladas (relatado pelo dono,
+  casos reais do American1 com pouco silêncio entre personagens); rAF (~60x/s) reduz essa
+  folga a poucos ms. Se ainda vazar em algum caso pontual, o próximo passo é recuar os pontos
+  mais cedo em `dictation_pause_points.json` (via script, nunca à mão — ver "Dados Gerados")
 - A recuperação do casamento LCS é por DP de SUFIXOS + caminhada pra frente (palavra casa
   com a ocorrência mais CEDO no texto) — a versão prefixos+trás casava palavra repetida com
   uma ocorrência lá do fim, deixando o verde longe do contexto digitado; não regredir
+- **Rótulos de personagem (`A:`, `Jenny:`, `Teacher ...`) são removidos do texto usado pra
+  corrigir E do texto exibido** (`stripDictationSpeakerLabel`, `App.js`) — são convenção de
+  transcrição, a voz do áudio não fala esse nome, então cobrar o aluno por não digitá-lo
+  penalizava injustamente, e mostrar o nome solto no meio do exercício de Listening também
+  não fazia sentido (pedido do dono, 2026-07-23 — antes só o Dictation limpava, o Listening
+  usava `track.sentences` direto). Regra de dois-pontos é genérica; rótulos sem dois-pontos
+  (só existem no American1, ex. "Teacher Good morning...", "Rob Hi. My name's...") usam uma
+  lista fechada de nomes conhecidos — não generalizar pra "qualquer palavra maiúscula no
+  início", isso apagaria começos de frase legítimos como "JetBlue flight...".
+  `splitListeningSpeakerLabel` (Listening) reaproveita a mesma `stripDictationSpeakerLabel` —
+  nunca duplicar essa lista/regex em dois lugares
+- **Token sem nenhuma letra/dígito (ex.: um "—" solto entre frases) não conta pro score** —
+  fica de fora do casamento LCS e renderiza sem cor (`dictation-word-neutral`, nem verde nem
+  vermelho) na correção, mas continua aparecendo no texto reconstruído. Antes disso, um "—"
+  virava um "wordResult" impossível de acertar (o aluno nunca digita "—"), sempre vermelho e
+  descontando nota — contra o próprio aviso da tela ("Punctuation and capitalization don't
+  matter"). Ver `isDictationPunctuationOnlyToken`/`scoreDictationAnswer`
+- **"Unit 1A" no título do Dictation e do Listening (só American1)**: `track.unit`/`.letter`
+  já existe pro Vocabulary (mostrado dentro do `listeningTrackLabel`, ex. "(unit 4A)"); pro
+  American1 (sem esses campos, só `cd`/`track`) é derivado de `american1_audio_anchors.json`
+  invertido (`AMERICAN1_CD_TRACK_TO_UNIT`, `App.js`) + um `Object.assign` de override manual
+  pras 4 faixas sem âncora indexada (`cd2-track11`→3B, `cd2-track35`→4A, `cd4-track7`/
+  `cd4-track8`→8A, informadas pelo dono). Ver `american1TrackUnitLabel`
+
+### Trilha de estudo (Home — `TodayPlanCard` + `DailyGoalCard`)
+- **`TodayPlanCard`**: "Learn something new" aponta pro curso mais ATRASADO em % de units
+  visitadas (`findNextUnvisitedByCourse`, ordena por `courseId` cruzando os 4 cursos — não é
+  mais sempre Vocabulary primeiro); "Practice listening" é uma faixa de Listening/Dictation de
+  verdade nunca tentada em nenhum dos 2 modos (`findUnpracticedListeningTrack`, varre os 359
+  tracks dos 2 cursos), não mais o 2º curso da lista de units
+- **`DailyGoalCard`**: meta diária com 3 componentes togglináveis via "Customize goal" —
+  aprender unit nova, zerar revisões do dia, praticar Listening/Dictation. Os 3 usam uma flag
+  própria em `dailyGoalToday` (nenhum é `reviewQueue.length === 0` — isso dava um check de
+  graça pra usuário novo sem nada agendado ainda, corrigido em 2026-07-20): "reviews" só marca
+  dentro de `scheduleReview`, quando o item reavaliado JÁ estava vencido (reavaliar conteúdo
+  novo não conta) — checado **direto no localStorage**, nunca contra o state `reviewQueue`
+  (bug real corrigido em 2026-07-24: `reviewQueue` só recarrega quando `activePage` MUDA de
+  valor, mas navegar entre units com "Next Unit"/"Previous Unit" nunca muda `activePage`
+  — fica sempre a mesma string, ex. `"grammarElem-unit"` — então uma revisão que vencesse
+  DURANTE uma sessão de navegação assim nunca era reconhecida como vencida, mesmo reavaliando
+  o item certo; state pode ficar desatualizado por tempo indeterminado, localStorage nunca) —
+  **também marca ao graduar um flashcard vencido do My Words** (`handleGradeWord`, mesmo
+  critério `(entry.due ?? 0) <= agora` que `wordbookDueCount` já usa, checado ANTES de
+  sobrescrever o `due`; corrigido 2026-07-24 — o card "Today's Review" já mostra "Practice N
+  words" junto com as revisões de curso como se fossem a mesma coisa, então só contar um dos
+  dois tipos era inconsistente com o que a tela promete); os outros 2 via `markDailyGoalDone`
+  (visitar unit nunca visitada / terminar Listening ou Dictation, `onPracticed` prop em
+  `ListeningClozeExercise`/`DictationExercise`). Progresso do dia em `dailyGoal:<YYYY-MM-DD>`
+  (data LOCAL, nunca `toISOString`), nunca desmarcado — dia novo já nasce zerado porque a
+  chave muda sozinha
+- Cada item do `DailyGoalCard` tem um botão "i" (mesmo padrão do `UnitBadgeLegend`) explicando
+  como cumprir aquele item — **um popover só, fora do `<ul>`**, não um por `<li>`: com os itens
+  colados (6px de gap), um popover por linha cobria o botão "i" do vizinho de baixo e travava
+  o clique nele (bug real, pego via Playwright). Texto de cada explicação em
+  `DAILY_GOAL_EXPLANATIONS` tem que continuar batendo com a lógica real de quando cada
+  componente marca — não é só rótulo solto
+- `courseProgress` (status por unit/página dos 4 cursos) e `overallMasteryPercent` são computados uma
+  vez no corpo de `App()`, compartilhados entre a Home e o Progress Dashboard — não duplicar
+  esse cálculo se mexer em qualquer um dos dois. **Não chamar isso de "% do A1"** — só
+  American1 e Grammar Elem são A1 de verdade, o Vocabulary (English Vocabulary B) é
+  Pre-Intermediate/Intermediate e entra na mesma soma (rótulo já foi "A1 level" e corrigido
+  pra "overall mastery" depois que o dono notou a inconsistência)
 
 ### Progress Dashboard ("Progress", menu principal)
 - Tela só-leitura: cartões de estatística (palavras aprendidas/devidas, revisões pendentes,
-  units dominadas nos 3 cursos, exercícios de Listening/Dictation praticados) + progresso por
-  curso (barra segmentada não-visitado/visitado/avaliado/dominado) + atalho "Continue where
-  you left off". Não escreve nada — só lê dados que os outros recursos já persistem
+  units dominadas nos 4 cursos + "% overall mastery" no mesmo tile, exercícios de
+  Listening/Dictation praticados) + progresso por curso (barra segmentada não-visitado/
+  visitado/avaliado/dominado) + atalho "Continue where you left off". Não escreve nada — só lê
+  dados que os outros recursos já persistem
 
 ---
 
@@ -135,7 +325,14 @@ u:<nome>:notes:american1:<unit>    — string
 u:<nome>:grammarElem-visitedUnits  — array de unit numbers
 u:<nome>:grammarElem-rating:<id>   — número 1-5
 
-# Revisão espaçada / My Words (compartilhado entre os 3 cursos)
+# American Accent
+u:<nome>:americanAccent-visitedPages — array de NÚMEROS DE PÁGINA do PDF (não units — esse
+                                      curso não tem unit, ver "Cursos & Recursos" item 4)
+u:<nome>:americanAccent-rating:<screenId> — número 1-5, autoavaliação por TELA (screen.id, ex.
+                                      "page-123"), não por página solta
+u:<nome>:notes:americanAccent:<screenId> — string, notas da tela
+
+# Revisão espaçada / My Words (compartilhado entre os 4 cursos)
 u:<nome>:review:<curso>:<id>       — JSON {rating, ratedAt, due}
 u:<nome>:wordbook                  — array JSON de palavras + flashcards ({id, word, meaning,
                                       example, context, image, createdAt, step, due})
@@ -146,6 +343,14 @@ u:<nome>:dictation:<trackId>:stats — JSON {attempts, lastScorePercent, lastAtt
 
 # Última posição
 u:<nome>:lastVisited               — JSON por curso, alimenta "Continue where you left off"
+
+# Trilha de estudo / Today's Goal (Home)
+u:<nome>:dailyGoal:<YYYY-MM-DD>    — JSON {newUnit, listening, reviews} (bool), data LOCAL —
+                                      chave nova a cada dia, nunca desmarcado dentro do mesmo
+                                      dia; "reviews" só vira true reavaliando algo que já
+                                      estava vencido (nunca por reviewQueue estar vazia)
+u:<nome>:dailyGoalPrefs            — JSON {newUnit, reviews, listening} (bool) — quais
+                                      componentes contam pra meta, independente do progresso
 ```
 
 **Nomes especiais (sem o prefixo `u:<nome>:`):**
@@ -156,23 +361,109 @@ u:<nome>:lastVisited               — JSON por curso, alimenta "Continue where 
 
 Primeiro cadastro neste navegador herda automaticamente progresso solto (sem namespace). Cadastros seguintes não. Reset completo via "Reset all data on this browser" (link discreto na tela de registro), ou backup/restore (JSON export/import) na tela My Profile.
 
+### Backup automático em pasta local (File System Access API — só Chrome/Edge)
+
+Além do export/import manual (JSON, sempre disponível), My Profile → Backup & Restore tem
+"Link a backup folder": escolhe uma pasta local UMA vez (`window.showDirectoryPicker`), e o
+app salva um backup ali sozinho a cada 10 min enquanto estiver linkado, além de poder
+restaurar de lá. Decisão do dono depois de descartar e-mail/login com o Google (exigiria
+OAuth + credenciais de API, infraestrutura estranha a um app 100% local/sem backend) — pasta
+local resolve o mesmo problema (progresso preso ao cache de um navegador só) sem depender de
+internet nem conta nenhuma.
+- **Handle da pasta vive num IndexedDB próprio** (`lets-learn-english-fs`), não no
+  `localStorage` (não aceita objetos, só string) — sobrevive a fechar/reabrir o navegador;
+  `queryPermission` (sem gesto do usuário) checa se ainda vale ao carregar a página,
+  `requestPermission` (precisa de gesto, ver "Reconnect folder") reconfirma quando não vale
+  mais.
+- **Uma pasta só pro navegador inteiro, não por usuário do app** — é uma permissão da ORIGEM,
+  não teria como ser por nome cadastrado. Dentro da pasta, um arquivo por usuário
+  (`backupFileNameFor`), pra não colidir se houver mais de um nome cadastrado.
+- `buildBackupPayload`/`applyBackupJson` são compartilhados entre o export/import manual (já
+  existia) e o novo fluxo de pasta — nunca duplicar essa lógica se mexer em qualquer um dos
+  dois.
+- Sem suporte no navegador (Firefox, Safari): a seção mostra só uma frase avisando e cai pro
+  export/import manual, que continua funcionando igual em qualquer navegador.
+- **Também oferecido proativamente logo após um cadastro NOVO de verdade** (`activePage ===
+  'backup-setup'`, entre "register" e "courses" em `handleRegisterSubmit`) — só nesse momento,
+  nunca ao "continuar como" um nome já existente, e só se ainda não houver pasta linkada (é por
+  navegador, não por usuário, ver acima — 2º nome cadastrado no mesmo navegador não precisa ser
+  perguntado de novo). Motivo: o dono testou o botão dentro de My Profile e relatou "a pasta
+  está vazia" — só ao perguntar percebeu que nunca tinha clicado nele, porque nada avisava que
+  a feature existia. `showDirectoryPicker()` exige gesto do usuário, então não dá pra abrir o
+  diálogo sozinho ao carregar a página — a tela pede autorização explícita (2 botões: escolher
+  pasta ou pular) antes de disparar o diálogo nativo do SO.
+
+### Pronúncia (🔊) no My Words (2026-07-24, trocado de Cambridge pra Google TTS em 2026-07-25)
+
+Cada entrada (palavra OU expressão de várias palavras) na lista do My Words ganha um botão 🔊
+(`WordAudioButton`, `App.js`) que toca a pronúncia em inglês daquele texto.
+- **1ª versão (revertida)**: raspava o Cambridge Dictionary com Playwright (Chromium headless)
+  — pronúncia de dicionário "de verdade" (gravação humana), mas ~5-6s por palavra nova (custo
+  de abrir um navegador inteiro) e só cobria palavra única. Removida a pedido do dono
+  (dependência pesada + lenta demais) — não reintroduzir sem pedido explícito.
+- **Versão atual**: `src/pronunciationTts.js` chama direto o endpoint clássico (não-oficial,
+  mesmo usado por baixo dos panos pela lib Python gTTS) do Google Translate TTS
+  (`https://translate.google.com/translate_tts?ie=UTF-8&q=<texto>&tl=en&client=tw-ob`) — uma
+  requisição HTTP simples, sem navegador, ~150-350ms por entrada nova (medido; ~15-20x mais
+  rápido que a versão Cambridge) e funciona igual bem pra frase inteira. Trade-off aceito: voz
+  sintetizada (TTS), não uma gravação humana real. Nenhuma dependência nova de servidor (só
+  `https` nativo do Node) — a versão anterior tinha adicionado `playwright` a
+  `devDependencies` e baixado o Chromium; ambos foram removidos (`npm uninstall playwright` +
+  apagados os binários baixados especificamente pra essa feature) junto com a troca.
+- **Cache em disco**: `pronunciation-cache/` (raiz de `meu-leitor-pdf/`, IRMÃ de `src/`, não
+  dentro — se ficasse em `src/`, cada escrita em runtime disparava o watcher do webpack/CRA e
+  recarregava a página sozinha). `index.json` (texto normalizado → nome do mp3 cacheado, nome
+  = slug + hash curto do texto pra evitar colisão/truncamento em frases longas) + os próprios
+  `.mp3`. Ignorado no git (`.gitignore`) — é cache local de áudio gerado, não dado de curso.
+  Diferente da versão Cambridge, não existe mais um "missing" permanente em cache — qualquer
+  texto válido gera algum áudio, então erro é sempre transitório (rede) e não fica cacheado.
+- **Rota**: `GET /pronunciation-audio/:text` (`setupProxy.js`) — serve o mp3 cacheado
+  diretamente (`res.sendFile`), gerando na hora se ainda não tiver cache. Só funciona sob
+  `npm start`, mesma limitação de sempre (não há servidor de produção).
+- **Auto-warm ao adicionar palavra**: `handleAddWord` dispara um `fetch` em segundo plano (sem
+  `await`, erro ignorado) pra essa rota assim que a entrada é salva, pra o áudio já estar
+  cacheado quando o usuário clicar no 🔊 — agora pra qualquer entrada, não só palavra única.
+- **`scripts/preload-pronunciations.js`**: script standalone (Node puro, roda com `node
+  scripts/preload-pronunciations.js caminho/backup.json`) pra aquecer o cache inteiro de uma
+  vez, com 0.5s de delay entre chamadas. Recebe o JSON de **backup** (My Profile → Backup &
+  Restore → Export), não uma lista direta — o My Words só existe no `localStorage` do
+  navegador (sem backend/banco, ver Decisões Imutáveis), então o backup exportado é a única
+  ponte que um script Node tem pra "a lista atual de palavras".
+- Dedup de requisições concorrentes pro mesmo texto (`inFlight` Map em `pronunciationTts.js`)
+  — evita duas chamadas em paralelo se o auto-warm do `handleAddWord` e um clique manual
+  coincidirem.
+
 ---
 
 ## Dados Gerados (Índices)
 
 Estes arquivos **não devem ser editados manualmente** (todos gerados por scripts Python já removidos do repo — ainda disponíveis no histórico do git se precisar reconstruir):
 - `exercises_coords.json`, `answers_coords.json`, `audio_anchors_coords.json` — Vocabulary
+- `vocabulary_target_words.json` — palavras em destaque/negrito por unit (1-100) do
+  Vocabulary, extraídas via PyMuPDF dos `_L.pdf` de leitura; alimenta o toggle "Only Unit
+  Words" do Listening (ver ROADMAP item 2) — regenerar rodando o extrator, nunca editar à mão
 - `american1_index.json`, `american1_audio_anchors.json`, `american1_references.json`,
   `american1_reference_audio_anchors.json`, `american1_transcriptions_audio_anchors.json`,
   `american1_videos.json` — American English A1
 - `grammar_elem_index.json`, `grammar_elem_appendix_index.json`, `grammar_elem_audio.json` —
   Grammar English A1
-- `listening_vocabulary.json`, `listening_american1.json` — tracks de Listening/Dictation (esses
-  dois foram escritos/ajustados manualmente ao longo do tempo, mas continuam sendo dados, não
-  lógica — tratar como fonte de verdade dos tracks, editar com cuidado)
+- `listening_vocabulary.json`, `listening_american1.json`, `listening_american_accent.json` —
+  tracks de Listening/Dictation/Speaking (os 3 foram escritos/ajustados manualmente ao longo do
+  tempo — o do American Accent especialmente, com bastante revisão manual pontual por track
+  reportada pelo dono, ver PROJECT_SUMMARY — mas continuam sendo dados, não lógica; tratar como
+  fonte de verdade, editar com cuidado)
 - `dictation_pause_points.json` — pontos de auto-pause do Dictation (segundos, por trackId),
   gerados por detecção de silêncio (Python `soundfile`+`numpy`; parâmetros documentados no
   ROADMAP item 1 e no PROJECT_SUMMARY) — regenerar rodando o detector, nunca editar à mão
+- `american_accent_index.json` — capítulos, "telas" de leitura (agrupamento de páginas) e mapa
+  track→arquivo de áudio do American Accent. Gerado via PyMuPDF cruzando: TOC embutido do PDF
+  (capítulos), posição Y do texto (não a ordem de leitura simples do PyMuPDF, que não é a
+  ordem visual — ver PROJECT_SUMMARY pros bugs reais que isso causou) pra achar heading real vs.
+  rodapé vs. selo de faixa na margem, e uma lista de exceções manuais por número de página
+  (`FORCE_CONTINUE_PRINTED_PAGES`/`FORCE_FRESH_PRINTED_PAGES`/`EXCLUDED_PRINTED_PAGES`/
+  `EXTRA_TRACKS_BY_PRINTED_PAGE` no gerador) pra casos que o heurístico não pega sozinho —
+  regenerar do zero SEM essas exceções reintroduziria bugs já corrigidos por revisão visual do
+  dono; se for regenerar, portar a lista de exceções do histórico do git primeiro
 
 Se os PDFs/áudios de origem mudarem, os índices precisam ser regenerados.
 
@@ -228,16 +519,64 @@ Não há testes unitários automatizados (`npm test` funciona mas CRA cria um es
 - Algumas faixas vivem só no apêndice (não escaneadas)
 - Alguns selos com 2-3 faixas num ícone só — ancorados só na primeira
 
+### Dados (American Accent) — bugs de extração já resolvidos, não reintroduzir
+- **Ordem de leitura do PyMuPDF (`get_text()` simples) não é a ordem VISUAL da página** — texto
+  de rodapé/selo de margem pode aparecer no meio do texto corrido dependendo da ordem interna
+  do PDF. Qualquer heurística de "primeiro texto da página" tem que ordenar por posição Y de
+  verdade (`get_text('dict')` + `bbox`), nunca confiar na ordem do `get_text()` puro
+- O selo "Track N" fica na **margem** da página (esquerda OU direita, varia), na mesma altura
+  do heading que ele narra — não agrupado no fim do bloco de conteúdo como a extração simples
+  sugere. "Track" e o número às vezes não são vizinhos na lista ordenada por Y (um heading de
+  fonte grande pode ter Y entre os dois) — casar por PROXIMIDADE Y entre "Track" e o dígito
+  mais próximo, nunca por adjacência na lista
+- Heading candidato a "início de tela nova" nunca pode ser: uma linha numerada (`"1. ..."`,
+  sempre conteúdo, nunca título), nem uma linha só de símbolo fonético (`"/u/ /ʊ/"`, cabeçalho
+  de coluna de par mínimo) — as duas causaram bugs reais silenciosos (heading errado E 1ª
+  frase da lista sumindo, ex. tracks 52/100/129) antes de excluir os dois padrões
+- Subtítulo "Common Spelling Patterns for /X/" sempre é continuação da página anterior mesmo
+  quando mediria como heading (tamanho 16) — outros subtítulos (Word Pairs for Practice,
+  Practice Sentences) não têm esse problema, não generalizar a exceção pra eles
+- Nomes de arquivo variam: a maioria é "Practice Sentences"/"Sentence Pairs For Practice", mas
+  3 faixas (100, 107, 255) usam a ordem invertida "Sentences for Practice"/"Sentences For
+  Practice" — um regex que busca só "practice sentences" as perde silenciosamente
+- Várias páginas têm conteúdo solto (nota explicativa, heading da PRÓXIMA seção, coluna de
+  legenda "A B C") vazando pro fim do texto extraído de uma faixa — revisão manual por
+  amostragem continua necessária mesmo depois dos fixes estruturais acima (ver
+  PROJECT_SUMMARY pra lista completa de faixas corrigidas)
+- 3 páginas realmente em branco (38, 88, 140) — excluídas da lista de telas, não geram merge
+- Ordem das faixas dentro de cada tela: sempre ordenar numericamente (`tracks.sort()`) — a
+  ordem de aparição no texto corrido não é a ordem numérica
+
 ### Layout/CSS (bugs já resolvidos, não reintroduzir)
 - `min-height: calc(100vh - 72px)` na regra base `.landing-page` assume um header de 72px,
   mas o real (`.app-header`) tem 81px — qualquer tela nova baseada em `.landing-page` que
   pareça ter overflow/scroll indevido provavelmente precisa de um `min-height: 0` escopado,
   igual já feito em `.landing-page.vocabulary-mode.wordbook-mode`/`.dashboard-mode`
+- **`.app-shell` tem `height: 100vh` fixo** — telas cujo conteúdo pode crescer além da
+  viewport (grades de unit, busca com muitos resultados, cards empilhados na Home) precisam
+  da classe `app-shell--allow-grow` (aplicada via JS em `App.js`, lista de `activePage`) +
+  `align-items: flex-start` (nunca `center` herdado — centralizar conteúdo mais alto que a
+  tela esconde a metade de cima atrás do header `sticky`) no seletor `.landing-page.<modo>`
+  daquela tela, senão o conteúdo simplesmente é CORTADO sem gerar barra de rolagem nenhuma
+  (nem a página nem nenhum container interno rola). A Home (`landing-page--home`) caiu nisso
+  quando ganhou um 2º card (`DailyGoalCard`) — corrigido adicionando `'home'` à lista do
+  `app-shell--allow-grow`
 - Cartões/retângulos de conteúdo sobre o fundo desfocado (`--page-hero-bg`) precisam de
   background **opaco**, nunca `rgba(...)` translúcido — ver "Decisões Imutáveis" item 7
+- **O próprio `.app-header` também precisa de background opaco** — era `rgba(24, 15, 43, 0.9)`
+  (90%), inofensivo enquanto nada rolava por baixo dele; virou visível (a foto do hero da Home
+  sangrando através da barra sticky) assim que a Home passou a rolar (`app-shell--allow-grow`,
+  ver acima). Mesma regra do item acima, só que descoberta tarde porque o cenário que a expõe
+  (conteúdo de alto contraste passando por baixo de um header sticky) é raro no resto do app
 - `.landing-panel p { color: rgba(255,255,255,0.75) }` (herdado do tema roxo escuro original)
   vence por especificidade — textos novos dentro de um painel claro precisam de seletor mais
-  específico + `color` explícito
+  específico + `color` explícito. **Mas cada painel (`profile-panel`, `dashboard-panel`,
+  `listening-panel`...) tem sua PRÓPRIA variante dessa regra** (`.landing-panel.<painel> p`),
+  então um texto que aparece em vários painéis (ex. `.course-level-heading`, usado em Courses/
+  Listening/Dictation/Dashboard) precisaria vencer a especificidade de TODAS elas — bater uma
+  só não basta. Nesse caso é mais simples usar um elemento que essas regras não alvejam
+  (`<span>` em vez de `<p>`, com `display:block` se precisar ocupar a linha toda) do que entrar
+  numa corrida de especificidade contra N seletores diferentes
 - **Padrão das 9 telas de leitura (grid de 2 colunas)**: a barra de botões (`.pdf-toolbar`) e a
   linha de título (`.section-info`) devem ficar **dentro** da coluna esquerda (`.pdf-panel`/
   `.study-left`), nunca como irmãs full-width por fora do grid — senão o painel direito
@@ -250,6 +589,14 @@ Não há testes unitários automatizados (`npm test` funciona mas CRA cria um es
   (`.study-bar`/`.section-info`) podem revelar o fundo do ancestral (`--soft`, lavanda) como
   faixas finas entre eles — se dois blocos brancos devem ficar colados (só separados por
   `border-bottom`), o container pai não pode ter `gap` nenhum ali.
+- **Painel de respostas ("Show Answers"/Teacher's Book) tem um padrão único, não reinvente
+  por tela**: sempre `study-answers-resize-handle` (botão de arraste) + `.section-answers-strip
+  .section-answers-strip--resizable` com `style={{height: answersPanelHeight}}`, SEM nenhuma
+  barra de título própria dentro do strip — o toggle mostrar/esconder já existe em outro lugar
+  da tela (botão "Show/Hide Answers"), então uma barra de título com "X" ali dentro é
+  redundante E some o handle de redimensionamento. A tela `american1-reference` (Grammar/
+  Vocabulary Bank) implementou esse painel do zero com uma barra de título própria em vez de
+  copiar o padrão das units — corrigido copiando exatamente a estrutura de `american1-unit`.
 
 ---
 
@@ -268,13 +615,18 @@ npm test
 # Limpeza
 rm -rf node_modules package-lock.json
 npm install
+
+# Aquecer o cache de pronúncia (🔊 do My Words) pra todas as palavras de um
+# backup de uma vez (ver "Pronúncia no My Words" acima) — exporte o backup em
+# My Profile -> Backup & Restore primeiro
+node scripts/preload-pronunciations.js caminho/para/backup.json
 ```
 
 ---
 
 ## Links Importantes
 
-- **`ROADMAP.md`** (raiz do repo) — próximas implementações aprovadas pelo dono, em ordem: auto-pause nos áudios, lacunas do Listening priorizando palavras-alvo da unit, trilha de estudo (sequência sugerida + meta diária + % de domínio), Speaking via reconhecimento de voz do navegador, contador de tempo de estudo + streak no Dashboard
+- **`ROADMAP.md`** (raiz do repo) — próximas implementações aprovadas pelo dono, em ordem: auto-pause nos áudios, lacunas do Listening priorizando palavras-alvo da unit, trilha de estudo (sequência sugerida + meta diária + % de domínio), Speaking via reconhecimento de voz do navegador (contador de tempo de estudo + streak no Dashboard descartado pelo dono, não será implementado)
 - **Histórico de detalhes**: Ver memórias no repo (`exercise-crop-feature`, `verify-app-runs-on-port-3000`, `american1-*`, `spaced-review-wordbook-listening`, `panel-toggle-feature`, `left-slide-menu-feature`, `backup-restore-feature`, etc.)
 - **`PROJECT_SUMMARY.md`** (raiz do repo) — resumo narrativo mais extenso, com histórico de decisões de UX/dados
 - **Git history**: Scripts geradores removidos ao longo do projeto (ainda disponíveis no histórico)
@@ -284,7 +636,7 @@ npm install
 
 ## Para Outra IA
 
-- Tudo (ou quase tudo) está em `App.js` — comece lá, é grande (~7000 linhas) mas um arquivo só
+- Tudo (ou quase tudo) está em `App.js` — comece lá, é grande (~10000 linhas) mas um arquivo só
 - `setupProxy.js` é crítico (middleware de áudio/PDF, só funciona em `npm start`)
 - Índices JSON (exceto `listening_*.json`) são **fonte de verdade gerada**, não edite à mão
 - `localStorage` é o único storage; tudo namespaced por usuário via `userKey`
