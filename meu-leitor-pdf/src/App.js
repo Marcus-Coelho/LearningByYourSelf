@@ -5811,42 +5811,38 @@ function App() {
         const trackIndex = tracks.findIndex((item) => item.id === selectedListeningTrack);
         const hasNextTrack = trackIndex !== -1 && trackIndex < tracks.length - 1;
         return (
-          <main className="landing-page landing-page--courses vocabulary-mode listening-mode listening-exercise-scroll-mode">
+          <main className="landing-page landing-page--courses vocabulary-mode listening-mode listening-exercise-sticky-mode">
             <div className="landing-panel course-links-panel listening-panel listening-exercise-panel">
-              <div className="listening-exercise-nav">
-                <button type="button" className="upload-button" onClick={handleBackToListeningTracks}>
-                  ‹ Back to Exercises
-                </button>
-                {hasNextTrack && (
-                  <button type="button" className="upload-button" onClick={handleNextListeningTrack}>
-                    Next Listening
-                  </button>
-                )}
-              </div>
-              <p className="eyebrow">{source?.title || 'Listening'}</p>
-              <h1>
-                {track ? (
-                  <>
-                    {`Listening Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (`}
-                    {track.unit ? (
-                      <span
-                        className="listening-unit-link"
-                        role="link"
-                        tabIndex={0}
-                        onClick={() => openVocabularyUnit(track.unit)}
-                        onKeyDown={(event) => {
-                          if (event.key !== 'Enter' && event.key !== ' ') return;
-                          event.preventDefault();
-                          openVocabularyUnit(track.unit);
-                        }}
-                      >
-                        {listeningTrackLabel(track)}
-                      </span>
-                    ) : listeningTrackLabel(track)}
-                    {')'}
-                  </>
-                ) : 'Exercise'}
-              </h1>
+              {/* Eyebrow, nav ("Back to Exercises"/"Next Listening") e
+                  instruções foram escondidos daqui (pedido do dono,
+                  2026-08-06, mais espaço pra área de respostas) — os 2
+                  botões de navegação migraram pra barra de baixo, junto com
+                  "Change words". O TÍTULO voltou (mesmo texto de antes),
+                  mas em UMA linha compacta (.listening-exercise-title) em
+                  vez do h1 grande + eyebrow, que juntos comiam a altura que
+                  esse ajuste todo veio liberar — sem ele não dá pra saber
+                  qual exercício está aberto. */}
+              {track && (
+                <p className="listening-exercise-title">
+                  {`Listening Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (`}
+                  {track.unit ? (
+                    <span
+                      className="listening-unit-link"
+                      role="link"
+                      tabIndex={0}
+                      onClick={() => openVocabularyUnit(track.unit)}
+                      onKeyDown={(event) => {
+                        if (event.key !== 'Enter' && event.key !== ' ') return;
+                        event.preventDefault();
+                        openVocabularyUnit(track.unit);
+                      }}
+                    >
+                      {listeningTrackLabel(track)}
+                    </span>
+                  ) : listeningTrackLabel(track)}
+                  {')'}
+                </p>
+              )}
               {track ? (
                 <ListeningClozeExercise
                   key={track.id}
@@ -5854,6 +5850,10 @@ function App() {
                   userName={userName}
                   onAddWord={handleAddWord}
                   onPracticed={() => markDailyGoalDone('listening')}
+                  onBack={handleBackToListeningTracks}
+                  backLabel="‹ Back to Exercises"
+                  onNext={hasNextTrack ? handleNextListeningTrack : undefined}
+                  nextLabel="Next Listening"
                 />
               ) : (
                 <p>Exercise not found.</p>
@@ -5975,30 +5975,25 @@ function App() {
         const trackIndex = tracks.findIndex((item) => item.id === selectedDictationTrack);
         const hasNextTrack = trackIndex !== -1 && trackIndex < tracks.length - 1;
         return (
-          <main className="landing-page landing-page--courses vocabulary-mode listening-mode dictation-mode">
+          <main className="landing-page landing-page--courses vocabulary-mode listening-mode dictation-mode listening-exercise-sticky-mode">
             <div className="landing-panel course-links-panel listening-panel listening-exercise-panel">
-              <div className="listening-exercise-nav">
-                <button type="button" className="upload-button" onClick={handleBackToDictationTracks}>
-                  ‹ Back to Exercises
-                </button>
-                {hasNextTrack && (
-                  <button type="button" className="upload-button" onClick={handleNextDictationTrack}>
-                    Next Dictation
-                  </button>
-                )}
-              </div>
-              <p className="eyebrow">{source ? source.title.replace(/^Listening/, 'Dictation') : 'Dictation'}</p>
-              <h1>
-                {track
-                  ? `Dictation Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (${listeningTrackLabel(track)})`
-                  : 'Exercise'}
-              </h1>
+              {/* Eyebrow, nav e instruções escondidos; título compacto de
+                  volta — mesmo tratamento do Listening (ver comentário lá). */}
+              {track && (
+                <p className="listening-exercise-title">
+                  {`Dictation Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (${listeningTrackLabel(track)})`}
+                </p>
+              )}
               {track ? (
                 <DictationExercise
                   key={track.id}
                   track={track}
                   userName={userName}
                   onPracticed={() => markDailyGoalDone('listening')}
+                  onBack={handleBackToDictationTracks}
+                  backLabel="‹ Back to Exercises"
+                  onNext={hasNextTrack ? handleNextDictationTrack : undefined}
+                  nextLabel="Next Dictation"
                 />
               ) : (
                 <p>Exercise not found.</p>
@@ -6182,30 +6177,32 @@ function App() {
         const trackIndex = tracks.findIndex((item) => item.id === selectedSpeakingTrack);
         const hasNextTrack = trackIndex !== -1 && trackIndex < tracks.length - 1;
         return (
-          <main className="landing-page landing-page--courses vocabulary-mode listening-mode speaking-mode listening-exercise-scroll-mode">
+          <main className="landing-page landing-page--courses vocabulary-mode listening-mode speaking-mode listening-exercise-sticky-mode">
             <div className="landing-panel course-links-panel listening-panel listening-exercise-panel">
-              <div className="listening-exercise-nav">
-                <button type="button" className="upload-button" onClick={handleBackToSpeakingTracks}>
-                  ‹ Back to Exercises
-                </button>
-                {hasNextTrack && (
-                  <button type="button" className="upload-button" onClick={handleNextSpeakingTrack}>
-                    Next Speaking
-                  </button>
-                )}
-              </div>
-              <p className="eyebrow">{source ? source.title.replace(/^Listening/, 'Speaking') : 'Speaking'}</p>
-              <h1>
-                {track
-                  ? `Speaking Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (${listeningTrackLabel(track)})`
-                  : 'Exercise'}
-              </h1>
+              {/* Mesmo tratamento de Listening/Dictation (pedido do dono,
+                  2026-08-06): eyebrow/h1/nav grandes saíram, título compacto
+                  de uma linha fica, e os 2 botões de navegação vão pra barra
+                  do fim do exercício (ver onBack/onNext em SpeakingExercise).
+                  O Speaking era o último ainda no modo antigo — que também
+                  era o que ESCONDIA as instruções atrás do player: naquele
+                  layout tudo virava item flex de um container overflow:hidden,
+                  e o parágrafo de instruções (flex-shrink padrão) era
+                  espremido a quase zero de altura pela lista de falas. */}
+              {track && (
+                <p className="listening-exercise-title">
+                  {`Speaking Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (${listeningTrackLabel(track)})`}
+                </p>
+              )}
               {track ? (
                 <SpeakingExercise
                   key={track.id}
                   track={track}
                   userName={userName}
                   onPracticed={() => markDailyGoalDone('listening')}
+                  onBack={handleBackToSpeakingTracks}
+                  backLabel="‹ Back to Exercises"
+                  onNext={hasNextTrack ? handleNextSpeakingTrack : undefined}
+                  nextLabel="Next Speaking"
                 />
               ) : (
                 <p>Exercise not found.</p>
@@ -7558,6 +7555,11 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
   // conteúdo normal do card.
   const [editingEntryId, setEditingEntryId] = useState(null);
   const [editDraft, setEditDraft] = useState({ word: '', meaning: '', example: '', image: null });
+  // Form de adicionar palavra escondido por padrão (pedido do dono,
+  // 2026-08-06) — antes ficava sempre visível logo abaixo de "Practice N
+  // words", empurrando a lista de palavras pra baixo à toa pra quem só quer
+  // revisar/consultar. Botão "+ Add Words" ao lado do "Practice" alterna.
+  const [showAddForm, setShowAddForm] = useState(false);
 
   const startEditingEntry = (entry) => {
     setEditingEntryId(entry.id);
@@ -7966,6 +7968,13 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
               >
                 Practice {dueEntries.length > 0 ? `${dueEntries.length} word${dueEntries.length === 1 ? '' : 's'}` : 'words'}
               </button>
+              <button
+                type="button"
+                className="show-answers-btn secondary"
+                onClick={() => setShowAddForm((prev) => !prev)}
+              >
+                {showAddForm ? 'Hide add word form' : '+ Add Words'}
+              </button>
               <span className="wordbook-practice-hint">
                 {dueEntries.length > 0
                   ? 'These words are due for review today.'
@@ -7973,6 +7982,7 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
               </span>
             </div>
 
+            {showAddForm && (
             <form className="wordbook-form" onSubmit={handleSubmit} onPaste={handleFormPaste}>
             <input
               type="text"
@@ -8017,6 +8027,7 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
               Add word
             </button>
             </form>
+            )}
           </div>
 
           <div className="wordbook-list">
@@ -9141,7 +9152,7 @@ function useAudioAutoPause(audioBarRef, trackId, enabled) {
 // juntas) via LCS palavra-a-palavra (ver scoreDictationAnswer) e destaca
 // cada palavra esperada em verde (acertou, apareceu na ordem certa) ou
 // vermelho (errou/faltou), sem nunca alterar nada do ListeningClozeExercise.
-function DictationExercise({ track, userName, onPracticed }) {
+function DictationExercise({ track, userName, onPracticed, onBack, backLabel, onNext, nextLabel }) {
   const [typedText, setTypedText] = useState('');
   const [checked, setChecked] = useState(false);
   const [result, setResult] = useState(null);
@@ -9214,26 +9225,25 @@ function DictationExercise({ track, userName, onPracticed }) {
         />
         {hasAutoPause && (
           <span
-            className={`dictation-autopause-hint${audioEnded
-              ? ' dictation-autopause-hint--ended'
-              : isAutoPaused && autoPauseEnabled ? ' dictation-autopause-hint--paused' : ''}`}
+            className={`dictation-autopause-hint${!autoPauseEnabled
+              ? ' dictation-autopause-hint--off'
+              : audioEnded
+                ? ' dictation-autopause-hint--ended'
+                : isAutoPaused ? ' dictation-autopause-hint--paused' : ''}`}
           >
-            {audioEnded
-              ? '🏁 End of audio — Ctrl+Space to play it again'
-              : isAutoPaused && autoPauseEnabled
-                ? '⏸ Paused — press Ctrl+Space to continue'
-                : 'The audio pauses by itself at natural breaks (green button to turn off).'}
+            {!autoPauseEnabled
+              ? 'Auto-pause is off — tap the green button to turn it back on.'
+              : audioEnded
+                ? '🏁 End of audio — Ctrl+Space to play it again'
+                : isAutoPaused
+                  ? '⏸ Paused — press Ctrl+Space to continue'
+                  : 'The audio pauses by itself at natural breaks.'}
           </span>
         )}
       </div>
-      <p className="listening-instructions">
-        Listen carefully (replay as many times as you need) and type everything you hear below.
-        Punctuation and capitalization don't matter. Press Ctrl+Space to pause/play the audio
-        without leaving the text box.
-      </p>
-      <p className="listening-instructions">
-        If you hear "for example", type "e.g.".
-      </p>
+      {/* Instruções escondidas (pedido do dono, 2026-08-06) — mais espaço
+          pra caixa de texto abaixo; texto igual sempre foi o mesmo, quem já
+          usou o Dictation não perde nada essencial. */}
       <textarea
         className="dictation-textarea"
         value={typedText}
@@ -9242,16 +9252,7 @@ function DictationExercise({ track, userName, onPracticed }) {
         rows={7}
         disabled={checked}
       />
-      {!checked ? (
-        <button
-          type="button"
-          className="show-answers-btn"
-          onClick={handleCheck}
-          disabled={!typedText.trim()}
-        >
-          Check my answer
-        </button>
-      ) : (
+      {checked && (
         <div className="dictation-result">
           <p className="dictation-score">
             Score: <strong>{result.scorePercent}%</strong>
@@ -9277,11 +9278,34 @@ function DictationExercise({ track, userName, onPracticed }) {
               </span>,
             ])}
           </p>
+        </div>
+      )}
+      <div className="listening-check-all">
+        {!checked ? (
+          <button
+            type="button"
+            className="show-answers-btn"
+            onClick={handleCheck}
+            disabled={!typedText.trim()}
+          >
+            Check my answer
+          </button>
+        ) : (
           <button type="button" className="show-answers-btn" onClick={handleTryAgain}>
             Try again
           </button>
-        </div>
-      )}
+        )}
+        {onBack && (
+          <button type="button" className="show-answers-btn secondary" onClick={onBack}>
+            {backLabel}
+          </button>
+        )}
+        {onNext && (
+          <button type="button" className="show-answers-btn secondary" onClick={onNext}>
+            {nextLabel}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -9354,7 +9378,7 @@ function neutralizeUnscorableSpeakingWords(scored) {
 // 1:1 com o array `sentences`). O player toca o áudio inteiro só como
 // referência; a prática em si (gravar/pontuar) roda fala por fala,
 // independente de onde o áudio está tocando.
-function SpeakingExercise({ track, userName, onPracticed }) {
+function SpeakingExercise({ track, userName, onPracticed, onBack, backLabel, onNext, nextLabel }) {
   const [recordingIndex, setRecordingIndex] = useState(null);
   const [micError, setMicError] = useState(null);
   const [resultsBySentence, setResultsBySentence] = useState({});
@@ -9500,23 +9524,26 @@ function SpeakingExercise({ track, userName, onPracticed }) {
         />
         {hasAutoPause && (
           <span
-            className={`dictation-autopause-hint${audioEnded
-              ? ' dictation-autopause-hint--ended'
-              : isAutoPaused && autoPauseEnabled ? ' dictation-autopause-hint--paused' : ''}`}
+            className={`dictation-autopause-hint${!autoPauseEnabled
+              ? ' dictation-autopause-hint--off'
+              : audioEnded
+                ? ' dictation-autopause-hint--ended'
+                : isAutoPaused ? ' dictation-autopause-hint--paused' : ''}`}
           >
-            {audioEnded
-              ? '🏁 End of audio — Ctrl+Space to play it again'
-              : isAutoPaused && autoPauseEnabled
-                ? '⏸ Paused — press Ctrl+Space to continue'
-                : 'The audio pauses by itself at natural breaks (green button to turn off).'}
+            {!autoPauseEnabled
+              ? 'Auto-pause is off — tap the green button to turn it back on.'
+              : audioEnded
+                ? '🏁 End of audio — Ctrl+Space to play it again'
+                : isAutoPaused
+                  ? '⏸ Paused — press Ctrl+Space to continue'
+                  : 'The audio pauses by itself at natural breaks.'}
           </span>
         )}
       </div>
-      <p className="listening-instructions">
-        Listen to the audio above as a reference, then press the microphone next to a sentence
-        and repeat it out loud. Your browser needs microphone access and an internet connection
-        to recognize your speech.
-      </p>
+      {/* Instruções escondidas (pedido do dono, 2026-08-06) — mesmo
+          tratamento de Listening/Dictation. No layout antigo elas ainda
+          ficavam ESCONDIDAS atrás do player (espremidas a quase zero de
+          altura pelo flex-shrink, ver comentário na tela em App.js). */}
       {micError && (
         <p className="speaking-mic-error">
           {micError === 'not-allowed' || micError === 'permission-denied'
@@ -9526,11 +9553,9 @@ function SpeakingExercise({ track, userName, onPracticed }) {
               : `Speech recognition error: ${micError}.`}
         </p>
       )}
-      {/* Lista rolável à parte — o player acima fica sempre visível mesmo
-          com muitas falas (pedido do dono, 2026-07-26). Speaking não tem
-          barra de botões no fim (score é por fala, não em lote), então só
-          precisa dessa div a mais. */}
-      <div className="listening-exercise-scrollbody">
+      {/* Página inteira rola agora (ver .listening-exercise-sticky-mode no
+          CSS), sem wrapper de scroll interno — o player acima fica visível
+          sozinho via position:sticky (ver .listening-audio-bar). */}
       <ol className="speaking-sentences">
         {track.sentences.map((sentence, index) => {
           const text = stripDictationSpeakerLabel(sentence);
@@ -9580,7 +9605,23 @@ function SpeakingExercise({ track, userName, onPracticed }) {
           );
         })}
       </ol>
-      </div>
+      {/* Speaking não tem "Check answers" (o score é por fala, na hora), mas
+          ganhou a mesma barra de navegação do fim que Listening/Dictation —
+          pedido do dono, 2026-08-06. */}
+      {(onBack || onNext) && (
+        <div className="listening-check-all">
+          {onBack && (
+            <button type="button" className="show-answers-btn secondary" onClick={onBack}>
+              {backLabel}
+            </button>
+          )}
+          {onNext && (
+            <button type="button" className="show-answers-btn secondary" onClick={onNext}>
+              {nextLabel}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -9925,7 +9966,7 @@ function scoreDictationAnswer(typedText, correctText) {
 // corrigidas todas de uma vez pelo botão "Check answers" no final. A barra de
 // espaço toca/pausa o áudio sempre que o foco não estiver num campo de texto
 // (senão digitar um espaço dentro de uma resposta pausaria o áudio).
-function ListeningClozeExercise({ track, userName, onAddWord, onPracticed }) {
+function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBack, backLabel, onNext, nextLabel }) {
   // Só o Vocabulary tem `unit` no track (American1 usa cd/track) — e só o
   // Vocabulary tem palavras-alvo extraídas (vocabulary_target_words.json,
   // negrito do PDF de leitura da unit); American1 ainda não tem esse dado,
@@ -10038,13 +10079,8 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed }) {
 
   return (
     <div className="listening-exercise">
-      {/* Instruções logo abaixo do título (o componente renderiza logo
-          depois do h1), FORA da barra do player — mesma disposição limpa
-          do Dictation, onde a barra cinza tem só o player. */}
-      <p className="listening-instructions">
-        Listen to the audio and type the missing word(s) in each sentence — press Space (or
-        Ctrl+Space while typing in a blank) to pause/play the audio, then press Check answers.
-      </p>
+      {/* Instruções escondidas (pedido do dono, 2026-08-06) — mais espaço
+          pra área das frases/lacunas abaixo. */}
       {isVocabularyTrack && (
         <div className="exercise-tabs listening-word-mode-tabs" role="tablist" aria-label="Which words become blanks">
           <button
@@ -10076,23 +10112,25 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed }) {
         />
         {hasAutoPause && (
           <span
-            className={`dictation-autopause-hint${audioEnded
-              ? ' dictation-autopause-hint--ended'
-              : isAutoPaused && autoPauseEnabled ? ' dictation-autopause-hint--paused' : ''}`}
+            className={`dictation-autopause-hint${!autoPauseEnabled
+              ? ' dictation-autopause-hint--off'
+              : audioEnded
+                ? ' dictation-autopause-hint--ended'
+                : isAutoPaused ? ' dictation-autopause-hint--paused' : ''}`}
           >
-            {audioEnded
-              ? '🏁 End of audio — Ctrl+Space to play it again'
-              : isAutoPaused && autoPauseEnabled
-                ? '⏸ Paused — press Ctrl+Space to continue'
-                : 'The audio pauses by itself at natural breaks (green button to turn off).'}
+            {!autoPauseEnabled
+              ? 'Auto-pause is off — tap the green button to turn it back on.'
+              : audioEnded
+                ? '🏁 End of audio — Ctrl+Space to play it again'
+                : isAutoPaused
+                  ? '⏸ Paused — press Ctrl+Space to continue'
+                  : 'The audio pauses by itself at natural breaks.'}
           </span>
         )}
       </div>
-      {/* Lista rolável à parte (ver .listening-exercise-scrollbody no CSS):
-          o player acima e a barra de "Check answers" abaixo do map ficam
-          SEMPRE visíveis, só as falas rolam — pedido do dono (2026-07-26),
-          o player sumia de vista em exercícios com muitas falas. */}
-      <div className="listening-exercise-scrollbody">
+      {/* Página inteira rola agora (ver .listening-exercise-sticky-mode no
+          CSS), sem wrapper de scroll interno — o player acima fica visível
+          sozinho via position:sticky (ver .listening-audio-bar). */}
       <ol className="listening-sentences">
         {sentenceModels.map((model, sentenceIndex) => {
           let blankIndexInSentence = -1;
@@ -10147,7 +10185,6 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed }) {
           );
         })}
       </ol>
-      </div>
       <div className="listening-check-all">
         <button type="button" className="show-answers-btn" onClick={handleCheckAll}>
           Check answers
@@ -10160,8 +10197,18 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed }) {
           {showAnswers ? 'Hide answers' : 'Show answers'}
         </button>
         <button type="button" className="show-answers-btn secondary" onClick={handleRegenerate}>
-          Do it again with other words
+          Change words
         </button>
+        {onBack && (
+          <button type="button" className="show-answers-btn secondary" onClick={onBack}>
+            {backLabel}
+          </button>
+        )}
+        {onNext && (
+          <button type="button" className="show-answers-btn secondary" onClick={onNext}>
+            {nextLabel}
+          </button>
+        )}
         {checked && (
           <span className="listening-check-summary">
             {correctBlanks} / {totalBlanks} correct

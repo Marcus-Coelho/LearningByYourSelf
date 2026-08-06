@@ -1445,19 +1445,6 @@ body {
   box-shadow: 0 18px 36px rgba(47, 168, 107, 0.4);
 }
 
-/* Linha com "‹ Back to Exercises" + "Next Listening" (tela do exercício) —
-   a margem inferior fica só na linha, não em cada botão (senão dobraria,
-   já que cada .upload-button já tem margin-bottom:20px da regra acima). */
-.listening-exercise-nav {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.listening-exercise-nav .upload-button {
-  margin-bottom: 0;
-}
-
 /* Linha "Done 2× · Last score: 83%" dentro do card do exercício — só
    aparece quando já existe alguma tentativa salva (ver loadListeningStats).
    Cor de destaque (roxo), diferente da legenda cinza de baixo, pra chamar
@@ -1476,62 +1463,36 @@ body {
   max-width: 780px;
 }
 
-/* Player sempre visível mesmo em exercícios com muitas falas (Listening e
-   Speaking) — mesmo tratamento de "uma rolagem só, dentro do painel" já
-   usado em .listening-tracks-mode (ver comentário lá): sem isso, a página
-   inteira rolava junto (app-shell tem height:100vh fixo, overflow:visible
-   é o padrão herdado de .listening-mode), empurrando o player pra fora da
-   tela — bug real reportado pelo dono (2026-07-26), com screenshot
-   mostrando o player sumido de vista numa tela de 15 falas. Dictation não
-   precisa disso (é só um textarea, nunca cresce tanto), só Listening/
-   Speaking, que têm uma fala por linha. */
-.landing-page.vocabulary-mode.listening-mode.listening-exercise-scroll-mode {
-  overflow: hidden;
-  align-items: stretch;
-  /* .landing-page.landing-page--courses (regra pensada pra tela "Courses",
-     que essas telas também carregam a classe de) aplica 130px de
-     padding-top — sobra demais aqui, empurrando o player pra baixo sem
-     necessidade (pedido do dono, 2026-07-26: "o player pode ficar mais
-     pra cima"). Precisa da MESMA especificidade (4 classes) daquela regra
-     de overflow/align-items acima pra realmente vencer. */
+/* Identificação do exercício aberto (Listening/Dictation) — voltou depois
+   de ter sido escondida junto com o eyebrow/h1 (pedido do dono,
+   2026-08-06: sem ela não dá pra saber qual faixa está aberta), mas agora
+   como UMA linha compacta, não o h1 grande + eyebrow de antes, que juntos
+   comiam a altura vertical que o resto desse ajuste veio liberar.
+   Seletor com 3 classes + tag pra vencer ".landing-panel.listening-panel p"
+   (2 classes + tag), que já define uma cor mais apagada pros parágrafos
+   comuns dessa tela — ver Quirks & Gotchas no CLAUDE.md. */
+.landing-panel.listening-panel p.listening-exercise-title {
+  margin: 0 0 14px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--purple-700);
+}
+
+/* Listening, Dictation e Speaking: a PÁGINA rola inteira (overflow:auto já
+   herdado de .landing-page--courses) e o player fica visível sozinho via
+   position:sticky (ver .listening-audio-bar) — pedido do dono, 2026-08-06.
+   Substituiu o modo antigo (.listening-exercise-scroll-mode, removido junto
+   com .listening-exercise-scrollbody), em que a página ficava travada em
+   100vh e só uma div interna rolava: sobrava pouquíssimo espaço pra área de
+   resposta, e no Speaking o parágrafo de instruções ainda era espremido a
+   quase zero de altura atrás do player (flex-shrink dentro de um container
+   overflow:hidden). O padding-top de 24px derruba os 130px de
+   .landing-page.landing-page--courses (regra pensada pra tela "Courses",
+   que essas telas também carregam a classe de), que empurravam o player
+   pra baixo à toa. */
+.landing-page.vocabulary-mode.listening-mode.listening-exercise-sticky-mode {
   padding-top: 24px;
-}
-
-.landing-panel.listening-exercise-panel {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* ELO QUE FALTAVA: .listening-exercise/.speaking-exercise (a div própria
-   que ListeningClozeExercise/SpeakingExercise devolvem) fica ENTRE o painel
-   flex e o .listening-exercise-scrollbody — sem virar TAMBÉM um item flex
-   com flex:1/min-height:0, o "flex:1" do scrollbody não tinha efeito
-   nenhum (propriedade flex só faz algo em filho DIRETO de um flex
-   container; a div do meio, sem isso, media pelo conteúdo, ignorando a
-   altura disponível do painel) — bug real reportado pelo dono, 2026-07-26,
-   a rolagem interna simplesmente não acontecia. */
-.listening-exercise,
-.speaking-exercise {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.listening-exercise-scrollbody {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-/* Instruções do Listening: fora da barra do player (que fica só com o
-   player, igual ao Dictation), logo abaixo do título — com um respiro até
-   a barra. */
-.listening-exercise > .listening-instructions {
-  margin: 0 0 16px;
 }
 
 /* Toggle "Only Unit Words / Random Words" (só aparece pro Vocabulary — ver
@@ -1552,9 +1513,19 @@ body {
   gap: 12px;
   padding: 16px 18px;
   border-radius: 16px;
-  background: rgba(27, 58, 94, 0.05);
+  /* Opaco (não mais rgba translúcido) — agora que a barra é sticky (ver
+     abaixo), texto rolando por baixo dela (as falas do Listening) vazava
+     através dos 5% de transparência antigos, mesmo padrão de bug já
+     documentado no CLAUDE.md pra header/cards sobre --page-hero-bg. */
+  background: #fbfcfd;
   border: 1px solid rgba(27, 58, 94, 0.12);
   margin-bottom: 24px;
+  /* Gruda logo abaixo do header (81px reais, ver comentário em .app-header)
+     quando a página rola — Listening, Dictation e Speaking (pedido do dono,
+     2026-08-06). */
+  position: sticky;
+  top: 81px;
+  z-index: 5;
 }
 
 /* ==== WideAudioPlayer (player amplo do Listening/Dictation) ==== */
@@ -1739,22 +1710,45 @@ body {
    gerados (dictation_pause_points.json); toggle + "Replay last part" agora
    vivem dentro do próprio player (ver WideAudioPlayer), não mais numa linha
    separada com botões largos (removida, 2026-07-26 — Dictation ganhou o
-   mesmo tratamento já dado ao Listening/Speaking). */
+   mesmo tratamento já dado ao Listening/Speaking).
+   MESMO formato/tamanho em TODOS os estados (pílula, mesma altura/padding/
+   font-size sempre) — só cor/fundo mudam entre eles. Antes o estado normal
+   era texto plano (sem fundo) e o "pausado" virava uma pílula bem maior
+   (16px/padding/gradiente) — a troca de forma parecia o elemento inteiro
+   sumindo e reaparecendo, mesmo sem nunca desmontar de verdade (pedido do
+   dono, 2026-08-06: "quero que fique aparecendo a todo instante e que mude
+   a cor de acordo"). border transparente (não "none") nos estados sem
+   borda, pra não mudar o box-sizing/tamanho quando o --ended entra com
+   borda de verdade. */
 .dictation-autopause-hint {
-  font-size: 13px;
-  color: rgba(27, 58, 94, 0.65);
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(27, 58, 94, 0.75);
+  background: rgba(27, 58, 94, 0.06);
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  transition: background 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+
+/* Auto-pause desligado no toggle verde: visual "inativo", mais apagado que
+   o estado normal (tocando) acima — antes o texto não distinguia os dois. */
+.dictation-autopause-hint--off {
+  color: rgba(27, 58, 94, 0.45);
+  background: rgba(27, 58, 94, 0.04);
+  font-style: italic;
+  font-weight: 600;
 }
 
 /* Estado "pausado agora": bem mais chamativo que a dica normal — o usuário
    está de cabeça baixa digitando quando o áudio para sozinho, a mensagem
-   precisa saltar aos olhos pra ele saber o que fazer (Ctrl+Space). */
+   precisa saltar aos olhos pra ele saber o que fazer (Ctrl+Space). Só cor/
+   fundo/animação mudam (ver regra base) — nunca o tamanho. */
 .dictation-autopause-hint--paused {
-  font-size: 16px;
-  font-weight: 800;
   color: #fff;
   background: linear-gradient(135deg, var(--purple-700), var(--purple-500));
-  padding: 8px 16px;
-  border-radius: 999px;
   animation: dictation-paused-pulse 1.2s ease-in-out infinite;
 }
 
@@ -1768,13 +1762,9 @@ body {
    as duas pareciam iguais). Sem pulsar: é estado final, não pede ação
    urgente. */
 .dictation-autopause-hint--ended {
-  font-size: 16px;
-  font-weight: 800;
   color: #fff;
   background: linear-gradient(135deg, #0e9f4e, #19c964);
-  padding: 8px 16px;
-  border-radius: 999px;
-  border: 2px solid #0a6b35;
+  border-color: #0a6b35;
   box-shadow: 0 0 0 3px rgba(25, 201, 100, 0.3);
 }
 
