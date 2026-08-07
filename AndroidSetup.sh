@@ -18,6 +18,14 @@
 # do projeto a cada execucao.
 #
 # Pode rodar de novo quantas vezes precisar (ele nao repete passos ja feitos).
+
+# Se alguem rodar "sh AndroidSetup.sh" em vez de "bash AndroidSetup.sh" (no
+# Termux, "sh" nao e o bash e nao entende a sintaxe usada abaixo, ex.
+# ${BASH_SOURCE[0]}), religa sozinho sob bash em vez de falhar pela metade.
+if [ -z "$BASH_VERSION" ]; then
+  exec bash "$0" "$@"
+fi
+
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
