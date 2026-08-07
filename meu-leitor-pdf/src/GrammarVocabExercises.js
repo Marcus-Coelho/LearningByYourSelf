@@ -368,8 +368,11 @@ export default function GrammarVocabExercisesPage({ userName }) {
   if (!activeSource) {
     return (
       <div className="landing-panel gve-panel">
-        <p className="eyebrow">Exercises</p>
-        <h1>Grammar &amp; Vocabulary Exercises</h1>
+        {/* O rótulo "Exercises" que ficava acima saiu (2026-08-06): nesta
+            tela, diferente do Listening, o TÍTULO já é o h1 — deixar os dois
+            daria "Exercises" grande e roxo em cima de "Grammar & Vocabulary
+            Exercises", dizendo a mesma coisa duas vezes. */}
+        <h1 className="gve-page-title">Grammar &amp; Vocabulary Exercises</h1>
         <p className="landing-meta">
           Extra practice, separate from the reading units — pick a set to start.
         </p>

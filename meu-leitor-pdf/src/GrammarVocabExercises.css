@@ -53,41 +53,53 @@
    arquivo, fora de App.css. */
 .landing-panel.gve-panel {
   background: #fbfcfd;
-  border: 1px solid rgba(27, 58, 94, 0.1);
+  border: 1px solid rgba(35, 43, 58, 0.1);
+  /* Quicksand na tela inteira (não só nos títulos) — pedido do dono,
+     2026-08-06. Herda pra todo texto descendente; os <button> desta tela
+     precisam de "font-family: inherit" à parte (botão não herda fonte do
+     pai por padrão, é o único caso aqui) — ver .gve-option/.gve-check-btn/
+     .gve-unit-toggle-btn/.gve-reset-btn abaixo. Os <input> já tinham
+     "font: inherit" e vieram de graça. */
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.landing-panel.gve-panel .eyebrow {
+/* TÍTULO da página/seção — mesma formatação do título do Listening/Ask
+   Adele (ver a regra ".landing-panel.ask-ai-panel .eyebrow,
+   .landing-panel.listening-panel .eyebrow" no App.css), pedido do dono
+   2026-08-06. Os dois seletores aqui são os dois lugares onde o título
+   aparece: o h1 da tela de escolha ("Grammar & Vocabulary Exercises") e o
+   nome da seção aberta ("Similar Exercises from Grammar Elementary" etc.),
+   que é um <p> por não ser o cabeçalho do documento.
+   Valores repetidos (em vez de entrar naquela regra do App.css) porque esta
+   tela mantém o CSS no próprio arquivo — ver comentário do topo. Se o título
+   do Listening mudar, este tem que acompanhar: o pedido foi que fossem
+   iguais. */
+.landing-panel.gve-panel .gve-source-heading,
+.landing-panel.gve-panel h1.gve-page-title {
+  margin: 0 0 6px;
   color: var(--purple-700);
-}
-
-/* Título da seção aberta ("Similar Exercises from Grammar Elementary",
-   "Grammar English A1", "English Vocabulary B") — MESMA aparência do h1
-   "Choose a listening source" (ver .landing-panel.listening-panel h1 no
-   App.css): mesma fonte, tamanho e cor, pedido do dono 2026-08-06. Se
-   aquele h1 mudar, este tem que acompanhar — o pedido foi que fossem iguais.
-   Classe PRÓPRIA em vez de reaproveitar .eyebrow de propósito: a tela de
-   seleção de seção também tem um .eyebrow ("Exercises"), aquele sim um
-   rótulo pequeno acima do h1, e mexer na classe compartilhada deixaria dois
-   títulos grandes empilhados lá. 3 classes no seletor pra vencer
-   ".landing-panel p" (classe+tag) do App.css, que entra no bundle DEPOIS
-   deste arquivo e senão ganharia a cor. */
-.landing-panel.gve-panel .gve-source-heading {
-  margin: 0 0 18px;
-  color: #1b3a5e;
   font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 600;
   font-size: clamp(1.5rem, 2.2vw, 2rem);
   line-height: 1.25;
+  letter-spacing: 0.02em;
+  text-transform: none;
 }
 
+/* SUBTÍTULO — o h1 "Exercises" das 2 seções de múltipla escolha (a seção
+   escrita não tem, ver GrammarVocabExercises.js). Menor que o título roxo
+   acima, mesma proporção usada no Listening/Ask Adele. */
 .landing-panel.gve-panel h1 {
   margin: 0 0 10px;
-  font-size: clamp(1.8rem, 2.6vw, 2.4rem);
-  color: #1b3a5e;
+  color: #232b3a;
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
+  font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+  line-height: 1.35;
 }
 
 .landing-panel.gve-panel p {
-  color: rgba(27, 58, 94, 0.75);
+  color: rgba(35, 43, 58, 0.75);
 }
 
 .gve-source-list {
@@ -104,25 +116,28 @@
   text-align: left;
   padding: 18px 20px;
   border-radius: 14px;
-  background: #f3f5f7;
-  border: 1px solid rgba(27, 58, 94, 0.12);
+  background: #f2f3f6;
+  border: 1px solid rgba(35, 43, 58, 0.12);
   cursor: pointer;
   font: inherit;
 }
 
 .gve-source-card:hover {
-  background: #eceff2;
-  border-color: rgba(27, 58, 94, 0.22);
+  background: #eaebf0;
+  border-color: rgba(35, 43, 58, 0.22);
 }
 
+/* 700, não 800: o index.html só importa 500/600/700 da Quicksand — pedir
+   800 daria negrito sintético, que borra o traço arredondado da fonte.
+   Mesmo motivo em .gve-block-score. */
 .gve-source-title {
   font-size: 17px;
-  font-weight: 800;
-  color: #1b3a5e;
+  font-weight: 700;
+  color: #232b3a;
 }
 
 .gve-source-card small {
-  color: rgba(27, 58, 94, 0.65);
+  color: rgba(35, 43, 58, 0.65);
   font-size: 13.5px;
 }
 
@@ -137,7 +152,7 @@
   flex-wrap: wrap;
   gap: 8px;
   margin: 10px 0 2px;
-  color: rgba(27, 58, 94, 0.75);
+  color: rgba(35, 43, 58, 0.75);
   font-size: 14px;
 }
 
@@ -145,6 +160,7 @@
   border: none;
   background: rgba(192, 57, 43, 0.08);
   color: #c0392b;
+  font-family: inherit;
   font-weight: 700;
   font-size: 13px;
   padding: 5px 12px;
@@ -171,8 +187,8 @@
   gap: 10px;
   padding: 16px 18px;
   border-radius: 14px;
-  background: #f3f5f7;
-  border: 1px solid rgba(27, 58, 94, 0.12);
+  background: #f2f3f6;
+  border: 1px solid rgba(35, 43, 58, 0.12);
   /* .landing-panel herda text-align:center do tema roxo original — reseta
      aqui pro texto da pergunta ficar alinhado à esquerda (pedido do dono). */
   text-align: left;
@@ -181,7 +197,7 @@
 .gve-card-unit {
   font-size: 12.5px;
   font-weight: 700;
-  color: rgba(27, 58, 94, 0.55);
+  color: rgba(35, 43, 58, 0.55);
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
@@ -190,7 +206,7 @@
   margin: 0;
   font-size: 16px;
   line-height: 1.5;
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 .gve-card-options {
@@ -200,9 +216,10 @@
 }
 
 .gve-option {
-  border: 1px solid rgba(27, 58, 94, 0.2);
+  border: 1px solid rgba(35, 43, 58, 0.2);
   background: #fff;
-  color: #1b3a5e;
+  color: #232b3a;
+  font-family: inherit;
   font-weight: 600;
   font-size: 14.5px;
   padding: 8px 14px;
@@ -212,7 +229,7 @@
 
 .gve-option:hover:not(:disabled) {
   border-color: var(--purple-500);
-  background: rgba(139, 92, 246, 0.08);
+  background: rgba(96, 103, 240, 0.08);
 }
 
 .gve-option:disabled {
@@ -236,7 +253,7 @@
    Answer" (pedido do dono: não entregar certo/errado no clique da opção). */
 .gve-option.is-selected {
   border-color: var(--purple-500);
-  background: rgba(139, 92, 246, 0.14);
+  background: rgba(96, 103, 240, 0.14);
   color: var(--purple-700);
 }
 
@@ -251,6 +268,7 @@
   border: none;
   background: linear-gradient(135deg, var(--purple-700), var(--purple-500));
   color: #fff;
+  font-family: inherit;
   font-weight: 700;
   font-size: 13.5px;
   padding: 8px 16px;
@@ -264,9 +282,10 @@
 }
 
 .gve-unit-toggle-btn {
-  border: 1px solid rgba(27, 58, 94, 0.2);
+  border: 1px solid rgba(35, 43, 58, 0.2);
   background: #fff;
-  color: rgba(27, 58, 94, 0.7);
+  color: rgba(35, 43, 58, 0.7);
+  font-family: inherit;
   font-weight: 600;
   font-size: 13px;
   padding: 7px 14px;
@@ -299,7 +318,7 @@
   font-size: 15.5px;
   font-weight: 700;
   line-height: 1.45;
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 /* Caixa de palavras do enunciado (ex.: os phrasal verbs da unit 115) — o
@@ -313,8 +332,8 @@
 .gve-word-bank-item {
   padding: 5px 12px;
   border-radius: 999px;
-  background: rgba(139, 92, 246, 0.12);
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  background: rgba(96, 103, 240, 0.12);
+  border: 1px solid rgba(96, 103, 240, 0.3);
   color: var(--purple-700);
   font-size: 13.5px;
   font-weight: 700;
@@ -330,14 +349,14 @@
 }
 
 .gve-block-item {
-  color: rgba(27, 58, 94, 0.7);
+  color: rgba(35, 43, 58, 0.7);
 }
 
 .gve-item-prompt {
   display: block;
   font-size: 15px;
   line-height: 1.5;
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 .gve-item-hint {
@@ -352,9 +371,9 @@
   margin-top: 6px;
   padding: 8px 12px;
   border-radius: 10px;
-  border: 1px solid rgba(27, 58, 94, 0.22);
+  border: 1px solid rgba(35, 43, 58, 0.22);
   background: #fff;
-  color: #1b3a5e;
+  color: #232b3a;
   font: inherit;
   font-size: 15px;
   box-sizing: border-box;
@@ -363,7 +382,7 @@
 .gve-item-input:focus {
   outline: none;
   border-color: var(--purple-500);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);
+  box-shadow: 0 0 0 3px rgba(96, 103, 240, 0.18);
 }
 
 .gve-item-input.is-correct {
@@ -391,8 +410,8 @@
 
 .gve-block-score {
   font-size: 14px;
-  font-weight: 800;
-  color: #1b3a5e;
+  font-weight: 700;
+  color: #232b3a;
 }
 
 /* Instrução original do livro, revelada junto com a unit no "Show unit". */
@@ -400,7 +419,7 @@
   margin: 0;
   font-size: 13px;
   font-style: italic;
-  color: rgba(27, 58, 94, 0.6);
+  color: rgba(35, 43, 58, 0.6);
 }
 
 /* Filtro por unit/tópico — só na seção escrita (115 exercícios). Gruda
@@ -417,19 +436,19 @@
   margin: 10px -12px 0;
   padding: 10px 14px;
   border-radius: 12px;
-  border: 1px solid rgba(27, 58, 94, 0.2);
+  border: 1px solid rgba(35, 43, 58, 0.2);
   background: #fff;
-  color: #1b3a5e;
+  color: #232b3a;
   font: inherit;
   font-size: 15px;
   box-sizing: border-box;
-  box-shadow: 0 6px 16px rgba(27, 58, 94, 0.1);
+  box-shadow: 0 6px 16px rgba(35, 43, 58, 0.1);
 }
 
 .gve-filter-input:focus {
   outline: none;
   border-color: var(--purple-500);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);
+  box-shadow: 0 0 0 3px rgba(96, 103, 240, 0.18);
 }
 
 .landing-panel.gve-panel .gve-filter-empty {

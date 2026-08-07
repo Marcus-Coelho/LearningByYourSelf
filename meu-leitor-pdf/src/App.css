@@ -1,16 +1,41 @@
+/* ===== Paleta oficial do app (definida pelo dono, 2026-08-07) =====
+   Quatro cores, aplicadas ao projeto inteiro:
+     #4c45de  índigo escuro — cor primária (botões, links, títulos)
+     #6067f0  índigo claro  — hover, estado ativo, realce secundário
+     #232b3a  azul-marinho  — texto e superfícies escuras (header, drawer)
+     #e2e3e7  cinza claro   — superfícies, bordas e divisórias
+
+   Os nomes --purple-* são HISTÓRICOS (o tema nasceu roxo) e hoje guardam os
+   índigos da paleta — renomeá-los nos ~700 usos espalhados por App.css/App.js
+   não mudaria um pixel, então ficaram como estão.
+
+   Ficam FORA da paleta, de propósito:
+   - verde/vermelho de acerto e erro (Dictation, Listening, exercícios) — cor
+     é o próprio significado ali, trocar por índigo apagaria a informação;
+   - o amarelo do marca-texto do My Notes — é a cor da marcação no texto, e
+     nenhuma cor da paleta funciona como marca-texto legível;
+   - o amarelo das pílulas de áudio ancoradas nos PDFs (.audio-anchor,
+     .american1-audio-anchor, .ap-btn e o .wide-player-label que usa o mesmo
+     visual) — o dono pediu explicitamente pra não mexer nelas (2026-08-07). */
 :root {
-  --ink: #171328;
-  --muted: #6f6689;
-  --purple-950: #24123f;
-  --purple-900: #32165f;
-  --purple-700: #6d42d8;
-  --purple-500: #8b5cf6;
-  --purple-300: #c9b9ff;
+  /* As 4 cores da paleta, com nome próprio (use estas em código novo). */
+  --brand-600: #4c45de;
+  --brand-500: #6067f0;
+  --navy-900: #232b3a;
+  --gray-200: #e2e3e7;
+
+  --ink: var(--navy-900);
+  --muted: #5c6478;
+  --purple-950: #171d27;
+  --purple-900: var(--navy-900);
+  --purple-700: var(--brand-600);
+  --purple-500: var(--brand-500);
+  --purple-300: #b9bdf7;
   --paper: #ffffff;
-  --soft: #f5f1ff;
-  --line: rgba(86, 53, 142, 0.18);
-  --shadow: 0 22px 48px rgba(30, 14, 64, 0.18);
-  --landing-light-gradient: linear-gradient(165deg, #ffffff 0%, #eef4fb 55%, #dce9f8 100%);
+  --soft: #eff0f4;
+  --line: rgba(35, 43, 58, 0.18);
+  --shadow: 0 22px 48px rgba(35, 43, 58, 0.18);
+  --landing-light-gradient: linear-gradient(165deg, #ffffff 0%, #f2f3f6 55%, var(--gray-200) 100%);
 }
 
 .app-shell { display: flex; flex-direction: column; height: 100vh; }
@@ -92,10 +117,10 @@
      virou visível assim que ganhou app-shell--allow-grow. Mesma regra de
      "card sobre --page-hero-bg precisa de fundo opaco" já documentada no
      CLAUDE.md, só que aplicada ao próprio header. */
-  background: rgb(24, 15, 43);
+  background: rgb(35, 43, 58);
   border-bottom: 1px solid rgba(255, 255, 255, 0.16);
   color: #fff;
-  box-shadow: 0 12px 32px rgba(21, 10, 45, 0.26);
+  box-shadow: 0 12px 32px rgba(26, 33, 48, 0.26);
   position: sticky;
   top: 0;
   z-index: 20;
@@ -107,8 +132,18 @@
   align-items: center;
   gap: 12px;
   min-width: 0;
-  font-size: 18px;
-  font-weight: 800;
+  /* Quicksand (a mesma fonte "suave" e arredondada dos títulos do app) no
+     lugar do sans-serif do sistema — pedido do dono, 2026-08-06.
+     font-weight 700, não o 800 de antes, DE PROPÓSITO: o public/index.html
+     só importa os pesos 500/600/700 da Quicksand, então 800 aqui não
+     existiria de verdade — o navegador engrossaria o 700 por conta própria
+     (faux bold), que borra o traço arredondado que é justamente a graça
+     dessa fonte. Se um dia 800 for mesmo necessário, tem que entrar antes
+     na URL do Google Fonts. */
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   transform: translateY(3px);
 }
 
@@ -119,11 +154,11 @@
   width: 44px;
   height: 36px;
   border-radius: 8px;
-  background: #e1dfe5;
+  background: #e2e3e7;
   color: #fff;
   font-size: 13px;
   letter-spacing: 0;
-  box-shadow: 0 12px 28px rgba(139, 92, 246, 0.36);
+  box-shadow: 0 12px 28px rgba(96, 103, 240, 0.36);
 }
 
 .brand-mark-icon {
@@ -172,7 +207,7 @@
 .side-drawer-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(10, 6, 20, 0.55);
+  background: rgba(16, 21, 30, 0.55);
   opacity: 0;
   visibility: hidden;
   transition: opacity 220ms ease, visibility 220ms ease;
@@ -190,7 +225,7 @@
   left: 0;
   height: 100vh;
   width: min(300px, 84vw);
-  background: rgba(16, 10, 30, 0.98);
+  background: rgba(23, 29, 39, 0.98);
   box-shadow: 12px 0 48px rgba(0, 0, 0, 0.4);
   z-index: 50;
   display: flex;
@@ -255,7 +290,7 @@
   gap: 14px;
   padding: 13px 14px;
   border-radius: 10px;
-  color: #f3f0ff;
+  color: #eff0f5;
   font-size: 15px;
   font-weight: 600;
   text-decoration: none;
@@ -269,7 +304,7 @@
 
 .side-drawer-item a:hover,
 .side-drawer-item a:focus-visible {
-  background: rgba(139, 92, 246, 0.24);
+  background: rgba(96, 103, 240, 0.24);
   color: #fff;
 }
 
@@ -316,8 +351,8 @@ body {
   align-items: center;
   justify-content: center;
   padding: 0 24px 40px;
-  background: radial-gradient(circle at top center, rgba(139, 92, 246, 0.14), transparent 35%),
-              linear-gradient(180deg, rgba(28, 20, 56, 0.96) 0%, rgba(22, 14, 45, 0.98) 100%);
+  background: radial-gradient(circle at top center, rgba(96, 103, 240, 0.14), transparent 35%),
+              linear-gradient(180deg, rgba(35, 43, 58, 0.96) 0%, rgba(26, 33, 48, 0.98) 100%);
 }
 
 /* Fundo claro (branco -> azul bem suave) no lugar do gradiente roxo escuro
@@ -426,7 +461,7 @@ body {
   max-height: 42vh;
   display: block;
   border-radius: 28px;
-  box-shadow: 0 32px 80px rgba(30, 58, 95, 0.18);
+  box-shadow: 0 32px 80px rgba(35, 43, 58, 0.18);
 }
 
 .home-hero-footer {
@@ -439,7 +474,7 @@ body {
 
 .home-hero-tagline {
   margin: 0;
-  color: #4d6178;
+  color: #5c6478;
   font-size: 15px;
   font-style: italic;
 }
@@ -497,7 +532,7 @@ body {
 }
 
 .continue-cta:hover {
-  background: rgba(109, 66, 216, 0.08);
+  background: rgba(76, 69, 222, 0.08);
 }
 
 .continue-cta small {
@@ -526,11 +561,11 @@ body {
      continuam os mesmos. Opaco (não translúcido) — em My Words (também usa
      essa classe) esse painel fica sobre o fundo desfocado --page-hero-bg. */
   background: #fbfcfd;
-  border: 1px solid rgba(27, 58, 94, 0.1);
+  border: 1px solid rgba(35, 43, 58, 0.1);
 }
 
 .landing-panel.vocabulary-page .vocabulary-title {
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 /* Texto de introdução do hub do American Accent — precisa de cor opaca
@@ -540,7 +575,7 @@ body {
 .landing-panel.vocabulary-page .american-accent-intro {
   display: block;
   margin: -8px 0 18px;
-  color: rgba(27, 58, 94, 0.75);
+  color: rgba(35, 43, 58, 0.75);
   font-size: 1rem;
   font-weight: 400;
   text-transform: none;
@@ -548,19 +583,19 @@ body {
 }
 
 .landing-panel.vocabulary-page .vocabulary-link {
-  color: #1b3a5e;
-  background: rgba(27, 58, 94, 0.05);
-  border-color: rgba(27, 58, 94, 0.12);
+  color: #232b3a;
+  background: rgba(35, 43, 58, 0.05);
+  border-color: rgba(35, 43, 58, 0.12);
 }
 
 .landing-panel.vocabulary-page .vocabulary-link:hover,
 .landing-panel.vocabulary-page .vocabulary-link:focus-visible {
-  background: rgba(27, 58, 94, 0.1);
-  border-color: rgba(139, 92, 246, 0.5);
+  background: rgba(35, 43, 58, 0.1);
+  border-color: rgba(96, 103, 240, 0.5);
 }
 
 .landing-panel.vocabulary-page .vocabulary-link small {
-  color: rgba(27, 58, 94, 0.68);
+  color: rgba(35, 43, 58, 0.68);
 }
 
 /* Grades de units (Vocabulary/American1 via .vocabulary-grid-mode, Grammar
@@ -594,7 +629,7 @@ body {
 }
 
 .landing-panel .eyebrow {
-  color: #c9b9ff;
+  color: #b9bdf7;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   margin-bottom: 16px;
@@ -655,11 +690,16 @@ body {
 .course-level-heading {
   display: block;
   margin: 4px 0 -6px;
-  /* Mesmo tamanho/peso do título dos cursos (.course-link span: 1.05rem/700)
+  /* Mesmo tamanho do título dos cursos (.course-link span: 1.05rem)
      — pedido do dono, era menor e em caixa alta (11px/800/uppercase) antes,
-     destoando do resto da tela. */
+     destoando do resto da tela.
+     Fonte/peso = os mesmos do título "Choose a dictation source"
+     (Quicksand 600, ver .landing-panel.listening-panel h1) — pedido do dono,
+     2026-08-06: a fonte "mais suave" do resto do app. A COR fica como
+     estava (roxa), foi o que ele pediu pra manter. */
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--purple-700);
 }
 
@@ -696,7 +736,7 @@ body {
   padding: 15px 16px;
   border: none;
   border-radius: 14px;
-  background: rgba(109, 66, 216, 0.1);
+  background: rgba(76, 69, 222, 0.1);
   color: var(--purple-700);
   text-transform: none;
   letter-spacing: normal;
@@ -705,7 +745,7 @@ body {
 }
 
 .course-continue-cta:hover {
-  background: rgba(109, 66, 216, 0.18);
+  background: rgba(76, 69, 222, 0.18);
   transform: none;
 }
 
@@ -742,7 +782,7 @@ body {
 .course-link:focus-visible {
   transform: translateY(-2px);
   background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(139, 92, 246, 0.42);
+  border-color: rgba(96, 103, 240, 0.42);
 }
 
 .course-link span {
@@ -772,7 +812,7 @@ body {
 
 .listening-unit-link:hover,
 .listening-unit-link:focus-visible {
-  color: #8b5cf6;
+  color: #6067f0;
 }
 
 /* Tela "Courses" sobre o fundo claro (.landing-page--courses): mesmo ajuste
@@ -780,26 +820,54 @@ body {
    ficava ilegível — só cores, layout intacto. */
 .landing-panel.course-links-panel {
   background: #fbfcfd;
-  border: 1px solid rgba(27, 58, 94, 0.1);
+  border: 1px solid rgba(35, 43, 58, 0.1);
+}
+
+/* Quicksand na tela Courses inteira (não só no título) — pedido do dono,
+   2026-08-06, mesmo tratamento já dado ao Grammar & Vocabulary Exercises.
+   :not(.listening-panel) porque a classe .course-links-panel é compartilhada
+   com os hubs de Listening/Dictation/Speaking e com as telas de faixas: sem
+   isso, o corpo daquelas telas mudaria de fonte junto, o que não foi pedido.
+   Escopar por HERANÇA (font-family no painel) em vez de listar as classes
+   internas é de propósito — .course-link/.continue-cta/.unit-search-* também
+   aparecem em outras telas, e mexer nas classes atingiria todas elas. */
+.landing-panel.course-links-panel:not(.listening-panel) {
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Alinhado à esquerda (pedido do dono, 2026-08-06) — .landing-panel manda
+     center por padrão, e as outras telas de conteúdo já corrigem isso
+     (.listening-panel/.profile-panel/.my-notes-panel usam text-align:left).
+     O mesmo :not(.listening-panel) da fonte acima vale aqui: os hubs de
+     Listening/Dictation/Speaking dividem a classe .course-links-panel e já
+     têm o próprio text-align, não devem depender desta regra. */
+  text-align: left;
+}
+
+/* <button>/<input> não herdam font-family do pai (padrão do navegador) —
+   único caso que a herança acima não resolve sozinha. */
+.landing-panel.course-links-panel:not(.listening-panel) button,
+.landing-panel.course-links-panel:not(.listening-panel) input,
+.landing-panel.course-links-panel:not(.listening-panel) textarea,
+.landing-panel.course-links-panel:not(.listening-panel) select {
+  font-family: inherit;
 }
 
 .landing-panel.course-links-panel .course-link {
-  color: #1b3a5e;
+  color: #232b3a;
   /* Opaco (não rgba translúcido) — essa tela tem o fundo desfocado
      (--page-hero-bg, ver .landing-page--courses::before) atrás do painel,
      e um fundo translúcido deixava a imagem vazar através dos cartões. */
-  background: #f3f5f7;
-  border-color: rgba(27, 58, 94, 0.12);
+  background: #f2f3f6;
+  border-color: rgba(35, 43, 58, 0.12);
 }
 
 .landing-panel.course-links-panel .course-link:hover,
 .landing-panel.course-links-panel .course-link:focus-visible {
-  background: #e9edf2;
-  border-color: rgba(139, 92, 246, 0.5);
+  background: #e8e9ee;
+  border-color: rgba(96, 103, 240, 0.5);
 }
 
 .landing-panel.course-links-panel .course-link small {
-  color: rgba(27, 58, 94, 0.68);
+  color: rgba(35, 43, 58, 0.68);
 }
 
 /* Busca unificada (tela Courses): resultados das 3 grades de unit juntos,
@@ -809,19 +877,19 @@ body {
    .vocabulary-link fica dentro de .course-links-panel, não de
    .vocabulary-page. */
 .landing-panel.course-links-panel .vocabulary-link {
-  color: #1b3a5e;
-  background: #f3f5f7;
-  border-color: rgba(27, 58, 94, 0.12);
+  color: #232b3a;
+  background: #f2f3f6;
+  border-color: rgba(35, 43, 58, 0.12);
 }
 
 .landing-panel.course-links-panel .vocabulary-link:hover,
 .landing-panel.course-links-panel .vocabulary-link:focus-visible {
-  background: rgba(27, 58, 94, 0.1);
-  border-color: rgba(139, 92, 246, 0.5);
+  background: rgba(35, 43, 58, 0.1);
+  border-color: rgba(96, 103, 240, 0.5);
 }
 
 .landing-panel.course-links-panel .vocabulary-link small {
-  color: rgba(27, 58, 94, 0.68);
+  color: rgba(35, 43, 58, 0.68);
 }
 
 .unified-search-results {
@@ -833,7 +901,7 @@ body {
 
 .unified-search-group-title {
   margin: 0 0 12px;
-  color: #1b3a5e;
+  color: #232b3a;
   font-size: 1.05rem;
   font-weight: 700;
 }
@@ -857,7 +925,7 @@ body {
    estrutura continuam os mesmos. */
 .landing-panel.profile-panel {
   background: #fbfcfd;
-  border: 1px solid rgba(27, 58, 94, 0.1);
+  border: 1px solid rgba(35, 43, 58, 0.1);
 }
 
 .landing-panel.profile-panel .eyebrow {
@@ -865,11 +933,11 @@ body {
 }
 
 .landing-panel.profile-panel h1 {
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 .landing-panel.profile-panel p {
-  color: rgba(27, 58, 94, 0.75);
+  color: rgba(35, 43, 58, 0.75);
 }
 
 .profile-panel {
@@ -970,7 +1038,7 @@ body {
 .profile-reset-btn:hover {
   transform: translateY(-2px);
   background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(139, 92, 246, 0.42);
+  border-color: rgba(96, 103, 240, 0.42);
 }
 
 .profile-reset-btn span {
@@ -1009,56 +1077,56 @@ body {
 }
 
 .profile-reset-btn.primary {
-  background: rgba(139, 92, 246, 0.2);
-  border-color: rgba(139, 92, 246, 0.55);
+  background: rgba(96, 103, 240, 0.2);
+  border-color: rgba(96, 103, 240, 0.55);
 }
 
 .profile-reset-btn.primary span {
-  color: #e4d9ff;
+  color: #dcdef0;
 }
 
 .profile-reset-btn.primary:hover {
-  background: rgba(139, 92, 246, 0.3);
-  border-color: rgba(139, 92, 246, 0.8);
+  background: rgba(96, 103, 240, 0.3);
+  border-color: rgba(96, 103, 240, 0.8);
 }
 
 /* Cores claras do Profile (ver comentário em .landing-panel.profile-panel
    acima) — mesmo layout, só troca as cores brancas/translúcidas pensadas
    pro fundo roxo escuro por versões escuras legíveis no fundo claro. */
 .profile-panel .profile-course-head {
-  border-top-color: rgba(27, 58, 94, 0.15);
+  border-top-color: rgba(35, 43, 58, 0.15);
 }
 
 .profile-panel .profile-section-divider {
-  border-top-color: rgba(27, 58, 94, 0.15);
+  border-top-color: rgba(35, 43, 58, 0.15);
 }
 
 .profile-panel .profile-course-heading {
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 .profile-panel .profile-course-toggle {
-  border-color: rgba(27, 58, 94, 0.25);
-  background: #f3f5f7;
-  color: #1b3a5e;
+  border-color: rgba(35, 43, 58, 0.25);
+  background: #f2f3f6;
+  color: #232b3a;
 }
 
 .profile-panel .profile-course-toggle:hover {
-  background: #e9edf2;
+  background: #e8e9ee;
 }
 
 .profile-panel .profile-reset-btn {
-  background: #f3f5f7;
-  border-color: rgba(27, 58, 94, 0.12);
-  color: #1b3a5e;
+  background: #f2f3f6;
+  border-color: rgba(35, 43, 58, 0.12);
+  color: #232b3a;
 }
 
 .profile-panel .profile-reset-btn:hover {
-  background: rgba(27, 58, 94, 0.1);
+  background: rgba(35, 43, 58, 0.1);
 }
 
 .profile-panel .profile-reset-btn small {
-  color: rgba(27, 58, 94, 0.65);
+  color: rgba(35, 43, 58, 0.65);
 }
 
 .profile-panel .profile-reset-btn.danger {
@@ -1076,8 +1144,8 @@ body {
 }
 
 .profile-panel .profile-reset-btn.primary {
-  background: rgba(139, 92, 246, 0.14);
-  border-color: rgba(139, 92, 246, 0.4);
+  background: rgba(96, 103, 240, 0.14);
+  border-color: rgba(96, 103, 240, 0.4);
 }
 
 .profile-panel .profile-reset-btn.primary span {
@@ -1085,15 +1153,15 @@ body {
 }
 
 .profile-panel .profile-reset-btn.primary:hover {
-  background: rgba(139, 92, 246, 0.22);
-  border-color: rgba(139, 92, 246, 0.6);
+  background: rgba(96, 103, 240, 0.22);
+  border-color: rgba(96, 103, 240, 0.6);
 }
 
 /* Tela "Progress" (Dashboard de progresso) — mesmo tratamento de fundo claro
    do Profile/My Words (fica sobre o --page-hero-bg desfocado, ver seletores
    compartilhados no topo do arquivo), só que mais larga (como
    .vocabulary-page) pra caber a grade de stat tiles sem apertar. Sempre
-   opaco (#fbfcfd/#f3f5f7), nunca rgba translúcido — a mesma armadilha já
+   opaco (#fbfcfd/#f2f3f6), nunca rgba translúcido — a mesma armadilha já
    corrigida em course-links-panel/vocabulary-page (fundo translúcido deixa
    a imagem desfocada vazar e o card fica ilegível). */
 .landing-panel.dashboard-panel {
@@ -1102,7 +1170,7 @@ body {
   text-align: left;
   padding: 32px 36px 40px;
   background: #fbfcfd;
-  border: 1px solid rgba(27, 58, 94, 0.1);
+  border: 1px solid rgba(35, 43, 58, 0.1);
 }
 
 /* Mesmo fix de min-height que .landing-page--home/.landing-page.vocabulary-
@@ -1124,11 +1192,11 @@ body {
 .landing-panel.dashboard-panel h1 {
   margin: 0 0 10px;
   font-size: clamp(1.8rem, 2.6vw, 2.4rem);
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 .landing-panel.dashboard-panel > p {
-  color: rgba(27, 58, 94, 0.75);
+  color: rgba(35, 43, 58, 0.75);
   max-width: 640px;
 }
 
@@ -1142,7 +1210,7 @@ body {
 .landing-panel.my-notes-panel h1 {
   margin: 0 0 10px;
   font-size: clamp(1.8rem, 2.6vw, 2.4rem);
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 /* max-width mais largo que o padrão de outros painéis (640px) de propósito
@@ -1150,8 +1218,17 @@ body {
    .my-notes-panel); 640px forçava uma quebra de linha feia bem no meio da
    frase ("...jump straight / back to where..."). */
 .landing-panel.my-notes-panel > p {
-  color: rgba(27, 58, 94, 0.75);
+  color: rgba(35, 43, 58, 0.75);
   max-width: 100%;
+}
+
+/* Respiro entre a frase de introdução e a caixa "Search your notes..." logo
+   abaixo (pedido do dono, 2026-08-06) — as duas estavam coladas, porque
+   ".landing-panel p" zera a margem e a caixa de busca não tem margem
+   própria. Escopado a .landing-meta (não a "> p") pra não empurrar também o
+   texto de lista vazia (.my-notes-empty), que já tem margem própria. */
+.landing-panel.my-notes-panel .landing-meta {
+  margin-bottom: 18px;
 }
 
 /* "Continue where you left off" + "Save progress now" lado a lado — o
@@ -1194,8 +1271,8 @@ body {
   gap: 4px;
   padding: 16px 18px;
   border-radius: 14px;
-  background: #f3f5f7;
-  border: 1px solid rgba(27, 58, 94, 0.12);
+  background: #f2f3f6;
+  border: 1px solid rgba(35, 43, 58, 0.12);
   text-align: left;
   font-family: inherit;
   cursor: pointer;
@@ -1204,8 +1281,8 @@ body {
 
 .dashboard-stat-tile:hover {
   transform: translateY(-2px);
-  background: rgba(27, 58, 94, 0.1);
-  border-color: rgba(139, 92, 246, 0.5);
+  background: rgba(35, 43, 58, 0.1);
+  border-color: rgba(96, 103, 240, 0.5);
 }
 
 .dashboard-stat-tile--static {
@@ -1214,35 +1291,50 @@ body {
 
 .dashboard-stat-tile--static:hover {
   transform: none;
-  background: #f3f5f7;
-  border-color: rgba(27, 58, 94, 0.12);
+  background: #f2f3f6;
+  border-color: rgba(35, 43, 58, 0.12);
 }
 
+/* Os NÚMEROS grandes dos tiles ("18", "12/400", "14/412"…). Quicksand, como
+   os títulos do resto do app — pedido do dono, 2026-08-06: no sans-serif do
+   sistema eles destoavam de tudo mais na página. Peso 700 e não 800 pelo
+   mesmo motivo do .brand: o index.html só importa 500/600/700 da Quicksand,
+   e 800 viraria negrito sintético.
+   O RÓTULO abaixo de cada número (.dashboard-stat-label) fica no sans-serif
+   do sistema de propósito — é texto corrido, igual ao resto do corpo do
+   app; só os números são elemento de display. */
 .dashboard-stat-value {
-  font-size: 1.7rem;
-  font-weight: 800;
-  color: #1b3a5e;
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* 1.45rem (era 1.7rem) — pedido do dono, 2026-08-06. */
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #232b3a;
 }
 
 /* "% de domínio geral" (ROADMAP item 3, os 3 cursos somados — não é só o
    A1, o Vocabulary é Pre-Intermediate/Intermediate) — pendurado junto do
    valor "X/Y units mastered" em vez de virar um 7º tile próprio. */
 .dashboard-stat-subvalue {
+  /* Mesma fonte do número ao lado (ver .dashboard-stat-value) — os dois
+     formam um valor só na tela: "12/400" seguido de "3%". */
   margin-left: 6px;
-  font-size: 0.95rem;
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Encolheu junto com .dashboard-stat-value (0.95rem antes), pra a
+     proporção entre os dois continuar a mesma. */
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--purple-700);
 }
 
 .dashboard-stat-label {
   font-size: 12.5px;
-  color: rgba(27, 58, 94, 0.68);
+  color: rgba(35, 43, 58, 0.68);
 }
 
 .dashboard-section-title {
   margin: 28px 0 14px;
   font-size: 1.1rem;
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 .dashboard-courses {
@@ -1254,8 +1346,8 @@ body {
 .dashboard-course-row {
   padding: 18px 20px;
   border-radius: 16px;
-  background: #f3f5f7;
-  border: 1px solid rgba(27, 58, 94, 0.12);
+  background: #f2f3f6;
+  border: 1px solid rgba(35, 43, 58, 0.12);
 }
 
 .dashboard-course-head {
@@ -1269,12 +1361,12 @@ body {
 .dashboard-course-head h3 {
   margin: 0;
   font-size: 15px;
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 .dashboard-course-count {
   font-size: 12.5px;
-  color: rgba(27, 58, 94, 0.65);
+  color: rgba(35, 43, 58, 0.65);
 }
 
 /* Trilha cinza opaca = "not started" implícito (mesma ideia de
@@ -1289,7 +1381,7 @@ body {
   height: 14px;
   margin: 12px 0 10px;
   border-radius: 999px;
-  background: #e4e8ec;
+  background: #e2e3e7;
   overflow: hidden;
 }
 
@@ -1297,7 +1389,7 @@ body {
   height: 100%;
 }
 
-.dashboard-progress-segment--visited { background: #4a90d9; }
+.dashboard-progress-segment--visited { background: #6067f0; }
 .dashboard-progress-segment--rated { background: var(--purple-500); }
 .dashboard-progress-segment--mastered { background: #2fa86b; }
 
@@ -1306,7 +1398,7 @@ body {
   flex-wrap: wrap;
   gap: 14px;
   font-size: 12.5px;
-  color: rgba(27, 58, 94, 0.72);
+  color: rgba(35, 43, 58, 0.72);
 }
 
 .dashboard-course-legend-item {
@@ -1322,7 +1414,7 @@ body {
 }
 
 .dashboard-course-legend-item strong {
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 .dashboard-continue-cta {
@@ -1338,25 +1430,25 @@ body {
   max-width: 640px;
 }
 
-/* Sem uppercase/letter-spacing do .eyebrow padrão (achado agressivo demais
-   pra essa tela) — só uma legenda discreta acima do título. Tamanho igual
-   ao título dos cursos/.course-level-heading (1.05rem/700) — era 14px,
-   pedido do dono pra não ficar pequeno demais perto de "Beginner"/
-   "Intermediate" logo abaixo. */
-.landing-panel.listening-panel .eyebrow {
-  color: var(--purple-700);
-  text-transform: none;
-  letter-spacing: normal;
-  font-weight: 700;
-  font-size: 1.4rem;
-}
+/* Título de página ("Listening"/"Dictation"/"Speaking" nos hubs, o nome da
+   fonte nas telas de faixas) — MESMA formatação do "Ask Adele" da tela Ask
+   AI, pedido do dono 2026-08-06. Ver a regra compartilhada
+   ".landing-panel.ask-ai-panel .eyebrow, .landing-panel.listening-panel
+   .eyebrow" mais abaixo neste arquivo: os dois seletores dividem o mesmo
+   bloco justamente pra não poderem divergir de novo.
+   ATENÇÃO: isso REVERTE um pedido anterior (o eyebrow daqui era 1.4rem/700
+   sem uppercase, aumentado de propósito "pra não ficar pequeno demais perto
+   de Beginner/Intermediate logo abaixo"). Foi uma troca consciente por
+   igualdade com o Ask Adele — se o tamanho pequeno voltar a incomodar ao
+   lado dos rótulos de nível, é aqui que se mexe, e aí os dois deixam de ser
+   iguais. */
 
 /* O h1 padrão de .landing-panel (clamp de até 4.2rem, peso do sans-serif do
    sistema) pesava demais pra um título de exercício — troca pra Quicksand
    (mesma fonte "redonda"/amigável já usada nas grades de units) num peso e
    tamanho bem mais discretos. */
 .landing-panel.listening-panel h1 {
-  color: #1b3a5e;
+  color: #232b3a;
   font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 600;
   font-size: clamp(1.5rem, 2.2vw, 2rem);
@@ -1405,7 +1497,7 @@ body {
    classe sozinha (.listening-instructions) — precisa desse mesmo formato
    ".landing-panel.listening-panel p" pra realmente vencer a cascata. */
 .landing-panel.listening-panel p {
-  color: rgba(27, 58, 94, 0.75);
+  color: rgba(35, 43, 58, 0.75);
 }
 
 .listening-panel .upload-button {
@@ -1518,7 +1610,7 @@ body {
      através dos 5% de transparência antigos, mesmo padrão de bug já
      documentado no CLAUDE.md pra header/cards sobre --page-hero-bg. */
   background: #fbfcfd;
-  border: 1px solid rgba(27, 58, 94, 0.12);
+  border: 1px solid rgba(35, 43, 58, 0.12);
   margin-bottom: 24px;
   /* Gruda logo abaixo do header (81px reais, ver comentário em .app-header)
      quando a página rola — Listening, Dictation e Speaking (pedido do dono,
@@ -1554,7 +1646,7 @@ body {
   justify-content: center;
   width: 36px;
   height: 36px;
-  border: 1px solid rgba(27, 58, 94, 0.2);
+  border: 1px solid rgba(35, 43, 58, 0.2);
   border-radius: 10px;
   background: #fff;
   color: var(--purple-900);
@@ -1620,12 +1712,12 @@ body {
 /* Mesmos estados do A-B do player compacto (ver .ap-btn.ap-btn-ab). */
 .wide-player-btn.is-armed {
   color: var(--purple-700);
-  outline: 2px solid rgba(109, 66, 216, 0.55);
+  outline: 2px solid rgba(76, 69, 222, 0.55);
 }
 
 .wide-player-btn.is-looping {
-  background: rgba(109, 66, 216, 0.22);
-  border-color: rgba(109, 66, 216, 0.55);
+  background: rgba(76, 69, 222, 0.22);
+  border-color: rgba(76, 69, 222, 0.55);
   color: var(--purple-700);
 }
 
@@ -1635,7 +1727,7 @@ body {
   text-align: center;
   font-size: 13px;
   font-variant-numeric: tabular-nums;
-  color: rgba(27, 58, 94, 0.75);
+  color: rgba(35, 43, 58, 0.75);
 }
 
 .wide-player-seek {
@@ -1661,8 +1753,8 @@ body {
   padding: 4px;
   border-radius: 10px;
   background: #fff;
-  border: 1px solid rgba(27, 58, 94, 0.18);
-  box-shadow: 0 12px 30px rgba(30, 58, 95, 0.18);
+  border: 1px solid rgba(35, 43, 58, 0.18);
+  box-shadow: 0 12px 30px rgba(35, 43, 58, 0.18);
 }
 
 .wide-player-menu-item {
@@ -1682,7 +1774,7 @@ body {
 }
 
 .wide-player-menu-item.is-active {
-  background: rgba(109, 66, 216, 0.18);
+  background: rgba(76, 69, 222, 0.18);
   color: var(--purple-700);
 }
 
@@ -1694,7 +1786,7 @@ body {
 
 .listening-instructions {
   margin: 0;
-  color: rgba(27, 58, 94, 0.75);
+  color: rgba(35, 43, 58, 0.75);
   font-size: 14px;
 }
 
@@ -1725,8 +1817,8 @@ body {
   align-items: center;
   font-size: 14px;
   font-weight: 700;
-  color: rgba(27, 58, 94, 0.75);
-  background: rgba(27, 58, 94, 0.06);
+  color: rgba(35, 43, 58, 0.75);
+  background: rgba(35, 43, 58, 0.06);
   padding: 8px 16px;
   border-radius: 999px;
   border: 2px solid transparent;
@@ -1736,8 +1828,8 @@ body {
 /* Auto-pause desligado no toggle verde: visual "inativo", mais apagado que
    o estado normal (tocando) acima — antes o texto não distinguia os dois. */
 .dictation-autopause-hint--off {
-  color: rgba(27, 58, 94, 0.45);
-  background: rgba(27, 58, 94, 0.04);
+  color: rgba(35, 43, 58, 0.45);
+  background: rgba(35, 43, 58, 0.04);
   font-style: italic;
   font-weight: 600;
 }
@@ -1753,8 +1845,8 @@ body {
 }
 
 @keyframes dictation-paused-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.45); }
-  50% { box-shadow: 0 0 0 8px rgba(139, 92, 246, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(96, 103, 240, 0.45); }
+  50% { box-shadow: 0 0 0 8px rgba(96, 103, 240, 0); }
 }
 
 /* Fim do áudio: verde vivo com anel de contraste — precisa ser
@@ -1773,9 +1865,9 @@ body {
   min-height: 160px;
   padding: 14px 16px;
   border-radius: 14px;
-  border: 1px solid rgba(27, 58, 94, 0.18);
+  border: 1px solid rgba(35, 43, 58, 0.18);
   background: #fff;
-  color: #1b3a5e;
+  color: #232b3a;
   font-family: inherit;
   font-size: 1rem;
   line-height: 1.6;
@@ -1786,12 +1878,12 @@ body {
 .dictation-textarea:focus {
   outline: none;
   border-color: var(--purple-500);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);
+  box-shadow: 0 0 0 3px rgba(96, 103, 240, 0.18);
 }
 
 .dictation-textarea:disabled {
-  background: #f3f5f7;
-  color: rgba(27, 58, 94, 0.7);
+  background: #f2f3f6;
+  color: rgba(35, 43, 58, 0.7);
 }
 
 .dictation-result {
@@ -1803,21 +1895,21 @@ body {
 .dictation-score {
   margin: 0;
   font-size: 1.2rem;
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 .dictation-score-hint {
   margin: 0;
   font-size: 13px;
-  color: rgba(27, 58, 94, 0.6);
+  color: rgba(35, 43, 58, 0.6);
 }
 
 .dictation-correct-text {
   margin: 0;
   padding: 14px 16px;
   border-radius: 14px;
-  background: #f3f5f7;
-  border: 1px solid rgba(27, 58, 94, 0.12);
+  background: #f2f3f6;
+  border: 1px solid rgba(35, 43, 58, 0.12);
   line-height: 1.8;
 }
 
@@ -1856,9 +1948,9 @@ body {
   margin: 0;
   padding: 14px 16px;
   border-radius: 14px;
-  background: rgba(27, 58, 94, 0.06);
-  border: 1px solid rgba(27, 58, 94, 0.15);
-  color: #1b3a5e;
+  background: rgba(35, 43, 58, 0.06);
+  border: 1px solid rgba(35, 43, 58, 0.15);
+  color: #232b3a;
   font-size: 15px;
 }
 
@@ -1879,21 +1971,76 @@ body {
    uma classe sozinha) vence a cascata e o texto fica ilegível sobre o fundo
    claro. Bug real reportado pelo dono (2026-07-25), mesma causa já
    documentada em CLAUDE.md pra esse tipo de tela. */
-.landing-panel.ask-ai-panel .eyebrow {
+/* TÍTULO DE PÁGINA — um bloco só pra todas estas telas serem literalmente a
+   mesma formatação (pedido do dono, 2026-08-06): Ask Adele, Listening,
+   Dictation, Speaking, My Profile, Progress, My Notes e My Words. A tela
+   Grammar & Vocabulary Exercises segue o mesmo visual, mas de outro arquivo
+   (.gve-source-heading/.gve-page-title em GrammarVocabExercises.css, que não
+   pode entrar aqui) — se mexer nos valores abaixo, mexa lá também.
+   Os valores estão EXPLÍCITOS (não herdados de ".eyebrow"/".landing-panel
+   .eyebrow") de propósito: o Ask AI só chegava neles por acaso, misturando
+   3 regras diferentes — a font-family vinha de ".landing-panel.ask-ai-panel
+   p", o tamanho/peso de ".eyebrow" e o letter-spacing/uppercase de
+   ".landing-panel .eyebrow". As outras telas não têm uma regra "p" com
+   Quicksand, então herdar não bastaria pra ficar igual.
+   Todas as regras ".landing-panel.<painel> .eyebrow" antigas (que só
+   ajustavam a cor) ficam ACIMA desta no arquivo e têm a mesma
+   especificidade, então esta vence por ordem — não mover pra cima. */
+.landing-panel.ask-ai-panel .eyebrow,
+.landing-panel.listening-panel .eyebrow,
+.landing-panel.profile-panel .eyebrow,
+.landing-panel.dashboard-panel .eyebrow,
+.landing-panel.my-notes-panel .eyebrow,
+.landing-panel.course-links-panel .eyebrow,
+/* My Words não tem .eyebrow: o título ali é um <h2 class="vocabulary-title">
+   dentro de .wordbook-head, com o contador de palavras ao lado. Entra na
+   mesma regra pra ficar igual aos outros. Escopado a .wordbook-panel de
+   propósito — .vocabulary-title também titula as grades de units, que não
+   fazem parte deste pedido. */
+.landing-panel.wordbook-panel .vocabulary-title {
   color: var(--purple-700);
+  /* Mesma fonte/peso/tamanho do h1 desta tela ("Ask Adele about everything
+     in English") — pedido do dono, 2026-08-06, depois de tentarmos
+     11 → 16 → 20px no estilo antigo de rótulo. Só a COR continua diferente
+     (roxa, não #232b3a). O caixa-alta e o letter-spacing largo (0.24em) do
+     .eyebrow padrão saíram junto: eram justamente o que fazia isto parecer
+     um rótulo em vez de um título, e o dono pediu as letras mais juntas.
+     Este par de textos inverteu de papel — o TÍTULO é este, o h1 abaixo
+     virou o subtítulo menor (ver regra do h1). */
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: clamp(1.5rem, 2.2vw, 2rem);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  /* 6px, não os 16px de antes: agora o texto logo abaixo é o subtítulo
+     dele, os dois formam um bloco só. */
+  margin: 0 0 6px;
 }
 
+/* SUBTÍTULO ("Ask Adele about everything in English", "Choose a listening
+   source", o nome do usuário em My Profile, "All your notes"…): MENOR que o
+   título roxo acima — pedido do dono, 2026-08-06. O tamanho que estava aqui
+   (clamp 1.5-2rem) passou pro título (ver regra acima); manter os dois no
+   mesmo tamanho deixaria a tela com dois títulos e nenhuma hierarquia.
+   My Words não aparece aqui porque não tem subtítulo — só o título e o
+   contador de palavras ao lado. */
 .landing-panel.ask-ai-panel h1,
-.landing-panel.listening-panel h1 {
-  color: #1b3a5e;
+.landing-panel.listening-panel h1,
+.landing-panel.profile-panel h1,
+.landing-panel.dashboard-panel h1,
+.landing-panel.my-notes-panel h1,
+.landing-panel.course-links-panel h1 {
+  color: #232b3a;
   font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 600;
-  font-size: clamp(1.5rem, 2.2vw, 2rem);
-  line-height: 1.25;
+  font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+  line-height: 1.35;
+  margin: 0 0 10px;
 }
 
 .landing-panel.ask-ai-panel p {
-  color: rgba(27, 58, 94, 0.75);
+  color: rgba(35, 43, 58, 0.75);
   font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
@@ -1902,7 +2049,7 @@ body {
    são elementos novos que essa regra não alcança; explícito aqui em vez de
    confiar em herança, mesmo padrão do resto do arquivo. */
 .landing-panel.ask-ai-panel .ask-ai-answer-body p {
-  color: #1b3a5e;
+  color: #232b3a;
   margin: 0 0 8px;
   font-size: 15.5px;
   line-height: 1.6;
@@ -1930,25 +2077,25 @@ body {
 }
 
 .landing-panel.ask-ai-panel .ask-ai-answer-body li {
-  color: #1b3a5e;
+  color: #232b3a;
   margin-bottom: 4px;
 }
 
 .landing-panel.ask-ai-panel .ask-ai-answer-body strong {
-  color: #12294a;
+  color: #171d27;
 }
 
 .landing-panel.ask-ai-panel .ask-ai-answer-body .ask-ai-answer-quote {
   padding-left: 12px;
-  border-left: 3px solid rgba(109, 66, 216, 0.35);
+  border-left: 3px solid rgba(76, 69, 222, 0.35);
   font-style: italic;
-  color: rgba(27, 58, 94, 0.75);
+  color: rgba(35, 43, 58, 0.75);
 }
 
 .ask-ai-answer-divider {
   margin: 14px 0;
   border: none;
-  border-top: 1px dashed rgba(27, 58, 94, 0.2);
+  border-top: 1px dashed rgba(35, 43, 58, 0.2);
 }
 
 .ask-ai-actions-row {
@@ -1972,8 +2119,8 @@ body {
   height: 64px;
   border-radius: 50%;
   overflow: hidden;
-  border: 2px solid rgba(109, 66, 216, 0.25);
-  box-shadow: 0 4px 14px rgba(27, 58, 94, 0.15);
+  border: 2px solid rgba(76, 69, 222, 0.25);
+  box-shadow: 0 4px 14px rgba(35, 43, 58, 0.15);
 }
 
 .ask-ai-mascot svg {
@@ -2049,8 +2196,8 @@ body {
   max-width: 260px;
   border-radius: 14px;
   overflow: hidden;
-  border: 1px solid rgba(27, 58, 94, 0.18);
-  background: #f3f5f7;
+  border: 1px solid rgba(35, 43, 58, 0.18);
+  background: #f2f3f6;
   line-height: 0;
 }
 
@@ -2069,7 +2216,7 @@ body {
   height: 26px;
   border: none;
   border-radius: 999px;
-  background: rgba(24, 15, 43, 0.72);
+  background: rgba(35, 43, 58, 0.72);
   color: #fff;
   font-size: 17px;
   line-height: 1;
@@ -2077,14 +2224,14 @@ body {
 }
 
 .ask-ai-image-remove:hover {
-  background: rgba(24, 15, 43, 0.9);
+  background: rgba(35, 43, 58, 0.9);
 }
 
 .ask-ai-answer {
   padding: 16px 18px;
   border-radius: 14px;
-  background: #f3f5f7;
-  border: 1px solid rgba(27, 58, 94, 0.12);
+  background: #f2f3f6;
+  border: 1px solid rgba(35, 43, 58, 0.12);
 }
 
 .speaking-mic-error {
@@ -2112,8 +2259,8 @@ body {
   gap: 10px;
   padding: 14px 16px;
   border-radius: 14px;
-  background: rgba(27, 58, 94, 0.04);
-  border: 1px solid rgba(27, 58, 94, 0.1);
+  background: rgba(35, 43, 58, 0.04);
+  border: 1px solid rgba(35, 43, 58, 0.1);
 }
 
 .speaking-sentence-head {
@@ -2125,7 +2272,7 @@ body {
 
 .speaking-sentence-text {
   flex: 1 1 320px;
-  color: #1b3a5e;
+  color: #232b3a;
   line-height: 1.5;
   font-size: 1.05rem;
 }
@@ -2159,7 +2306,7 @@ body {
   margin: 0;
   font-size: 13px;
   font-style: italic;
-  color: rgba(27, 58, 94, 0.65);
+  color: rgba(35, 43, 58, 0.65);
 }
 
 .listening-sentences {
@@ -2178,8 +2325,8 @@ body {
   gap: 10px;
   padding: 14px 16px;
   border-radius: 14px;
-  background: rgba(27, 58, 94, 0.04);
-  border: 1px solid rgba(27, 58, 94, 0.1);
+  background: rgba(35, 43, 58, 0.04);
+  border: 1px solid rgba(35, 43, 58, 0.1);
   transition: background 160ms ease, border-color 160ms ease;
 }
 
@@ -2191,15 +2338,15 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: rgba(27, 58, 94, 0.1);
-  color: #1b3a5e;
+  background: rgba(35, 43, 58, 0.1);
+  color: #232b3a;
   font-size: 12px;
   font-weight: 700;
 }
 
 .listening-sentence-text {
   flex: 1 1 320px;
-  color: #1b3a5e;
+  color: #232b3a;
   line-height: 1.5;
 }
 
@@ -2234,7 +2381,7 @@ body {
 }
 
 .listening-blank-input.is-empty {
-  border-bottom-color: rgba(27, 58, 94, 0.35);
+  border-bottom-color: rgba(35, 43, 58, 0.35);
   border-bottom-style: dashed;
 }
 
@@ -2256,7 +2403,7 @@ body {
 .listening-check-summary {
   font-size: 14px;
   font-weight: 700;
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 /* Feedback quando palavras erradas são adicionadas ao My Words — aparece
@@ -2281,7 +2428,7 @@ body {
   margin: 0 2px;
   padding: 1px 6px;
   border-radius: 6px;
-  background: rgba(139, 92, 246, 0.14);
+  background: rgba(96, 103, 240, 0.14);
   color: var(--purple-700);
   font-size: 12px;
   font-weight: 700;
@@ -2327,7 +2474,7 @@ body {
 .register-existing-btn:hover {
   transform: translateY(-2px);
   background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(139, 92, 246, 0.42);
+  border-color: rgba(96, 103, 240, 0.42);
 }
 
 /* Válvula de escape para quando a lista "Continue as" acima mostra gente que
@@ -2386,7 +2533,7 @@ body {
 
 .register-input:focus {
   outline: none;
-  border-color: rgba(139, 92, 246, 0.7);
+  border-color: rgba(96, 103, 240, 0.7);
   background: rgba(255, 255, 255, 0.12);
 }
 
@@ -2447,11 +2594,11 @@ body {
   width: 12px;
   height: 12px;
   border-radius: 999px;
-  border: 1px solid rgba(27, 58, 94, 0.25);
+  border: 1px solid rgba(35, 43, 58, 0.25);
 }
 
 .unit-badge-dot--unvisited { background: transparent; opacity: 0.35; }
-.unit-badge-dot--visited { background: #4a90d9; }
+.unit-badge-dot--visited { background: #6067f0; }
 .unit-badge-dot--rated { background: var(--purple-500); border-color: transparent; }
 .unit-badge-dot--mastered { background: #2fa86b; border-color: transparent; }
 
@@ -2465,9 +2612,9 @@ body {
   margin: 0 0 16px;
   padding: 0 12px;
   border-radius: 12px;
-  background: #f3f5f7;
-  border: 1px solid rgba(27, 58, 94, 0.12);
-  color: rgba(27, 58, 94, 0.55);
+  background: #f2f3f6;
+  border: 1px solid rgba(35, 43, 58, 0.12);
+  color: rgba(35, 43, 58, 0.55);
 }
 
 .unit-search-box:focus-within {
@@ -2480,14 +2627,14 @@ body {
   padding: 10px 8px;
   border: none;
   background: transparent;
-  color: #1b3a5e;
+  color: #232b3a;
   font-size: 14px;
   font-family: inherit;
   outline: none;
 }
 
 .unit-search-input::placeholder {
-  color: rgba(27, 58, 94, 0.45);
+  color: rgba(35, 43, 58, 0.45);
 }
 
 /* Remove o "x" nativo de type="search" no Chrome/Edge — usamos o botão
@@ -2499,7 +2646,7 @@ body {
 .unit-search-clear {
   border: none;
   background: transparent;
-  color: rgba(27, 58, 94, 0.5);
+  color: rgba(35, 43, 58, 0.5);
   font-size: 20px;
   line-height: 1;
   cursor: pointer;
@@ -2512,7 +2659,7 @@ body {
 
 .unit-search-empty {
   margin: 8px 0 0;
-  color: rgba(27, 58, 94, 0.6);
+  color: rgba(35, 43, 58, 0.6);
   font-size: 14px;
 }
 
@@ -2523,7 +2670,7 @@ body {
   gap: 16px;
   margin: -8px 0 18px;
   font-size: 16px;
-  color: rgba(27, 58, 94, 0.68);
+  color: rgba(35, 43, 58, 0.68);
 }
 
 .unit-badge-legend-item {
@@ -2547,9 +2694,9 @@ body {
   width: 20px;
   height: 20px;
   border-radius: 999px;
-  border: 1.5px solid rgba(27, 58, 94, 0.45);
+  border: 1.5px solid rgba(35, 43, 58, 0.45);
   background: transparent;
-  color: rgba(27, 58, 94, 0.75);
+  color: rgba(35, 43, 58, 0.75);
   font-size: 12px;
   font-style: italic;
   font-weight: 700;
@@ -2576,11 +2723,11 @@ body {
   padding: 14px 16px;
   border-radius: 12px;
   background: #fff;
-  border: 1px solid rgba(27, 58, 94, 0.15);
-  box-shadow: 0 16px 40px rgba(27, 58, 94, 0.22);
+  border: 1px solid rgba(35, 43, 58, 0.15);
+  box-shadow: 0 16px 40px rgba(35, 43, 58, 0.22);
   font-size: 13px;
   line-height: 1.5;
-  color: #1b3a5e;
+  color: #232b3a;
   text-align: left;
 }
 
@@ -2588,7 +2735,7 @@ body {
   margin: 0 0 8px;
   /* .landing-panel p (regra global mais antiga) força texto branco — sem
      isso o popover fica com texto invisível sobre o próprio fundo branco. */
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 .unit-badge-legend-info-popover p:last-child {
@@ -2599,7 +2746,7 @@ body {
 .vocabulary-link:focus-visible {
   transform: translateY(-2px);
   background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(139, 92, 246, 0.42);
+  border-color: rgba(96, 103, 240, 0.42);
 }
 
 .vocabulary-link span {
@@ -2614,7 +2761,7 @@ body {
   line-height: 1.4;
 }
 
-.side-panel { background: #f9f9f9; overflow-y: auto; }
+.side-panel { background: #f7f8fa; overflow-y: auto; }
 
 .side-panel.is-hidden { display: none; }
 
@@ -2656,7 +2803,7 @@ body {
   color: var(--purple-900);
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 6px 18px rgba(72, 39, 130, 0.25);
+  box-shadow: 0 6px 18px rgba(35, 43, 58, 0.25);
   transition: background 140ms, right 160ms ease, top 140ms ease;
 }
 
@@ -2676,7 +2823,7 @@ body {
 }
 
 .related-panel {
-  background: linear-gradient(180deg, #fff 0%, #f7f3ff 100%);
+  background: linear-gradient(180deg, #fff 0%, #f4f5f8 100%);
 }
 
 .panel-content h2 {
@@ -2708,7 +2855,7 @@ body {
   margin-top: 8px;
   padding: 8px 12px;
   border-radius: 8px;
-  background: #efe8ff;
+  background: #e6e7ee;
   color: var(--purple-900);
   font-size: 13px;
   font-weight: 800;
@@ -2727,7 +2874,7 @@ body {
   min-height: 38px;
   padding: 6px 14px;
   border-bottom: 1px solid var(--line);
-  background: linear-gradient(90deg, #fff 0%, #f1ebff 100%);
+  background: linear-gradient(90deg, #fff 0%, #eef0f5 100%);
   color: var(--purple-950);
   font-size: 14px;
   font-weight: 800;
@@ -2808,8 +2955,8 @@ body {
   padding: 36px;
   text-align: center;
   background:
-    radial-gradient(circle at 50% 34%, rgba(139, 92, 246, 0.16), transparent 22%),
-    linear-gradient(135deg, #fff 0%, #f5f0ff 100%);
+    radial-gradient(circle at 50% 34%, rgba(96, 103, 240, 0.16), transparent 22%),
+    linear-gradient(135deg, #fff 0%, #f1f2f7 100%);
 }
 
 .pdf-empty-state h1,
@@ -2835,8 +2982,8 @@ body {
 
 .pdf-error-state {
   background:
-    radial-gradient(circle at 50% 28%, rgba(217, 70, 239, 0.16), transparent 24%),
-    linear-gradient(135deg, #fff 0%, #fff1fb 100%);
+    radial-gradient(circle at 50% 28%, rgba(96, 103, 240, 0.16), transparent 24%),
+    linear-gradient(135deg, #fff 0%, #f2f3f6 100%);
 }
 
 .upload-button {
@@ -2852,7 +2999,7 @@ body {
   cursor: pointer;
   font-size: 14px;
   font-weight: 900;
-  box-shadow: 0 14px 30px rgba(109, 66, 216, 0.32);
+  box-shadow: 0 14px 30px rgba(76, 69, 222, 0.32);
   transition:
     transform 140ms ease,
     box-shadow 140ms ease,
@@ -2862,7 +3009,7 @@ body {
 .upload-button:hover {
   transform: translateY(-1px);
   filter: saturate(1.08);
-  box-shadow: 0 18px 36px rgba(109, 66, 216, 0.4);
+  box-shadow: 0 18px 36px rgba(76, 69, 222, 0.4);
 }
 
 /* Previous/Next Unit (American English A1) ficam sempre montados —
@@ -2951,7 +3098,7 @@ body {
   right: 0;
   height: 3px;
   overflow: hidden;
-  background: rgba(109, 66, 216, 0.15);
+  background: rgba(76, 69, 222, 0.15);
   z-index: 30;
 }
 
@@ -2961,7 +3108,7 @@ body {
   left: 0;
   height: 100%;
   width: 40%;
-  background: var(--purple-500, #6d42d8);
+  background: var(--purple-500, #4c45de);
   border-radius: 2px;
   animation: audio-anchors-loading-slide 1.1s ease-in-out infinite;
 }
@@ -3068,7 +3215,7 @@ body {
 }
 
 .ap-menu button:hover {
-  background: #f0eaff;
+  background: #e9ebf3;
 }
 
 .ap-menu button.active {
@@ -3122,7 +3269,7 @@ body {
   left: 50%;
   width: 1px;
   transform: translateX(-50%);
-  background: rgba(27, 58, 94, 0.18);
+  background: rgba(35, 43, 58, 0.18);
   transition: width 140ms, background 140ms;
 }
 
@@ -3136,13 +3283,13 @@ body {
   transform: translate(-50%, -50%);
   border-radius: 999px;
   background: #fff;
-  box-shadow: 0 0 0 1px rgba(72, 39, 130, 0.28);
+  box-shadow: 0 0 0 1px rgba(35, 43, 58, 0.28);
 }
 
 .resize-handle:hover::after,
 .resize-handle[data-resize-handle-active]::after {
   width: 4px;
-  background: rgba(109, 66, 216, 0.5);
+  background: rgba(76, 69, 222, 0.5);
 }
 
 .resize-handle.is-hidden { display: none; }
@@ -3169,7 +3316,7 @@ body {
   top: 50%;
   height: 1px;
   transform: translateY(-50%);
-  background: rgba(27, 58, 94, 0.18);
+  background: rgba(35, 43, 58, 0.18);
   transition: height 140ms, background 140ms;
 }
 
@@ -3183,12 +3330,12 @@ body {
   transform: translate(-50%, -50%);
   border-radius: 999px;
   background: #fff;
-  box-shadow: 0 0 0 1px rgba(72, 39, 130, 0.28);
+  box-shadow: 0 0 0 1px rgba(35, 43, 58, 0.28);
 }
 
 .study-answers-resize-handle:hover::after {
   height: 4px;
-  background: rgba(109, 66, 216, 0.5);
+  background: rgba(76, 69, 222, 0.5);
 }
 
 /* Container do viewer PDF */
@@ -3265,7 +3412,7 @@ body {
 }
 
 .all-units-link:hover {
-  background: rgba(109, 66, 216, 0.1) !important;
+  background: rgba(76, 69, 222, 0.1) !important;
 }
 
 .study-page {
@@ -3390,14 +3537,21 @@ body {
   color: #fff;
 }
 
-.reference-link-btn--grammar { --ref-accent: #2563eb; }
-.reference-link-btn--vocabulary { --ref-accent: #15803d; }
-.reference-link-btn--sound { --ref-accent: #c2410c; }
-.reference-link-btn--communication { --ref-accent: #a16207; }
-.reference-link-btn--writing { --ref-accent: #be185d; }
-.reference-link-btn--video { --ref-accent: #7c3aed; }
+/* Cada tipo de referência tem sua própria cor pra dar pra distinguir os
+   botões de relance (eram 7 matizes diferentes: azul, verde, laranja,
+   amarelo, rosa, roxo, verde-água). Com a paleta de 2026-08-07 os 7 viraram
+   tons dos DOIS matizes da paleta (índigo e azul-marinho) — continuam
+   distinguíveis entre si, mas sem as cores avulsas que não pertenciam a
+   nenhuma outra parte do app. Todos escuros o bastante pra ler em 12px sobre
+   o fundo branco do botão (ele é outline: borda + texto na cor). */
+.reference-link-btn--grammar { --ref-accent: #4c45de; }
+.reference-link-btn--vocabulary { --ref-accent: #232b3a; }
+.reference-link-btn--sound { --ref-accent: #6067f0; }
+.reference-link-btn--communication { --ref-accent: #3a34b8; }
+.reference-link-btn--writing { --ref-accent: #3f4a63; }
+.reference-link-btn--video { --ref-accent: #5b52e6; }
 .reference-link-btn--transcriptions {
-  --ref-accent: #0f766e;
+  --ref-accent: #2b3550;
   margin-left: 6px;
 }
 
@@ -3411,18 +3565,29 @@ body {
 
 /* Ocupa o lugar do botão "‹ Back to Unit" quando a página de referência foi
    aberta direto do menu (Sound Bank), sem vir de dentro de uma unit — só
-   identifica a tela, não é clicável. */
+   identifica a tela, não é clicável.
+   Por isso NÃO tem mais cara de botão (2026-08-06): a caixinha lavanda com
+   borda (background var(--soft) + border var(--line) + padding, herdada de
+   quando ela imitava o .upload-button ao lado) fazia parecer clicável. Agora
+   usa a mesma formatação dos títulos das outras telas — ver a regra
+   ".landing-panel.ask-ai-panel .eyebrow, ..." neste arquivo; os valores são
+   repetidos aqui porque aquele seletor é todo baseado em .landing-panel, e
+   esta tela é o leitor de PDF, não um painel.
+   Alinhado à ESQUERDA (pedido do dono, 2026-08-06), como os títulos das
+   outras telas. O alinhamento NÃO se resolve aqui: este rótulo é filho de
+   .pdf-toolbar-nav (uma div que só tem a largura do conteúdo), então um
+   margin-right:auto nele não empurra nada — quem joga tudo pra direita é o
+   justify-content:flex-end do .pdf-toolbar, um nível acima. Por isso o
+   App.js adiciona .pdf-toolbar-left ao toolbar quando não há ref.unit. */
 .reference-standalone-label {
   display: inline-flex;
   align-items: center;
-  min-height: 28px;
-  padding: 0 14px;
-  border-radius: 8px;
-  background: var(--soft);
-  border: 1px solid var(--line);
-  color: var(--ink);
-  font-size: 13px;
-  font-weight: 800;
+  color: var(--purple-700);
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: clamp(1.5rem, 2.2vw, 2rem);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
 }
 
 .ghost-button {
@@ -3559,7 +3724,7 @@ body {
      idêntico entre os cursos, não um card flutuante separado. */
   min-height: 0;
   overflow: hidden;
-  background: #f9f9f9;
+  background: #f7f8fa;
   border-radius: 0 14px 14px 0;
 }
 
@@ -3631,7 +3796,7 @@ body {
   outline: none;
   border-color: var(--purple-500);
   background: #fff;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+  box-shadow: 0 0 0 3px rgba(96, 103, 240, 0.15);
 }
 
 /* Autoavaliação do exercício (1 a 5 estrelas), voluntária — alimenta o
@@ -3784,7 +3949,7 @@ body {
   outline: none;
   border-color: var(--purple-500);
   background: #fff;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+  box-shadow: 0 0 0 3px rgba(96, 103, 240, 0.15);
 }
 
 .notes-editor:empty::before {
@@ -3808,8 +3973,8 @@ body {
   padding: 22px 24px;
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(27, 58, 94, 0.1);
-  box-shadow: 0 18px 48px rgba(30, 58, 95, 0.12);
+  border: 1px solid rgba(35, 43, 58, 0.1);
+  box-shadow: 0 18px 48px rgba(35, 43, 58, 0.12);
 }
 
 .plan-card-head {
@@ -3819,14 +3984,14 @@ body {
 .plan-card-head h2 {
   margin: 0;
   font-size: 1.15rem;
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 .plan-card .plan-card-hint {
   margin: 0 0 14px;
   font-size: 12.5px;
   line-height: 1.5;
-  color: rgba(27, 58, 94, 0.6);
+  color: rgba(35, 43, 58, 0.6);
 }
 
 .plan-items {
@@ -3841,9 +4006,9 @@ body {
   width: 100%;
   padding: 12px 16px;
   border-radius: 12px;
-  border: 1px solid rgba(27, 58, 94, 0.12);
-  background: rgba(27, 58, 94, 0.05);
-  color: #1b3a5e;
+  border: 1px solid rgba(35, 43, 58, 0.12);
+  background: rgba(35, 43, 58, 0.05);
+  color: #232b3a;
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -3852,8 +4017,8 @@ body {
 
 .plan-item:hover,
 .plan-item:focus-visible {
-  background: rgba(27, 58, 94, 0.1);
-  border-color: rgba(139, 92, 246, 0.5);
+  background: rgba(35, 43, 58, 0.1);
+  border-color: rgba(96, 103, 240, 0.5);
 }
 
 .plan-item-icon {
@@ -3885,7 +4050,7 @@ body {
 .plan-item-sub {
   display: block;
   font-size: 12px;
-  color: rgba(27, 58, 94, 0.65);
+  color: rgba(35, 43, 58, 0.65);
   margin-top: 1px;
 }
 
@@ -3919,8 +4084,8 @@ body {
   padding: 22px 24px;
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(27, 58, 94, 0.1);
-  box-shadow: 0 18px 48px rgba(30, 58, 95, 0.12);
+  border: 1px solid rgba(35, 43, 58, 0.1);
+  box-shadow: 0 18px 48px rgba(35, 43, 58, 0.12);
   margin-top: 16px;
 }
 
@@ -3952,15 +4117,15 @@ body {
   gap: 10px;
   padding: 8px 12px;
   border-radius: 10px;
-  background: rgba(27, 58, 94, 0.05);
+  background: rgba(35, 43, 58, 0.05);
   font-size: 13.5px;
-  color: rgba(27, 58, 94, 0.75);
+  color: rgba(35, 43, 58, 0.75);
 }
 
 .daily-goal-item.is-done {
-  color: #1b3a5e;
+  color: #232b3a;
   font-weight: 700;
-  background: rgba(139, 92, 246, 0.12);
+  background: rgba(96, 103, 240, 0.12);
 }
 
 /* Checkbox desenhado em CSS (não emoji ⬜/✅) — fonte de emoji varia demais
@@ -3970,7 +4135,7 @@ body {
   width: 16px;
   height: 16px;
   border-radius: 4px;
-  border: 1.5px solid rgba(27, 58, 94, 0.35);
+  border: 1.5px solid rgba(35, 43, 58, 0.35);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3999,9 +4164,9 @@ body {
   width: 18px;
   height: 18px;
   border-radius: 999px;
-  border: 1.5px solid rgba(27, 58, 94, 0.35);
+  border: 1.5px solid rgba(35, 43, 58, 0.35);
   background: transparent;
-  color: rgba(27, 58, 94, 0.65);
+  color: rgba(35, 43, 58, 0.65);
   font-size: 11px;
   font-style: italic;
   font-weight: 700;
@@ -4025,8 +4190,8 @@ body {
   padding: 12px 14px;
   border-radius: 12px;
   background: #fff;
-  border: 1px solid rgba(27, 58, 94, 0.15);
-  box-shadow: 0 4px 16px rgba(27, 58, 94, 0.1);
+  border: 1px solid rgba(35, 43, 58, 0.15);
+  box-shadow: 0 4px 16px rgba(35, 43, 58, 0.1);
   font-size: 12.5px;
   line-height: 1.5;
   font-weight: 400;
@@ -4037,7 +4202,7 @@ body {
   margin: 0;
   /* .landing-panel p (regra global mais antiga) força texto branco — sem
      isso o popover fica com texto invisível sobre o próprio fundo branco. */
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 .daily-goal-complete {
@@ -4052,7 +4217,7 @@ body {
   gap: 6px;
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px dashed rgba(27, 58, 94, 0.15);
+  border-top: 1px dashed rgba(35, 43, 58, 0.15);
 }
 
 .daily-goal-edit-option {
@@ -4060,7 +4225,7 @@ body {
   align-items: center;
   gap: 8px;
   font-size: 12.5px;
-  color: rgba(27, 58, 94, 0.75);
+  color: rgba(35, 43, 58, 0.75);
   cursor: pointer;
 }
 
@@ -4073,8 +4238,8 @@ body {
   padding: 22px 24px;
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(27, 58, 94, 0.1);
-  box-shadow: 0 18px 48px rgba(30, 58, 95, 0.12);
+  border: 1px solid rgba(35, 43, 58, 0.1);
+  box-shadow: 0 18px 48px rgba(35, 43, 58, 0.12);
 }
 
 /* Dentro do painel claro da tela "Courses" o card dispensa a própria caixa
@@ -4098,14 +4263,14 @@ body {
 .review-card-head h2 {
   margin: 0;
   font-size: 1.15rem;
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 .review-card-count {
   font-size: 12.5px;
   font-weight: 700;
   color: var(--purple-700);
-  background: rgba(139, 92, 246, 0.14);
+  background: rgba(96, 103, 240, 0.14);
   padding: 4px 12px;
   border-radius: 999px;
   white-space: nowrap;
@@ -4115,7 +4280,7 @@ body {
   margin: 0 0 14px;
   font-size: 12.5px;
   line-height: 1.5;
-  color: rgba(27, 58, 94, 0.6);
+  color: rgba(35, 43, 58, 0.6);
 }
 
 .review-items {
@@ -4130,9 +4295,9 @@ body {
   width: 100%;
   padding: 10px 14px;
   border-radius: 12px;
-  border: 1px solid rgba(27, 58, 94, 0.12);
-  background: #f3f5f7;
-  color: #1b3a5e;
+  border: 1px solid rgba(35, 43, 58, 0.12);
+  background: #f2f3f6;
+  color: #232b3a;
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -4141,13 +4306,13 @@ body {
 
 .review-item:hover,
 .review-item:focus-visible {
-  background: rgba(27, 58, 94, 0.1);
-  border-color: rgba(139, 92, 246, 0.5);
+  background: rgba(35, 43, 58, 0.1);
+  border-color: rgba(96, 103, 240, 0.5);
 }
 
 .review-item--words {
-  background: rgba(139, 92, 246, 0.08);
-  border-color: rgba(139, 92, 246, 0.25);
+  background: rgba(96, 103, 240, 0.08);
+  border-color: rgba(96, 103, 240, 0.25);
 }
 
 .review-item-main {
@@ -4163,7 +4328,7 @@ body {
 .review-item-sub {
   display: block;
   font-size: 12px;
-  color: rgba(27, 58, 94, 0.65);
+  color: rgba(35, 43, 58, 0.65);
 }
 
 .review-item-badge {
@@ -4171,7 +4336,7 @@ body {
   font-size: 12px;
   font-weight: 700;
   color: var(--purple-700);
-  background: rgba(139, 92, 246, 0.14);
+  background: rgba(96, 103, 240, 0.14);
   padding: 4px 10px;
   border-radius: 999px;
   white-space: nowrap;
@@ -4180,7 +4345,7 @@ body {
 .review-card .review-more {
   margin: 10px 0 0;
   font-size: 12.5px;
-  color: rgba(27, 58, 94, 0.6);
+  color: rgba(35, 43, 58, 0.6);
 }
 
 /* ==== "My Words" (caderno de vocabulário + flashcards) ==== */
@@ -4219,7 +4384,7 @@ body {
 
 .wordbook-count {
   font-size: 15px;
-  color: rgba(27, 58, 94, 0.6);
+  color: rgba(35, 43, 58, 0.6);
   white-space: nowrap;
 }
 
@@ -4228,11 +4393,18 @@ body {
   align-items: center;
   gap: 14px;
   flex-wrap: wrap;
+  /* Respiro até o título "My Words" logo acima (pedido do dono,
+     2026-08-06). Vem daqui e não do margin-bottom do título porque aquele
+     valor é da regra COMPARTILHADA de título de página (6px, pensados pra
+     um subtítulo colado logo abaixo — ver .landing-panel.wordbook-panel
+     .vocabulary-title no App.css); esta tela não tem subtítulo, então o
+     espaço que falta é entre o título e esta linha. */
+  margin-top: 14px;
 }
 
 .wordbook-practice-hint {
   font-size: 15px;
-  color: rgba(27, 58, 94, 0.65);
+  color: rgba(35, 43, 58, 0.65);
 }
 
 .wordbook-form {
@@ -4244,8 +4416,8 @@ body {
   margin-top: 16px;
   padding: 14px 16px;
   border-radius: 14px;
-  background: #f3f5f7;
-  border: 1px solid rgba(27, 58, 94, 0.12);
+  background: #f2f3f6;
+  border: 1px solid rgba(35, 43, 58, 0.12);
 }
 
 .wordbook-form .wordbook-input--wide,
@@ -4260,9 +4432,9 @@ body {
 .wordbook-input {
   padding: 10px 12px;
   border-radius: 10px;
-  border: 1px solid rgba(27, 58, 94, 0.2);
+  border: 1px solid rgba(35, 43, 58, 0.2);
   background: #fff;
-  color: #1b3a5e;
+  color: #232b3a;
   font: inherit;
   font-size: 16px;
   min-width: 0;
@@ -4271,7 +4443,7 @@ body {
 .wordbook-input:focus {
   outline: none;
   border-color: var(--purple-500);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+  box-shadow: 0 0 0 3px rgba(96, 103, 240, 0.15);
 }
 
 /* "?" dentro do campo de significado, ao adicionar uma palavra — link pro
@@ -4306,7 +4478,7 @@ body {
 }
 
 .wordbook-input-help--disabled {
-  color: rgba(27, 58, 94, 0.25);
+  color: rgba(35, 43, 58, 0.25);
   cursor: default;
 }
 
@@ -4320,9 +4492,9 @@ body {
   gap: 2px;
   min-height: 92px;
   padding: 10px;
-  border: 2px dashed rgba(27, 58, 94, 0.25);
+  border: 2px dashed rgba(35, 43, 58, 0.25);
   border-radius: 12px;
-  background: rgba(27, 58, 94, 0.03);
+  background: rgba(35, 43, 58, 0.03);
   cursor: pointer;
   transition: border-color 140ms, background 140ms;
 }
@@ -4330,13 +4502,13 @@ body {
 .image-dropzone:hover,
 .image-dropzone:focus-visible {
   border-color: var(--purple-500);
-  background: rgba(139, 92, 246, 0.06);
+  background: rgba(96, 103, 240, 0.06);
   outline: none;
 }
 
 .image-dropzone.is-dragover {
   border-color: var(--purple-700);
-  background: rgba(139, 92, 246, 0.14);
+  background: rgba(96, 103, 240, 0.14);
 }
 
 .image-dropzone-input {
@@ -4350,14 +4522,14 @@ body {
   gap: 4px;
   font-size: 13px;
   font-weight: 700;
-  color: rgba(27, 58, 94, 0.65);
+  color: rgba(35, 43, 58, 0.65);
   text-align: center;
 }
 
 .image-dropzone-hint small {
   font-size: 11px;
   font-weight: 500;
-  color: rgba(27, 58, 94, 0.45);
+  color: rgba(35, 43, 58, 0.45);
 }
 
 .image-dropzone-error {
@@ -4370,7 +4542,7 @@ body {
   position: relative;
   padding: 0;
   border-style: solid;
-  border-color: rgba(27, 58, 94, 0.15);
+  border-color: rgba(35, 43, 58, 0.15);
   cursor: default;
   overflow: hidden;
   background: #fff;
@@ -4392,7 +4564,7 @@ body {
   height: 24px;
   border: none;
   border-radius: 999px;
-  background: rgba(20, 15, 40, 0.65);
+  background: rgba(26, 33, 48, 0.65);
   color: #fff;
   cursor: pointer;
   font-size: 12px;
@@ -4434,7 +4606,7 @@ body {
 
 .wordbook-panel .wordbook-empty {
   margin: 0;
-  color: rgba(27, 58, 94, 0.65);
+  color: rgba(35, 43, 58, 0.65);
   font-size: 16px;
   line-height: 1.6;
 }
@@ -4445,8 +4617,8 @@ body {
   gap: 14px;
   padding: 12px 16px;
   border-radius: 14px;
-  background: #f3f5f7;
-  border: 1px solid rgba(27, 58, 94, 0.12);
+  background: #f2f3f6;
+  border: 1px solid rgba(35, 43, 58, 0.12);
 }
 
 .wordbook-entry-thumb {
@@ -4455,14 +4627,14 @@ body {
   height: 88px;
   object-fit: cover;
   border-radius: 12px;
-  border: 1px solid rgba(27, 58, 94, 0.15);
+  border: 1px solid rgba(35, 43, 58, 0.15);
   background: #fff;
 }
 
 .wordbook-entry-main {
   flex: 1;
   min-width: 0;
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 /* Fontes maiores em toda a lista de palavras (pedido do usuário) — só o
@@ -4484,7 +4656,7 @@ body {
   flex: 0 0 auto;
   border: none;
   background: transparent;
-  color: rgba(27, 58, 94, 0.45);
+  color: rgba(35, 43, 58, 0.45);
   cursor: pointer;
   padding: 3px;
   border-radius: 6px;
@@ -4495,7 +4667,7 @@ body {
 
 .word-audio-btn:hover:not(:disabled) {
   color: var(--purple-700);
-  background: rgba(91, 63, 217, 0.1);
+  background: rgba(76, 69, 222, 0.1);
 }
 
 .word-audio-btn--loading {
@@ -4519,20 +4691,20 @@ body {
 .wordbook-entry .wordbook-entry-meaning {
   margin: 2px 0 0;
   font-size: 16.5px;
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 .wordbook-entry .wordbook-entry-example {
   margin: 4px 0 0;
   font-size: 15.5px;
   font-style: italic;
-  color: rgba(27, 58, 94, 0.75);
+  color: rgba(35, 43, 58, 0.75);
 }
 
 .wordbook-entry .wordbook-entry-meta {
   margin: 6px 0 0;
   font-size: 13.5px;
-  color: rgba(27, 58, 94, 0.55);
+  color: rgba(35, 43, 58, 0.55);
 }
 
 .wordbook-entry-links {
@@ -4546,9 +4718,9 @@ body {
   display: inline-block;
   font-size: 12.5px;
   font-weight: 700;
-  color: #5b3fd9;
-  background: rgba(91, 63, 217, 0.1);
-  border: 1px solid rgba(91, 63, 217, 0.25);
+  color: #4c45de;
+  background: rgba(76, 69, 222, 0.1);
+  border: 1px solid rgba(76, 69, 222, 0.25);
   border-radius: 999px;
   padding: 4px 10px;
   text-decoration: none;
@@ -4556,7 +4728,7 @@ body {
 }
 
 .wordbook-entry-link:hover {
-  background: rgba(91, 63, 217, 0.18);
+  background: rgba(76, 69, 222, 0.18);
 }
 
 /* Form inline do botão "Edit" de cada card — substitui o conteúdo normal
@@ -4591,7 +4763,7 @@ body {
   flex: 0 0 auto;
   border: none;
   background: transparent;
-  color: rgba(27, 58, 94, 0.45);
+  color: rgba(35, 43, 58, 0.45);
   cursor: pointer;
   padding: 4px 6px;
   border-radius: 6px;
@@ -4601,14 +4773,14 @@ body {
 
 .wordbook-expand:hover {
   color: var(--purple-700);
-  background: rgba(91, 63, 217, 0.1);
+  background: rgba(76, 69, 222, 0.1);
 }
 
 .wordbook-delete {
   flex: 0 0 auto;
   border: none;
   background: transparent;
-  color: rgba(27, 58, 94, 0.45);
+  color: rgba(35, 43, 58, 0.45);
   cursor: pointer;
   font-size: 15px;
   padding: 2px 6px;
@@ -4623,11 +4795,11 @@ body {
 /* Flashcard do modo de prática. */
 .flashcard {
   border-radius: 18px;
-  border: 1px solid rgba(27, 58, 94, 0.15);
+  border: 1px solid rgba(35, 43, 58, 0.15);
   background: #fff;
   padding: 30px 28px;
   text-align: center;
-  box-shadow: 0 14px 40px rgba(30, 58, 95, 0.12);
+  box-shadow: 0 14px 40px rgba(35, 43, 58, 0.12);
 }
 
 .flashcard--done {
@@ -4638,14 +4810,14 @@ body {
 .flashcard .flashcard-progress {
   margin: 0 0 12px;
   font-size: 12.5px;
-  color: rgba(27, 58, 94, 0.6);
+  color: rgba(35, 43, 58, 0.6);
 }
 
 .flashcard .flashcard-word {
   margin: 0;
   font-size: 2rem;
   font-weight: 800;
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 /* 🔊 na palavra do flashcard (ver WordAudioButton, App.js) — ouvir a
@@ -4667,20 +4839,20 @@ body {
   margin: 6px 0 0;
   font-size: 14px;
   line-height: 1.5;
-  color: rgba(27, 58, 94, 0.6);
+  color: rgba(35, 43, 58, 0.6);
 }
 
 .flashcard-back {
   margin-top: 18px;
   padding-top: 18px;
-  border-top: 1px dashed rgba(27, 58, 94, 0.25);
-  color: #1b3a5e;
+  border-top: 1px dashed rgba(35, 43, 58, 0.25);
+  color: #232b3a;
 }
 
 .flashcard .flashcard-meaning {
   margin: 0;
   font-size: 1.15rem;
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 /* "Click to add meaning": texto clicavel no flashcard, sublinhado tracejado
@@ -4689,7 +4861,7 @@ body {
    em WordbookPage), que salva no blur/Enter. */
 .flashcard .flashcard-meaning-clickable {
   cursor: pointer;
-  border-bottom: 1px dashed rgba(27, 58, 94, 0.35);
+  border-bottom: 1px dashed rgba(35, 43, 58, 0.35);
   display: inline-block;
 }
 
@@ -4704,7 +4876,7 @@ body {
   padding: 8px 12px;
   font-size: 1.15rem;
   font-family: inherit;
-  color: #1b3a5e;
+  color: #232b3a;
   border: 2px solid var(--purple-500);
   border-radius: 8px;
   box-sizing: border-box;
@@ -4712,7 +4884,7 @@ body {
 
 .flashcard .flashcard-meaning-input:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+  box-shadow: 0 0 0 3px rgba(96, 103, 240, 0.2);
 }
 
 /* Imagem-mnemônica na frente do card (junto com o significado, palavra
@@ -4724,7 +4896,7 @@ body {
   margin: 4px auto 14px;
   border-radius: 12px;
   object-fit: contain;
-  box-shadow: 0 10px 28px rgba(30, 58, 95, 0.18);
+  box-shadow: 0 10px 28px rgba(35, 43, 58, 0.18);
 }
 
 .flashcard .flashcard-meaning--prompt {
@@ -4741,7 +4913,7 @@ body {
   font-style: italic;
   font-size: 1.1rem;
   line-height: 1.55;
-  color: rgba(27, 58, 94, 0.8);
+  color: rgba(35, 43, 58, 0.8);
 }
 
 /* "Or try to spell it here" (ver WordbookPage, variante com imagem do
@@ -4749,7 +4921,7 @@ body {
 .flashcard-spell {
   margin-top: 20px;
   padding-top: 16px;
-  border-top: 1px dashed rgba(27, 58, 94, 0.2);
+  border-top: 1px dashed rgba(35, 43, 58, 0.2);
 }
 
 .flashcard-spell-label {
@@ -4757,7 +4929,7 @@ body {
   margin-bottom: 8px;
   font-size: 13px;
   font-weight: 700;
-  color: rgba(27, 58, 94, 0.6);
+  color: rgba(35, 43, 58, 0.6);
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
@@ -4773,17 +4945,17 @@ body {
   max-width: 260px;
   padding: 10px 14px;
   border-radius: 10px;
-  border: 1px solid rgba(27, 58, 94, 0.25);
+  border: 1px solid rgba(35, 43, 58, 0.25);
   font-family: inherit;
   font-size: 1rem;
-  color: #1b3a5e;
+  color: #232b3a;
   box-sizing: border-box;
 }
 
 .flashcard-spell-input:focus {
   outline: none;
   border-color: var(--purple-500);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+  box-shadow: 0 0 0 3px rgba(96, 103, 240, 0.2);
 }
 
 .flashcard-spell-check {
@@ -4861,7 +5033,7 @@ body {
   font-weight: 800;
   font-size: 14px;
   cursor: pointer;
-  box-shadow: 0 14px 36px rgba(109, 66, 216, 0.4);
+  box-shadow: 0 14px 36px rgba(76, 69, 222, 0.4);
   transition: background 140ms, transform 140ms;
 }
 
@@ -4885,17 +5057,17 @@ body {
   border: none;
   border-radius: 999px;
   background: #fff;
-  border: 1px solid rgba(109, 66, 216, 0.3);
+  border: 1px solid rgba(76, 69, 222, 0.3);
   color: var(--purple-700);
   font-weight: 800;
   font-size: 14px;
   cursor: pointer;
-  box-shadow: 0 14px 36px rgba(30, 58, 95, 0.22);
+  box-shadow: 0 14px 36px rgba(35, 43, 58, 0.22);
   transition: background 140ms, transform 140ms;
 }
 
 .ask-adele-fab:hover {
-  background: rgba(109, 66, 216, 0.08);
+  background: rgba(76, 69, 222, 0.08);
   transform: translateY(-1px);
 }
 
@@ -4924,8 +5096,8 @@ body {
   padding: 16px;
   border-radius: 16px;
   background: #fff;
-  border: 1px solid rgba(27, 58, 94, 0.15);
-  box-shadow: 0 24px 60px rgba(20, 20, 50, 0.3);
+  border: 1px solid rgba(35, 43, 58, 0.15);
+  box-shadow: 0 24px 60px rgba(26, 33, 48, 0.3);
 }
 
 .word-quickadd-head {
@@ -4933,13 +5105,13 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  color: #1b3a5e;
+  color: #232b3a;
 }
 
 .word-quickadd-close {
   border: none;
   background: transparent;
-  color: rgba(27, 58, 94, 0.5);
+  color: rgba(35, 43, 58, 0.5);
   cursor: pointer;
   font-size: 14px;
   padding: 2px 6px;
@@ -4947,13 +5119,13 @@ body {
 }
 
 .word-quickadd-close:hover {
-  color: #1b3a5e;
-  background: rgba(27, 58, 94, 0.08);
+  color: #232b3a;
+  background: rgba(35, 43, 58, 0.08);
 }
 
 .word-quickadd-context {
   font-size: 11.5px;
-  color: rgba(27, 58, 94, 0.55);
+  color: rgba(35, 43, 58, 0.55);
 }
 
 /* Botão de loop A-B dos players de áudio (ver AudioPlayerControls). */
@@ -4963,14 +5135,18 @@ body {
   letter-spacing: 0;
 }
 
+/* Roxo LITERAL (não var(--purple-700)) de propósito: estes dois estados
+   ficam dentro da pílula amarela ancorada no PDF, e o dono pediu que os
+   players ancorados não mudassem de cor na repaginação de 2026-08-07 — se
+   usassem a variável, virariam índigo junto com o resto do app. */
 .ap-btn.ap-btn-ab.is-armed {
-  color: var(--purple-700);
+  color: #6d42d8;
   outline: 1px solid rgba(109, 66, 216, 0.55);
 }
 
 .ap-btn.ap-btn-ab.is-looping {
   background: rgba(109, 66, 216, 0.22);
-  color: var(--purple-700);
+  color: #6d42d8;
 }
 
 /* Toast + ConfirmDialog — substituem window.alert/window.confirm no fluxo
@@ -4989,7 +5165,7 @@ body {
   max-width: min(92vw, 480px);
   padding: 16px 24px;
   border-radius: 14px;
-  background: #1b3a5e;
+  background: #232b3a;
   color: #fff;
   font-size: 15.5px;
   font-weight: 600;
@@ -5023,7 +5199,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(24, 15, 43, 0.55);
+  background: rgba(35, 43, 58, 0.55);
   padding: 20px;
 }
 
@@ -5051,7 +5227,7 @@ body {
 
 .app-confirm-message {
   margin: 0 0 20px;
-  color: #1b3a5e;
+  color: #232b3a;
   font-size: 15.5px;
   line-height: 1.6;
 }
@@ -5072,12 +5248,12 @@ body {
 }
 
 .app-confirm-btn--cancel {
-  background: rgba(27, 58, 94, 0.08);
-  color: #1b3a5e;
+  background: rgba(35, 43, 58, 0.08);
+  color: #232b3a;
 }
 
 .app-confirm-btn--cancel:hover {
-  background: rgba(27, 58, 94, 0.14);
+  background: rgba(35, 43, 58, 0.14);
 }
 
 .app-confirm-btn--confirm {
@@ -5099,18 +5275,24 @@ body {
 .landing-panel.my-notes-panel {
   max-height: none;
   background: #fbfcfd;
-  border: 1px solid rgba(27, 58, 94, 0.1);
+  border: 1px solid rgba(35, 43, 58, 0.1);
 }
 
 .my-notes-panel {
   max-width: 900px;
   display: flex;
   flex-direction: column;
+  /* Cabeçalho (título, frase de introdução e caixa de busca) alinhado à
+     ESQUERDA — o padrão herdado de .landing-panel é center, e é assim que as
+     outras telas do app fazem (.listening-panel/.profile-panel também usam
+     text-align:left). Passou por "right" numa primeira versão, 2026-08-06;
+     o dono corrigiu logo depois. */
+  text-align: left;
 }
 
 .my-notes-empty {
   margin: 16px 0 0;
-  color: rgba(27, 58, 94, 0.65);
+  color: rgba(35, 43, 58, 0.65);
   font-size: 16px;
   line-height: 1.6;
 }
@@ -5126,11 +5308,16 @@ body {
   margin-top: 14px;
 }
 
+/* Nome do curso no My Notes ("American English A1"), logo abaixo do
+   "Beginner"/"Intermediate" (.course-level-heading) — mesma fonte/peso do
+   título "Choose a dictation source" (Quicksand 600), pedido do dono
+   2026-08-06. Cor e tamanho ficam como estavam. */
 .my-notes-course-title {
   margin: 10px 0 2px;
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 18px;
-  font-weight: 800;
-  color: #1b3a5e;
+  font-weight: 600;
+  color: #232b3a;
 }
 
 .my-notes-card {
@@ -5139,13 +5326,13 @@ body {
   gap: 10px;
   padding: 12px 16px;
   border-radius: 14px;
-  background: #f3f5f7;
-  border: 1px solid rgba(27, 58, 94, 0.12);
+  background: #f2f3f6;
+  border: 1px solid rgba(35, 43, 58, 0.12);
 }
 
 .my-notes-card:hover {
-  background: #eceff2;
-  border-color: rgba(27, 58, 94, 0.22);
+  background: #eaebf0;
+  border-color: rgba(35, 43, 58, 0.22);
 }
 
 .my-notes-card-link {
@@ -5167,7 +5354,7 @@ body {
 .my-notes-card-preview {
   font-size: 15.5px;
   line-height: 1.5;
-  color: rgba(27, 58, 94, 0.75);
+  color: rgba(35, 43, 58, 0.75);
   white-space: pre-line;
 }
 
@@ -5175,7 +5362,7 @@ body {
   flex: 0 0 auto;
   border: none;
   background: transparent;
-  color: rgba(27, 58, 94, 0.45);
+  color: rgba(35, 43, 58, 0.45);
   cursor: pointer;
   font-size: 15px;
   padding: 2px 6px;

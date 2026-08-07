@@ -481,7 +481,7 @@ botão "Continue" próprio do curso, para os 3 cursos.
   `openCourse.png` da Home, borrada e semi-transparente, atrás de Courses, My Words, Listening,
   Dictation, My Profile e Dashboard (Home e as 3 grades de unit não usam esse fundo). **Regra
   de ouro descoberta e corrigida repetidamente**: qualquer "cartão"/retângulo de conteúdo
-  dessas telas precisa de fundo **opaco** (`#f3f5f7`/`#fbfcfd`, não `rgba(...)` translúcido) —
+  dessas telas precisa de fundo **opaco** (`#f2f3f6`/`#fbfcfd`, não `rgba(...)` translúcido) —
   um fundo translúcido deixa a imagem borrada vazar através do texto, tornando-o ilegível. Já
   precisou ser corrigido em `.course-link`/`.vocabulary-link`/`.review-item`/`.unit-search-box`/
   `.wordbook-form`/`.wordbook-entry`/`.profile-course-toggle`/`.profile-reset-btn` e nos

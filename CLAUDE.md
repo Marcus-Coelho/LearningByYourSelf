@@ -485,7 +485,23 @@ Se os PDFs/áudios de origem mudarem, os índices precisam ser regenerados.
 
 6. **Isolamento automático por porta** — pendrive em 3001, PC em 3000. Razão: localStorage é por origem, evitar mistura de usuários.
 
-7. **Fundo desfocado/translúcido (`--page-hero-bg`) nas telas leves** (Courses, My Words, Listening, Dictation, My Profile, Dashboard) — reaproveita a imagem da Home. Qualquer "cartão"/retângulo de conteúdo dentro dessas telas precisa de fundo **opaco** (`#f3f5f7`/`#fbfcfd`, não `rgba(...)` translúcido), senão a imagem vaza através dele — bug já corrigido uma vez, não reintroduzir.
+7. **Fundo desfocado/translúcido (`--page-hero-bg`) nas telas leves** (Courses, My Words, Listening, Dictation, My Profile, Dashboard) — reaproveita a imagem da Home. Qualquer "cartão"/retângulo de conteúdo dentro dessas telas precisa de fundo **opaco** (`#f2f3f6`/`#fbfcfd`, não `rgba(...)` translúcido), senão a imagem vaza através dele — bug já corrigido uma vez, não reintroduzir.
+
+8. **Paleta de cores fechada, 4 cores** (definida pelo dono em 2026-08-07, substituiu o tema
+   roxo+azul-marinho original): `#4c45de` índigo escuro (primária), `#6067f0` índigo claro
+   (hover/ativo), `#232b3a` azul-marinho (texto e superfícies escuras), `#e2e3e7` cinza claro
+   (superfícies/bordas). Declaradas no `:root` de `App.css` como `--brand-600`/`--brand-500`/
+   `--navy-900`/`--gray-200` — **usar essas em código novo**. Os nomes `--purple-*` continuam
+   existindo por serem usados em ~700 lugares, mas hoje guardam os índigos da paleta (não são
+   mais roxo). Cor nova fora da paleta só com pedido explícito.
+   **Exceções deliberadas** (não "esqueci de trocar"): verde/vermelho de acerto e erro
+   (Dictation/Listening/exercícios) — cor É a informação ali; o amarelo do marca-texto do
+   My Notes; o amarelo das pílulas de áudio **ancoradas nos PDFs** (`.audio-anchor`,
+   `.american1-audio-anchor`, `.ap-btn`, `.audio-anchor-inline`, `.wide-player-label`), que o
+   dono pediu explicitamente pra não mexer — por isso `.ap-btn.ap-btn-ab.is-armed/.is-looping`
+   usam roxo LITERAL em vez de `var(--purple-700)`, senão virariam índigo junto com o resto.
+   Os desenhos SVG da mascote Adele (pele, cabelo, olhos) também ficaram intactos — são
+   ilustração de personagem, não cor de interface.
 
 ### ❌ Não Faça
 

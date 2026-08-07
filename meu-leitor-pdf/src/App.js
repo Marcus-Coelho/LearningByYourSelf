@@ -4642,6 +4642,12 @@ function App() {
       ) : activePage === 'courses' ? (
         <main className="landing-page landing-page--courses">
           <div className="landing-panel course-links-panel">
+            {/* Título no alto (pedido do dono, 2026-08-06) — esta era a única
+                tela de conteúdo sem nenhum, começava direto no ReviewCard.
+                Mesmo .eyebrow que titula Listening/Dictation/Ask Adele etc.,
+                e entra na mesma regra compartilhada de título no App.css. */}
+            <p className="eyebrow">Courses</p>
+            <h1>Choose a course to study</h1>
             {userName && (
               <ReviewCard
                 items={reviewQueue}
@@ -5626,7 +5632,11 @@ function App() {
             }}
           >
             <section className="pdf-panel">
-              <div className="pdf-toolbar">
+              {/* Sem ref.unit (Sound Bank aberto direto do menu) o único filho
+                  do toolbar é o título "Sound Bank" — o flex-end padrão o
+                  jogaria pra direita, então aqui o toolbar vira flex-start
+                  pra ele ficar à esquerda como os títulos das outras telas. */}
+              <div className={`pdf-toolbar${ref?.unit ? '' : ' pdf-toolbar-left'}`}>
                 <div className="pdf-toolbar-nav">
                   {ref?.unit ? (
                     <button
@@ -6663,6 +6673,7 @@ function App() {
               backupFolderHandle={backupFolderHandle}
               backupFolderNeedsPermission={backupFolderNeedsPermission}
               onSaveProgressNow={handleSaveProgressFromDashboard}
+              onDownloadProgressFile={handleExportBackup}
             />
           </main>
         );
@@ -7275,6 +7286,7 @@ function DashboardPage({
   backupFolderHandle,
   backupFolderNeedsPermission,
   onSaveProgressNow,
+  onDownloadProgressFile,
 }) {
   const masteredTotal = courseProgress.reduce((sum, course) => sum + course.tally.mastered, 0);
   const unitsTotal = courseProgress.reduce((sum, course) => sum + course.total, 0);
@@ -7304,6 +7316,16 @@ function DashboardPage({
                 : 'Save progress now'}
           </button>
         )}
+        {/* Baixa o mesmo .json do "Export full backup" do My Profile
+            (handleExportBackup) — atalho aqui no Progress, pedido do dono
+            2026-08-06. FORA do isBackupFolderSupported() de propósito: salvar
+            na pasta vinculada só existe no Chrome/Edge (File System Access
+            API), mas baixar um arquivo funciona em qualquer navegador — no
+            Firefox/Safari este vira o único jeito de guardar o progresso a
+            partir desta tela. */}
+        <button type="button" className="upload-button dashboard-save-progress-btn" onClick={onDownloadProgressFile}>
+          Download progress file
+        </button>
       </div>
 
       <div className="dashboard-stats">
@@ -7340,7 +7362,7 @@ function DashboardPage({
         </div>
       </div>
 
-      <h2 className="dashboard-section-title">Progress by course</h2>
+      <h2 className="dashboard-section-title">Progress by course / level</h2>
       <div className="dashboard-courses">
         {courseProgress.map((course, index) => {
           const entry = lastVisitedByCourse[course.id];
@@ -8525,7 +8547,7 @@ function PdfWorkspace({ fileUrl, onPdfChange, defaultScale, initialPage, initial
           } = slots;
 
           const separator = (
-            <div style={{ width: '1px', height: '24px', background: '#ddd', margin: '0 4px' }} />
+            <div style={{ width: '1px', height: '24px', background: '#e2e3e7', margin: '0 4px' }} />
           );
 
           const toolButton = (mode, icon, label) => (
@@ -8547,11 +8569,11 @@ function PdfWorkspace({ fileUrl, onPdfChange, defaultScale, initialPage, initial
                     borderRadius: '6px',
                     cursor: 'pointer',
                     background: activeTool === mode.toLowerCase()
-                      ? 'rgba(109, 66, 216, 0.15)'
+                      ? 'rgba(76, 69, 222, 0.15)'
                       : 'transparent',
-                    color: activeTool === mode.toLowerCase() ? '#6d42d8' : '#444',
+                    color: activeTool === mode.toLowerCase() ? '#4c45de' : '#232b3a',
                     outline: activeTool === mode.toLowerCase()
-                      ? '2px solid rgba(109, 66, 216, 0.35)'
+                      ? '2px solid rgba(76, 69, 222, 0.35)'
                       : 'none',
                     transition: 'background 120ms, color 120ms',
                   }}
@@ -8568,7 +8590,7 @@ function PdfWorkspace({ fileUrl, onPdfChange, defaultScale, initialPage, initial
               <GoToPreviousPage />
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <CurrentPageInput />
-                <span style={{ color: '#6f6689' }}>/</span>
+                <span style={{ color: '#5c6478' }}>/</span>
                 <NumberOfPages />
               </div>
               <GoToNextPage />
@@ -8593,7 +8615,7 @@ function PdfWorkspace({ fileUrl, onPdfChange, defaultScale, initialPage, initial
                   borderRadius: '6px',
                   cursor: 'pointer',
                   background: 'transparent',
-                  color: '#444',
+                  color: '#232b3a',
                 }}
               >
                 {isMaximized ? <IconMinimize /> : <IconMaximize />}
