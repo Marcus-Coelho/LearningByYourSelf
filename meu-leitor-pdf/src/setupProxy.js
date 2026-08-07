@@ -527,15 +527,26 @@ module.exports = function (app) {
     }
   });
 
-  // Tela "Ask AI" (menu principal): pergunta de gramática -> resposta do
-  // Gemini (ver App.js, geminiGrammarHelper.js). Único endpoint deste app
-  // que recebe corpo JSON, daí o express.json() escopado só nele (as outras
-  // rotas usam GET com parâmetro de rota, sem precisar disso). Precisa de
-  // `GEMINI_API_KEY` em meu-leitor-pdf/.env.local (gitignored) — sem ela,
-  // responde 500 com uma mensagem explicando o que falta.
-  app.post('/api/ask-grammar', express.json(), async (req, res) => {
+  // Tela "Ask AI" (menu principal): pergunta de gramática (+ imagem
+  // opcional) -> resposta do Gemini (ver App.js, geminiGrammarHelper.js).
+  // Único endpoint deste app que recebe corpo JSON, daí o express.json()
+  // escopado só nele (as outras rotas usam GET com parâmetro de rota, sem
+  // precisar disso). Precisa de `GEMINI_API_KEY` em
+  // meu-leitor-pdf/.env.local (gitignored) — sem ela, responde 500 com uma
+  // mensagem explicando o que falta.
+  //
+  // limit: '12mb' (o padrão do express.json é ~100kb) — a imagem anexada
+  // chega como data URL base64 dentro do próprio JSON, e base64 infla ~33%
+  // sobre o binário. O cliente já reduz a foto pra 1600px/JPEG 85% antes de
+  // enviar (ver ASK_AI_IMAGE_MAX_DIMENSION em App.js), o que normalmente dá
+  // bem menos de 1MB; essa folga é só pra nenhum print grande esbarrar num
+  // "413 Payload Too Large" silencioso.
+  app.post('/api/ask-grammar', express.json({ limit: '12mb' }), async (req, res) => {
     const question = String(req.body?.question || '').trim();
-    if (!question) {
+    const image = typeof req.body?.image === 'string' ? req.body.image : null;
+    // Pergunta vazia é aceita quando vem imagem (o helper usa um texto
+    // padrão nesse caso) — sem nenhum dos dois, não há o que perguntar.
+    if (!question && !image) {
       res.status(400).json({ error: 'Missing question' });
       return;
     }
@@ -551,7 +562,7 @@ module.exports = function (app) {
       ? { question: String(req.body.previousQuestion), answer: String(req.body.previousAnswer) }
       : null;
     try {
-      const answer = await askGrammarQuestion(question, apiKey, previousExchange);
+      const answer = await askGrammarQuestion(question, apiKey, previousExchange, image);
       res.json({ answer });
     } catch (error) {
       res.status(502).json({ error: 'Could not reach Gemini right now. Please try again.' });

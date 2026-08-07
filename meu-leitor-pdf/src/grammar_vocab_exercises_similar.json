@@ -1,0 +1,6444 @@
+[
+ {
+  "id": "similar-unit-1",
+  "unit": 1,
+  "topic": "am/is/are",
+  "bookInstruction": "Write true sentences, positive or negative. Use is/isn't or are/aren't.",
+  "instruction": "Complete the sentences with am / is / are or 'm not / isn't / aren't. The rest of the sentence tells you if it is positive or negative.",
+  "items": [
+   {
+    "id": "similar-1-1",
+    "prompt": "Sydney and Melbourne _____ in Australia.",
+    "answers": [
+     "are"
+    ]
+   },
+   {
+    "id": "similar-1-2",
+    "prompt": "Rome _____ in Spain. It’s in Italy.",
+    "answers": [
+     "isn’t",
+     "is not"
+    ]
+   },
+   {
+    "id": "similar-1-3",
+    "prompt": "I _____ from Brazil, so Portuguese is my first language.",
+    "answers": [
+     "am",
+     "’m"
+    ]
+   },
+   {
+    "id": "similar-1-4",
+    "prompt": "Elephants _____ small animals. They’re very big.",
+    "answers": [
+     "aren’t",
+     "are not"
+    ]
+   },
+   {
+    "id": "similar-1-5",
+    "prompt": "You _____ late! The meeting started an hour ago.",
+    "answers": [
+     "are",
+     "’re"
+    ]
+   },
+   {
+    "id": "similar-1-6",
+    "prompt": "My parents _____ at home. They’re on holiday in Greece.",
+    "answers": [
+     "aren’t",
+     "are not"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-2",
+  "unit": 2,
+  "topic": "am/is/are (questions)",
+  "bookInstruction": "Write the questions.",
+  "instruction": "Make questions from these words. Put the words in the right order.",
+  "items": [
+   {
+    "id": "similar-2-1",
+    "prompt": "(your sister / a doctor?)",
+    "answers": [
+     "Is your sister a doctor?"
+    ]
+   },
+   {
+    "id": "similar-2-2",
+    "prompt": "(these seats / free?)",
+    "answers": [
+     "Are these seats free?"
+    ]
+   },
+   {
+    "id": "similar-2-3",
+    "prompt": "(where / your parents / from?)",
+    "answers": [
+     "Where are your parents from?"
+    ]
+   },
+   {
+    "id": "similar-2-4",
+    "prompt": "(how old / your brother?)",
+    "answers": [
+     "How old is your brother?"
+    ]
+   },
+   {
+    "id": "similar-2-5",
+    "prompt": "(the shops / open / today?)",
+    "answers": [
+     "Are the shops open today?"
+    ]
+   },
+   {
+    "id": "similar-2-6",
+    "prompt": "(why / you / angry?)",
+    "answers": [
+     "Why are you angry?"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-3",
+  "unit": 3,
+  "topic": "I am doing (present continuous)",
+  "bookInstruction": "What's happening now? Write true sentences.",
+  "instruction": "Put the verb into the present continuous (I am doing).",
+  "items": [
+   {
+    "id": "similar-3-1",
+    "prompt": "Be quiet! The baby _____.",
+    "hint": "(sleep)",
+    "answers": [
+     "is sleeping",
+     "’s sleeping"
+    ]
+   },
+   {
+    "id": "similar-3-2",
+    "prompt": "Look! It _____ again.",
+    "hint": "(rain)",
+    "answers": [
+     "is raining",
+     "’s raining"
+    ]
+   },
+   {
+    "id": "similar-3-3",
+    "prompt": "I can’t talk now. I _____ dinner.",
+    "hint": "(cook)",
+    "answers": [
+     "am cooking",
+     "’m cooking"
+    ]
+   },
+   {
+    "id": "similar-3-4",
+    "prompt": "Where are the children? They _____ in the garden.",
+    "hint": "(play)",
+    "answers": [
+     "are playing",
+     "’re playing"
+    ]
+   },
+   {
+    "id": "similar-3-5",
+    "prompt": "You _____ very fast. Please slow down.",
+    "hint": "(drive)",
+    "answers": [
+     "are driving",
+     "’re driving"
+    ]
+   },
+   {
+    "id": "similar-3-6",
+    "prompt": "Tom isn’t here. He _____ tennis with Ben.",
+    "hint": "(play)",
+    "answers": [
+     "is playing",
+     "’s playing"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-4",
+  "unit": 4,
+  "topic": "are you doing? / (present continuous questions)",
+  "bookInstruction": "Make questions from these words. Put the words in the right order.",
+  "instruction": "Make questions from these words. Put the words in the right order.",
+  "items": [
+   {
+    "id": "similar-4-1",
+    "prompt": "(is / working / Sarah / today)",
+    "answers": [
+     "Is Sarah working today?"
+    ]
+   },
+   {
+    "id": "similar-4-2",
+    "prompt": "(what / the baby / is / doing)",
+    "answers": [
+     "What is the baby doing?",
+     "What’s the baby doing?"
+    ]
+   },
+   {
+    "id": "similar-4-3",
+    "prompt": "(you / are / waiting / for someone)",
+    "answers": [
+     "Are you waiting for someone?"
+    ]
+   },
+   {
+    "id": "similar-4-4",
+    "prompt": "(where / your parents / are / going)",
+    "answers": [
+     "Where are your parents going?"
+    ]
+   },
+   {
+    "id": "similar-4-5",
+    "prompt": "(why / is / crying / the child)",
+    "answers": [
+     "Why is the child crying?",
+     "Why’s the child crying?"
+    ]
+   },
+   {
+    "id": "similar-4-6",
+    "prompt": "(are / listening / the students / to the teacher)",
+    "answers": [
+     "Are the students listening to the teacher?"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-5",
+  "unit": 5,
+  "topic": "I do/work/like etc. (present simple)",
+  "instruction": "Write sentences from these words. Use the right form of the verb (arrive or arrives etc.).",
+  "items": [
+   {
+    "id": "similar-5-1",
+    "prompt": "(usually / late / Daniel / arrive)",
+    "answers": [
+     "Daniel usually arrives late."
+    ]
+   },
+   {
+    "id": "similar-5-2",
+    "prompt": "(never / I / coffee / drink)",
+    "answers": [
+     "I never drink coffee."
+    ]
+   },
+   {
+    "id": "similar-5-3",
+    "prompt": "(often / Rachel / her parents / visit)",
+    "answers": [
+     "Rachel often visits her parents."
+    ]
+   },
+   {
+    "id": "similar-5-4",
+    "prompt": "(always / my brother / early / get up)",
+    "answers": [
+     "My brother always gets up early."
+    ]
+   },
+   {
+    "id": "similar-5-5",
+    "prompt": "(usually / we / at home / eat)",
+    "answers": [
+     "We usually eat at home."
+    ]
+   },
+   {
+    "id": "similar-5-6",
+    "prompt": "(never / Tom / the newspaper / read)",
+    "answers": [
+     "Tom never reads the newspaper."
+    ]
+   },
+   {
+    "id": "similar-5-7",
+    "prompt": "(sometimes / I / to work / walk)",
+    "answers": [
+     "I sometimes walk to work."
+    ]
+   },
+   {
+    "id": "similar-5-8",
+    "prompt": "(often / the children / in the garden / play)",
+    "answers": [
+     "The children often play in the garden."
+    ]
+   }
+  ],
+  "bookInstruction": "Write sentences about yourself.  Use always/never/often/usually/sometimes."
+ },
+ {
+  "id": "similar-unit-6",
+  "unit": 6,
+  "topic": "I don’t … (present simple negative)",
+  "bookInstruction": "Put the verb into the correct form, positive or negative.",
+  "instruction": "Put the verb into the correct form, positive or negative.",
+  "items": [
+   {
+    "id": "similar-6-1",
+    "prompt": "Sophie is a vegetarian. She _____ meat.",
+    "hint": "(eat)",
+    "answers": [
+     "doesn’t eat",
+     "does not eat"
+    ]
+   },
+   {
+    "id": "similar-6-2",
+    "prompt": "My brother is a chef. He _____ very well.",
+    "hint": "(cook)",
+    "answers": [
+     "cooks"
+    ]
+   },
+   {
+    "id": "similar-6-3",
+    "prompt": "We _____ television very often. We prefer reading.",
+    "hint": "(watch)",
+    "answers": [
+     "don’t watch",
+     "do not watch"
+    ]
+   },
+   {
+    "id": "similar-6-4",
+    "prompt": "Tom _____ any foreign languages.",
+    "hint": "(speak)",
+    "answers": [
+     "doesn’t speak",
+     "does not speak"
+    ]
+   },
+   {
+    "id": "similar-6-5",
+    "prompt": "The shops _____ on Sundays. They’re closed all day.",
+    "hint": "(open)",
+    "answers": [
+     "don’t open",
+     "do not open"
+    ]
+   },
+   {
+    "id": "similar-6-6",
+    "prompt": "Julia _____ in an office. She works at home.",
+    "hint": "(work)",
+    "answers": [
+     "doesn’t work",
+     "does not work"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-7",
+  "unit": 7,
+  "topic": "Do you … ? (present simple questions)",
+  "bookInstruction": "Complete the questions. Use these verbs:",
+  "instruction": "Make questions from these words. Put the words in the right order.",
+  "items": [
+   {
+    "id": "similar-7-1",
+    "prompt": "(where / your brother / work?)",
+    "answers": [
+     "Where does your brother work?"
+    ]
+   },
+   {
+    "id": "similar-7-2",
+    "prompt": "(you / speak / Spanish?)",
+    "answers": [
+     "Do you speak Spanish?"
+    ]
+   },
+   {
+    "id": "similar-7-3",
+    "prompt": "(what time / the film / start?)",
+    "answers": [
+     "What time does the film start?"
+    ]
+   },
+   {
+    "id": "similar-7-4",
+    "prompt": "(how much / these shoes / cost?)",
+    "answers": [
+     "How much do these shoes cost?"
+    ]
+   },
+   {
+    "id": "similar-7-5",
+    "prompt": "(your parents / live / near here?)",
+    "answers": [
+     "Do your parents live near here?"
+    ]
+   },
+   {
+    "id": "similar-7-6",
+    "prompt": "(why / Anna / always / arrive / late?)",
+    "answers": [
+     "Why does Anna always arrive late?"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-8",
+  "unit": 8,
+  "topic": "I am doing (present continuous) and / I do (present simple)",
+  "bookInstruction": "Put the verb in the present continuous (I am doing) or the present simple (I do).",
+  "instruction": "Put the verb in the present continuous (I am doing) or the present simple (I do).",
+  "items": [
+   {
+    "id": "similar-8-1",
+    "prompt": "Please don’t make so much noise. I _____ to work.",
+    "hint": "(try)",
+    "answers": [
+     "am trying",
+     "’m trying"
+    ]
+   },
+   {
+    "id": "similar-8-2",
+    "prompt": "Julia _____ in a bank. She’s been there for six years.",
+    "hint": "(work)",
+    "answers": [
+     "works"
+    ]
+   },
+   {
+    "id": "similar-8-3",
+    "prompt": "‘Where’s Tom?’ ‘He _____ a shower.’",
+    "hint": "(have)",
+    "answers": [
+     "is having",
+     "’s having"
+    ]
+   },
+   {
+    "id": "similar-8-4",
+    "prompt": "I _____ coffee very often. I prefer tea.",
+    "hint": "(not/drink)",
+    "answers": [
+     "don’t drink",
+     "do not drink"
+    ]
+   },
+   {
+    "id": "similar-8-5",
+    "prompt": "Look! The bus _____.",
+    "hint": "(come)",
+    "answers": [
+     "is coming",
+     "’s coming"
+    ]
+   },
+   {
+    "id": "similar-8-6",
+    "prompt": "The sun _____ in the east.",
+    "hint": "(rise)",
+    "answers": [
+     "rises"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-9",
+  "unit": 9,
+  "topic": "I have … and I’ve got …",
+  "bookInstruction": "Complete the sentences. Use have, has, don't have or doesn't have.",
+  "instruction": "Complete the sentences. Use have, has, don’t have or doesn’t have.",
+  "items": [
+   {
+    "id": "similar-9-1",
+    "prompt": "Anna is very busy. She _____ much free time.",
+    "answers": [
+     "doesn’t have",
+     "does not have"
+    ]
+   },
+   {
+    "id": "similar-9-2",
+    "prompt": "We can’t get into the house. We _____ a key.",
+    "answers": [
+     "don’t have",
+     "do not have"
+    ]
+   },
+   {
+    "id": "similar-9-3",
+    "prompt": "My flat is small. It _____ only one bedroom.",
+    "answers": [
+     "has"
+    ]
+   },
+   {
+    "id": "similar-9-4",
+    "prompt": "I want to phone Chris, but I _____ his number.",
+    "answers": [
+     "don’t have",
+     "do not have"
+    ]
+   },
+   {
+    "id": "similar-9-5",
+    "prompt": "Sam is lucky. He _____ a lot of good friends.",
+    "answers": [
+     "has"
+    ]
+   },
+   {
+    "id": "similar-9-6",
+    "prompt": "They always walk to work. They _____ a car.",
+    "answers": [
+     "don’t have",
+     "do not have"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-10",
+  "unit": 10,
+  "topic": "was/were",
+  "bookInstruction": "Write questions from these words + was/were. Put the words in the right order.",
+  "instruction": "Write questions from these words + was/were. Put the words in the right order.",
+  "items": [
+   {
+    "id": "similar-10-1",
+    "prompt": "(where / you / last night?)",
+    "answers": [
+     "Where were you last night?"
+    ]
+   },
+   {
+    "id": "similar-10-2",
+    "prompt": "(the film / good?)",
+    "answers": [
+     "Was the film good?"
+    ]
+   },
+   {
+    "id": "similar-10-3",
+    "prompt": "(why / Anna / late?)",
+    "answers": [
+     "Why was Anna late?"
+    ]
+   },
+   {
+    "id": "similar-10-4",
+    "prompt": "(your parents / at the wedding?)",
+    "answers": [
+     "Were your parents at the wedding?"
+    ]
+   },
+   {
+    "id": "similar-10-5",
+    "prompt": "(how / the weather / on holiday?)",
+    "answers": [
+     "How was the weather on holiday?"
+    ]
+   },
+   {
+    "id": "similar-10-6",
+    "prompt": "(the shops / open / yesterday?)",
+    "answers": [
+     "Were the shops open yesterday?"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-11",
+  "unit": 11,
+  "topic": "worked/got/went etc. (past simple)",
+  "bookInstruction": "Write sentences about the past (yesterday / last week etc.).",
+  "instruction": "Put the verb into the past simple. All of these verbs are irregular.",
+  "items": [
+   {
+    "id": "similar-11-1",
+    "prompt": "I _____ up at seven o’clock this morning.",
+    "hint": "(get)",
+    "answers": [
+     "got"
+    ]
+   },
+   {
+    "id": "similar-11-2",
+    "prompt": "We _____ to a great concert last night.",
+    "hint": "(go)",
+    "answers": [
+     "went"
+    ]
+   },
+   {
+    "id": "similar-11-3",
+    "prompt": "Anna _____ her keys yesterday.",
+    "hint": "(lose)",
+    "answers": [
+     "lost"
+    ]
+   },
+   {
+    "id": "similar-11-4",
+    "prompt": "My parents _____ a new house last year.",
+    "hint": "(buy)",
+    "answers": [
+     "bought"
+    ]
+   },
+   {
+    "id": "similar-11-5",
+    "prompt": "The film _____ at nine o’clock.",
+    "hint": "(begin)",
+    "answers": [
+     "began"
+    ]
+   },
+   {
+    "id": "similar-11-6",
+    "prompt": "I _____ Chris at the station this morning.",
+    "hint": "(see)",
+    "answers": [
+     "saw"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-12",
+  "unit": 12,
+  "topic": "I didn’t … Did you … ? / (past simple negative and questions)",
+  "bookInstruction": "Put the verb in the correct form – positive, negative or question.",
+  "instruction": "Put the verb in the correct form – positive, negative or question.",
+  "items": [
+   {
+    "id": "similar-12-1",
+    "prompt": "The film wasn’t very good. We _____ it.",
+    "hint": "(enjoy)",
+    "answers": [
+     "didn’t enjoy",
+     "did not enjoy"
+    ]
+   },
+   {
+    "id": "similar-12-2",
+    "prompt": "‘_____ well last night?’ ‘No, I was awake for hours.’",
+    "hint": "(you/sleep)",
+    "answers": [
+     "Did you sleep"
+    ]
+   },
+   {
+    "id": "similar-12-3",
+    "prompt": "It was a lovely day, so we _____ for a walk.",
+    "hint": "(go)",
+    "answers": [
+     "went"
+    ]
+   },
+   {
+    "id": "similar-12-4",
+    "prompt": "I was very tired, so I _____ to the party.",
+    "hint": "(go)",
+    "answers": [
+     "didn’t go",
+     "did not go"
+    ]
+   },
+   {
+    "id": "similar-12-5",
+    "prompt": "‘Why weren’t you at the meeting?’ ‘I _____ about it.’",
+    "hint": "(know)",
+    "answers": [
+     "didn’t know",
+     "did not know"
+    ]
+   },
+   {
+    "id": "similar-12-6",
+    "prompt": "‘How _____ that?’ ‘I fell off my bike.’",
+    "hint": "(you/do)",
+    "answers": [
+     "did you do"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-13",
+  "unit": 13,
+  "topic": "I was doing (past continuous)",
+  "bookInstruction": "Complete the questions. Use was/were -ing. Use what/where/why if necessary.",
+  "instruction": "Put the verb into the past continuous (I was doing).",
+  "items": [
+   {
+    "id": "similar-13-1",
+    "prompt": "This time yesterday I _____ on the beach.",
+    "hint": "(lie)",
+    "answers": [
+     "was lying"
+    ]
+   },
+   {
+    "id": "similar-13-2",
+    "prompt": "What _____ at six o’clock yesterday evening?",
+    "hint": "(you/do)",
+    "answers": [
+     "were you doing"
+    ]
+   },
+   {
+    "id": "similar-13-3",
+    "prompt": "It _____ when we left the house.",
+    "hint": "(rain)",
+    "answers": [
+     "was raining"
+    ]
+   },
+   {
+    "id": "similar-13-4",
+    "prompt": "They _____ dinner when I arrived.",
+    "hint": "(have)",
+    "answers": [
+     "were having"
+    ]
+   },
+   {
+    "id": "similar-13-5",
+    "prompt": "I saw Anna at the party. She _____ a red dress.",
+    "hint": "(wear)",
+    "answers": [
+     "was wearing"
+    ]
+   },
+   {
+    "id": "similar-13-6",
+    "prompt": "We _____ fast when the accident happened.",
+    "hint": "(not/drive)",
+    "answers": [
+     "weren’t driving",
+     "were not driving"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-14",
+  "unit": 14,
+  "topic": "I was doing (past continuous) and / I did (past simple)",
+  "bookInstruction": "Put the verb into the past continuous or past simple.",
+  "instruction": "Put the verb into the past continuous (I was doing) or the past simple (I did).",
+  "items": [
+   {
+    "id": "similar-14-1",
+    "prompt": "I broke my leg while I _____ football.",
+    "hint": "(play)",
+    "answers": [
+     "was playing"
+    ]
+   },
+   {
+    "id": "similar-14-2",
+    "prompt": "When I got to the office, everybody _____.",
+    "hint": "(work)",
+    "answers": [
+     "was working"
+    ]
+   },
+   {
+    "id": "similar-14-3",
+    "prompt": "It _____ hard, so we didn’t go out.",
+    "hint": "(rain)",
+    "answers": [
+     "was raining"
+    ]
+   },
+   {
+    "id": "similar-14-4",
+    "prompt": "I _____ the door and looked inside the room.",
+    "hint": "(open)",
+    "answers": [
+     "opened"
+    ]
+   },
+   {
+    "id": "similar-14-5",
+    "prompt": "Anna _____ a shower when the phone rang.",
+    "hint": "(have)",
+    "answers": [
+     "was having"
+    ]
+   },
+   {
+    "id": "similar-14-6",
+    "prompt": "We were walking home when we _____ Chris.",
+    "hint": "(meet)",
+    "answers": [
+     "met"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-15",
+  "unit": 15,
+  "topic": "I have done (present perfect 1)",
+  "bookInstruction": "Complete the sentences with a verb from the box.",
+  "instruction": "Put the verb into the present perfect (I have done).",
+  "items": [
+   {
+    "id": "similar-15-1",
+    "prompt": "‘Where’s your key?’ ‘I don’t know. I _____ it.’",
+    "hint": "(lose)",
+    "answers": [
+     "have lost",
+     "’ve lost"
+    ]
+   },
+   {
+    "id": "similar-15-2",
+    "prompt": "You can have this newspaper. I _____ it.",
+    "hint": "(finish)",
+    "answers": [
+     "have finished",
+     "’ve finished"
+    ]
+   },
+   {
+    "id": "similar-15-3",
+    "prompt": "The road is closed. There _____ an accident.",
+    "hint": "(be)",
+    "answers": [
+     "has been",
+     "’s been"
+    ]
+   },
+   {
+    "id": "similar-15-4",
+    "prompt": "Sorry about the mess. I _____ the kitchen yet.",
+    "hint": "(not/clean)",
+    "answers": [
+     "haven’t cleaned",
+     "have not cleaned"
+    ]
+   },
+   {
+    "id": "similar-15-5",
+    "prompt": "‘Is Anna here?’ ‘No, she _____ out.’",
+    "hint": "(go)",
+    "answers": [
+     "has gone",
+     "’s gone"
+    ]
+   },
+   {
+    "id": "similar-15-6",
+    "prompt": "My English _____ a lot since I moved here.",
+    "hint": "(improve)",
+    "answers": [
+     "has improved",
+     "’s improved"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-16",
+  "unit": 16,
+  "topic": "I’ve just … I’ve already … / I haven’t … yet (present perfect 2)",
+  "bookInstruction": "Write questions with yet.",
+  "instruction": "Write sentences with just, already or yet, as shown in brackets.",
+  "items": [
+   {
+    "id": "similar-16-1",
+    "prompt": "Are you hungry? (no — I / just / have / lunch)",
+    "answers": [
+     "I’ve just had lunch",
+     "I have just had lunch"
+    ]
+   },
+   {
+    "id": "similar-16-2",
+    "prompt": "Do you want to see this film? (no — I / already / see / it)",
+    "answers": [
+     "I’ve already seen it",
+     "I have already seen it"
+    ]
+   },
+   {
+    "id": "similar-16-3",
+    "prompt": "Ask him about the meeting. (question — he / arrive / yet?)",
+    "answers": [
+     "Has he arrived yet?"
+    ]
+   },
+   {
+    "id": "similar-16-4",
+    "prompt": "Shall I tell Anna the news? (no — I / already / tell / her)",
+    "answers": [
+     "I’ve already told her",
+     "I have already told her"
+    ]
+   },
+   {
+    "id": "similar-16-5",
+    "prompt": "Is Tom still here? (no — he / just / go / out)",
+    "answers": [
+     "He’s just gone out",
+     "He has just gone out"
+    ]
+   },
+   {
+    "id": "similar-16-6",
+    "prompt": "Ask her about the letter. (question — she / write / it / yet?)",
+    "answers": [
+     "Has she written it yet?"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-17",
+  "unit": 17,
+  "topic": "Have you ever … ? (present perfect 3)",
+  "bookInstruction": "Write gone or been.",
+  "instruction": "Write gone or been.",
+  "items": [
+   {
+    "id": "similar-17-1",
+    "prompt": "Anna isn’t here at the moment. She’s _____ to the shops.",
+    "answers": [
+     "gone"
+    ]
+   },
+   {
+    "id": "similar-17-2",
+    "prompt": "Hello! I’ve just _____ to the shops. Look what I bought.",
+    "answers": [
+     "been"
+    ]
+   },
+   {
+    "id": "similar-17-3",
+    "prompt": "‘Where’s Tom?’ ‘He’s _____ out. He’ll be back at six.’",
+    "answers": [
+     "gone"
+    ]
+   },
+   {
+    "id": "similar-17-4",
+    "prompt": "My parents are on holiday. They’ve _____ to Italy.",
+    "answers": [
+     "gone"
+    ]
+   },
+   {
+    "id": "similar-17-5",
+    "prompt": "Have you ever _____ to Japan?",
+    "answers": [
+     "been"
+    ]
+   },
+   {
+    "id": "similar-17-6",
+    "prompt": "I’ve never _____ to a football match in my life.",
+    "answers": [
+     "been"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-18",
+  "unit": 18,
+  "topic": "How long have you … ? (present perfect 4)",
+  "bookInstruction": "Make questions with How long … ?",
+  "instruction": "Make questions with How long … ?",
+  "items": [
+   {
+    "id": "similar-18-1",
+    "prompt": "Anna is learning Italian. (she / learn / it?)",
+    "answers": [
+     "How long has she been learning it?"
+    ]
+   },
+   {
+    "id": "similar-18-2",
+    "prompt": "I know Tom. (you / know / him?)",
+    "answers": [
+     "How long have you known him?"
+    ]
+   },
+   {
+    "id": "similar-18-3",
+    "prompt": "Sam and Julia are married. (they / be / married?)",
+    "answers": [
+     "How long have they been married?"
+    ]
+   },
+   {
+    "id": "similar-18-4",
+    "prompt": "My brother lives in Canada. (he / live / there?)",
+    "answers": [
+     "How long has he lived there?",
+     "How long has he been living there?"
+    ]
+   },
+   {
+    "id": "similar-18-5",
+    "prompt": "It is raining. (it / rain?)",
+    "answers": [
+     "How long has it been raining?"
+    ]
+   },
+   {
+    "id": "similar-18-6",
+    "prompt": "I have this car. (you / have / it?)",
+    "answers": [
+     "How long have you had it?"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-19",
+  "unit": 19,
+  "topic": "for / since / ago",
+  "bookInstruction": "Complete the sentences with for or since.",
+  "instruction": "Write for, since or ago.",
+  "items": [
+   {
+    "id": "similar-19-1",
+    "prompt": "I’ve lived in this town _____ ten years.",
+    "answers": [
+     "for"
+    ]
+   },
+   {
+    "id": "similar-19-2",
+    "prompt": "I moved to this town ten years _____.",
+    "answers": [
+     "ago"
+    ]
+   },
+   {
+    "id": "similar-19-3",
+    "prompt": "Anna has been ill _____ Monday.",
+    "answers": [
+     "since"
+    ]
+   },
+   {
+    "id": "similar-19-4",
+    "prompt": "We’ve been waiting _____ half an hour.",
+    "answers": [
+     "for"
+    ]
+   },
+   {
+    "id": "similar-19-5",
+    "prompt": "My brother went to Australia three months _____.",
+    "answers": [
+     "ago"
+    ]
+   },
+   {
+    "id": "similar-19-6",
+    "prompt": "I haven’t seen Tom _____ last summer.",
+    "answers": [
+     "since"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-20",
+  "unit": 20,
+  "topic": "I have done (present perfect) and I did (past)",
+  "bookInstruction": "Put the verb in the present perfect or past.",
+  "instruction": "Put the verb in the present perfect (I have done) or the past simple (I did).",
+  "items": [
+   {
+    "id": "similar-20-1",
+    "prompt": "I _____ my car last week.",
+    "hint": "(sell)",
+    "answers": [
+     "sold"
+    ]
+   },
+   {
+    "id": "similar-20-2",
+    "prompt": "I _____ my car, so now I go to work by bus.",
+    "hint": "(sell)",
+    "answers": [
+     "have sold",
+     "’ve sold"
+    ]
+   },
+   {
+    "id": "similar-20-3",
+    "prompt": "Anna _____ to Japan three times.",
+    "hint": "(be)",
+    "answers": [
+     "has been",
+     "’s been"
+    ]
+   },
+   {
+    "id": "similar-20-4",
+    "prompt": "‘_____ the film on TV last night?’ ‘No, I went to bed early.’",
+    "hint": "(you/watch)",
+    "answers": [
+     "Did you watch"
+    ]
+   },
+   {
+    "id": "similar-20-5",
+    "prompt": "Mozart _____ more than 600 pieces of music.",
+    "hint": "(write)",
+    "answers": [
+     "wrote"
+    ]
+   },
+   {
+    "id": "similar-20-6",
+    "prompt": "I can’t find my glasses. _____ them?",
+    "hint": "(you/see)",
+    "answers": [
+     "Have you seen"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-21",
+  "unit": 21,
+  "topic": "is done was done (passive 1)",
+  "bookInstruction": "Complete the sentences. Use the passive (present or past) of these verbs:",
+  "instruction": "Complete the sentences. Use the passive (present or past) of the verb in brackets.",
+  "items": [
+   {
+    "id": "similar-21-1",
+    "prompt": "This house _____ in 1920.",
+    "hint": "(build)",
+    "answers": [
+     "was built"
+    ]
+   },
+   {
+    "id": "similar-21-2",
+    "prompt": "Cheese _____ from milk.",
+    "hint": "(make)",
+    "answers": [
+     "is made"
+    ]
+   },
+   {
+    "id": "similar-21-3",
+    "prompt": "The office _____ every evening.",
+    "hint": "(clean)",
+    "answers": [
+     "is cleaned"
+    ]
+   },
+   {
+    "id": "similar-21-4",
+    "prompt": "My car _____ last week, but the police found it.",
+    "hint": "(steal)",
+    "answers": [
+     "was stolen"
+    ]
+   },
+   {
+    "id": "similar-21-5",
+    "prompt": "These rooms _____ yesterday.",
+    "hint": "(not/clean)",
+    "answers": [
+     "weren’t cleaned",
+     "were not cleaned"
+    ]
+   },
+   {
+    "id": "similar-21-6",
+    "prompt": "How many languages _____ in Switzerland?",
+    "hint": "(speak)",
+    "answers": [
+     "are spoken"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-22",
+  "unit": 22,
+  "topic": "is being done has been done (passive 2)",
+  "bookInstruction": "is being done / has been done (passive 2)",
+  "instruction": "Complete the sentences. Use is/are being … or has/have been … .",
+  "items": [
+   {
+    "id": "similar-22-1",
+    "prompt": "You can’t use the lift. It _____ at the moment.",
+    "hint": "(repair)",
+    "answers": [
+     "is being repaired",
+     "’s being repaired"
+    ]
+   },
+   {
+    "id": "similar-22-2",
+    "prompt": "My car isn’t here. It _____ to the garage.",
+    "hint": "(take)",
+    "answers": [
+     "has been taken",
+     "’s been taken"
+    ]
+   },
+   {
+    "id": "similar-22-3",
+    "prompt": "The road is closed. It _____ this week.",
+    "hint": "(rebuild)",
+    "answers": [
+     "is being rebuilt",
+     "’s being rebuilt"
+    ]
+   },
+   {
+    "id": "similar-22-4",
+    "prompt": "All the money _____. There’s nothing left.",
+    "hint": "(spend)",
+    "answers": [
+     "has been spent",
+     "’s been spent"
+    ]
+   },
+   {
+    "id": "similar-22-5",
+    "prompt": "Look! The house next door _____.",
+    "hint": "(paint)",
+    "answers": [
+     "is being painted",
+     "’s being painted"
+    ]
+   },
+   {
+    "id": "similar-22-6",
+    "prompt": "Those letters _____ yet.",
+    "hint": "(not/send)",
+    "answers": [
+     "haven’t been sent",
+     "have not been sent"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-23",
+  "unit": 23,
+  "topic": "be/have/do in present and past tenses",
+  "bookInstruction": "Write is/are/was/were/have/has.",
+  "instruction": "Write is / are / was / were / have / has / do / does / did.",
+  "items": [
+   {
+    "id": "similar-23-1",
+    "prompt": "Where _____ you born?",
+    "answers": [
+     "were"
+    ]
+   },
+   {
+    "id": "similar-23-2",
+    "prompt": "_____ you got a car?",
+    "answers": [
+     "Have"
+    ]
+   },
+   {
+    "id": "similar-23-3",
+    "prompt": "Anna _____ working at the moment. She’s on holiday.",
+    "answers": [
+     "isn’t",
+     "is not"
+    ]
+   },
+   {
+    "id": "similar-23-4",
+    "prompt": "What time _____ the film start yesterday?",
+    "answers": [
+     "did"
+    ]
+   },
+   {
+    "id": "similar-23-5",
+    "prompt": "‘_____ your brother like football?’ ‘Yes, he loves it.’",
+    "answers": [
+     "Does"
+    ]
+   },
+   {
+    "id": "similar-23-6",
+    "prompt": "My parents _____ never been to England.",
+    "answers": [
+     "have"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-24",
+  "unit": 24,
+  "topic": "Regular and irregular verbs",
+  "bookInstruction": "Complete these sentences. Choose from the box and put the verb into the correct form.",
+  "instruction": "Put the verb into the correct form. Some are past simple (I did), some are past participles after have/has (I have done). All of these verbs are irregular.",
+  "items": [
+   {
+    "id": "similar-24-1",
+    "prompt": "Somebody has _____ my bike.",
+    "hint": "(steal)",
+    "answers": [
+     "stolen"
+    ]
+   },
+   {
+    "id": "similar-24-2",
+    "prompt": "I _____ my keys on the table last night.",
+    "hint": "(leave)",
+    "answers": [
+     "left"
+    ]
+   },
+   {
+    "id": "similar-24-3",
+    "prompt": "Have you ever _____ a really expensive car?",
+    "hint": "(drive)",
+    "answers": [
+     "driven"
+    ]
+   },
+   {
+    "id": "similar-24-4",
+    "prompt": "Anna _____ me a lovely present for my birthday.",
+    "hint": "(give)",
+    "answers": [
+     "gave"
+    ]
+   },
+   {
+    "id": "similar-24-5",
+    "prompt": "The children have _____ all the milk.",
+    "hint": "(drink)",
+    "answers": [
+     "drunk"
+    ]
+   },
+   {
+    "id": "similar-24-6",
+    "prompt": "I’ve never _____ that word before.",
+    "hint": "(hear)",
+    "answers": [
+     "heard"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-25",
+  "unit": 25,
+  "topic": "What are you doing tomorrow?",
+  "bookInstruction": "Put the verb in the present continuous (he is leaving etc.) or present simple (the train leaves etc.).",
+  "instruction": "Put the verb in the present continuous (I am doing) or the present simple (I do) for the future.",
+  "items": [
+   {
+    "id": "similar-25-1",
+    "prompt": "The train _____ at 11.30 every morning.",
+    "hint": "(leave)",
+    "answers": [
+     "leaves"
+    ]
+   },
+   {
+    "id": "similar-25-2",
+    "prompt": "I _____ Anna this evening. We arranged it yesterday.",
+    "hint": "(meet)",
+    "answers": [
+     "am meeting",
+     "’m meeting"
+    ]
+   },
+   {
+    "id": "similar-25-3",
+    "prompt": "What time _____ tonight? It’s on the timetable.",
+    "hint": "(the film / begin)",
+    "answers": [
+     "does the film begin"
+    ]
+   },
+   {
+    "id": "similar-25-4",
+    "prompt": "We _____ to a wedding on Saturday.",
+    "hint": "(go)",
+    "answers": [
+     "are going",
+     "’re going"
+    ]
+   },
+   {
+    "id": "similar-25-5",
+    "prompt": "My flight _____ at 7.15 tomorrow morning.",
+    "hint": "(arrive)",
+    "answers": [
+     "arrives"
+    ]
+   },
+   {
+    "id": "similar-25-6",
+    "prompt": "‘What _____ tomorrow evening?’ ‘Nothing, I’m free.’",
+    "hint": "(you/do)",
+    "answers": [
+     "are you doing"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-26",
+  "unit": 26,
+  "topic": "I’m going to …",
+  "bookInstruction": "Look at the pictures. What is going to happen?",
+  "instruction": "Write sentences with (be) going to.",
+  "items": [
+   {
+    "id": "similar-26-1",
+    "prompt": "Look at those black clouds. (it / rain)",
+    "answers": [
+     "It’s going to rain",
+     "It is going to rain"
+    ]
+   },
+   {
+    "id": "similar-26-2",
+    "prompt": "I’ve decided about tonight. (I / stay / at home)",
+    "answers": [
+     "I’m going to stay at home",
+     "I am going to stay at home"
+    ]
+   },
+   {
+    "id": "similar-26-3",
+    "prompt": "Anna has bought some paint. (she / paint / her room)",
+    "answers": [
+     "She’s going to paint her room",
+     "She is going to paint her room"
+    ]
+   },
+   {
+    "id": "similar-26-4",
+    "prompt": "They’ve saved a lot of money. (they / buy / a house)",
+    "answers": [
+     "They’re going to buy a house",
+     "They are going to buy a house"
+    ]
+   },
+   {
+    "id": "similar-26-5",
+    "prompt": "The driver is going too fast. (he / have / an accident)",
+    "answers": [
+     "He’s going to have an accident",
+     "He is going to have an accident"
+    ]
+   },
+   {
+    "id": "similar-26-6",
+    "prompt": "We haven’t decided yet. (we / not / travel / this summer)",
+    "answers": [
+     "We aren’t going to travel this summer",
+     "We’re not going to travel this summer",
+     "We are not going to travel this summer"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-27",
+  "unit": 27,
+  "topic": "will/shall 1",
+  "bookInstruction": "Put in will ('ll) or won't.",
+  "instruction": "Put in will (’ll) or won’t.",
+  "items": [
+   {
+    "id": "similar-27-1",
+    "prompt": "Don’t worry about the exam. I’m sure you _____ pass.",
+    "answers": [
+     "will",
+     "’ll"
+    ]
+   },
+   {
+    "id": "similar-27-2",
+    "prompt": "Don’t ask Tom to help you. He _____ do it.",
+    "answers": [
+     "won’t",
+     "will not"
+    ]
+   },
+   {
+    "id": "similar-27-3",
+    "prompt": "I’m tired tonight, so I _____ go out.",
+    "answers": [
+     "won’t",
+     "will not"
+    ]
+   },
+   {
+    "id": "similar-27-4",
+    "prompt": "‘Can somebody help me?’ ‘I _____ help you.’",
+    "answers": [
+     "will",
+     "’ll"
+    ]
+   },
+   {
+    "id": "similar-27-5",
+    "prompt": "The car is very old. It _____ last much longer.",
+    "answers": [
+     "won’t",
+     "will not"
+    ]
+   },
+   {
+    "id": "similar-27-6",
+    "prompt": "Anna has studied a lot, so she _____ probably get the job.",
+    "answers": [
+     "will",
+     "’ll"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-28",
+  "unit": 28,
+  "topic": "will/shall 2",
+  "bookInstruction": "Write sentences with Shall we … ? Choose from the two boxes.",
+  "instruction": "Write sentences with Shall I … ? or Shall we … ?",
+  "items": [
+   {
+    "id": "similar-28-1",
+    "prompt": "The room is very hot. (open the window?)",
+    "answers": [
+     "Shall I open the window?"
+    ]
+   },
+   {
+    "id": "similar-28-2",
+    "prompt": "You and a friend are hungry. (get something to eat?)",
+    "answers": [
+     "Shall we get something to eat?"
+    ]
+   },
+   {
+    "id": "similar-28-3",
+    "prompt": "Your friend’s bag looks heavy. (carry it for you?)",
+    "answers": [
+     "Shall I carry it for you?"
+    ]
+   },
+   {
+    "id": "similar-28-4",
+    "prompt": "You and a friend have nothing to do tonight. (go to the cinema?)",
+    "answers": [
+     "Shall we go to the cinema?"
+    ]
+   },
+   {
+    "id": "similar-28-5",
+    "prompt": "It’s dark in here. (turn on the light?)",
+    "answers": [
+     "Shall I turn on the light?",
+     "Shall I turn the light on?"
+    ]
+   },
+   {
+    "id": "similar-28-6",
+    "prompt": "You and a friend can’t decide where to eat. (where / go?)",
+    "answers": [
+     "Where shall we go?"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-29",
+  "unit": 29,
+  "topic": "might",
+  "bookInstruction": "Now write about Ben. Use might where necessary.",
+  "instruction": "Write sentences with might. Use the words in brackets.",
+  "items": [
+   {
+    "id": "similar-29-1",
+    "prompt": "I’m not sure about tonight. (I / go out)",
+    "answers": [
+     "I might go out"
+    ]
+   },
+   {
+    "id": "similar-29-2",
+    "prompt": "Perhaps Anna is in her office. (she / be / in her office)",
+    "answers": [
+     "She might be in her office"
+    ]
+   },
+   {
+    "id": "similar-29-3",
+    "prompt": "It’s possible that it will snow. (it / snow)",
+    "answers": [
+     "It might snow"
+    ]
+   },
+   {
+    "id": "similar-29-4",
+    "prompt": "I’m not sure I’ll have time. (I / not / have / time)",
+    "answers": [
+     "I might not have time"
+    ]
+   },
+   {
+    "id": "similar-29-5",
+    "prompt": "Perhaps Tom is working late. (he / be / working / late)",
+    "answers": [
+     "He might be working late"
+    ]
+   },
+   {
+    "id": "similar-29-6",
+    "prompt": "It’s possible that they won’t come. (they / not / come)",
+    "answers": [
+     "They might not come"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-30",
+  "unit": 30,
+  "topic": "can and could",
+  "bookInstruction": "What do you say in these situations? Use can or could.",
+  "instruction": "Write can / can’t / could / couldn’t.",
+  "items": [
+   {
+    "id": "similar-30-1",
+    "prompt": "I’m sorry, I _____ come to your party next week. I’m away.",
+    "answers": [
+     "can’t",
+     "cannot",
+     "can not"
+    ]
+   },
+   {
+    "id": "similar-30-2",
+    "prompt": "When I was younger, I _____ run very fast.",
+    "answers": [
+     "could"
+    ]
+   },
+   {
+    "id": "similar-30-3",
+    "prompt": "The room was full of people, so we _____ find anywhere to sit.",
+    "answers": [
+     "couldn’t",
+     "could not"
+    ]
+   },
+   {
+    "id": "similar-30-4",
+    "prompt": "_____ you speak any foreign languages?",
+    "answers": [
+     "Can"
+    ]
+   },
+   {
+    "id": "similar-30-5",
+    "prompt": "It was very foggy, so the pilot _____ see the runway.",
+    "answers": [
+     "couldn’t",
+     "could not"
+    ]
+   },
+   {
+    "id": "similar-30-6",
+    "prompt": "I’m not busy tomorrow, so I _____ meet you at eleven.",
+    "answers": [
+     "can",
+     "could"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-31",
+  "unit": 31,
+  "topic": "must mustn’t don’t need to",
+  "bookInstruction": "Write must / mustn't / had to / don't need to.",
+  "instruction": "Write must / mustn’t / don’t need to / doesn’t need to.",
+  "items": [
+   {
+    "id": "similar-31-1",
+    "prompt": "The baby is asleep. You _____ make any noise.",
+    "answers": [
+     "mustn’t",
+     "must not"
+    ]
+   },
+   {
+    "id": "similar-31-2",
+    "prompt": "It’s a great film. You _____ see it.",
+    "answers": [
+     "must"
+    ]
+   },
+   {
+    "id": "similar-31-3",
+    "prompt": "We have plenty of time. We _____ hurry.",
+    "answers": [
+     "don’t need to",
+     "do not need to"
+    ]
+   },
+   {
+    "id": "similar-31-4",
+    "prompt": "This is a secret. You _____ tell anybody.",
+    "answers": [
+     "mustn’t",
+     "must not"
+    ]
+   },
+   {
+    "id": "similar-31-5",
+    "prompt": "Anna has a car, so she _____ take the bus.",
+    "answers": [
+     "doesn’t need to",
+     "does not need to"
+    ]
+   },
+   {
+    "id": "similar-31-6",
+    "prompt": "I’m late. I _____ go now.",
+    "answers": [
+     "must"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-32",
+  "unit": 32,
+  "topic": "should",
+  "bookInstruction": "What do you think? Write sentences with should.",
+  "instruction": "Write sentences with should or shouldn’t.",
+  "items": [
+   {
+    "id": "similar-32-1",
+    "prompt": "Tom is always tired. (he / go to bed / earlier)",
+    "answers": [
+     "He should go to bed earlier"
+    ]
+   },
+   {
+    "id": "similar-32-2",
+    "prompt": "This coat is far too expensive. (you / not / buy / it)",
+    "answers": [
+     "You shouldn’t buy it",
+     "You should not buy it"
+    ]
+   },
+   {
+    "id": "similar-32-3",
+    "prompt": "Anna wants to speak better English. (she / practise / more)",
+    "answers": [
+     "She should practise more",
+     "She should practice more"
+    ]
+   },
+   {
+    "id": "similar-32-4",
+    "prompt": "You drive too fast. (you / drive / more slowly)",
+    "answers": [
+     "You should drive more slowly"
+    ]
+   },
+   {
+    "id": "similar-32-5",
+    "prompt": "The children are watching too much TV. (they / not / watch / so much TV)",
+    "answers": [
+     "They shouldn’t watch so much TV",
+     "They should not watch so much TV"
+    ]
+   },
+   {
+    "id": "similar-32-6",
+    "prompt": "I’ve got a bad cold. (question — what / I / do?)",
+    "answers": [
+     "What should I do?"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-33",
+  "unit": 33,
+  "topic": "I have to …",
+  "bookInstruction": "Which is correct? Sometimes must and have to are both correct.",
+  "instruction": "Complete the sentences with have to / has to / had to / don’t have to / doesn’t have to.",
+  "items": [
+   {
+    "id": "similar-33-1",
+    "prompt": "My eyes are not very good. I _____ wear glasses.",
+    "answers": [
+     "have to"
+    ]
+   },
+   {
+    "id": "similar-33-2",
+    "prompt": "It’s Sunday tomorrow, so Anna _____ get up early.",
+    "answers": [
+     "doesn’t have to",
+     "does not have to"
+    ]
+   },
+   {
+    "id": "similar-33-3",
+    "prompt": "I missed the last bus last night, so I _____ walk home.",
+    "answers": [
+     "had to"
+    ]
+   },
+   {
+    "id": "similar-33-4",
+    "prompt": "Tom works at night, so he _____ sleep during the day.",
+    "answers": [
+     "has to"
+    ]
+   },
+   {
+    "id": "similar-33-5",
+    "prompt": "The museum is free. You _____ pay to go in.",
+    "answers": [
+     "don’t have to",
+     "do not have to"
+    ]
+   },
+   {
+    "id": "similar-33-6",
+    "prompt": "We _____ leave the restaurant early because the children were tired.",
+    "answers": [
+     "had to"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-34",
+  "unit": 34,
+  "topic": "Would you like … ? I’d like …",
+  "bookInstruction": "What do you say to Sue in these situations? Use Would you like to … ?",
+  "instruction": "Write Would you like … ? / Would you like to … ? or I’d like … / I’d like to … .",
+  "items": [
+   {
+    "id": "similar-34-1",
+    "prompt": "Offer your visitor a coffee. (a coffee?)",
+    "answers": [
+     "Would you like a coffee?"
+    ]
+   },
+   {
+    "id": "similar-34-2",
+    "prompt": "Invite Sue to the cinema tonight. (go to the cinema tonight?)",
+    "answers": [
+     "Would you like to go to the cinema tonight?"
+    ]
+   },
+   {
+    "id": "similar-34-3",
+    "prompt": "You are in a shop. Ask for a kilo of apples. (a kilo of apples, please)",
+    "answers": [
+     "I’d like a kilo of apples, please",
+     "I would like a kilo of apples, please"
+    ]
+   },
+   {
+    "id": "similar-34-4",
+    "prompt": "Say what you want to do next year. (learn to drive)",
+    "answers": [
+     "I’d like to learn to drive",
+     "I would like to learn to drive"
+    ]
+   },
+   {
+    "id": "similar-34-5",
+    "prompt": "Offer your friend something to eat. (something to eat?)",
+    "answers": [
+     "Would you like something to eat?"
+    ]
+   },
+   {
+    "id": "similar-34-6",
+    "prompt": "You are in a restaurant. Order the fish. (the fish, please)",
+    "answers": [
+     "I’d like the fish, please",
+     "I would like the fish, please"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-35",
+  "unit": 35,
+  "topic": "Do this! / Don’t do that! / Let’s do this!",
+  "bookInstruction": "Answer with No, don't … or No, let's not … .",
+  "instruction": "Complete the sentences. Use an imperative (Do this! / Don’t do that!) or let’s (Let’s do this!).",
+  "items": [
+   {
+    "id": "similar-35-1",
+    "prompt": "You want to go out with a friend tonight. (go out tonight)",
+    "answers": [
+     "Let’s go out tonight"
+    ]
+   },
+   {
+    "id": "similar-35-2",
+    "prompt": "Tell your friend not to worry. (not / worry)",
+    "answers": [
+     "Don’t worry"
+    ]
+   },
+   {
+    "id": "similar-35-3",
+    "prompt": "You and a friend are tired. Suggest staying at home. (stay at home)",
+    "answers": [
+     "Let’s stay at home"
+    ]
+   },
+   {
+    "id": "similar-35-4",
+    "prompt": "Tell somebody to be careful. (careful)",
+    "answers": [
+     "Be careful"
+    ]
+   },
+   {
+    "id": "similar-35-5",
+    "prompt": "Your friend is going to buy that jacket. Advise against it. (not / buy / it)",
+    "answers": [
+     "Don’t buy it"
+    ]
+   },
+   {
+    "id": "similar-35-6",
+    "prompt": "You and a friend can’t decide. Suggest asking Tom. (ask Tom)",
+    "answers": [
+     "Let’s ask Tom"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-36",
+  "unit": 36,
+  "topic": "I used to …",
+  "instruction": "Complete these sentences. Use used to … or the present simple (I play / he lives etc.).",
+  "items": [
+   {
+    "id": "similar-36-1",
+    "prompt": "I _____ a lot of coffee, but I stopped last year.",
+    "hint": "(drink)",
+    "answers": [
+     "used to drink"
+    ]
+   },
+   {
+    "id": "similar-36-2",
+    "prompt": "‘Do you play any instruments?’ ‘Yes, I _____ the guitar.’",
+    "hint": "(play)",
+    "answers": [
+     "play"
+    ]
+   },
+   {
+    "id": "similar-36-3",
+    "prompt": "Sarah _____ in a bank, but now she’s a teacher.",
+    "hint": "(work)",
+    "answers": [
+     "used to work"
+    ]
+   },
+   {
+    "id": "similar-36-4",
+    "prompt": "We love films. We _____ to the cinema every week.",
+    "hint": "(go)",
+    "answers": [
+     "go"
+    ]
+   },
+   {
+    "id": "similar-36-5",
+    "prompt": "I _____ long hair when I was younger.",
+    "hint": "(have)",
+    "answers": [
+     "used to have"
+    ]
+   },
+   {
+    "id": "similar-36-6",
+    "prompt": "‘Do you go to the gym?’ ‘Yes, I _____ there twice a week.’",
+    "hint": "(go)",
+    "answers": [
+     "go"
+    ]
+   },
+   {
+    "id": "similar-36-7",
+    "prompt": "My parents _____ in a small village before they moved here.",
+    "hint": "(live)",
+    "answers": [
+     "used to live"
+    ]
+   },
+   {
+    "id": "similar-36-8",
+    "prompt": "Ben _____ meat, but now he’s a vegetarian.",
+    "hint": "(eat)",
+    "answers": [
+     "used to eat"
+    ]
+   }
+  ],
+  "bookInstruction": "Complete these sentences.  Use used to or the present simple (I play / he lives etc.)."
+ },
+ {
+  "id": "similar-unit-37",
+  "unit": 37,
+  "topic": "there is / there are",
+  "bookInstruction": "Write there's / is there or it's / is it.",
+  "instruction": "Write there is / there are / is there / are there, or it is / they are.",
+  "items": [
+   {
+    "id": "similar-37-1",
+    "prompt": "_____ a lot of people in the street. What’s happening?",
+    "answers": [
+     "There are"
+    ]
+   },
+   {
+    "id": "similar-37-2",
+    "prompt": "_____ anything interesting on TV tonight?",
+    "answers": [
+     "Is there"
+    ]
+   },
+   {
+    "id": "similar-37-3",
+    "prompt": "I like this town. _____ a nice place to live.",
+    "answers": [
+     "It is",
+     "It’s"
+    ]
+   },
+   {
+    "id": "similar-37-4",
+    "prompt": "How many students _____ in your class?",
+    "answers": [
+     "are there"
+    ]
+   },
+   {
+    "id": "similar-37-5",
+    "prompt": "_____ nothing in the fridge. We need to go shopping.",
+    "answers": [
+     "There is",
+     "There’s"
+    ]
+   },
+   {
+    "id": "similar-37-6",
+    "prompt": "I don’t like those shoes. _____ too expensive.",
+    "answers": [
+     "They are",
+     "They’re"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-38",
+  "unit": 38,
+  "topic": "there was/were there has/have been / there will be",
+  "bookInstruction": "Write there + is / are / was / were / has been / have been / will be.",
+  "instruction": "Write there + is / are / was / were / has been / have been / will be.",
+  "items": [
+   {
+    "id": "similar-38-1",
+    "prompt": "Twenty years ago _____ a cinema in this street, but it closed.",
+    "answers": [
+     "there was"
+    ]
+   },
+   {
+    "id": "similar-38-2",
+    "prompt": "Look at the sky. I think _____ a storm tonight.",
+    "answers": [
+     "there will be",
+     "there’ll be"
+    ]
+   },
+   {
+    "id": "similar-38-3",
+    "prompt": "_____ a lot of accidents on this road recently.",
+    "answers": [
+     "There have been"
+    ]
+   },
+   {
+    "id": "similar-38-4",
+    "prompt": "The party was terrible. _____ only six people there.",
+    "answers": [
+     "There were"
+    ]
+   },
+   {
+    "id": "similar-38-5",
+    "prompt": "_____ a phone call for you while you were out.",
+    "answers": [
+     "There was"
+    ]
+   },
+   {
+    "id": "similar-38-6",
+    "prompt": "Since the new road opened, _____ much less traffic here.",
+    "answers": [
+     "there has been",
+     "there’s been"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-39",
+  "unit": 39,
+  "topic": "It …",
+  "bookInstruction": "Write it or there.",
+  "instruction": "Write it or there.",
+  "items": [
+   {
+    "id": "similar-39-1",
+    "prompt": "_____ was a storm last night. Did you hear it?",
+    "answers": [
+     "There"
+    ]
+   },
+   {
+    "id": "similar-39-2",
+    "prompt": "_____ ’s a long way from here to the station.",
+    "answers": [
+     "It"
+    ]
+   },
+   {
+    "id": "similar-39-3",
+    "prompt": "_____ ’s nobody in the office. Everyone has gone home.",
+    "answers": [
+     "There"
+    ]
+   },
+   {
+    "id": "similar-39-4",
+    "prompt": "What time is _____? I haven’t got my watch.",
+    "answers": [
+     "it"
+    ]
+   },
+   {
+    "id": "similar-39-5",
+    "prompt": "_____ ’s three years since I last saw Anna.",
+    "answers": [
+     "It"
+    ]
+   },
+   {
+    "id": "similar-39-6",
+    "prompt": "Is _____ a bank near here?",
+    "answers": [
+     "there"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-40",
+  "unit": 40,
+  "topic": "I am, I don’t etc.",
+  "bookInstruction": "Put in a verb, positive or negative.",
+  "instruction": "Complete the sentences with a short verb form (I am / I’m not / I do / I don’t / I have / I haven’t etc.).",
+  "items": [
+   {
+    "id": "similar-40-1",
+    "prompt": "‘Are you tired?’ ‘Yes, I _____.’",
+    "answers": [
+     "am"
+    ]
+   },
+   {
+    "id": "similar-40-2",
+    "prompt": "‘Do you like this music?’ ‘No, I _____.’",
+    "answers": [
+     "don’t",
+     "do not"
+    ]
+   },
+   {
+    "id": "similar-40-3",
+    "prompt": "‘Has Anna gone home?’ ‘Yes, she _____.’",
+    "answers": [
+     "has"
+    ]
+   },
+   {
+    "id": "similar-40-4",
+    "prompt": "‘Can you swim?’ ‘No, I _____.’",
+    "answers": [
+     "can’t",
+     "cannot",
+     "can not"
+    ]
+   },
+   {
+    "id": "similar-40-5",
+    "prompt": "‘Were the shops open?’ ‘No, they _____.’",
+    "answers": [
+     "weren’t",
+     "were not"
+    ]
+   },
+   {
+    "id": "similar-40-6",
+    "prompt": "‘Did you enjoy the film?’ ‘Yes, I _____.’",
+    "answers": [
+     "did"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-41",
+  "unit": 41,
+  "topic": "Have you? Are you? Don’t you? etc.",
+  "bookInstruction": "Complete these sentences with a question tag (isn't it? / haven't you? etc.).",
+  "instruction": "Complete these sentences with a question tag (isn’t it? / haven’t you? etc.).",
+  "items": [
+   {
+    "id": "similar-41-1",
+    "prompt": "It’s a beautiful day, _____",
+    "answers": [
+     "isn’t it?"
+    ]
+   },
+   {
+    "id": "similar-41-2",
+    "prompt": "You’ve been to Japan, _____",
+    "answers": [
+     "haven’t you?"
+    ]
+   },
+   {
+    "id": "similar-41-3",
+    "prompt": "Anna doesn’t like fish, _____",
+    "answers": [
+     "does she?"
+    ]
+   },
+   {
+    "id": "similar-41-4",
+    "prompt": "They arrived late, _____",
+    "answers": [
+     "didn’t they?"
+    ]
+   },
+   {
+    "id": "similar-41-5",
+    "prompt": "You can’t drive, _____",
+    "answers": [
+     "can you?"
+    ]
+   },
+   {
+    "id": "similar-41-6",
+    "prompt": "Tom will be here soon, _____",
+    "answers": [
+     "won’t he?"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-42",
+  "unit": 42,
+  "topic": "too/either so am I / neither do I etc.",
+  "bookInstruction": "Answer with Neither … I.",
+  "instruction": "Answer with So … I or Neither … I.",
+  "items": [
+   {
+    "id": "similar-42-1",
+    "prompt": "‘I’m tired.’ ‘_____’",
+    "answers": [
+     "So am I"
+    ]
+   },
+   {
+    "id": "similar-42-2",
+    "prompt": "‘I don’t like coffee.’ ‘_____’",
+    "answers": [
+     "Neither do I"
+    ]
+   },
+   {
+    "id": "similar-42-3",
+    "prompt": "‘I went to bed late last night.’ ‘_____’",
+    "answers": [
+     "So did I"
+    ]
+   },
+   {
+    "id": "similar-42-4",
+    "prompt": "‘I can’t swim.’ ‘_____’",
+    "answers": [
+     "Neither can I"
+    ]
+   },
+   {
+    "id": "similar-42-5",
+    "prompt": "‘I’ve never been to Italy.’ ‘_____’",
+    "answers": [
+     "Neither have I"
+    ]
+   },
+   {
+    "id": "similar-42-6",
+    "prompt": "‘I’d like a cup of tea.’ ‘_____’",
+    "answers": [
+     "So would I"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-43",
+  "unit": 43,
+  "topic": "isn’t, haven’t, don’t etc. (negatives)",
+  "bookInstruction": "Complete these sentences with a negative verb (isn't/haven't/don't etc.).",
+  "instruction": "Make these sentences negative.",
+  "items": [
+   {
+    "id": "similar-43-1",
+    "prompt": "She’s working today.",
+    "answers": [
+     "She isn’t working today",
+     "She’s not working today",
+     "She is not working today"
+    ]
+   },
+   {
+    "id": "similar-43-2",
+    "prompt": "They went to the concert.",
+    "answers": [
+     "They didn’t go to the concert",
+     "They did not go to the concert"
+    ]
+   },
+   {
+    "id": "similar-43-3",
+    "prompt": "I’ve finished my work.",
+    "answers": [
+     "I haven’t finished my work",
+     "I have not finished my work"
+    ]
+   },
+   {
+    "id": "similar-43-4",
+    "prompt": "He can drive.",
+    "answers": [
+     "He can’t drive",
+     "He cannot drive",
+     "He can not drive"
+    ]
+   },
+   {
+    "id": "similar-43-5",
+    "prompt": "The shops open on Sundays.",
+    "answers": [
+     "The shops don’t open on Sundays",
+     "The shops do not open on Sundays"
+    ]
+   },
+   {
+    "id": "similar-43-6",
+    "prompt": "Do that again!",
+    "answers": [
+     "Don’t do that again",
+     "Do not do that again"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-44",
+  "unit": 44,
+  "topic": "is it … ? have you … ? do they … ? etc. / (questions 1)",
+  "bookInstruction": "Make questions with these words. Put the words in the right order.",
+  "instruction": "Make questions with these words. Put the words in the right order.",
+  "items": [
+   {
+    "id": "similar-44-1",
+    "prompt": "(your sister / does / have / a car)",
+    "answers": [
+     "Does your sister have a car?"
+    ]
+   },
+   {
+    "id": "similar-44-2",
+    "prompt": "(where / were / born / you)",
+    "answers": [
+     "Where were you born?"
+    ]
+   },
+   {
+    "id": "similar-44-3",
+    "prompt": "(is / this bag / whose)",
+    "answers": [
+     "Whose is this bag?",
+     "Whose bag is this?"
+    ]
+   },
+   {
+    "id": "similar-44-4",
+    "prompt": "(the train / what time / does / leave)",
+    "answers": [
+     "What time does the train leave?"
+    ]
+   },
+   {
+    "id": "similar-44-5",
+    "prompt": "(you / have / to Spain / been / ever)",
+    "answers": [
+     "Have you ever been to Spain?"
+    ]
+   },
+   {
+    "id": "similar-44-6",
+    "prompt": "(didn’t / you / why / call / me)",
+    "answers": [
+     "Why didn’t you call me?"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-45",
+  "unit": 45,
+  "topic": "Who saw you? Who did you see? / (questions 2)",
+  "bookInstruction": "Make questions with who or what (subject or object).",
+  "instruction": "Make questions with who or what. Be careful: sometimes who/what is the SUBJECT (no did), sometimes the OBJECT (with did).",
+  "items": [
+   {
+    "id": "similar-45-1",
+    "prompt": "Somebody broke the window. (who?)",
+    "answers": [
+     "Who broke the window?"
+    ]
+   },
+   {
+    "id": "similar-45-2",
+    "prompt": "Anna phoned somebody. (who?)",
+    "answers": [
+     "Who did Anna phone?"
+    ]
+   },
+   {
+    "id": "similar-45-3",
+    "prompt": "Something happened last night. (what?)",
+    "answers": [
+     "What happened last night?"
+    ]
+   },
+   {
+    "id": "similar-45-4",
+    "prompt": "Tom said something. (what?)",
+    "answers": [
+     "What did Tom say?"
+    ]
+   },
+   {
+    "id": "similar-45-5",
+    "prompt": "Somebody lives in that house. (who?)",
+    "answers": [
+     "Who lives in that house?"
+    ]
+   },
+   {
+    "id": "similar-45-6",
+    "prompt": "You met somebody at the party. (who?)",
+    "answers": [
+     "Who did you meet at the party?"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-46",
+  "unit": 46,
+  "topic": "Who is she talking to? What is it like? / (questions 3)",
+  "bookInstruction": "Ask questions with What was/were … like?",
+  "instruction": "Ask questions with What is/are … like? or What was/were … like?",
+  "items": [
+   {
+    "id": "similar-46-1",
+    "prompt": "Your friend has just come back from holiday. Ask about the weather.",
+    "answers": [
+     "What was the weather like?"
+    ]
+   },
+   {
+    "id": "similar-46-2",
+    "prompt": "Ask about the food in another country.",
+    "answers": [
+     "What is the food like?",
+     "What’s the food like?"
+    ]
+   },
+   {
+    "id": "similar-46-3",
+    "prompt": "Your friend has just seen a film. Ask about it.",
+    "answers": [
+     "What was the film like?"
+    ]
+   },
+   {
+    "id": "similar-46-4",
+    "prompt": "Ask about the people in another country.",
+    "answers": [
+     "What are the people like?"
+    ]
+   },
+   {
+    "id": "similar-46-5",
+    "prompt": "Your friend has just finished an English course. Ask about the lessons.",
+    "answers": [
+     "What were the lessons like?"
+    ]
+   },
+   {
+    "id": "similar-46-6",
+    "prompt": "Ask about the roads in another country.",
+    "answers": [
+     "What are the roads like?"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-47",
+  "unit": 47,
+  "topic": "What … ? Which … ? How … ? (questions 4)",
+  "instruction": "Complete the questions with How + adjective or adverb (high/long etc.). The reply tells you which word to use.",
+  "items": [
+   {
+    "id": "similar-47-1",
+    "prompt": "_____ is your brother?",
+    "hint": "‘He’s 19.’",
+    "answers": [
+     "How old"
+    ]
+   },
+   {
+    "id": "similar-47-2",
+    "prompt": "_____ is it from here to the airport?",
+    "hint": "‘About 20 kilometres.’",
+    "answers": [
+     "How far"
+    ]
+   },
+   {
+    "id": "similar-47-3",
+    "prompt": "_____ do you go to the cinema?",
+    "hint": "‘About once a month.’",
+    "answers": [
+     "How often"
+    ]
+   },
+   {
+    "id": "similar-47-4",
+    "prompt": "_____ does the journey take?",
+    "hint": "‘About two hours.’",
+    "answers": [
+     "How long"
+    ]
+   },
+   {
+    "id": "similar-47-5",
+    "prompt": "_____ are you?",
+    "hint": "‘One metre seventy-five.’",
+    "answers": [
+     "How tall"
+    ]
+   },
+   {
+    "id": "similar-47-6",
+    "prompt": "_____ do you drive?",
+    "hint": "‘Never more than 100 kilometres an hour.’",
+    "answers": [
+     "How fast"
+    ]
+   },
+   {
+    "id": "similar-47-7",
+    "prompt": "_____ have you lived in this town?",
+    "hint": "‘Since 2015.’",
+    "answers": [
+     "How long"
+    ]
+   },
+   {
+    "id": "similar-47-8",
+    "prompt": "_____ is that box?",
+    "hint": "‘About five kilograms.’",
+    "answers": [
+     "How heavy"
+    ]
+   }
+  ],
+  "bookInstruction": "Write questions with How … ?"
+ },
+ {
+  "id": "similar-unit-48",
+  "unit": 48,
+  "topic": "How long does it take … ?",
+  "bookInstruction": "Read the situations and write sentences with It took … .",
+  "instruction": "Write sentences with It took … or questions with How long does it take … ?",
+  "items": [
+   {
+    "id": "similar-48-1",
+    "prompt": "I walked home. It was a 20-minute walk. (it / 20 minutes / walk home)",
+    "answers": [
+     "It took 20 minutes to walk home",
+     "It took me 20 minutes to walk home"
+    ]
+   },
+   {
+    "id": "similar-48-2",
+    "prompt": "Ask about the journey from London to Paris by train. (how long / from London to Paris / by train?)",
+    "answers": [
+     "How long does it take from London to Paris by train?"
+    ]
+   },
+   {
+    "id": "similar-48-3",
+    "prompt": "Anna learned to drive in six months. (it / Anna / six months / learn to drive)",
+    "answers": [
+     "It took Anna six months to learn to drive"
+    ]
+   },
+   {
+    "id": "similar-48-4",
+    "prompt": "I repaired the car in three hours. (it / me / three hours / repair the car)",
+    "answers": [
+     "It took me three hours to repair the car"
+    ]
+   },
+   {
+    "id": "similar-48-5",
+    "prompt": "Ask about getting to the airport. (how long / get to the airport?)",
+    "answers": [
+     "How long does it take to get to the airport?"
+    ]
+   },
+   {
+    "id": "similar-48-6",
+    "prompt": "We waited a long time for the food. (it / a long time / the food / arrive)",
+    "answers": [
+     "It took a long time for the food to arrive"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-49",
+  "unit": 49,
+  "topic": "Do you know where … ? / I don’t know what … etc",
+  "bookInstruction": "Write questions beginning Do you know … ?",
+  "instruction": "Write questions beginning Do you know … ? Careful with the word order — it is not the same as a direct question.",
+  "items": [
+   {
+    "id": "similar-49-1",
+    "prompt": "Where is the station?",
+    "answers": [
+     "Do you know where the station is?"
+    ]
+   },
+   {
+    "id": "similar-49-2",
+    "prompt": "What time does the film start?",
+    "answers": [
+     "Do you know what time the film starts?"
+    ]
+   },
+   {
+    "id": "similar-49-3",
+    "prompt": "Is Anna at home?",
+    "answers": [
+     "Do you know if Anna is at home?",
+     "Do you know whether Anna is at home?"
+    ]
+   },
+   {
+    "id": "similar-49-4",
+    "prompt": "How much does this cost?",
+    "answers": [
+     "Do you know how much this costs?"
+    ]
+   },
+   {
+    "id": "similar-49-5",
+    "prompt": "Where did Tom go?",
+    "answers": [
+     "Do you know where Tom went?"
+    ]
+   },
+   {
+    "id": "similar-49-6",
+    "prompt": "Has the train left?",
+    "answers": [
+     "Do you know if the train has left?",
+     "Do you know whether the train has left?"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-50",
+  "unit": 50,
+  "topic": "She said that … / He told me that …",
+  "bookInstruction": "Write say/said or tell/told.",
+  "instruction": "Write say / said or tell / told.",
+  "items": [
+   {
+    "id": "similar-50-1",
+    "prompt": "Anna _____ me that she was tired.",
+    "answers": [
+     "told"
+    ]
+   },
+   {
+    "id": "similar-50-2",
+    "prompt": "Tom _____ that he would be late.",
+    "answers": [
+     "said"
+    ]
+   },
+   {
+    "id": "similar-50-3",
+    "prompt": "Can you _____ me the time, please?",
+    "answers": [
+     "tell"
+    ]
+   },
+   {
+    "id": "similar-50-4",
+    "prompt": "What did she _____ to you?",
+    "answers": [
+     "say"
+    ]
+   },
+   {
+    "id": "similar-50-5",
+    "prompt": "They _____ us that the museum was closed.",
+    "answers": [
+     "told"
+    ]
+   },
+   {
+    "id": "similar-50-6",
+    "prompt": "Please don’t _____ anybody about this.",
+    "answers": [
+     "tell"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-51",
+  "unit": 51,
+  "topic": "work/working go/going do/doing",
+  "bookInstruction": "Put the verb in the correct form. Choose from:",
+  "instruction": "Put the verb in the correct form: the infinitive (do), to + infinitive (to do), or -ing (doing).",
+  "items": [
+   {
+    "id": "similar-51-1",
+    "prompt": "I can’t _____ you now. I’m busy.",
+    "hint": "(help)",
+    "answers": [
+     "help"
+    ]
+   },
+   {
+    "id": "similar-51-2",
+    "prompt": "Anna decided _____ at home last night.",
+    "hint": "(stay)",
+    "answers": [
+     "to stay"
+    ]
+   },
+   {
+    "id": "similar-51-3",
+    "prompt": "Do you enjoy _____ to loud music?",
+    "hint": "(listen)",
+    "answers": [
+     "listening"
+    ]
+   },
+   {
+    "id": "similar-51-4",
+    "prompt": "You should _____ a doctor about that.",
+    "hint": "(see)",
+    "answers": [
+     "see"
+    ]
+   },
+   {
+    "id": "similar-51-5",
+    "prompt": "I’ve finished _____ the kitchen.",
+    "hint": "(clean)",
+    "answers": [
+     "cleaning"
+    ]
+   },
+   {
+    "id": "similar-51-6",
+    "prompt": "They want _____ a new house.",
+    "hint": "(buy)",
+    "answers": [
+     "to buy"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-52",
+  "unit": 52,
+  "topic": "to … (I want to do) and -ing (I enjoy doing)",
+  "bookInstruction": "Complete these sentences. Write about yourself. Use to … or -ing.",
+  "instruction": "Put the verb into to … or -ing.",
+  "items": [
+   {
+    "id": "similar-52-1",
+    "prompt": "I hope _____ you again soon.",
+    "hint": "(see)",
+    "answers": [
+     "to see"
+    ]
+   },
+   {
+    "id": "similar-52-2",
+    "prompt": "Anna suggested _____ to the beach.",
+    "hint": "(go)",
+    "answers": [
+     "going"
+    ]
+   },
+   {
+    "id": "similar-52-3",
+    "prompt": "Do you mind _____ a little longer?",
+    "hint": "(wait)",
+    "answers": [
+     "waiting"
+    ]
+   },
+   {
+    "id": "similar-52-4",
+    "prompt": "We’ve decided _____ next month.",
+    "hint": "(move)",
+    "answers": [
+     "to move"
+    ]
+   },
+   {
+    "id": "similar-52-5",
+    "prompt": "I don’t like _____ up early.",
+    "hint": "(get)",
+    "answers": [
+     "getting",
+     "to get"
+    ]
+   },
+   {
+    "id": "similar-52-6",
+    "prompt": "Tom promised _____ me with the work.",
+    "hint": "(help)",
+    "answers": [
+     "to help"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-53",
+  "unit": 53,
+  "topic": "I want you to … / I told you to …",
+  "bookInstruction": "Write sentences beginning I want you … / I don't want you … / Do you want me … ?",
+  "instruction": "Write sentences with want / ask / tell + somebody + to … .",
+  "items": [
+   {
+    "id": "similar-53-1",
+    "prompt": "You want Tom to phone you tonight. (I want …)",
+    "answers": [
+     "I want Tom to phone me tonight"
+    ]
+   },
+   {
+    "id": "similar-53-2",
+    "prompt": "You don’t want Anna to be late. (I don’t want …)",
+    "answers": [
+     "I don’t want Anna to be late",
+     "I do not want Anna to be late"
+    ]
+   },
+   {
+    "id": "similar-53-3",
+    "prompt": "Ask if your friend wants you to wait. (Do you want …?)",
+    "answers": [
+     "Do you want me to wait?"
+    ]
+   },
+   {
+    "id": "similar-53-4",
+    "prompt": "You told the children to be quiet. (I told …)",
+    "answers": [
+     "I told the children to be quiet"
+    ]
+   },
+   {
+    "id": "similar-53-5",
+    "prompt": "You asked Tom to close the door. (I asked …)",
+    "answers": [
+     "I asked Tom to close the door"
+    ]
+   },
+   {
+    "id": "similar-53-6",
+    "prompt": "Your parents don’t want you to drive at night. (My parents don’t want …)",
+    "answers": [
+     "My parents don’t want me to drive at night",
+     "My parents do not want me to drive at night"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-54",
+  "unit": 54,
+  "topic": "I went to the shop to …",
+  "instruction": "Write to or for.",
+  "items": [
+   {
+    "id": "similar-54-1",
+    "prompt": "I went to the supermarket _____ buy some milk.",
+    "answers": [
+     "to"
+    ]
+   },
+   {
+    "id": "similar-54-2",
+    "prompt": "We stopped at a café _____ a cup of tea.",
+    "answers": [
+     "for"
+    ]
+   },
+   {
+    "id": "similar-54-3",
+    "prompt": "Sophie is going to Berlin _____ a job interview.",
+    "answers": [
+     "for"
+    ]
+   },
+   {
+    "id": "similar-54-4",
+    "prompt": "Sophie is going to Berlin _____ visit her sister.",
+    "answers": [
+     "to"
+    ]
+   },
+   {
+    "id": "similar-54-5",
+    "prompt": "I don’t have time _____ lunch today.",
+    "answers": [
+     "for"
+    ]
+   },
+   {
+    "id": "similar-54-6",
+    "prompt": "I don’t have time _____ read the newspaper.",
+    "answers": [
+     "to"
+    ]
+   },
+   {
+    "id": "similar-54-7",
+    "prompt": "He’s saving money _____ a new car.",
+    "answers": [
+     "for"
+    ]
+   },
+   {
+    "id": "similar-54-8",
+    "prompt": "He’s saving money _____ buy a new car.",
+    "answers": [
+     "to"
+    ]
+   },
+   {
+    "id": "similar-54-9",
+    "prompt": "This machine is only _____ making coffee.",
+    "answers": [
+     "for"
+    ]
+   },
+   {
+    "id": "similar-54-10",
+    "prompt": "There’s only space _____ two people in this car.",
+    "answers": [
+     "for"
+    ]
+   }
+  ],
+  "bookInstruction": "Complete these sentences.  Choose from:"
+ },
+ {
+  "id": "similar-unit-55",
+  "unit": 55,
+  "topic": "go to … / go on … / go for … / go -ing",
+  "bookInstruction": "Complete the sentences. Use the words in the box. Use to/on/for if necessary.",
+  "instruction": "Complete the sentences with go/goes/going/went + to, on, for or -ing where necessary.",
+  "items": [
+   {
+    "id": "similar-55-1",
+    "prompt": "It’s a lovely day. Let’s go _____ a walk.",
+    "answers": [
+     "for"
+    ]
+   },
+   {
+    "id": "similar-55-2",
+    "prompt": "Anna goes _____ every Saturday morning. She loves the pool.",
+    "hint": "(swim)",
+    "answers": [
+     "swimming"
+    ]
+   },
+   {
+    "id": "similar-55-3",
+    "prompt": "My parents are going _____ holiday next week.",
+    "answers": [
+     "on"
+    ]
+   },
+   {
+    "id": "similar-55-4",
+    "prompt": "I have to go _____ the dentist tomorrow.",
+    "answers": [
+     "to"
+    ]
+   },
+   {
+    "id": "similar-55-5",
+    "prompt": "We went _____ in the mountains last winter.",
+    "hint": "(ski)",
+    "answers": [
+     "skiing"
+    ]
+   },
+   {
+    "id": "similar-55-6",
+    "prompt": "Tom went _____ bed early because he was tired.",
+    "answers": [
+     "to"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-56",
+  "unit": 56,
+  "topic": "get",
+  "bookInstruction": "Write got in / got out of / got on / got off.",
+  "instruction": "Write got in / got out of / got on / got off / got to.",
+  "items": [
+   {
+    "id": "similar-56-1",
+    "prompt": "The taxi stopped and I _____ it and paid the driver.",
+    "answers": [
+     "got out of"
+    ]
+   },
+   {
+    "id": "similar-56-2",
+    "prompt": "I _____ the bus in the city centre and walked home.",
+    "answers": [
+     "got off"
+    ]
+   },
+   {
+    "id": "similar-56-3",
+    "prompt": "We _____ the train at Oxford and found two seats.",
+    "answers": [
+     "got on"
+    ]
+   },
+   {
+    "id": "similar-56-4",
+    "prompt": "Anna opened the car door and _____.",
+    "answers": [
+     "got in"
+    ]
+   },
+   {
+    "id": "similar-56-5",
+    "prompt": "What time did you _____ the airport?",
+    "answers": [
+     "get to"
+    ]
+   },
+   {
+    "id": "similar-56-6",
+    "prompt": "The plane landed and everybody _____ it.",
+    "answers": [
+     "got off"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-57",
+  "unit": 57,
+  "topic": "do and make",
+  "bookInstruction": "Write make or do in the correct form.",
+  "instruction": "Write make or do in the correct form.",
+  "items": [
+   {
+    "id": "similar-57-1",
+    "prompt": "I have to _____ my homework tonight.",
+    "answers": [
+     "do"
+    ]
+   },
+   {
+    "id": "similar-57-2",
+    "prompt": "Anna is _____ a cake for the party.",
+    "answers": [
+     "making"
+    ]
+   },
+   {
+    "id": "similar-57-3",
+    "prompt": "Could you _____ me a favour?",
+    "answers": [
+     "do"
+    ]
+   },
+   {
+    "id": "similar-57-4",
+    "prompt": "I’m sorry, I _____ a mistake.",
+    "answers": [
+     "made"
+    ]
+   },
+   {
+    "id": "similar-57-5",
+    "prompt": "Who _____ the shopping in your house?",
+    "answers": [
+     "does"
+    ]
+   },
+   {
+    "id": "similar-57-6",
+    "prompt": "Don’t _____ so much noise!",
+    "answers": [
+     "make"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-58",
+  "unit": 58,
+  "topic": "have",
+  "bookInstruction": "Complete the sentences. Use have/had and choose from the list.",
+  "instruction": "Complete the sentences with have / has / had + one of these: a look, a good time, a shower, breakfast, a baby, a chat.",
+  "wordBank": [
+   "a look",
+   "a good time",
+   "a shower",
+   "breakfast",
+   "a baby",
+   "a chat"
+  ],
+  "items": [
+   {
+    "id": "similar-58-1",
+    "prompt": "I never _____ in the morning. I’m not hungry then.",
+    "answers": [
+     "have breakfast"
+    ]
+   },
+   {
+    "id": "similar-58-2",
+    "prompt": "Anna and Tom went to the party and _____.",
+    "answers": [
+     "had a good time"
+    ]
+   },
+   {
+    "id": "similar-58-3",
+    "prompt": "Can I _____ at your newspaper, please?",
+    "answers": [
+     "have a look"
+    ]
+   },
+   {
+    "id": "similar-58-4",
+    "prompt": "I got up and _____ before I went to work.",
+    "answers": [
+     "had a shower"
+    ]
+   },
+   {
+    "id": "similar-58-5",
+    "prompt": "My sister _____ last month. It’s a girl.",
+    "answers": [
+     "had a baby"
+    ]
+   },
+   {
+    "id": "similar-58-6",
+    "prompt": "We met in the street and _____ about the weekend.",
+    "answers": [
+     "had a chat"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-59",
+  "unit": 59,
+  "topic": "I/me / he/him / they/them etc.",
+  "bookInstruction": "Complete the sentences. Use I/me/he/him etc.",
+  "instruction": "Complete the sentences. Use I/me, he/him, she/her, we/us, they/them.",
+  "items": [
+   {
+    "id": "similar-59-1",
+    "prompt": "Anna is a nice person. Do you know _____?",
+    "answers": [
+     "her"
+    ]
+   },
+   {
+    "id": "similar-59-2",
+    "prompt": "Where are the tickets? I can’t find _____.",
+    "answers": [
+     "them"
+    ]
+   },
+   {
+    "id": "similar-59-3",
+    "prompt": "Tom and _____ went to the cinema together.",
+    "answers": [
+     "I"
+    ]
+   },
+   {
+    "id": "similar-59-4",
+    "prompt": "That’s my brother. _____ works in a bank.",
+    "answers": [
+     "He"
+    ]
+   },
+   {
+    "id": "similar-59-5",
+    "prompt": "We’re going out. Do you want to come with _____?",
+    "answers": [
+     "us"
+    ]
+   },
+   {
+    "id": "similar-59-6",
+    "prompt": "I don’t like this film. Please turn _____ off.",
+    "answers": [
+     "it"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-60",
+  "unit": 60,
+  "topic": "my/his/their etc.",
+  "bookInstruction": "Complete the sentences. Use my/his/their etc. with these words:",
+  "instruction": "Write my / our / your / his / her / their / its.",
+  "items": [
+   {
+    "id": "similar-60-1",
+    "prompt": "Anna is looking for _____ keys.",
+    "answers": [
+     "her"
+    ]
+   },
+   {
+    "id": "similar-60-2",
+    "prompt": "Tom lives with _____ parents.",
+    "answers": [
+     "his"
+    ]
+   },
+   {
+    "id": "similar-60-3",
+    "prompt": "We’re going to sell _____ car.",
+    "answers": [
+     "our"
+    ]
+   },
+   {
+    "id": "similar-60-4",
+    "prompt": "The children are doing _____ homework.",
+    "answers": [
+     "their"
+    ]
+   },
+   {
+    "id": "similar-60-5",
+    "prompt": "The hotel has _____ own swimming pool.",
+    "answers": [
+     "its"
+    ]
+   },
+   {
+    "id": "similar-60-6",
+    "prompt": "Have you got _____ passport with you?",
+    "answers": [
+     "your"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-61",
+  "unit": 61,
+  "topic": "Whose is this? It’s mine/yours/hers etc.",
+  "bookInstruction": "Complete these sentences. Use friend(s) of mine/yours etc.",
+  "instruction": "Write mine / yours / his / hers / ours / theirs, or a friend of mine / yours etc.",
+  "items": [
+   {
+    "id": "similar-61-1",
+    "prompt": "This isn’t my bag. _____ is black.",
+    "answers": [
+     "Mine"
+    ]
+   },
+   {
+    "id": "similar-61-2",
+    "prompt": "Whose keys are these? Are they _____?",
+    "answers": [
+     "yours"
+    ]
+   },
+   {
+    "id": "similar-61-3",
+    "prompt": "That car belongs to Anna. It’s _____.",
+    "answers": [
+     "hers"
+    ]
+   },
+   {
+    "id": "similar-61-4",
+    "prompt": "I went to the cinema with _____ last night.",
+    "hint": "(a friend / me)",
+    "answers": [
+     "a friend of mine"
+    ]
+   },
+   {
+    "id": "similar-61-5",
+    "prompt": "We met _____ at the party.",
+    "hint": "(some friends / Tom)",
+    "answers": [
+     "some friends of his"
+    ]
+   },
+   {
+    "id": "similar-61-6",
+    "prompt": "The house on the corner is _____.",
+    "hint": "(they)",
+    "answers": [
+     "theirs"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-62",
+  "unit": 62,
+  "topic": "I/me/my/mine",
+  "bookInstruction": "Write him/her/yours etc.",
+  "instruction": "Write I / me / my / mine (or he/him/his, she/her/hers etc.) — the right one each time.",
+  "items": [
+   {
+    "id": "similar-62-1",
+    "prompt": "_____ ’m going out. See you later.",
+    "answers": [
+     "I"
+    ]
+   },
+   {
+    "id": "similar-62-2",
+    "prompt": "Can you help _____, please?",
+    "answers": [
+     "me"
+    ]
+   },
+   {
+    "id": "similar-62-3",
+    "prompt": "This is _____ brother. His name is Tom.",
+    "answers": [
+     "my"
+    ]
+   },
+   {
+    "id": "similar-62-4",
+    "prompt": "That book isn’t yours. It’s _____.",
+    "answers": [
+     "mine"
+    ]
+   },
+   {
+    "id": "similar-62-5",
+    "prompt": "Anna lost _____ phone yesterday.",
+    "answers": [
+     "her"
+    ]
+   },
+   {
+    "id": "similar-62-6",
+    "prompt": "I gave the money to _____.",
+    "hint": "(Tom)",
+    "answers": [
+     "him"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-63",
+  "unit": 63,
+  "topic": "myself/yourself/themselves etc.",
+  "bookInstruction": "Write sentences with each other.",
+  "instruction": "Complete the sentences with myself / yourself / himself / herself / ourselves / themselves or each other.",
+  "items": [
+   {
+    "id": "similar-63-1",
+    "prompt": "Anna cut _____ while she was cooking.",
+    "answers": [
+     "herself"
+    ]
+   },
+   {
+    "id": "similar-63-2",
+    "prompt": "Tom and I have known _____ for ten years.",
+    "answers": [
+     "each other"
+    ]
+   },
+   {
+    "id": "similar-63-3",
+    "prompt": "Be careful! Don’t hurt _____.",
+    "answers": [
+     "yourself"
+    ]
+   },
+   {
+    "id": "similar-63-4",
+    "prompt": "I made this cake _____.",
+    "answers": [
+     "myself"
+    ]
+   },
+   {
+    "id": "similar-63-5",
+    "prompt": "They looked at _____ and started laughing.",
+    "answers": [
+     "each other"
+    ]
+   },
+   {
+    "id": "similar-63-6",
+    "prompt": "The children are old enough to dress _____.",
+    "answers": [
+     "themselves"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-64",
+  "unit": 64,
+  "topic": "-’s (Kate’s camera / my brother’s car etc.)",
+  "bookInstruction": "Look at the pictures and answer the questions. Use one word only.",
+  "instruction": "Join the two words with -’s or -s’ (or of), like this: “the camera / Kate → Kate’s camera”.",
+  "items": [
+   {
+    "id": "similar-64-1",
+    "prompt": "the car / my brother",
+    "answers": [
+     "my brother’s car"
+    ]
+   },
+   {
+    "id": "similar-64-2",
+    "prompt": "the toys / the children",
+    "answers": [
+     "the children’s toys"
+    ]
+   },
+   {
+    "id": "similar-64-3",
+    "prompt": "the bedroom / the girls",
+    "answers": [
+     "the girls’ bedroom"
+    ]
+   },
+   {
+    "id": "similar-64-4",
+    "prompt": "the name / this street",
+    "answers": [
+     "the name of this street"
+    ]
+   },
+   {
+    "id": "similar-64-5",
+    "prompt": "the birthday / Anna",
+    "answers": [
+     "Anna’s birthday"
+    ]
+   },
+   {
+    "id": "similar-64-6",
+    "prompt": "the office / my parents",
+    "answers": [
+     "my parents’ office"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-65",
+  "unit": 65,
+  "topic": "a/an …",
+  "bookInstruction": "Write sentences. Choose from the two boxes. Use a/an where necessary.",
+  "instruction": "Write a or an. Careful: it depends on the SOUND, not the letter (an hour, a university).",
+  "items": [
+   {
+    "id": "similar-65-1",
+    "prompt": "My sister is _____ engineer.",
+    "answers": [
+     "an"
+    ]
+   },
+   {
+    "id": "similar-65-2",
+    "prompt": "We waited for _____ hour.",
+    "answers": [
+     "an"
+    ]
+   },
+   {
+    "id": "similar-65-3",
+    "prompt": "Tom is studying at _____ university.",
+    "answers": [
+     "a"
+    ]
+   },
+   {
+    "id": "similar-65-4",
+    "prompt": "Would you like _____ apple?",
+    "answers": [
+     "an"
+    ]
+   },
+   {
+    "id": "similar-65-5",
+    "prompt": "She’s got _____ beautiful voice.",
+    "answers": [
+     "a"
+    ]
+   },
+   {
+    "id": "similar-65-6",
+    "prompt": "It happened _____ hour and a half ago.",
+    "answers": [
+     "an"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-66",
+  "unit": 66,
+  "topic": "train(s) bus(es) (singular and plural)",
+  "bookInstruction": "Which is right? Complete the sentences.",
+  "instruction": "Write the plural of the word in brackets, and choose is or are where needed.",
+  "items": [
+   {
+    "id": "similar-66-1",
+    "prompt": "I need to buy some new _____.",
+    "hint": "(knife)",
+    "answers": [
+     "knives"
+    ]
+   },
+   {
+    "id": "similar-66-2",
+    "prompt": "There are three _____ in the garden.",
+    "hint": "(child)",
+    "answers": [
+     "children"
+    ]
+   },
+   {
+    "id": "similar-66-3",
+    "prompt": "The _____ in this hotel are very clean.",
+    "hint": "(room)",
+    "answers": [
+     "rooms"
+    ]
+   },
+   {
+    "id": "similar-66-4",
+    "prompt": "My _____ hurt after all that walking.",
+    "hint": "(foot)",
+    "answers": [
+     "feet"
+    ]
+   },
+   {
+    "id": "similar-66-5",
+    "prompt": "How many _____ are there in your class?",
+    "hint": "(person)",
+    "answers": [
+     "people",
+     "persons"
+    ]
+   },
+   {
+    "id": "similar-66-6",
+    "prompt": "The police _____ looking for the stolen car.",
+    "hint": "(be)",
+    "answers": [
+     "are"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-67",
+  "unit": 67,
+  "topic": "a bottle / some water / (countable/uncountable 1)",
+  "bookInstruction": "What are these things? Write a … of … for each picture.",
+  "instruction": "Write a / an / some. Careful with uncountable nouns (water, music, money — no a/an).",
+  "items": [
+   {
+    "id": "similar-67-1",
+    "prompt": "Would you like _____ water?",
+    "answers": [
+     "some"
+    ]
+   },
+   {
+    "id": "similar-67-2",
+    "prompt": "I bought _____ newspaper this morning.",
+    "answers": [
+     "a"
+    ]
+   },
+   {
+    "id": "similar-67-3",
+    "prompt": "We need _____ information about hotels.",
+    "answers": [
+     "some"
+    ]
+   },
+   {
+    "id": "similar-67-4",
+    "prompt": "She’s looking for _____ job.",
+    "answers": [
+     "a"
+    ]
+   },
+   {
+    "id": "similar-67-5",
+    "prompt": "Can you give me _____ advice?",
+    "answers": [
+     "some"
+    ]
+   },
+   {
+    "id": "similar-67-6",
+    "prompt": "I’d like _____ bottle of milk, please.",
+    "answers": [
+     "a"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-68",
+  "unit": 68,
+  "topic": "a cake / some cake / some cakes / (countable/uncountable 2)",
+  "bookInstruction": "Write a/an or some.",
+  "instruction": "Write a / an or some.",
+  "items": [
+   {
+    "id": "similar-68-1",
+    "prompt": "I had an egg and _____ toast for breakfast.",
+    "answers": [
+     "some"
+    ]
+   },
+   {
+    "id": "similar-68-2",
+    "prompt": "Would you like _____ cheese with your bread?",
+    "answers": [
+     "some"
+    ]
+   },
+   {
+    "id": "similar-68-3",
+    "prompt": "She ate _____ sandwich and drank a glass of juice.",
+    "answers": [
+     "a"
+    ]
+   },
+   {
+    "id": "similar-68-4",
+    "prompt": "There’s _____ chicken in the fridge if you’re hungry.",
+    "answers": [
+     "some"
+    ]
+   },
+   {
+    "id": "similar-68-5",
+    "prompt": "We bought _____ umbrella because it was raining.",
+    "answers": [
+     "an"
+    ]
+   },
+   {
+    "id": "similar-68-6",
+    "prompt": "I need _____ money to pay for the taxi.",
+    "answers": [
+     "some"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-69",
+  "unit": 69,
+  "topic": "a/an and the",
+  "bookInstruction": "Complete the sentences. Use a or the + these words:",
+  "instruction": "Write a / an or the.",
+  "items": [
+   {
+    "id": "similar-69-1",
+    "prompt": "I saw _____ film last night. It was very good.",
+    "answers": [
+     "a"
+    ]
+   },
+   {
+    "id": "similar-69-2",
+    "prompt": "Can you close _____ door, please?",
+    "answers": [
+     "the"
+    ]
+   },
+   {
+    "id": "similar-69-3",
+    "prompt": "She’s got two children, _____ boy and a girl.",
+    "answers": [
+     "a"
+    ]
+   },
+   {
+    "id": "similar-69-4",
+    "prompt": "_____ boy is ten and the girl is seven.",
+    "answers": [
+     "The"
+    ]
+   },
+   {
+    "id": "similar-69-5",
+    "prompt": "Is there _____ bank near here?",
+    "answers": [
+     "a"
+    ]
+   },
+   {
+    "id": "similar-69-6",
+    "prompt": "Who is _____ man standing over there?",
+    "answers": [
+     "the"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-70",
+  "unit": 70,
+  "topic": "the …",
+  "bookInstruction": "Complete these sentences. Choose from the list. Use the if necessary.",
+  "instruction": "Write the where necessary. If no word is needed, write “–”.",
+  "items": [
+   {
+    "id": "similar-70-1",
+    "prompt": "_____ sun is shining today.",
+    "answers": [
+     "The"
+    ]
+   },
+   {
+    "id": "similar-70-2",
+    "prompt": "I don’t like _____ coffee very much.",
+    "answers": [
+     "–",
+     "-"
+    ]
+   },
+   {
+    "id": "similar-70-3",
+    "prompt": "Where is _____ nearest station?",
+    "answers": [
+     "the"
+    ]
+   },
+   {
+    "id": "similar-70-4",
+    "prompt": "_____ children learn languages very quickly.",
+    "answers": [
+     "–",
+     "-"
+    ]
+   },
+   {
+    "id": "similar-70-5",
+    "prompt": "She plays _____ piano beautifully.",
+    "answers": [
+     "the"
+    ]
+   },
+   {
+    "id": "similar-70-6",
+    "prompt": "_____ life is short.",
+    "answers": [
+     "–",
+     "-"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-71",
+  "unit": 71,
+  "topic": "go to work go home go to the cinema",
+  "bookInstruction": "Complete the sentences. Sometimes you need the.",
+  "instruction": "Write the where necessary. If no word is needed, write “–”.",
+  "items": [
+   {
+    "id": "similar-71-1",
+    "prompt": "Anna goes to _____ work by bus every day.",
+    "answers": [
+     "–",
+     "-"
+    ]
+   },
+   {
+    "id": "similar-71-2",
+    "prompt": "We went to _____ cinema last night.",
+    "answers": [
+     "the"
+    ]
+   },
+   {
+    "id": "similar-71-3",
+    "prompt": "What time do the children get home from _____ school?",
+    "answers": [
+     "–",
+     "-"
+    ]
+   },
+   {
+    "id": "similar-71-4",
+    "prompt": "My brother is ill. He’s in _____ hospital.",
+    "answers": [
+     "–",
+     "-",
+     "the"
+    ]
+   },
+   {
+    "id": "similar-71-5",
+    "prompt": "I’m tired. I’m going to _____ bed.",
+    "answers": [
+     "–",
+     "-"
+    ]
+   },
+   {
+    "id": "similar-71-6",
+    "prompt": "Shall we go to _____ theatre this weekend?",
+    "answers": [
+     "the"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-72",
+  "unit": 72,
+  "topic": "I like music I hate exams",
+  "bookInstruction": "Choose seven of these things and write sentences with:",
+  "instruction": "Put the word in brackets into the gap. When you talk about something in general, a countable noun goes in the PLURAL with no the (I like dogs); an uncountable noun does not change (I like music).",
+  "items": [
+   {
+    "id": "similar-72-1",
+    "prompt": "I love _____. I’ve got two at home.",
+    "hint": "(cat)",
+    "answers": [
+     "cats"
+    ]
+   },
+   {
+    "id": "similar-72-2",
+    "prompt": "Tom hates _____. He never goes to the beach.",
+    "hint": "(insect)",
+    "answers": [
+     "insects"
+    ]
+   },
+   {
+    "id": "similar-72-3",
+    "prompt": "Anna is interested in _____.",
+    "hint": "(history)",
+    "answers": [
+     "history"
+    ]
+   },
+   {
+    "id": "similar-72-4",
+    "prompt": "Most people enjoy _____.",
+    "hint": "(music)",
+    "answers": [
+     "music"
+    ]
+   },
+   {
+    "id": "similar-72-5",
+    "prompt": "I don’t like _____ that are too long.",
+    "hint": "(film)",
+    "answers": [
+     "films"
+    ]
+   },
+   {
+    "id": "similar-72-6",
+    "prompt": "Do you like _____? I drink it every morning.",
+    "hint": "(coffee)",
+    "answers": [
+     "coffee"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-73",
+  "unit": 73,
+  "topic": "the … (names of places)",
+  "bookInstruction": "Write the where necessary. If the sentence is already correct, write OK.",
+  "instruction": "Write the where necessary. If no word is needed, write “–”.",
+  "items": [
+   {
+    "id": "similar-73-1",
+    "prompt": "We flew over _____ Alps on the way to Italy.",
+    "answers": [
+     "the"
+    ]
+   },
+   {
+    "id": "similar-73-2",
+    "prompt": "_____ Portugal is in the south of Europe.",
+    "answers": [
+     "–",
+     "-"
+    ]
+   },
+   {
+    "id": "similar-73-3",
+    "prompt": "_____ Amazon is the longest river in South America.",
+    "answers": [
+     "The"
+    ]
+   },
+   {
+    "id": "similar-73-4",
+    "prompt": "Have you ever been to _____ United States?",
+    "answers": [
+     "the"
+    ]
+   },
+   {
+    "id": "similar-73-5",
+    "prompt": "_____ Lake Superior is in North America.",
+    "answers": [
+     "–",
+     "-"
+    ]
+   },
+   {
+    "id": "similar-73-6",
+    "prompt": "My brother lives in _____ Netherlands.",
+    "answers": [
+     "the"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-74",
+  "unit": 74,
+  "topic": "this/that/these/those",
+  "bookInstruction": "Complete the sentences with this is or that's or that.",
+  "instruction": "Write this / that / these / those.",
+  "items": [
+   {
+    "id": "similar-74-1",
+    "prompt": "Look at _____ birds over there in the sky!",
+    "answers": [
+     "those"
+    ]
+   },
+   {
+    "id": "similar-74-2",
+    "prompt": "_____ shoes I’m wearing are very comfortable.",
+    "answers": [
+     "These"
+    ]
+   },
+   {
+    "id": "similar-74-3",
+    "prompt": "Hello, _____ is Anna speaking. Can I talk to Tom?",
+    "answers": [
+     "this"
+    ]
+   },
+   {
+    "id": "similar-74-4",
+    "prompt": "Do you see _____ house at the end of the street?",
+    "answers": [
+     "that"
+    ]
+   },
+   {
+    "id": "similar-74-5",
+    "prompt": "_____ flowers here on my desk are from my sister.",
+    "answers": [
+     "These"
+    ]
+   },
+   {
+    "id": "similar-74-6",
+    "prompt": "I don’t like _____ weather we had last week.",
+    "answers": [
+     "that",
+     "the"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-75",
+  "unit": 75,
+  "topic": "one/ones",
+  "instruction": "Complete the sentences. Use a/an … one with the adjective in brackets. Sometimes you need a comparative (bigger etc.).",
+  "items": [
+   {
+    "id": "similar-75-1",
+    "prompt": "This shirt is too small. I need _____.",
+    "hint": "(big)",
+    "answers": [
+     "a bigger one"
+    ]
+   },
+   {
+    "id": "similar-75-2",
+    "prompt": "My old phone is broken, so I bought _____.",
+    "hint": "(new)",
+    "answers": [
+     "a new one"
+    ]
+   },
+   {
+    "id": "similar-75-3",
+    "prompt": "This hotel is very expensive. Let’s find _____.",
+    "hint": "(cheap)",
+    "answers": [
+     "a cheaper one"
+    ]
+   },
+   {
+    "id": "similar-75-4",
+    "prompt": "That’s not a very good photo. This is _____.",
+    "hint": "(good)",
+    "answers": [
+     "a better one"
+    ]
+   },
+   {
+    "id": "similar-75-5",
+    "prompt": "This room is too noisy. Can we have _____?",
+    "hint": "(quiet)",
+    "answers": [
+     "a quieter one"
+    ]
+   },
+   {
+    "id": "similar-75-6",
+    "prompt": "I don’t want to see the same film again. Let’s watch _____.",
+    "hint": "(different)",
+    "answers": [
+     "a different one"
+    ]
+   },
+   {
+    "id": "similar-75-7",
+    "prompt": "This glass is dirty. Can you bring _____?",
+    "hint": "(clean)",
+    "answers": [
+     "a clean one"
+    ]
+   },
+   {
+    "id": "similar-75-8",
+    "prompt": "My coat isn’t warm enough. I want _____.",
+    "hint": "(warm)",
+    "answers": [
+     "a warmer one"
+    ]
+   }
+  ],
+  "bookInstruction": "Complete the sentences.  Use a/an … one.  Use the words in the list."
+ },
+ {
+  "id": "similar-unit-76",
+  "unit": 76,
+  "topic": "some and any",
+  "bookInstruction": "Write something/somebody or anything/anybody.",
+  "instruction": "Write some / any / something / anything / somebody / anybody.",
+  "items": [
+   {
+    "id": "similar-76-1",
+    "prompt": "I’m hungry. I’d like _____ to eat.",
+    "answers": [
+     "something"
+    ]
+   },
+   {
+    "id": "similar-76-2",
+    "prompt": "There isn’t _____ milk in the fridge.",
+    "answers": [
+     "any"
+    ]
+   },
+   {
+    "id": "similar-76-3",
+    "prompt": "Did _____ phone while I was out?",
+    "answers": [
+     "anybody",
+     "anyone"
+    ]
+   },
+   {
+    "id": "similar-76-4",
+    "prompt": "I bought _____ new shoes yesterday.",
+    "answers": [
+     "some"
+    ]
+   },
+   {
+    "id": "similar-76-5",
+    "prompt": "Would you like _____ coffee?",
+    "answers": [
+     "some",
+     "any"
+    ]
+   },
+   {
+    "id": "similar-76-6",
+    "prompt": "She left without saying _____ to us.",
+    "answers": [
+     "anything"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-77",
+  "unit": 77,
+  "topic": "not + any no none",
+  "bookInstruction": "Write short answers (one or two words) to these questions. Use none where necessary.",
+  "instruction": "Write no or none, or any + a noun.",
+  "items": [
+   {
+    "id": "similar-77-1",
+    "prompt": "The fridge is empty. There’s _____ food in it.",
+    "answers": [
+     "no"
+    ]
+   },
+   {
+    "id": "similar-77-2",
+    "prompt": "‘How many eggs have we got?’ ‘_____.’",
+    "answers": [
+     "None"
+    ]
+   },
+   {
+    "id": "similar-77-3",
+    "prompt": "I couldn’t buy anything because I had _____ money.",
+    "answers": [
+     "no"
+    ]
+   },
+   {
+    "id": "similar-77-4",
+    "prompt": "‘How much did it cost?’ ‘Nothing. It was free, so I paid _____.’",
+    "answers": [
+     "nothing"
+    ]
+   },
+   {
+    "id": "similar-77-5",
+    "prompt": "There were _____ of my friends at the party.",
+    "hint": "(none)",
+    "answers": [
+     "none"
+    ]
+   },
+   {
+    "id": "similar-77-6",
+    "prompt": "She doesn’t have _____ brothers or sisters.",
+    "answers": [
+     "any"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-78",
+  "unit": 78,
+  "topic": "not + anybody/anything / nobody/nothing",
+  "instruction": "Complete the sentences. Use nobody / no-one / nothing or anybody / anyone / anything.",
+  "items": [
+   {
+    "id": "similar-78-1",
+    "prompt": "The office was empty. _____ was working.",
+    "answers": [
+     "nobody",
+     "no-one",
+     "no one"
+    ]
+   },
+   {
+    "id": "similar-78-2",
+    "prompt": "I was very hungry. I hadn’t eaten _____ all day.",
+    "answers": [
+     "anything"
+    ]
+   },
+   {
+    "id": "similar-78-3",
+    "prompt": "Don’t tell _____ about this. It’s a secret.",
+    "answers": [
+     "anybody",
+     "anyone"
+    ]
+   },
+   {
+    "id": "similar-78-4",
+    "prompt": "‘What’s wrong?’ ‘_____. I’m fine.’",
+    "answers": [
+     "nothing"
+    ]
+   },
+   {
+    "id": "similar-78-5",
+    "prompt": "The party was terrible. _____ enjoyed it.",
+    "answers": [
+     "nobody",
+     "no-one",
+     "no one"
+    ]
+   },
+   {
+    "id": "similar-78-6",
+    "prompt": "She left the house without saying _____.",
+    "answers": [
+     "anything"
+    ]
+   },
+   {
+    "id": "similar-78-7",
+    "prompt": "I looked in the fridge, but there was _____ to eat.",
+    "answers": [
+     "nothing"
+    ]
+   },
+   {
+    "id": "similar-78-8",
+    "prompt": "It’s a secret between us. _____ else knows.",
+    "answers": [
+     "nobody",
+     "no-one",
+     "no one"
+    ]
+   },
+   {
+    "id": "similar-78-9",
+    "prompt": "I don’t know _____ in this city. I’ve just arrived.",
+    "answers": [
+     "anybody",
+     "anyone"
+    ]
+   },
+   {
+    "id": "similar-78-10",
+    "prompt": "The museum was free. It didn’t cost _____.",
+    "answers": [
+     "anything"
+    ]
+   }
+  ],
+  "bookInstruction": "Complete the sentences.  Use:"
+ },
+ {
+  "id": "similar-unit-79",
+  "unit": 79,
+  "topic": "somebody/anything/nowhere etc.",
+  "bookInstruction": "Write somebody/anything/nowhere etc.",
+  "instruction": "Write somebody / anybody / nobody / everybody, something / anything / nothing / everything, somewhere / anywhere / nowhere / everywhere.",
+  "items": [
+   {
+    "id": "similar-79-1",
+    "prompt": "I’ve lost my keys. I’ve looked _____ and I can’t find them.",
+    "answers": [
+     "everywhere"
+    ]
+   },
+   {
+    "id": "similar-79-2",
+    "prompt": "There’s _____ at the door. Can you see who it is?",
+    "answers": [
+     "somebody",
+     "someone"
+    ]
+   },
+   {
+    "id": "similar-79-3",
+    "prompt": "The town was empty. There was _____ to go.",
+    "answers": [
+     "nowhere"
+    ]
+   },
+   {
+    "id": "similar-79-4",
+    "prompt": "Would you like _____ to drink?",
+    "answers": [
+     "something",
+     "anything"
+    ]
+   },
+   {
+    "id": "similar-79-5",
+    "prompt": "_____ knows the answer. We asked the whole class.",
+    "answers": [
+     "Nobody",
+     "No-one",
+     "No one"
+    ]
+   },
+   {
+    "id": "similar-79-6",
+    "prompt": "She told me _____ about the accident.",
+    "answers": [
+     "everything"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-80",
+  "unit": 80,
+  "topic": "every and all",
+  "bookInstruction": "Complete the sentences. Use one word only each time.",
+  "instruction": "Write every / everybody / everything / everywhere or all.",
+  "items": [
+   {
+    "id": "similar-80-1",
+    "prompt": "I go swimming _____ day.",
+    "answers": [
+     "every"
+    ]
+   },
+   {
+    "id": "similar-80-2",
+    "prompt": "She was in bed _____ day yesterday because she was ill.",
+    "answers": [
+     "all"
+    ]
+   },
+   {
+    "id": "similar-80-3",
+    "prompt": "_____ enjoyed the party. It was great.",
+    "answers": [
+     "Everybody",
+     "Everyone"
+    ]
+   },
+   {
+    "id": "similar-80-4",
+    "prompt": "I’ve looked _____ for my glasses.",
+    "answers": [
+     "everywhere"
+    ]
+   },
+   {
+    "id": "similar-80-5",
+    "prompt": "_____ the shops are closed today.",
+    "answers": [
+     "All"
+    ]
+   },
+   {
+    "id": "similar-80-6",
+    "prompt": "Is _____ ready? We can start now.",
+    "answers": [
+     "everything",
+     "everybody",
+     "everyone"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-81",
+  "unit": 81,
+  "topic": "all most some any no/none",
+  "bookInstruction": "Complete the sentences. Use the word in brackets (some/most etc.).",
+  "instruction": "Complete the sentences with the word in brackets. Use of where necessary.",
+  "items": [
+   {
+    "id": "similar-81-1",
+    "prompt": "_____ my friends live in this city.",
+    "hint": "(most)",
+    "answers": [
+     "Most of"
+    ]
+   },
+   {
+    "id": "similar-81-2",
+    "prompt": "_____ people like chocolate.",
+    "hint": "(most)",
+    "answers": [
+     "Most"
+    ]
+   },
+   {
+    "id": "similar-81-3",
+    "prompt": "I’ve read _____ these books.",
+    "hint": "(all)",
+    "answers": [
+     "all of",
+     "all"
+    ]
+   },
+   {
+    "id": "similar-81-4",
+    "prompt": "_____ the students passed the exam. Not one failed.",
+    "hint": "(none)",
+    "answers": [
+     "None of"
+    ]
+   },
+   {
+    "id": "similar-81-5",
+    "prompt": "_____ birds can fly, but not all of them.",
+    "hint": "(some)",
+    "answers": [
+     "Some"
+    ]
+   },
+   {
+    "id": "similar-81-6",
+    "prompt": "Do _____ you speak French?",
+    "hint": "(any)",
+    "answers": [
+     "any of"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-82",
+  "unit": 82,
+  "topic": "both / either / neither",
+  "instruction": "Write both / either / neither. Use of where necessary.",
+  "items": [
+   {
+    "id": "similar-82-1",
+    "prompt": "I have two brothers. _____ them live in Canada.",
+    "answers": [
+     "both of"
+    ]
+   },
+   {
+    "id": "similar-82-2",
+    "prompt": "There are two restaurants near here, but _____ them is open on Sunday.",
+    "answers": [
+     "neither of"
+    ]
+   },
+   {
+    "id": "similar-82-3",
+    "prompt": "It was a great concert. _____ singers were excellent.",
+    "answers": [
+     "both"
+    ]
+   },
+   {
+    "id": "similar-82-4",
+    "prompt": "‘Would you like tea or coffee?’ ‘_____, thanks. I’ll have water.’",
+    "answers": [
+     "neither"
+    ]
+   },
+   {
+    "id": "similar-82-5",
+    "prompt": "‘Which of these two jackets do you prefer?’ ‘_____. It doesn’t matter.’",
+    "answers": [
+     "either"
+    ]
+   },
+   {
+    "id": "similar-82-6",
+    "prompt": "I bought two shirts, but _____ them fitted me.",
+    "answers": [
+     "neither of"
+    ]
+   },
+   {
+    "id": "similar-82-7",
+    "prompt": "We stayed two nights at the hotel and it rained _____ nights.",
+    "answers": [
+     "both"
+    ]
+   },
+   {
+    "id": "similar-82-8",
+    "prompt": "‘Is Marco Italian or Spanish?’ ‘_____. He’s Portuguese.’",
+    "answers": [
+     "neither"
+    ]
+   },
+   {
+    "id": "similar-82-9",
+    "prompt": "‘Shall we go on Friday or Saturday?’ ‘_____ day is fine for me.’",
+    "answers": [
+     "either"
+    ]
+   },
+   {
+    "id": "similar-82-10",
+    "prompt": "Sam has two sisters. I haven’t met _____ them.",
+    "answers": [
+     "either of"
+    ]
+   }
+  ],
+  "bookInstruction": "Complete the sentences for the pictures.  Use Both … and Neither … ."
+ },
+ {
+  "id": "similar-unit-83",
+  "unit": 83,
+  "topic": "a lot much many",
+  "bookInstruction": "Write sentences about these people. Use much and a lot.",
+  "instruction": "Write much / many / a lot of.",
+  "items": [
+   {
+    "id": "similar-83-1",
+    "prompt": "I don’t have _____ time today.",
+    "answers": [
+     "much",
+     "a lot of"
+    ]
+   },
+   {
+    "id": "similar-83-2",
+    "prompt": "How _____ people were at the meeting?",
+    "answers": [
+     "many"
+    ]
+   },
+   {
+    "id": "similar-83-3",
+    "prompt": "There’s _____ traffic in the city centre this morning.",
+    "answers": [
+     "a lot of"
+    ]
+   },
+   {
+    "id": "similar-83-4",
+    "prompt": "She doesn’t eat _____ vegetables.",
+    "answers": [
+     "many",
+     "a lot of"
+    ]
+   },
+   {
+    "id": "similar-83-5",
+    "prompt": "We had _____ fun at the party.",
+    "answers": [
+     "a lot of"
+    ]
+   },
+   {
+    "id": "similar-83-6",
+    "prompt": "How _____ does this jacket cost?",
+    "answers": [
+     "much"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-84",
+  "unit": 84,
+  "topic": "(a) little (a) few",
+  "bookInstruction": "Write little / a little or few / a few.",
+  "instruction": "Write little / a little or few / a few. Remember: a little/a few = some; little/few = not much/not many (a negative idea).",
+  "items": [
+   {
+    "id": "similar-84-1",
+    "prompt": "Would you like _____ milk in your coffee?",
+    "answers": [
+     "a little"
+    ]
+   },
+   {
+    "id": "similar-84-2",
+    "prompt": "She has _____ friends here, so she feels lonely.",
+    "answers": [
+     "few"
+    ]
+   },
+   {
+    "id": "similar-84-3",
+    "prompt": "I speak _____ words of Italian, so I can order food.",
+    "answers": [
+     "a few"
+    ]
+   },
+   {
+    "id": "similar-84-4",
+    "prompt": "Hurry! We have very _____ time.",
+    "answers": [
+     "little"
+    ]
+   },
+   {
+    "id": "similar-84-5",
+    "prompt": "Let’s go for a walk. We have _____ minutes before the film.",
+    "answers": [
+     "a few"
+    ]
+   },
+   {
+    "id": "similar-84-6",
+    "prompt": "He’s not a good cook. He knows very _____ about food.",
+    "answers": [
+     "little"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-85",
+  "unit": 85,
+  "topic": "old/nice/interesting etc. (adjectives)",
+  "bookInstruction": "Put the words in the right order.",
+  "instruction": "Put the words in the right order.",
+  "items": [
+   {
+    "id": "similar-85-1",
+    "prompt": "(a / jacket / new / black)",
+    "answers": [
+     "a new black jacket"
+    ]
+   },
+   {
+    "id": "similar-85-2",
+    "prompt": "(an / table / old / wooden)",
+    "answers": [
+     "an old wooden table"
+    ]
+   },
+   {
+    "id": "similar-85-3",
+    "prompt": "(a / house / big / beautiful)",
+    "answers": [
+     "a beautiful big house"
+    ]
+   },
+   {
+    "id": "similar-85-4",
+    "prompt": "(smells / the dinner / good)",
+    "answers": [
+     "the dinner smells good"
+    ]
+   },
+   {
+    "id": "similar-85-5",
+    "prompt": "(a / woman / young / tall)",
+    "answers": [
+     "a tall young woman"
+    ]
+   },
+   {
+    "id": "similar-85-6",
+    "prompt": "(tastes / this soup / delicious)",
+    "answers": [
+     "this soup tastes delicious"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-86",
+  "unit": 86,
+  "topic": "quickly/badly/suddenly etc. (adverbs)",
+  "bookInstruction": "Write good or well.",
+  "instruction": "Write the adjective or the adverb — good/well, quick/quickly, careful/carefully etc.",
+  "items": [
+   {
+    "id": "similar-86-1",
+    "prompt": "Anna speaks English very _____.",
+    "hint": "(good / well)",
+    "answers": [
+     "well"
+    ]
+   },
+   {
+    "id": "similar-86-2",
+    "prompt": "Your English is very _____.",
+    "hint": "(good / well)",
+    "answers": [
+     "good"
+    ]
+   },
+   {
+    "id": "similar-86-3",
+    "prompt": "Please drive more _____.",
+    "hint": "(careful / carefully)",
+    "answers": [
+     "carefully"
+    ]
+   },
+   {
+    "id": "similar-86-4",
+    "prompt": "Tom is a _____ driver.",
+    "hint": "(careful / carefully)",
+    "answers": [
+     "careful"
+    ]
+   },
+   {
+    "id": "similar-86-5",
+    "prompt": "She learns languages very _____.",
+    "hint": "(quick / quickly)",
+    "answers": [
+     "quickly"
+    ]
+   },
+   {
+    "id": "similar-86-6",
+    "prompt": "I was very _____ when I heard the news.",
+    "hint": "(happy / happily)",
+    "answers": [
+     "happy"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-87",
+  "unit": 87,
+  "topic": "old/older expensive / more expensive",
+  "bookInstruction": "Complete the sentences. Use a comparative.",
+  "instruction": "Complete the sentences. Use a comparative (older / more expensive etc.).",
+  "items": [
+   {
+    "id": "similar-87-1",
+    "prompt": "This bag isn’t very big. I need a _____ one.",
+    "answers": [
+     "bigger"
+    ]
+   },
+   {
+    "id": "similar-87-2",
+    "prompt": "My job isn’t very interesting. I want a _____ one.",
+    "answers": [
+     "more interesting"
+    ]
+   },
+   {
+    "id": "similar-87-3",
+    "prompt": "You’re not working very hard. You should work _____.",
+    "answers": [
+     "harder"
+    ]
+   },
+   {
+    "id": "similar-87-4",
+    "prompt": "The weather isn’t very good today. It was _____ yesterday.",
+    "answers": [
+     "better"
+    ]
+   },
+   {
+    "id": "similar-87-5",
+    "prompt": "This road isn’t very busy. The other one is _____.",
+    "answers": [
+     "busier"
+    ]
+   },
+   {
+    "id": "similar-87-6",
+    "prompt": "My old car was bad, but this one is even _____.",
+    "answers": [
+     "worse"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-88",
+  "unit": 88,
+  "topic": "older than … more expensive than …",
+  "bookInstruction": "Complete the sentences with a bit or much + comparative (older/better etc.).",
+  "instruction": "Complete the sentences with a bit or much + a comparative + than where necessary.",
+  "items": [
+   {
+    "id": "similar-88-1",
+    "prompt": "This hotel is £20 a night. The other one is £80. The other one is _____ this one.",
+    "hint": "(much / expensive)",
+    "answers": [
+     "much more expensive than"
+    ]
+   },
+   {
+    "id": "similar-88-2",
+    "prompt": "Anna is 30 and Tom is 31. Tom is _____ Anna.",
+    "hint": "(a bit / old)",
+    "answers": [
+     "a bit older than"
+    ]
+   },
+   {
+    "id": "similar-88-3",
+    "prompt": "My old computer took 5 minutes to start. This one takes 20 seconds. This one is _____.",
+    "hint": "(much / fast)",
+    "answers": [
+     "much faster"
+    ]
+   },
+   {
+    "id": "similar-88-4",
+    "prompt": "Today it’s 21°C. Yesterday it was 20°C. Today is _____ yesterday.",
+    "hint": "(a bit / warm)",
+    "answers": [
+     "a bit warmer than"
+    ]
+   },
+   {
+    "id": "similar-88-5",
+    "prompt": "The film was three hours long. The book took me a week. The book was _____ the film.",
+    "hint": "(much / long)",
+    "answers": [
+     "much longer than"
+    ]
+   },
+   {
+    "id": "similar-88-6",
+    "prompt": "I feel better today than yesterday, but only slightly. I feel _____ today.",
+    "hint": "(a bit / good)",
+    "answers": [
+     "a bit better"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-89",
+  "unit": 89,
+  "topic": "not as … as",
+  "bookInstruction": "Write sentences with as … as … .",
+  "instruction": "Write sentences with (not) as … as … .",
+  "items": [
+   {
+    "id": "similar-89-1",
+    "prompt": "Anna is 25. Tom is 25. (Tom / old / Anna)",
+    "answers": [
+     "Tom is as old as Anna"
+    ]
+   },
+   {
+    "id": "similar-89-2",
+    "prompt": "This restaurant is cheap. That one is expensive. (this restaurant / not / expensive / that one)",
+    "answers": [
+     "This restaurant isn’t as expensive as that one",
+     "This restaurant is not as expensive as that one"
+    ]
+   },
+   {
+    "id": "similar-89-3",
+    "prompt": "I got up at 7. You got up at 7. (I / get up / early / you)",
+    "answers": [
+     "I got up as early as you"
+    ]
+   },
+   {
+    "id": "similar-89-4",
+    "prompt": "The film was bad. The book was worse. (the film / not / bad / the book)",
+    "answers": [
+     "The film wasn’t as bad as the book",
+     "The film was not as bad as the book"
+    ]
+   },
+   {
+    "id": "similar-89-5",
+    "prompt": "Your bag is heavy. Mine is heavy too. (my bag / heavy / yours)",
+    "answers": [
+     "My bag is as heavy as yours"
+    ]
+   },
+   {
+    "id": "similar-89-6",
+    "prompt": "Tom works 10 hours a day. I work 6. (I / not / work / hard / Tom)",
+    "answers": [
+     "I don’t work as hard as Tom",
+     "I do not work as hard as Tom"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-90",
+  "unit": 90,
+  "topic": "the oldest the most expensive",
+  "bookInstruction": "Write sentences with a superlative (the longest etc.). Choose from the boxes.",
+  "instruction": "Complete the sentences. Use a superlative (the oldest / the most expensive etc.).",
+  "items": [
+   {
+    "id": "similar-90-1",
+    "prompt": "This is a very good film. It’s _____ film I’ve ever seen.",
+    "answers": [
+     "the best"
+    ]
+   },
+   {
+    "id": "similar-90-2",
+    "prompt": "The Nile is _____ river in the world.",
+    "hint": "(long)",
+    "answers": [
+     "the longest"
+    ]
+   },
+   {
+    "id": "similar-90-3",
+    "prompt": "That was _____ day of my life.",
+    "hint": "(happy)",
+    "answers": [
+     "the happiest"
+    ]
+   },
+   {
+    "id": "similar-90-4",
+    "prompt": "This is _____ restaurant in town.",
+    "hint": "(expensive)",
+    "answers": [
+     "the most expensive"
+    ]
+   },
+   {
+    "id": "similar-90-5",
+    "prompt": "It was _____ film I’ve ever seen. I walked out.",
+    "hint": "(bad)",
+    "answers": [
+     "the worst"
+    ]
+   },
+   {
+    "id": "similar-90-6",
+    "prompt": "Who is _____ person in your family?",
+    "hint": "(young)",
+    "answers": [
+     "the youngest"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-91",
+  "unit": 91,
+  "topic": "enough",
+  "bookInstruction": "Complete the sentences. Use enough with these words:",
+  "instruction": "Complete the sentences with enough. Remember: enough goes AFTER an adjective (warm enough) but BEFORE a noun (enough time).",
+  "items": [
+   {
+    "id": "similar-91-1",
+    "prompt": "I can’t buy it. I don’t have _____.",
+    "hint": "(money)",
+    "answers": [
+     "enough money"
+    ]
+   },
+   {
+    "id": "similar-91-2",
+    "prompt": "The water in the pool isn’t _____ to swim in.",
+    "hint": "(warm)",
+    "answers": [
+     "warm enough"
+    ]
+   },
+   {
+    "id": "similar-91-3",
+    "prompt": "He can’t drive. He isn’t _____.",
+    "hint": "(old)",
+    "answers": [
+     "old enough"
+    ]
+   },
+   {
+    "id": "similar-91-4",
+    "prompt": "There aren’t _____ for everybody to sit down.",
+    "hint": "(chairs)",
+    "answers": [
+     "enough chairs"
+    ]
+   },
+   {
+    "id": "similar-91-5",
+    "prompt": "The knife wasn’t _____ to cut the bread.",
+    "hint": "(sharp)",
+    "answers": [
+     "sharp enough"
+    ]
+   },
+   {
+    "id": "similar-91-6",
+    "prompt": "I didn’t have _____ to read the whole book.",
+    "hint": "(time)",
+    "answers": [
+     "enough time"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-92",
+  "unit": 92,
+  "topic": "too",
+  "instruction": "Write too / too much / too many or enough.",
+  "items": [
+   {
+    "id": "similar-92-1",
+    "prompt": "I can’t drink this coffee. It’s _____ hot.",
+    "answers": [
+     "too"
+    ]
+   },
+   {
+    "id": "similar-92-2",
+    "prompt": "There were _____ people at the concert. We couldn’t see the stage.",
+    "answers": [
+     "too many"
+    ]
+   },
+   {
+    "id": "similar-92-3",
+    "prompt": "You should rest more. You work _____.",
+    "answers": [
+     "too much"
+    ]
+   },
+   {
+    "id": "similar-92-4",
+    "prompt": "I couldn’t finish the exam. I didn’t have _____ time.",
+    "answers": [
+     "enough"
+    ]
+   },
+   {
+    "id": "similar-92-5",
+    "prompt": "This soup has _____ salt in it.",
+    "answers": [
+     "too much"
+    ]
+   },
+   {
+    "id": "similar-92-6",
+    "prompt": "The film was boring and _____ long.",
+    "answers": [
+     "too"
+    ]
+   },
+   {
+    "id": "similar-92-7",
+    "prompt": "She made _____ mistakes in the test.",
+    "answers": [
+     "too many"
+    ]
+   },
+   {
+    "id": "similar-92-8",
+    "prompt": "Is the water warm _____?",
+    "answers": [
+     "enough"
+    ]
+   },
+   {
+    "id": "similar-92-9",
+    "prompt": "I don’t go out _____. I’m always at home.",
+    "answers": [
+     "enough"
+    ]
+   },
+   {
+    "id": "similar-92-10",
+    "prompt": "There’s _____ noise in here. I can’t think.",
+    "answers": [
+     "too much"
+    ]
+   }
+  ],
+  "bookInstruction": "Complete the sentences.  Use too (+ adjective) + to … ."
+ },
+ {
+  "id": "similar-unit-93",
+  "unit": 93,
+  "topic": "He speaks English very well. / (word order 1)",
+  "bookInstruction": "Put the words in order.",
+  "instruction": "Put the words in the right order. Careful: the verb and the object stay together — never “I like very much this film”.",
+  "items": [
+   {
+    "id": "similar-93-1",
+    "prompt": "(very much / I / this film / like)",
+    "answers": [
+     "I like this film very much"
+    ]
+   },
+   {
+    "id": "similar-93-2",
+    "prompt": "(his work / quickly / Paul / finished)",
+    "answers": [
+     "Paul finished his work quickly"
+    ]
+   },
+   {
+    "id": "similar-93-3",
+    "prompt": "(French / very well / Emily / doesn’t speak)",
+    "answers": [
+     "Emily doesn’t speak French very well"
+    ]
+   },
+   {
+    "id": "similar-93-4",
+    "prompt": "(a lot of shopping / yesterday / I / did)",
+    "answers": [
+     "I did a lot of shopping yesterday"
+    ]
+   },
+   {
+    "id": "similar-93-5",
+    "prompt": "(some friends / at the airport / we / met)",
+    "answers": [
+     "We met some friends at the airport"
+    ]
+   },
+   {
+    "id": "similar-93-6",
+    "prompt": "(carefully / the problem / I / explained)",
+    "answers": [
+     "I explained the problem carefully"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-94",
+  "unit": 94,
+  "topic": "always/usually/often etc. (word order 2)",
+  "bookInstruction": "Write sentences with also. / Write sentences with both and all.",
+  "instruction": "Put always / usually / often / never / also / both / all in the right place in the sentence, and write the whole sentence.",
+  "items": [
+   {
+    "id": "similar-94-1",
+    "prompt": "I go to bed late. (always)",
+    "answers": [
+     "I always go to bed late"
+    ]
+   },
+   {
+    "id": "similar-94-2",
+    "prompt": "Anna is late for work. (never)",
+    "answers": [
+     "Anna is never late for work"
+    ]
+   },
+   {
+    "id": "similar-94-3",
+    "prompt": "We have lunch at one o’clock. (usually)",
+    "answers": [
+     "We usually have lunch at one o’clock"
+    ]
+   },
+   {
+    "id": "similar-94-4",
+    "prompt": "Tom plays the guitar. He sings. (also — put it in the second sentence)",
+    "answers": [
+     "He also sings"
+    ]
+   },
+   {
+    "id": "similar-94-5",
+    "prompt": "Sue and Ben are doctors. (both)",
+    "answers": [
+     "Sue and Ben are both doctors"
+    ]
+   },
+   {
+    "id": "similar-94-6",
+    "prompt": "They were tired. (all)",
+    "answers": [
+     "They were all tired"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-95",
+  "unit": 95,
+  "topic": "still yet already",
+  "bookInstruction": "Complete the sentences. Use already.",
+  "instruction": "Write still, yet or already.",
+  "items": [
+   {
+    "id": "similar-95-1",
+    "prompt": "I sent the letter three days ago and it hasn’t arrived _____.",
+    "answers": [
+     "yet"
+    ]
+   },
+   {
+    "id": "similar-95-2",
+    "prompt": "‘Would you like to eat?’ ‘No, thanks. I’ve _____ eaten.’",
+    "answers": [
+     "already"
+    ]
+   },
+   {
+    "id": "similar-95-3",
+    "prompt": "Anna left an hour ago, but Tom is _____ here.",
+    "answers": [
+     "still"
+    ]
+   },
+   {
+    "id": "similar-95-4",
+    "prompt": "Have you finished your work _____?",
+    "answers": [
+     "yet"
+    ]
+   },
+   {
+    "id": "similar-95-5",
+    "prompt": "I told him about it yesterday, but he _____ doesn’t understand.",
+    "answers": [
+     "still"
+    ]
+   },
+   {
+    "id": "similar-95-6",
+    "prompt": "Don’t forget to phone Sue. — I’ve _____ phoned her.",
+    "answers": [
+     "already"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-96",
+  "unit": 96,
+  "topic": "Give me that book! Give it to me!",
+  "bookInstruction": "Write questions beginning Can you give me … ? / Can you pass me … ? etc.",
+  "instruction": "Write the sentence again with the words in the other order (give me that book / give it to me).",
+  "items": [
+   {
+    "id": "similar-96-1",
+    "prompt": "He gave the keys to me.",
+    "hint": "(He gave …)",
+    "answers": [
+     "He gave me the keys"
+    ]
+   },
+   {
+    "id": "similar-96-2",
+    "prompt": "Can you pass me the salt?",
+    "hint": "(Can you pass … to me?)",
+    "answers": [
+     "Can you pass the salt to me?"
+    ]
+   },
+   {
+    "id": "similar-96-3",
+    "prompt": "I sent an email to Anna.",
+    "hint": "(I sent …)",
+    "answers": [
+     "I sent Anna an email"
+    ]
+   },
+   {
+    "id": "similar-96-4",
+    "prompt": "She showed me the photos.",
+    "hint": "(She showed … to me)",
+    "answers": [
+     "She showed the photos to me"
+    ]
+   },
+   {
+    "id": "similar-96-5",
+    "prompt": "Could you lend some money to me?",
+    "hint": "(Could you lend …?)",
+    "answers": [
+     "Could you lend me some money?"
+    ]
+   },
+   {
+    "id": "similar-96-6",
+    "prompt": "They gave the prize to Tom.",
+    "hint": "(They gave …)",
+    "answers": [
+     "They gave Tom the prize"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-97",
+  "unit": 97,
+  "topic": "and but or so because",
+  "bookInstruction": "Look at the pictures and complete the sentences. Use and/but/so/because.",
+  "instruction": "Write and, but, or, so or because.",
+  "items": [
+   {
+    "id": "similar-97-1",
+    "prompt": "I was tired, _____ I went to bed early.",
+    "answers": [
+     "so"
+    ]
+   },
+   {
+    "id": "similar-97-2",
+    "prompt": "I went to bed early _____ I was tired.",
+    "answers": [
+     "because"
+    ]
+   },
+   {
+    "id": "similar-97-3",
+    "prompt": "We wanted to go out, _____ it was raining.",
+    "answers": [
+     "but"
+    ]
+   },
+   {
+    "id": "similar-97-4",
+    "prompt": "Would you like tea _____ coffee?",
+    "answers": [
+     "or"
+    ]
+   },
+   {
+    "id": "similar-97-5",
+    "prompt": "She put on her coat _____ went out.",
+    "answers": [
+     "and"
+    ]
+   },
+   {
+    "id": "similar-97-6",
+    "prompt": "The shop was closed, _____ I couldn’t buy anything.",
+    "answers": [
+     "so"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-98",
+  "unit": 98,
+  "topic": "When …",
+  "bookInstruction": "Complete the sentences. Choose from the box.",
+  "instruction": "Put the verb in the correct form. After when / before / after / until / as soon as, use the PRESENT for the future — never will.",
+  "items": [
+   {
+    "id": "similar-98-1",
+    "prompt": "I’ll phone you when I _____ home.",
+    "hint": "(get)",
+    "answers": [
+     "get"
+    ]
+   },
+   {
+    "id": "similar-98-2",
+    "prompt": "Wait here until I _____ back.",
+    "hint": "(come)",
+    "answers": [
+     "come"
+    ]
+   },
+   {
+    "id": "similar-98-3",
+    "prompt": "We’ll go out as soon as it _____ raining.",
+    "hint": "(stop)",
+    "answers": [
+     "stops"
+    ]
+   },
+   {
+    "id": "similar-98-4",
+    "prompt": "Before you _____, please turn off the lights.",
+    "hint": "(leave)",
+    "answers": [
+     "leave"
+    ]
+   },
+   {
+    "id": "similar-98-5",
+    "prompt": "I’ll let you know when I _____ a decision.",
+    "hint": "(make)",
+    "answers": [
+     "make"
+    ]
+   },
+   {
+    "id": "similar-98-6",
+    "prompt": "She’s going to travel after she _____ university.",
+    "hint": "(finish)",
+    "answers": [
+     "finishes"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-99",
+  "unit": 99,
+  "topic": "If we go … / If you see … etc.",
+  "bookInstruction": "Write if or when.",
+  "instruction": "Write if or when.",
+  "items": [
+   {
+    "id": "similar-99-1",
+    "prompt": "_____ I’m late this evening, don’t wait for me.",
+    "answers": [
+     "If"
+    ]
+   },
+   {
+    "id": "similar-99-2",
+    "prompt": "I’m going shopping now. _____ I come back, we can have lunch.",
+    "answers": [
+     "When"
+    ]
+   },
+   {
+    "id": "similar-99-3",
+    "prompt": "Is it OK _____ I close the window?",
+    "answers": [
+     "if"
+    ]
+   },
+   {
+    "id": "similar-99-4",
+    "prompt": "Tom is still at school. _____ he leaves, he wants to travel.",
+    "answers": [
+     "When"
+    ]
+   },
+   {
+    "id": "similar-99-5",
+    "prompt": "Shall we have a picnic tomorrow _____ the weather is good?",
+    "answers": [
+     "if"
+    ]
+   },
+   {
+    "id": "similar-99-6",
+    "prompt": "I don’t know what we’ll do _____ we don’t find a hotel.",
+    "answers": [
+     "if"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-100",
+  "unit": 100,
+  "topic": "If I had … / If we went … etc.",
+  "instruction": "Put the verb in the correct form.",
+  "items": [
+   {
+    "id": "similar-100-1",
+    "prompt": "If _____ the answer, I would tell you.",
+    "hint": "(I/know)",
+    "answers": [
+     "I knew"
+    ]
+   },
+   {
+    "id": "similar-100-2",
+    "prompt": "_____ so tired if she went to bed earlier.",
+    "hint": "(she/not/be)",
+    "answers": [
+     "She wouldn’t be",
+     "She would not be"
+    ]
+   },
+   {
+    "id": "similar-100-3",
+    "prompt": "If I had more money, _____ a new car.",
+    "hint": "(I/buy)",
+    "answers": [
+     "I would buy",
+     "I’d buy"
+    ]
+   },
+   {
+    "id": "similar-100-4",
+    "prompt": "What would you do if _____ your job?",
+    "hint": "(you/lose)",
+    "answers": [
+     "you lost"
+    ]
+   },
+   {
+    "id": "similar-100-5",
+    "prompt": "If _____ nearer the sea, we would go swimming every day.",
+    "hint": "(we/live)",
+    "answers": [
+     "we lived"
+    ]
+   },
+   {
+    "id": "similar-100-6",
+    "prompt": "_____ that jacket if it wasn’t so expensive.",
+    "hint": "(I/buy)",
+    "answers": [
+     "I would buy",
+     "I’d buy"
+    ]
+   },
+   {
+    "id": "similar-100-7",
+    "prompt": "It’s a beautiful house. If _____ enough money, I would buy it.",
+    "hint": "(I/have)",
+    "answers": [
+     "I had"
+    ]
+   },
+   {
+    "id": "similar-100-8",
+    "prompt": "_____ a better job if he spoke another language.",
+    "hint": "(he/get)",
+    "answers": [
+     "He would get",
+     "He’d get"
+    ]
+   },
+   {
+    "id": "similar-100-9",
+    "prompt": "If you could live anywhere in the world, where _____?",
+    "hint": "(you/live)",
+    "answers": [
+     "would you live"
+    ]
+   },
+   {
+    "id": "similar-100-10",
+    "prompt": "I wouldn’t go to that restaurant if _____ you.",
+    "hint": "(I/be)",
+    "answers": [
+     "I were",
+     "I was"
+    ]
+   }
+  ],
+  "bookInstruction": "Complete the sentences. Use your own ideas."
+ },
+ {
+  "id": "similar-unit-101",
+  "unit": 101,
+  "topic": "a person who … a thing that/which … / (relative clauses 1)",
+  "bookInstruction": "Write who or which.",
+  "instruction": "Write who or which (or that).",
+  "items": [
+   {
+    "id": "similar-101-1",
+    "prompt": "I met a woman _____ speaks six languages.",
+    "answers": [
+     "who",
+     "that"
+    ]
+   },
+   {
+    "id": "similar-101-2",
+    "prompt": "This is the book _____ I told you about.",
+    "answers": [
+     "which",
+     "that"
+    ]
+   },
+   {
+    "id": "similar-101-3",
+    "prompt": "The man _____ lives next door is a doctor.",
+    "answers": [
+     "who",
+     "that"
+    ]
+   },
+   {
+    "id": "similar-101-4",
+    "prompt": "Where is the letter _____ came this morning?",
+    "answers": [
+     "which",
+     "that"
+    ]
+   },
+   {
+    "id": "similar-101-5",
+    "prompt": "A dictionary is a book _____ gives you the meaning of words.",
+    "answers": [
+     "which",
+     "that"
+    ]
+   },
+   {
+    "id": "similar-101-6",
+    "prompt": "The people _____ we met yesterday were very friendly.",
+    "answers": [
+     "who",
+     "that"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-102",
+  "unit": 102,
+  "topic": "the people we met / (relative clauses 2) / the hotel you stayed at",
+  "bookInstruction": "Complete the questions. Use where.",
+  "instruction": "Make one sentence from two.",
+  "items": [
+   {
+    "id": "similar-102-1",
+    "prompt": "I’m wearing a jacket. I bought it yesterday. (This is the jacket …)",
+    "answers": [
+     "This is the jacket I bought yesterday",
+     "This is the jacket that I bought yesterday",
+     "This is the jacket which I bought yesterday"
+    ]
+   },
+   {
+    "id": "similar-102-2",
+    "prompt": "We stayed at a hotel. You recommended it. (We stayed at the hotel …)",
+    "answers": [
+     "We stayed at the hotel you recommended",
+     "We stayed at the hotel that you recommended",
+     "We stayed at the hotel which you recommended"
+    ]
+   },
+   {
+    "id": "similar-102-3",
+    "prompt": "This is a restaurant. We had dinner there. (This is the restaurant …)",
+    "answers": [
+     "This is the restaurant where we had dinner"
+    ]
+   },
+   {
+    "id": "similar-102-4",
+    "prompt": "I saw some people. They were waiting outside. (The people …)",
+    "answers": [
+     "The people I saw were waiting outside",
+     "The people that I saw were waiting outside"
+    ]
+   },
+   {
+    "id": "similar-102-5",
+    "prompt": "That’s the town. Anna was born there. (That’s the town …)",
+    "answers": [
+     "That’s the town where Anna was born"
+    ]
+   },
+   {
+    "id": "similar-102-6",
+    "prompt": "The film was very good. We saw it last night. (The film …)",
+    "answers": [
+     "The film we saw last night was very good",
+     "The film that we saw last night was very good",
+     "The film which we saw last night was very good"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-103",
+  "unit": 103,
+  "topic": "at 8 o’clock on Monday in April",
+  "bookInstruction": "Write sentences with in … .",
+  "instruction": "Write at, on or in.",
+  "items": [
+   {
+    "id": "similar-103-1",
+    "prompt": "The meeting is _____ 3 o’clock.",
+    "answers": [
+     "at"
+    ]
+   },
+   {
+    "id": "similar-103-2",
+    "prompt": "My birthday is _____ April.",
+    "answers": [
+     "in"
+    ]
+   },
+   {
+    "id": "similar-103-3",
+    "prompt": "We’re going away _____ Friday.",
+    "answers": [
+     "on"
+    ]
+   },
+   {
+    "id": "similar-103-4",
+    "prompt": "I don’t work _____ the weekend.",
+    "answers": [
+     "at",
+     "on"
+    ]
+   },
+   {
+    "id": "similar-103-5",
+    "prompt": "She was born _____ 1998.",
+    "answers": [
+     "in"
+    ]
+   },
+   {
+    "id": "similar-103-6",
+    "prompt": "The shop closes at 6.30 _____ Saturdays.",
+    "answers": [
+     "on"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-104",
+  "unit": 104,
+  "topic": "from … to until since for",
+  "bookInstruction": "Write until/since/for.",
+  "instruction": "Write until, since or for.",
+  "items": [
+   {
+    "id": "similar-104-1",
+    "prompt": "I’ve been waiting here _____ two hours.",
+    "answers": [
+     "for"
+    ]
+   },
+   {
+    "id": "similar-104-2",
+    "prompt": "I’ve known Anna _____ 2010.",
+    "answers": [
+     "since"
+    ]
+   },
+   {
+    "id": "similar-104-3",
+    "prompt": "We stayed at the party _____ midnight.",
+    "answers": [
+     "until"
+    ]
+   },
+   {
+    "id": "similar-104-4",
+    "prompt": "It hasn’t rained _____ three weeks.",
+    "answers": [
+     "for"
+    ]
+   },
+   {
+    "id": "similar-104-5",
+    "prompt": "Wait here _____ I come back.",
+    "answers": [
+     "until"
+    ]
+   },
+   {
+    "id": "similar-104-6",
+    "prompt": "She’s been ill _____ last Monday.",
+    "answers": [
+     "since"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-105",
+  "unit": 105,
+  "topic": "before after during while",
+  "bookInstruction": "Write sentences with before + -ing and after + -ing.",
+  "instruction": "Complete the sentences with before / after / during / while + the right form.",
+  "items": [
+   {
+    "id": "similar-105-1",
+    "prompt": "I always have a shower _____ going to work.",
+    "answers": [
+     "before"
+    ]
+   },
+   {
+    "id": "similar-105-2",
+    "prompt": "_____ eating, they went for a walk.",
+    "hint": "(after)",
+    "answers": [
+     "After"
+    ]
+   },
+   {
+    "id": "similar-105-3",
+    "prompt": "I fell asleep _____ the film.",
+    "answers": [
+     "during"
+    ]
+   },
+   {
+    "id": "similar-105-4",
+    "prompt": "I fell asleep _____ I was watching the film.",
+    "answers": [
+     "while"
+    ]
+   },
+   {
+    "id": "similar-105-5",
+    "prompt": "Please turn off the lights _____ leaving the room.",
+    "answers": [
+     "before"
+    ]
+   },
+   {
+    "id": "similar-105-6",
+    "prompt": "It rained a lot _____ our holiday.",
+    "answers": [
+     "during"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-106",
+  "unit": 106,
+  "topic": "in at on (places 1)",
+  "bookInstruction": "Look at the pictures and answer the questions. Use in/at/on.",
+  "instruction": "Write in, at or on.",
+  "items": [
+   {
+    "id": "similar-106-1",
+    "prompt": "There’s nobody _____ the room.",
+    "answers": [
+     "in"
+    ]
+   },
+   {
+    "id": "similar-106-2",
+    "prompt": "Write your name _____ the top of the page.",
+    "answers": [
+     "at",
+     "on"
+    ]
+   },
+   {
+    "id": "similar-106-3",
+    "prompt": "I’ll meet you _____ the bus stop.",
+    "answers": [
+     "at"
+    ]
+   },
+   {
+    "id": "similar-106-4",
+    "prompt": "There are a lot of fish _____ the river.",
+    "answers": [
+     "in"
+    ]
+   },
+   {
+    "id": "similar-106-5",
+    "prompt": "The picture is _____ the wall.",
+    "answers": [
+     "on"
+    ]
+   },
+   {
+    "id": "similar-106-6",
+    "prompt": "Anna is _____ the kitchen making dinner.",
+    "answers": [
+     "in"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-107",
+  "unit": 107,
+  "topic": "in at on (places 2)",
+  "bookInstruction": "Look at the pictures and answer the questions. Use in/at/on.",
+  "instruction": "Write in, at or on.",
+  "items": [
+   {
+    "id": "similar-107-1",
+    "prompt": "I live in a small village _____ the north of Italy.",
+    "answers": [
+     "in"
+    ]
+   },
+   {
+    "id": "similar-107-2",
+    "prompt": "Who is that man _____ the photograph?",
+    "answers": [
+     "in"
+    ]
+   },
+   {
+    "id": "similar-107-3",
+    "prompt": "We stayed _____ a very nice hotel.",
+    "answers": [
+     "at",
+     "in"
+    ]
+   },
+   {
+    "id": "similar-107-4",
+    "prompt": "There was a long queue _____ the door.",
+    "answers": [
+     "at"
+    ]
+   },
+   {
+    "id": "similar-107-5",
+    "prompt": "My office is _____ the second floor.",
+    "answers": [
+     "on"
+    ]
+   },
+   {
+    "id": "similar-107-6",
+    "prompt": "I read about it _____ the newspaper.",
+    "answers": [
+     "in"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-108",
+  "unit": 108,
+  "topic": "to / in / at (places 3)",
+  "bookInstruction": "Write to, at or in if necessary.",
+  "instruction": "Write to, at or in. If no word is necessary, write “–”.",
+  "items": [
+   {
+    "id": "similar-108-1",
+    "prompt": "What time do you go _____ bed?",
+    "answers": [
+     "to"
+    ]
+   },
+   {
+    "id": "similar-108-2",
+    "prompt": "I was _____ home all day yesterday.",
+    "answers": [
+     "–",
+     "-",
+     "at"
+    ]
+   },
+   {
+    "id": "similar-108-3",
+    "prompt": "We arrived _____ the hotel very late.",
+    "answers": [
+     "at"
+    ]
+   },
+   {
+    "id": "similar-108-4",
+    "prompt": "What time did you arrive _____ London?",
+    "answers": [
+     "in"
+    ]
+   },
+   {
+    "id": "similar-108-5",
+    "prompt": "Anna has gone _____ Brazil for three weeks.",
+    "answers": [
+     "to"
+    ]
+   },
+   {
+    "id": "similar-108-6",
+    "prompt": "I’m going _____ home now. See you tomorrow.",
+    "answers": [
+     "–",
+     "-"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-109",
+  "unit": 109,
+  "topic": "under, behind, opposite etc.",
+  "bookInstruction": "Write sentences about the picture.",
+  "instruction": "Write under / behind / opposite / next to / between / in front of.",
+  "items": [
+   {
+    "id": "similar-109-1",
+    "prompt": "The cat is sleeping _____ the table.",
+    "answers": [
+     "under"
+    ]
+   },
+   {
+    "id": "similar-109-2",
+    "prompt": "I sat _____ Anna and Tom, with one on each side of me.",
+    "answers": [
+     "between"
+    ]
+   },
+   {
+    "id": "similar-109-3",
+    "prompt": "The bank is _____ the post office — you cross the road to get there.",
+    "answers": [
+     "opposite"
+    ]
+   },
+   {
+    "id": "similar-109-4",
+    "prompt": "He was hiding _____ the door, so we couldn’t see him.",
+    "answers": [
+     "behind"
+    ]
+   },
+   {
+    "id": "similar-109-5",
+    "prompt": "I couldn’t see the screen because a tall man was sitting _____ me.",
+    "answers": [
+     "in front of"
+    ]
+   },
+   {
+    "id": "similar-109-6",
+    "prompt": "The chemist is _____ the bakery, right beside it.",
+    "answers": [
+     "next to"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-110",
+  "unit": 110,
+  "topic": "up, over, through etc.",
+  "bookInstruction": "Complete the sentences. Use over/from/into etc.",
+  "instruction": "Write up / over / through / into / out of / across / along / round.",
+  "items": [
+   {
+    "id": "similar-110-1",
+    "prompt": "We walked _____ the bridge to the other side of the river.",
+    "answers": [
+     "over",
+     "across"
+    ]
+   },
+   {
+    "id": "similar-110-2",
+    "prompt": "The train went _____ a long tunnel.",
+    "answers": [
+     "through"
+    ]
+   },
+   {
+    "id": "similar-110-3",
+    "prompt": "She got _____ the car and drove away.",
+    "answers": [
+     "into",
+     "in"
+    ]
+   },
+   {
+    "id": "similar-110-4",
+    "prompt": "He took his keys _____ his pocket.",
+    "answers": [
+     "out of"
+    ]
+   },
+   {
+    "id": "similar-110-5",
+    "prompt": "We walked _____ the river for two kilometres.",
+    "answers": [
+     "along"
+    ]
+   },
+   {
+    "id": "similar-110-6",
+    "prompt": "The plane flew _____ the mountains.",
+    "answers": [
+     "over"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-111",
+  "unit": 111,
+  "topic": "on at by with about",
+  "bookInstruction": "Complete the sentences. Use at/by/with etc.",
+  "instruction": "Write on, at, by, with or about.",
+  "items": [
+   {
+    "id": "similar-111-1",
+    "prompt": "Do you like this book? What’s it _____?",
+    "answers": [
+     "about"
+    ]
+   },
+   {
+    "id": "similar-111-2",
+    "prompt": "I usually go to work _____ car.",
+    "answers": [
+     "by"
+    ]
+   },
+   {
+    "id": "similar-111-3",
+    "prompt": "Somebody broke the window _____ a stone.",
+    "answers": [
+     "with"
+    ]
+   },
+   {
+    "id": "similar-111-4",
+    "prompt": "I saw the film _____ television.",
+    "answers": [
+     "on"
+    ]
+   },
+   {
+    "id": "similar-111-5",
+    "prompt": "Anna is very good _____ mathematics.",
+    "answers": [
+     "at"
+    ]
+   },
+   {
+    "id": "similar-111-6",
+    "prompt": "I paid _____ credit card.",
+    "answers": [
+     "by"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-112",
+  "unit": 112,
+  "topic": "afraid of … , good at … etc. / of/at/for etc. (prepositions) + -ing",
+  "bookInstruction": "Complete the sentences. Use without -ing.",
+  "instruction": "Write the preposition (of / at / for / in / with / to) — the one that goes with the adjective.",
+  "items": [
+   {
+    "id": "similar-112-1",
+    "prompt": "Are you afraid _____ dogs?",
+    "answers": [
+     "of"
+    ]
+   },
+   {
+    "id": "similar-112-2",
+    "prompt": "She’s very good _____ playing the piano.",
+    "answers": [
+     "at"
+    ]
+   },
+   {
+    "id": "similar-112-3",
+    "prompt": "I’m not interested _____ sport.",
+    "answers": [
+     "in"
+    ]
+   },
+   {
+    "id": "similar-112-4",
+    "prompt": "Thank you very much _____ your help.",
+    "answers": [
+     "for"
+    ]
+   },
+   {
+    "id": "similar-112-5",
+    "prompt": "He was very angry _____ me for being late.",
+    "answers": [
+     "with"
+    ]
+   },
+   {
+    "id": "similar-112-6",
+    "prompt": "This city is famous _____ its museums.",
+    "answers": [
+     "for"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-113",
+  "unit": 113,
+  "topic": "listen to … , look at … etc. (verb + preposition)",
+  "bookInstruction": "Complete these sentences. Use at/for/after.",
+  "instruction": "Write the preposition that goes with the verb (at / for / after / to / about / of).",
+  "items": [
+   {
+    "id": "similar-113-1",
+    "prompt": "Listen _____ this! It’s a great song.",
+    "answers": [
+     "to"
+    ]
+   },
+   {
+    "id": "similar-113-2",
+    "prompt": "I’m looking _____ my keys. Have you seen them?",
+    "answers": [
+     "for"
+    ]
+   },
+   {
+    "id": "similar-113-3",
+    "prompt": "Look _____ that picture. Isn’t it beautiful?",
+    "answers": [
+     "at"
+    ]
+   },
+   {
+    "id": "similar-113-4",
+    "prompt": "Who is looking _____ the children while you’re at work?",
+    "answers": [
+     "after"
+    ]
+   },
+   {
+    "id": "similar-113-5",
+    "prompt": "We talked _____ the problem for an hour.",
+    "answers": [
+     "about"
+    ]
+   },
+   {
+    "id": "similar-113-6",
+    "prompt": "Do you ever think _____ moving to another country?",
+    "answers": [
+     "about",
+     "of"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-114",
+  "unit": 114,
+  "topic": "go in, fall oﬀ, run away etc. / (phrasal verbs 1)",
+  "bookInstruction": "Choose a verb from the box + on/off/up etc. If necessary, put the verb into the correct form.",
+  "instruction": "Complete the sentences. Use a verb + out / away / back / on / off / up.",
+  "wordBank": [
+   "get on",
+   "go away",
+   "come back",
+   "give up",
+   "take off",
+   "look out"
+  ],
+  "items": [
+   {
+    "id": "similar-114-1",
+    "prompt": "I started learning Russian, but I _____ after two months.",
+    "answers": [
+     "gave up"
+    ]
+   },
+   {
+    "id": "similar-114-2",
+    "prompt": "_____! There’s a car coming.",
+    "answers": [
+     "Look out"
+    ]
+   },
+   {
+    "id": "similar-114-3",
+    "prompt": "The plane _____ an hour late.",
+    "answers": [
+     "took off"
+    ]
+   },
+   {
+    "id": "similar-114-4",
+    "prompt": "She’s not here. She _____ for a few days and returns on Monday.",
+    "answers": [
+     "has gone away",
+     "went away"
+    ]
+   },
+   {
+    "id": "similar-114-5",
+    "prompt": "How do you _____ with your new neighbours? Are they friendly?",
+    "answers": [
+     "get on"
+    ]
+   },
+   {
+    "id": "similar-114-6",
+    "prompt": "I’m going out now, but I’ll _____ at six.",
+    "answers": [
+     "come back"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "similar-unit-115",
+  "unit": 115,
+  "topic": "put on your shoes / put your shoes on (phrasal verbs 2)",
+  "instruction": "Complete the sentences. Use these verbs with it or them. Remember: the pronoun goes between the verb and the particle (turned it down, not turned down it).",
+  "wordBank": [
+   "give back",
+   "pick up",
+   "put on",
+   "throw away",
+   "try on",
+   "turn down"
+  ],
+  "items": [
+   {
+    "id": "similar-115-1",
+    "prompt": "The radio was too loud, so I _____.",
+    "answers": [
+     "turned it down"
+    ]
+   },
+   {
+    "id": "similar-115-2",
+    "prompt": "It was cold outside, so I got my coat and _____.",
+    "answers": [
+     "put it on"
+    ]
+   },
+   {
+    "id": "similar-115-3",
+    "prompt": "Thank you for lending me these DVDs. I’ll _____ on Friday.",
+    "answers": [
+     "give them back"
+    ]
+   },
+   {
+    "id": "similar-115-4",
+    "prompt": "Those newspapers were very old, so I _____.",
+    "answers": [
+     "threw them away"
+    ]
+   },
+   {
+    "id": "similar-115-5",
+    "prompt": "I saw a nice jacket in the shop and _____, but I didn’t buy it.",
+    "answers": [
+     "tried it on"
+    ]
+   },
+   {
+    "id": "similar-115-6",
+    "prompt": "There were some coins on the floor, so I _____.",
+    "answers": [
+     "picked them up"
+    ]
+   }
+  ],
+  "bookInstruction": "Use a verb from the box.  Sometimes you will also need to use it/them/me."
+ }
+]

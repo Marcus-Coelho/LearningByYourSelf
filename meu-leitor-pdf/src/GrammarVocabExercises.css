@@ -10,22 +10,38 @@
    ficarem mais específicos que ".landing-panel h1"/".landing-panel p"/
    ".landing-panel .eyebrow" do App.css e vencerem de qualquer jeito,
    independente da ordem de import. */
-/* Mesmo bug/fix já documentado em App.css pra listening-tracks-mode/
-   wordbook-mode/my-notes-mode: a regra base ".landing-page.vocabulary-mode"
-   (overflow:auto, sem min-height:0) deixa a PÁGINA tentar crescer pro
-   tamanho do conteúdo antes de cortar — com 100+ exercícios isso estoura o
-   .app-shell (height:100vh fixo) e cria DUAS barras de rolagem ao mesmo
-   tempo (a da página + a nativa do navegador). overflow:hidden +
-   align-items:stretch + min-height:0 aqui faz o painel esticar exatamente
-   pro espaço disponível; só .gve-list (abaixo) rola de verdade. */
+/* A PÁGINA rola inteira, o painel cresce com o conteúdo (2026-08-06).
+   Antes era o contrário — página travada (overflow:hidden + align-items:
+   stretch) com rolagem interna só em .gve-list — pra evitar as DUAS barras
+   de rolagem que apareciam com 100+ exercícios (o .app-shell tem
+   height:100vh fixo e o conteúdo estourava pra fora dele). Só que travar a
+   página trata o SINTOMA: o remédio certo pra esse mesmo problema, já usado
+   nas grades de unit e na Home, é a classe .app-shell--allow-grow (aplicada
+   via JS em App.js, lista de activePage — 'grammar-vocab-exercises' entrou
+   lá junto com esta mudança), que deixa o app-shell crescer em vez de
+   cortar. Sem isso o painel media por uma altura que não era a real e o
+   conteúdo VAZAVA pra fora da caixa branca, com uma faixa vazia no meio
+   (bug real reportado pelo dono, com screenshot). align-items:flex-start é
+   obrigatório junto (nunca o center herdado de .landing-page): centralizar
+   conteúdo mais alto que a tela esconde a metade de cima atrás do header
+   sticky — mesma armadilha documentada no CLAUDE.md.
+   overflow:visible (não auto) é de propósito: com o app-shell crescendo,
+   quem rola de verdade é o documento. Se esta página continuasse com
+   overflow:auto ela seria um scroll container que nunca rola, e qualquer
+   position:sticky dentro dela (o filtro, ver .gve-filter-input) grudaria
+   nESSE container parado, ou seja, não funcionaria. */
 .landing-page.vocabulary-mode.gve-mode {
-  overflow: hidden;
-  align-items: stretch;
+  align-items: flex-start;
+  overflow: visible;
   min-height: 0;
+  padding-top: 40px;
 }
 
 .gve-panel {
-  max-width: 900px;
+  /* Mais largo que os 900px originais: os exercícios escritos têm frase +
+     campo de resposta por item, e a coluna estreita deixava tudo espremido
+     no meio de uma tela larga. */
+  max-width: 1080px;
   display: flex;
   flex-direction: column;
 }
@@ -42,6 +58,26 @@
 
 .landing-panel.gve-panel .eyebrow {
   color: var(--purple-700);
+}
+
+/* Título da seção aberta ("Similar Exercises from Grammar Elementary",
+   "Grammar English A1", "English Vocabulary B") — MESMA aparência do h1
+   "Choose a listening source" (ver .landing-panel.listening-panel h1 no
+   App.css): mesma fonte, tamanho e cor, pedido do dono 2026-08-06. Se
+   aquele h1 mudar, este tem que acompanhar — o pedido foi que fossem iguais.
+   Classe PRÓPRIA em vez de reaproveitar .eyebrow de propósito: a tela de
+   seleção de seção também tem um .eyebrow ("Exercises"), aquele sim um
+   rótulo pequeno acima do h1, e mexer na classe compartilhada deixaria dois
+   títulos grandes empilhados lá. 3 classes no seletor pra vencer
+   ".landing-panel p" (classe+tag) do App.css, que entra no bundle DEPOIS
+   deste arquivo e senão ganharia a cor. */
+.landing-panel.gve-panel .gve-source-heading {
+  margin: 0 0 18px;
+  color: #1b3a5e;
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
+  font-size: clamp(1.5rem, 2.2vw, 2rem);
+  line-height: 1.25;
 }
 
 .landing-panel.gve-panel h1 {
@@ -99,10 +135,10 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 12px;
-  margin: 14px 0 4px;
+  gap: 8px;
+  margin: 10px 0 2px;
   color: rgba(27, 58, 94, 0.75);
-  font-size: 14.5px;
+  font-size: 14px;
 }
 
 .gve-reset-btn {
@@ -120,15 +156,13 @@
   background: rgba(192, 57, 43, 0.16);
 }
 
+/* Sem flex:1/min-height:0/overflow-y:auto — quem rola agora é a página
+   inteira (ver .gve-mode acima). Esta lista só empilha os cards. */
 .gve-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-top: 14px;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  padding-right: 4px;
 }
 
 .gve-card {
@@ -243,4 +277,162 @@
 .gve-unit-toggle-btn:hover {
   border-color: var(--purple-500);
   color: var(--purple-700);
+}
+
+/* ==== Seção "Similar Exercises from Grammar Elementary" (write-in) ====
+   Um bloco = um exercício inteiro do livro (instrução + 6-10 itens), não um
+   card por pergunta como nas 2 seções de múltipla escolha — ver comentário
+   em WrittenExerciseBlock (GrammarVocabExercises.js). */
+
+.gve-block {
+  gap: 14px;
+}
+
+.gve-block-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.landing-panel.gve-panel .gve-block-instruction {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: #1b3a5e;
+}
+
+/* Caixa de palavras do enunciado (ex.: os phrasal verbs da unit 115) — o
+   livro imprime como uma lista solta acima dos itens. */
+.gve-word-bank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gve-word-bank-item {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  color: var(--purple-700);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.gve-block-items {
+  list-style: decimal;
+  margin: 0;
+  padding-left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gve-block-item {
+  color: rgba(27, 58, 94, 0.7);
+}
+
+.gve-item-prompt {
+  display: block;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #1b3a5e;
+}
+
+.gve-item-hint {
+  color: var(--purple-700);
+  font-weight: 700;
+  font-style: normal;
+}
+
+.gve-item-input {
+  width: 100%;
+  max-width: 420px;
+  margin-top: 6px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(27, 58, 94, 0.22);
+  background: #fff;
+  color: #1b3a5e;
+  font: inherit;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+.gve-item-input:focus {
+  outline: none;
+  border-color: var(--purple-500);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);
+}
+
+.gve-item-input.is-correct {
+  border-color: #16a34a;
+  background: rgba(22, 163, 74, 0.1);
+  color: #15803d;
+  font-weight: 700;
+}
+
+.gve-item-input.is-wrong {
+  border-color: #dc2626;
+  background: rgba(220, 38, 38, 0.08);
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+/* Resposta do gabarito, revelada só nos itens errados depois de checar. */
+.gve-item-answer {
+  display: block;
+  margin-top: 5px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #15803d;
+}
+
+.gve-block-score {
+  font-size: 14px;
+  font-weight: 800;
+  color: #1b3a5e;
+}
+
+/* Instrução original do livro, revelada junto com a unit no "Show unit". */
+.landing-panel.gve-panel .gve-block-source {
+  margin: 0;
+  font-size: 13px;
+  font-style: italic;
+  color: rgba(27, 58, 94, 0.6);
+}
+
+/* Filtro por unit/tópico — só na seção escrita (115 exercícios). Gruda
+   abaixo do header (81px reais, ver .app-header no App.css) enquanto a
+   página rola: é a navegação principal desta tela, e sem isso seria preciso
+   voltar ao topo de 115 exercícios pra trocar de unit. Fundo opaco + a
+   margem negativa/padding compensando o padding lateral do painel pra o
+   conteúdo não aparecer por baixo dele nas beiradas. */
+.gve-filter-input {
+  position: sticky;
+  top: 81px;
+  z-index: 4;
+  width: calc(100% + 24px);
+  margin: 10px -12px 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(27, 58, 94, 0.2);
+  background: #fff;
+  color: #1b3a5e;
+  font: inherit;
+  font-size: 15px;
+  box-sizing: border-box;
+  box-shadow: 0 6px 16px rgba(27, 58, 94, 0.1);
+}
+
+.gve-filter-input:focus {
+  outline: none;
+  border-color: var(--purple-500);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);
+}
+
+.landing-panel.gve-panel .gve-filter-empty {
+  margin: 8px 0 0;
+  font-size: 15px;
 }
