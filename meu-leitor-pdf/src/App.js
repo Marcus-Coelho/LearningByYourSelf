@@ -1299,6 +1299,7 @@ function App() {
   const [expandedProfileCourses, setExpandedProfileCourses] = useState({});
   const [activePage, setActivePage] = useState(RESTORED_POSITION?.activePage || 'home');
   const [activeCourseId, setActiveCourseId] = useState(RESTORED_POSITION?.activeCourseId ?? null);
+  const [grammarVocabExercisesResetKey, setGrammarVocabExercisesResetKey] = useState(0);
   // Busca por palavra-chave nas 3 grades de unit (Vocabulary/American1/
   // Grammar Elementary) — compartilhada entre as 3 porque só uma grade fica
   // visível de cada vez; zerada ao entrar em qualquer uma delas (ver
@@ -3114,6 +3115,12 @@ function App() {
       setActivePage('register');
       return;
     }
+    try {
+      window.sessionStorage.removeItem('grammarVocabExercisesPosition');
+    } catch (error) {
+      // Ignore sessionStorage issues.
+    }
+    setGrammarVocabExercisesResetKey((key) => key + 1);
     setActivePage('grammar-vocab-exercises');
     setSelectedUnit(null);
     setSelectedAmerican1Unit(null);
@@ -6328,7 +6335,7 @@ function App() {
         </main>
       ) : activePage === 'grammar-vocab-exercises' ? (
         <main className="landing-page vocabulary-mode gve-mode">
-          <GrammarVocabExercisesPage userName={userName} />
+          <GrammarVocabExercisesPage key={grammarVocabExercisesResetKey} userName={userName} />
         </main>
       ) : activePage === 'profile' ? (
         <main className="landing-page vocabulary-mode profile-mode">

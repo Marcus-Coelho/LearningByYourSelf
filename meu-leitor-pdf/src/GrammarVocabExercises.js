@@ -31,12 +31,25 @@
 // por palavras plausíveis mas que mudam o sentido, não só o registro —
 // Grammar é escrito à mão porque o app não tem o texto das lições, só os
 // títulos reais das units.
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { userKey } from './App';
 import grammarExercises from './grammar_vocab_exercises_grammar.json';
 import vocabExercises from './grammar_vocab_exercises_vocab.json';
 import similarBlocks from './grammar_vocab_exercises_similar.json';
 import './GrammarVocabExercises.css';
+
+const GRAMMAR_VOCAB_EXERCISES_POSITION_KEY = 'grammarVocabExercisesPosition';
+
+const loadSavedActiveSourceId = () => {
+  try {
+    const raw = window.sessionStorage.getItem(GRAMMAR_VOCAB_EXERCISES_POSITION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.activeSourceId || null;
+  } catch (error) {
+    return null;
+  }
+};
 
 // `kind` distingue as duas MECÂNICAS de exercício desta tela:
 // - 'multipleChoice' (as 2 seções originais): lista plana de cards, clicar
@@ -285,7 +298,7 @@ function WrittenExerciseBlock({ block, index, total, savedAnswers, onCheck, onRe
 }
 
 export default function GrammarVocabExercisesPage({ userName }) {
-  const [activeSourceId, setActiveSourceId] = useState(null);
+  const [activeSourceId, setActiveSourceId] = useState(loadSavedActiveSourceId);
   const [resetToken, setResetToken] = useState(0);
   // Filtro da seção escrita: são 115 exercícios (um por unit do livro), longe
   // demais pra rolar até a unit que se está estudando. Só filtra a EXIBIÇÃO —
@@ -296,6 +309,17 @@ export default function GrammarVocabExercisesPage({ userName }) {
     vocabulary: loadAnswers(userName, 'vocabulary'),
     similar: loadAnswers(userName, 'similar'),
   }));
+
+  useEffect(() => {
+    try {
+      window.sessionStorage.setItem(
+        GRAMMAR_VOCAB_EXERCISES_POSITION_KEY,
+        JSON.stringify({ activeSourceId }),
+      );
+    } catch (error) {
+      // Ignore storage errors.
+    }
+  }, [activeSourceId]);
 
   const activeSource = SOURCES.find((source) => source.id === activeSourceId) || null;
 
@@ -411,7 +435,18 @@ export default function GrammarVocabExercisesPage({ userName }) {
 
   return (
     <div className="landing-panel gve-panel">
-      <button type="button" className="upload-button" onClick={() => setActiveSourceId(null)}>
+      <button
+        type="button"
+        className="upload-button"
+        onClick={() => {
+          setActiveSourceId(null);
+          try {
+            window.sessionStorage.removeItem('grammarVocabExercisesPosition');
+          } catch (error) {
+            // Ignore storage issues.
+          }
+        }}
+      >
         ‹ Back to Grammar &amp; Vocabulary Exercises
       </button>
       <p className="gve-source-heading">{activeSource.title}</p>

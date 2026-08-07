@@ -1883,7 +1883,8 @@ body {
   color: var(--purple-700);
 }
 
-.landing-panel.ask-ai-panel h1 {
+.landing-panel.ask-ai-panel h1,
+.landing-panel.listening-panel h1 {
   color: #1b3a5e;
   font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 600;
