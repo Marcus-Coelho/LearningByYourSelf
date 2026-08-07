@@ -158,21 +158,37 @@ const FLASHCARD_STEPS_DAYS = [1, 3, 7, 14, 30, 60];
 const WORDBOOK_IMAGE_MAX_DIMENSION = 640;
 const WORDBOOK_IMAGE_QUALITY = 0.72;
 
-const resizeImageFileToDataUrl = (file) => new Promise((resolve, reject) => {
+// Imagem anexada no "Ask Adele": bem maior que a do My Words de propósito —
+// aquela é uma mnemônica que só precisa ser reconhecível pra uma PESSOA e
+// ainda cabe no localStorage; esta costuma ser a FOTO DE UMA PÁGINA de
+// livro/exercício, e o modelo precisa conseguir LER o texto nela. Não vai
+// pro localStorage (é enviada e descartada), então não há cota a respeitar,
+// só o limite de corpo da rota (ver express.json em setupProxy.js).
+const ASK_AI_IMAGE_MAX_DIMENSION = 1600;
+const ASK_AI_IMAGE_QUALITY = 0.85;
+
+// maxDimension/quality são parâmetros (com o padrão do My Words) só pra o
+// "Ask Adele" poder pedir uma imagem maior sem duplicar essa função — ver
+// ASK_AI_IMAGE_MAX_DIMENSION acima.
+const resizeImageFileToDataUrl = (
+  file,
+  maxDimension = WORDBOOK_IMAGE_MAX_DIMENSION,
+  quality = WORDBOOK_IMAGE_QUALITY,
+) => new Promise((resolve, reject) => {
   const reader = new FileReader();
   reader.onerror = () => reject(reader.error || new Error('Could not read file'));
   reader.onload = () => {
     const img = new window.Image();
     img.onerror = () => reject(new Error('Invalid image'));
     img.onload = () => {
-      const scale = Math.min(1, WORDBOOK_IMAGE_MAX_DIMENSION / Math.max(img.width, img.height));
+      const scale = Math.min(1, maxDimension / Math.max(img.width, img.height));
       const width = Math.max(1, Math.round(img.width * scale));
       const height = Math.max(1, Math.round(img.height * scale));
       const canvas = document.createElement('canvas');
       canvas.width = width;
       canvas.height = height;
       canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-      resolve(canvas.toDataURL('image/jpeg', WORDBOOK_IMAGE_QUALITY));
+      resolve(canvas.toDataURL('image/jpeg', quality));
     };
     img.src = reader.result;
   };
@@ -1324,6 +1340,10 @@ function App() {
   const [askAiStatus, setAskAiStatus] = useState('idle'); // idle | loading | error
   const [askAiErrorMessage, setAskAiErrorMessage] = useState('');
   const [askAiLastExchange, setAskAiLastExchange] = useState(null); // { question, answer } | null
+  // Imagem anexada à pergunta atual (data URL) — some depois de enviar, não
+  // persiste em lugar nenhum. Ver attachAskAiImage/handleAskAiSubmit.
+  const [askAiImage, setAskAiImage] = useState(null);
+  const [askAiImageError, setAskAiImageError] = useState('');
   // Largura inicial = RIGHT_PANEL_WIDTH_RATIO da janela (ver comentário na
   // constante), com piso em MIN_RIGHT_WIDTH e teto no espaço realmente
   // disponível — numa tablet mais estreita (~820px), MIN_CENTER_WIDTH(420) +
@@ -2844,9 +2864,41 @@ function App() {
     setActiveCourseId(null);
   };
 
+  // Anexo de imagem (2026-08-06): uma foto de página de livro/exercício/
+  // print vai junto da pergunta pro Gemini, que é multimodal (ver
+  // askGrammarQuestion). Reaproveita os mesmos helpers de imagem do My Words
+  // (resizeImageFileToDataUrl/getImageFileFromClipboardEvent), só com um
+  // limite de tamanho maior — o modelo precisa LER o texto da foto.
+  // A imagem NÃO entra em askAiLastExchange: a memória de 1 turno é só
+  // texto (reenviada a cada request), e reenviar a foto a cada pergunta
+  // seguinte gastaria banda/quota à toa sem o usuário pedir.
+  const attachAskAiImage = async (file) => {
+    if (!file || !file.type?.startsWith('image/')) {
+      setAskAiImageError('Please use an image file.');
+      return;
+    }
+    setAskAiImageError('');
+    try {
+      const dataUrl = await resizeImageFileToDataUrl(file, ASK_AI_IMAGE_MAX_DIMENSION, ASK_AI_IMAGE_QUALITY);
+      setAskAiImage(dataUrl);
+    } catch (error) {
+      setAskAiImageError('Could not read that image.');
+    }
+  };
+
+  const handleAskAiPaste = (event) => {
+    const file = getImageFileFromClipboardEvent(event);
+    if (!file) return;
+    event.preventDefault();
+    attachAskAiImage(file);
+  };
+
   const handleAskAiSubmit = async () => {
     const question = askAiQuestion.trim();
-    if (!question || askAiStatus === 'loading') return;
+    // Com imagem anexada a pergunta escrita pode ser vazia ("o que tem de
+    // errado aqui?" fica implícito) — o servidor manda um texto padrão nesse
+    // caso, ver a rota em setupProxy.js.
+    if ((!question && !askAiImage) || askAiStatus === 'loading') return;
     setAskAiStatus('loading');
     setAskAiErrorMessage('');
     try {
@@ -2855,6 +2907,7 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question,
+          image: askAiImage || undefined,
           previousQuestion: askAiLastExchange?.question,
           previousAnswer: askAiLastExchange?.answer,
         }),
@@ -2864,8 +2917,13 @@ function App() {
         throw new Error(data.error || 'Request failed');
       }
       setAskAiAnswer(data.answer || '');
-      setAskAiLastExchange({ question, answer: data.answer || '' });
+      setAskAiLastExchange({
+        question: question || '(image attached)',
+        answer: data.answer || '',
+      });
       setAskAiQuestion('');
+      setAskAiImage(null);
+      setAskAiImageError('');
       setAskAiStatus('idle');
     } catch (error) {
       setAskAiStatus('error');
@@ -2882,6 +2940,8 @@ function App() {
     setAskAiQuestion('');
     setAskAiStatus('idle');
     setAskAiErrorMessage('');
+    setAskAiImage(null);
+    setAskAiImageError('');
   };
 
   const handleOpenSpeakingSource = (source) => {
@@ -4269,7 +4329,7 @@ function App() {
 
   return (
     <div
-      className={`app-shell${['vocabulary', 'american1', 'grammarElem', 'courses', 'home'].includes(activePage) ? ' app-shell--allow-grow' : ''}`}
+      className={`app-shell${['vocabulary', 'american1', 'grammarElem', 'courses', 'home', 'grammar-vocab-exercises'].includes(activePage) ? ' app-shell--allow-grow' : ''}`}
       style={{ '--page-hero-bg': `url(${process.env.PUBLIC_URL}/openCourse.png)` }}
     >
       <header className="app-header">
@@ -6053,23 +6113,42 @@ function App() {
               Adele is your American English tutor — ask her anything about grammar,
               vocabulary, pronunciation, idioms, or usage. If your question itself has a
               mistake, she'll correct it first. She sometimes ends with a quick challenge for
-              you to try — answer it as your next question and she'll check it.
+              you to try — answer it as your next question and she'll check it. You can also
+              attach a photo or a screenshot (or just paste it here) and ask about it.
             </p>
+            {/* onPaste no textarea: colar um print (Ctrl+V) já anexa a
+                imagem, sem precisar do botão — mesma conveniência que o
+                formulário do My Words já tinha. */}
             <textarea
               className="dictation-textarea ask-ai-textarea"
               value={askAiQuestion}
               onChange={(event) => setAskAiQuestion(event.target.value)}
+              onPaste={handleAskAiPaste}
               placeholder={askAiLastExchange
                 ? 'Your answer, or a new question...'
                 : 'e.g. When do I use "have been" vs "had been"?'}
               rows={4}
             />
+            {askAiImage && (
+              <div className="ask-ai-image-preview">
+                <img src={askAiImage} alt="Attached" />
+                <button
+                  type="button"
+                  className="ask-ai-image-remove"
+                  onClick={() => { setAskAiImage(null); setAskAiImageError(''); }}
+                  title="Remove image"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+            {askAiImageError && <p className="ask-ai-error">{askAiImageError}</p>}
             <div className="ask-ai-actions-row">
               <button
                 type="button"
                 className="show-answers-btn"
                 onClick={handleAskAiSubmit}
-                disabled={!askAiQuestion.trim() || askAiStatus === 'loading'}
+                disabled={(!askAiQuestion.trim() && !askAiImage) || askAiStatus === 'loading'}
               >
                 {askAiStatus === 'loading' ? (
                   <span className="ask-ai-thinking">
@@ -6078,6 +6157,21 @@ function App() {
                   </span>
                 ) : 'Ask'}
               </button>
+              {/* <label> em vez de <button>: o input de arquivo fica
+                  escondido dentro dele, então clicar no rótulo já abre o
+                  seletor do SO sem precisar de ref/click() programático. */}
+              <label className="ghost-button ask-ai-attach-btn">
+                {askAiImage ? 'Change image' : '📎 Attach image'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="ask-ai-attach-input"
+                  onChange={(event) => {
+                    attachAskAiImage(event.target.files?.[0]);
+                    event.target.value = '';
+                  }}
+                />
+              </label>
               {askAiLastExchange && (
                 <button type="button" className="ghost-button" onClick={handleAskAiReset}>
                   Start a new topic

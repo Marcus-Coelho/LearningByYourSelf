@@ -2026,6 +2026,59 @@ body {
   font-size: 14.5px;
 }
 
+/* Anexo de imagem no "Ask Adele" (2026-08-06) — o <input type="file"> real
+   vive escondido DENTRO do <label>, que é quem tem a aparência de botão
+   (clicar no rótulo já abre o seletor do SO, sem ref/click() no JS). */
+.ask-ai-attach-btn {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.ask-ai-attach-input {
+  display: none;
+}
+
+/* Miniatura da imagem anexada, com o "×" de remover no canto. max-height
+   em vh pra uma foto de página em pé não empurrar o botão "Ask" pra fora
+   da tela. */
+.ask-ai-image-preview {
+  position: relative;
+  align-self: flex-start;
+  max-width: 260px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(27, 58, 94, 0.18);
+  background: #f3f5f7;
+  line-height: 0;
+}
+
+.ask-ai-image-preview img {
+  display: block;
+  width: 100%;
+  max-height: 34vh;
+  object-fit: contain;
+}
+
+.ask-ai-image-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(24, 15, 43, 0.72);
+  color: #fff;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ask-ai-image-remove:hover {
+  background: rgba(24, 15, 43, 0.9);
+}
+
 .ask-ai-answer {
   padding: 16px 18px;
   border-radius: 14px;
