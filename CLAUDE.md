@@ -582,6 +582,25 @@ Se os PDFs/áudios de origem mudarem, os índices precisam ser regenerados.
    `.daily-goal-info-toggle`) continua em `Georgia` itálico — ali é um glifo de ícone, não texto
    de interface; o "i" serifado itálico é o que faz o ícone ser lido como "informação".
 
+10. **Texto secundário tem cor e tamanho de token, nunca `rgba(35, 43, 58, α)` solto**
+    (2026-08-08). Cada regra escrevia o próprio cinza com α entre 0.45 e 0.75; sobre as
+    superfícies claras do app (`#fbfcfd`/`#f2f3f6`) isso dava ~3:1 a 4.4:1 de contraste — abaixo
+    do mínimo legível (4.5:1) — e ainda em 11-13px, cada tela com um tamanho diferente. O dono
+    reportou como "cinza quase não perceptível". Tokens no `:root` de `App.css`:
+    - `--text-secondary` (`#4a5163`, ~7.7:1) — rótulos, hints, parágrafos de apoio. **É o
+      padrão**: rótulo/hint novo usa este, sem declarar cinza próprio.
+    - `--text-muted` (`#6b7385`, ~4.6:1) — só onde o apagado é INTENCIONAL e carrega
+      significado: estado "off" do auto-pause do Dictation, campo desabilitado, `::placeholder`
+      e botão de ícone em repouso (`.word-audio-btn`/`.wordbook-expand`/`.wordbook-delete`/
+      `.my-notes-card-delete`/`.word-quickadd-close`, que ganham cor no hover). Continua
+      visivelmente mais claro que o secundário — que era a razão de existir do tom claro — só
+      deixou de ser ilegível.
+    - `--text-secondary-size` (`13.5px`) — tamanho padrão desses rótulos. Aplicado onde o
+      tamanho era menor; quem já era ≥ 13.5px ficou como estava. Única exceção de tamanho:
+      `.unit-badge-legend-info-btn` segue em 12px, porque é um glifo dentro de um círculo de
+      tamanho fixo e aumentar estouraria o controle.
+    Vale também no `GrammarVocabExercises.css`, que importa os tokens do `App.css` via `:root`.
+
 ### ❌ Não Faça
 
 - **Não exporte áudio/PDF de curso para GitHub** — eles continuam ignorados de propósito

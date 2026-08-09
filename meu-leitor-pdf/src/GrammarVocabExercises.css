@@ -99,7 +99,7 @@
 }
 
 .landing-panel.gve-panel p {
-  color: rgba(35, 43, 58, 0.75);
+  color: var(--text-secondary);
 }
 
 .gve-source-list {
@@ -137,7 +137,7 @@
 }
 
 .gve-source-card small {
-  color: rgba(35, 43, 58, 0.65);
+  color: var(--text-secondary);
   font-size: 13.5px;
 }
 
@@ -152,7 +152,7 @@
   flex-wrap: wrap;
   gap: 8px;
   margin: 10px 0 2px;
-  color: rgba(35, 43, 58, 0.75);
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
@@ -195,9 +195,9 @@
 }
 
 .gve-card-unit {
-  font-size: 12.5px;
+  font-size: var(--text-secondary-size);
   font-weight: 700;
-  color: rgba(35, 43, 58, 0.55);
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
@@ -284,10 +284,10 @@
 .gve-unit-toggle-btn {
   border: 1px solid rgba(35, 43, 58, 0.2);
   background: #fff;
-  color: rgba(35, 43, 58, 0.7);
+  color: var(--text-secondary);
   font-family: inherit;
   font-weight: 600;
-  font-size: 13px;
+  font-size: var(--text-secondary-size);
   padding: 7px 14px;
   border-radius: 10px;
   cursor: pointer;
@@ -349,7 +349,7 @@
 }
 
 .gve-block-item {
-  color: rgba(35, 43, 58, 0.7);
+  color: var(--text-secondary);
 }
 
 .gve-item-prompt {
@@ -417,9 +417,9 @@
 /* Instrução original do livro, revelada junto com a unit no "Show unit". */
 .landing-panel.gve-panel .gve-block-source {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--text-secondary-size);
   font-style: italic;
-  color: rgba(35, 43, 58, 0.6);
+  color: var(--text-secondary);
 }
 
 /* Filtro por unit/tópico — só na seção escrita (115 exercícios). Gruda
