@@ -117,18 +117,41 @@ echo "=== 3/4: Instalando dependencias do app (pode demorar alguns minutos) ==="
 cd "$REPO_DIR/meu-leitor-pdf"
 npm install
 
-echo "=== 4/4: Pronto ==="
+echo "=== 4/4: Deixando o atalho de tela inicial pronto ==="
+# Termux:Widget (app companheiro oficial do Termux, mesma fonte/F-Droid) le
+# scripts em ~/.shortcuts/ e cria um icone de tela inicial pra cada um - um
+# toque abre o Termux e ja roda o script, sem precisar digitar nada. Isso so
+# PREPARA o script; o icone em si precisa ser adicionado a mao uma vez (ver
+# instrucoes abaixo), o Android nao deixa um app criar widget sozinho.
+mkdir -p "$HOME/.shortcuts"
+cat > "$HOME/.shortcuts/LearningByYourSelf" <<SHORTCUT
+#!/data/data/com.termux/files/usr/bin/bash
+bash "$REPO_DIR/StartLearning.sh"
+SHORTCUT
+chmod +x "$HOME/.shortcuts/LearningByYourSelf"
+
 cat <<MSG
 
 Tudo pronto!
 
 Para RODAR o app (sempre que for estudar), use:
-  cd "$REPO_DIR/meu-leitor-pdf"
-  export NODE_OPTIONS=--openssl-legacy-provider
-  npm start
+  bash "$REPO_DIR/StartLearning.sh"
 
 Depois abra o navegador do tablet em:
   http://localhost:3000
+
+--- Atalho de tela inicial (opcional, faz o mesmo sem precisar abrir o Termux) ---
+1. Instale o app "Termux:Widget" (F-Droid, MESMA fonte do seu Termux - Play
+   Store e F-Droid nao se misturam).
+2. Na tela inicial do Android: toque e segure a tela vazia -> Widgets ->
+   "Termux:Widget" -> arraste pra tela.
+3. Escolha "LearningByYourSelf" na lista (ja preparado por este script).
+4. Um toque no icone abre o servidor sozinho.
+
+Opcional (abrir o navegador sozinho, sem precisar tocar de novo depois do
+atalho): instale o pacote "termux-api" (pkg install termux-api) e o app
+"Termux:API" (mesma fonte). Sem isso, o atalho funciona igual, so que avisa
+a URL no terminal em vez de abrir o navegador sozinho.
 
 Opcional (tela "Ask AI" / Adele): so funciona se voce criar
   "$REPO_DIR/meu-leitor-pdf/.env.local"
