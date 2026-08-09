@@ -388,8 +388,22 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
 - Tela só-leitura: cartões de estatística (palavras aprendidas/devidas, revisões pendentes,
   units dominadas nos 4 cursos + "% overall mastery" no mesmo tile, exercícios de
   Listening/Dictation praticados) + progresso por curso (barra segmentada não-visitado/
-  visitado/avaliado/dominado) + atalho "Continue where you left off". Não escreve nada — só lê
-  dados que os outros recursos já persistem
+  visitado/avaliado/dominado) + atalho "Continue where you left off". Não calcula nem persiste
+  nada por conta própria — só lê dados que os outros recursos já gravam
+- **Linha de backup** (`.dashboard-hero-row`), 3 ações que são atalhos pro que já existe no My
+  Profile — nenhuma tem lógica própria:
+  - "Set up backup folder"/"Save progress now" — só aparece onde a File System Access API
+    existe (Chrome/Edge), ver `isBackupFolderSupported`.
+  - "Download progress file" → `handleExportBackup`. **Fora** do `isBackupFolderSupported()` de
+    propósito: baixar arquivo funciona em qualquer navegador, e no Firefox/Safari é o único
+    jeito de guardar progresso a partir desta tela.
+  - "Import progress file" → `handleImportBackupFile` (2026-08-09). A tela oferecia como TIRAR
+    o progresso mas não como trazer de volta; pra restaurar era preciso descobrir sozinho que o
+    import morava no My Profile. É um `<label>` com `<input type="file">` escondido, não um
+    `<button>` — abrir o seletor de arquivo exige um input de verdade; `.upload-button input`
+    (App.css) já esconde o input, então fica idêntico aos vizinhos sem CSS novo. Reusa
+    `applyBackupJson`, **incluindo a confirmação** que avisa que sobrescreve e que não dá pra
+    desfazer — nunca duplicar essa lógica aqui.
 
 ---
 

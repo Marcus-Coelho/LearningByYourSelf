@@ -6773,6 +6773,7 @@ function App() {
               backupFolderNeedsPermission={backupFolderNeedsPermission}
               onSaveProgressNow={handleSaveProgressFromDashboard}
               onDownloadProgressFile={handleExportBackup}
+              onImportProgressFile={handleImportBackupFile}
             />
           </main>
         );
@@ -7421,6 +7422,7 @@ function DashboardPage({
   backupFolderNeedsPermission,
   onSaveProgressNow,
   onDownloadProgressFile,
+  onImportProgressFile,
 }) {
   const masteredTotal = courseProgress.reduce((sum, course) => sum + course.tally.mastered, 0);
   const unitsTotal = courseProgress.reduce((sum, course) => sum + course.total, 0);
@@ -7460,6 +7462,21 @@ function DashboardPage({
         <button type="button" className="upload-button dashboard-save-progress-btn" onClick={onDownloadProgressFile}>
           Download progress file
         </button>
+        {/* Contrapartida do botão acima (pedido do dono, 2026-08-09): a tela
+            oferecia como TIRAR o progresso daqui, mas não como trazer de
+            volta — pra restaurar era preciso descobrir sozinho que o import
+            morava lá no My Profile.
+            É um <label> com <input type="file"> escondido, não um <button>:
+            abrir o seletor de arquivo exige um input de verdade. `.upload-
+            button input` (App.css) já esconde o input, então o label fica
+            visualmente idêntico aos botões vizinhos sem CSS novo.
+            Reusa handleImportBackupFile/applyBackupJson — os MESMOS do My
+            Profile, incluindo a confirmação que avisa que sobrescreve e que
+            não dá pra desfazer. Nunca duplicar essa lógica aqui. */}
+        <label className="upload-button dashboard-save-progress-btn">
+          Import progress file
+          <input type="file" accept="application/json,.json" onChange={onImportProgressFile} />
+        </label>
       </div>
 
       <div className="dashboard-stats">
