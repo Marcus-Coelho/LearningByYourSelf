@@ -213,20 +213,25 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
     primeiras não têm faixa de Listening da qual tirar uma frase real) — gerados por script,
     sempre *grounded* em dado real: palavra-alvo de `vocabulary_target_words.json` numa frase de
     `listening_vocabulary.json`, nunca inventada.
-  - `vocabSimilar` (`written`, 100 blocos / 686 itens, **72 das 96 units** de 5 a 100) —
+  - `vocabSimilar` (`written`, 148 blocos / 971 itens, **as 96 units** de 5 a 100) —
     "Similar Exercises from English Vocabulary B", exercícios de **preencher lacuna**. **Units
     1-4 ficam de fora por decisão do dono** (são as de método — "Learning vocabulary", "Using a
     dictionary" — não de vocabulário temático). Tipos EXCLUÍDOS, também por decisão dele:
     "Over to you", os com imagem/mapa/diagrama, os de marcar (underline/circle/tick/
     true-false), os de casar colunas e os de separar palavras em colunas.
-    **Duas procedências, de propósito** (ver "Dados Gerados"): units 5-20 escritas à mão no
-    estilo do livro; units 21-100 extraídas do PRÓPRIO livro (o dono autorizou em 2026-08-09 —
-    livros comprados, uso doméstico entre ele, a esposa e a irmã).
-    **As 24 units sem bloco** (22, 24, 25, 29, 30, 35, 40, 46, 47, 49, 53, 56, 62, 63, 75, 79,
-    88, 89, 90, 91, 92, 95, 96, 97) não têm exercício de lacuna que o extrator consiga ler: ou
-    são de reescrever a frase inteira (sem lacuna), ou o diálogo não é numerado
-    (`SHOP ASSISTANT:` em vez de `1`), ou têm menos de 4 itens aproveitáveis. Preencher essas
-    exige escrita à mão, como foi feito nas 5-20.
+    **Três procedências, de propósito** (ver "Dados Gerados"): units 5-20 escritas à mão no
+    estilo do livro; units 21-100 extraídas por script do PRÓPRIO livro (o dono autorizou em
+    2026-08-09 — livros comprados, uso doméstico entre ele, a esposa e a irmã); e as **24 units
+    que o extrator não conseguia ler** (22, 24, 25, 29, 30, 35, 40, 46, 47, 49, 53, 56, 62, 63,
+    75, 79, 88, 89, 90, 91, 92, 95, 96, 97) transcritas à mão do livro + gabarito, 2 blocos cada.
+    Essas 24 não têm exercício de lacuna que o script leia — são de **reescrever a frase**
+    ("Rewrite the sentences starting with the words given"), **definição → palavra** ("Which
+    words are being defined?"), **corrigir o erro** ("Correct the mistakes"), **diálogo não
+    numerado** (`SHOP ASSISTANT:` em vez de `1`) ou **lista com resposta curta**. Todas viram
+    lacuna quando se constrói o enunciado (`definição → _____`, `frase errada → frase certa com
+    lacuna`), que é o que foi feito. Em 3 casos o livro **não tem gabarito** (24.4 "Do you
+    usually eat the skin of these fruits?", 63.2 materiais, 95.2 sinônimos) — as respostas ali
+    são análise própria, com as variantes plausíveis todas aceitas.
   - `similar` (`written`, 115 blocos, um por unit) — "Similar Exercises from Grammar
     Elementary": o aluno **digita** a resposta, não escolhe. Não é multiple choice **de
     propósito** — os 2 últimos exercícios de cada unit do livro são de produção, e é isso que os
