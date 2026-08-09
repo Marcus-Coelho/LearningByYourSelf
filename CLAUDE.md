@@ -201,7 +201,11 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
 - Por causa disso, `userKey` é o **único named export** de `App.js` (`export const userKey`) —
   existe pra essa tela namespacear o `localStorage` igual ao resto do app sem duplicar a função.
   Não crescer essa lista de exports sem necessidade real.
-- **3 seções, 2 mecânicas diferentes** (`SOURCES`, `kind`):
+- **4 seções, 2 mecânicas diferentes** (`SOURCES`, `kind`). Nada mais pode ser escopado no
+  literal `'similar'`: desde que existe mais de uma seção `written`, `handleCheckBlock`/
+  `handleResetBlock` usam `activeSourceId` — com o literal, responder na Vocabulary gravava por
+  cima das respostas da Grammar. `answersBySource` também é montado a partir de `SOURCES`, não
+  de uma lista de 3 ids escrita à mão:
   - `grammar` (`multipleChoice`, 200 exercícios, 2 por unit, units 1-100 do "Essential Grammar
     in Use") — escritos **à mão** a partir dos títulos reais de `grammar_elem_index.json`,
     porque o app não tem o texto das lições extraído, só os títulos.
@@ -209,6 +213,16 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
     primeiras não têm faixa de Listening da qual tirar uma frase real) — gerados por script,
     sempre *grounded* em dado real: palavra-alvo de `vocabulary_target_words.json` numa frase de
     `listening_vocabulary.json`, nunca inventada.
+  - `vocabSimilar` (`written`, **EM CONSTRUÇÃO** — units 5-20 prontas, 5-100 é o alvo) —
+    "Similar Exercises from English Vocabulary B", 2-3 blocos por unit de 6 itens. Espelha os
+    exercícios de **preencher lacuna** do livro; cada bloco traz no `bookInstruction` a
+    instrução real do exercício que imita. **Units 1-4 ficam de fora por decisão do dono** (são
+    as de método — "Learning vocabulary", "Using a dictionary" — não de vocabulário temático).
+    Tipos EXCLUÍDOS, também por decisão dele: "Over to you", os com imagem/mapa/diagrama, os de
+    marcar (underline/circle/tick/true-false), os de casar colunas e os de separar palavras em
+    colunas. O mapa de quais exercícios de cada unit se qualificam foi extraído dos
+    `EVIU_PI-<n>_E.pdf` com PyMuPDF (ordenando por posição Y, nunca pela ordem crua do
+    `get_text()` — ver "Quirks"); deu 218 exercícios de lacuna em 96 units, média 2,3 por unit.
   - `similar` (`written`, 115 blocos, um por unit) — "Similar Exercises from Grammar
     Elementary": o aluno **digita** a resposta, não escolhe. Não é multiple choice **de
     propósito** — os 2 últimos exercícios de cada unit do livro são de produção, e é isso que os

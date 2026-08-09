@@ -1,0 +1,497 @@
+[
+ {
+  "id": "vsim-5-1",
+  "unit": 5,
+  "topic": "Country, nationality and language",
+  "bookInstruction": "Complete the sentences with the name of the people from the country on the right.",
+  "instruction": "Complete the sentences with the nationality or the language. The country in brackets tells you which word you need.",
+  "items": [
+   { "id": "vsim-5-1-i1", "prompt": "People from Poland are _____. (POLAND)", "answers": ["Polish", "polish"] },
+   { "id": "vsim-5-1-i2", "prompt": "The first language of Brazil is _____. (BRAZIL)", "answers": ["Portuguese", "portuguese"] },
+   { "id": "vsim-5-1-i3", "prompt": "We do a lot of business with the _____. (JAPAN)", "answers": ["Japanese", "japanese"] },
+   { "id": "vsim-5-1-i4", "prompt": "In Egypt most people speak _____. (EGYPT)", "answers": ["Arabic", "arabic"] },
+   { "id": "vsim-5-1-i5", "prompt": "I know lots of _____ people, but I've never been to Berlin. (GERMANY)", "answers": ["German", "german"] },
+   { "id": "vsim-5-1-i6", "prompt": "My neighbour is _____ — she grew up in Buenos Aires. (ARGENTINA)", "answers": ["Argentinian", "argentinian", "Argentinean", "argentinean"] }
+  ]
+ },
+ {
+  "id": "vsim-5-2",
+  "unit": 5,
+  "topic": "Country, nationality and language",
+  "bookInstruction": "What parts of the world are these countries in? Write the continent, e.g. Europe, or the area, e.g. the Far East. / Write the answers.",
+  "instruction": "Complete the sentences with a capital city, a continent or an area of the world.",
+  "items": [
+   { "id": "vsim-5-2-i1", "prompt": "Lisbon is the _____ of Portugal.", "answers": ["capital"] },
+   { "id": "vsim-5-2-i2", "prompt": "Kenya and Nigeria are both in _____.", "answers": ["Africa", "africa"] },
+   { "id": "vsim-5-2-i3", "prompt": "Norway, Sweden and Denmark are the countries of _____.", "answers": ["Scandinavia", "scandinavia"] },
+   { "id": "vsim-5-2-i4", "prompt": "Japan and Korea are in the Far _____.", "answers": ["East", "east"] },
+   { "id": "vsim-5-2-i5", "prompt": "India and Thailand are in _____.", "answers": ["Asia", "asia"] },
+   { "id": "vsim-5-2-i6", "prompt": "China has the largest _____ of any country on earth.", "answers": ["population"] }
+  ]
+ },
+
+ {
+  "id": "vsim-6-1",
+  "unit": 6,
+  "topic": "The physical world",
+  "bookInstruction": "Complete the sentences.",
+  "instruction": "Complete the sentences with a word for a physical feature of the world.",
+  "items": [
+   { "id": "vsim-6-1-i1", "prompt": "The Sahara is the largest hot _____ in the world.", "answers": ["desert"] },
+   { "id": "vsim-6-1-i2", "prompt": "In winter the mountains are _____ in snow for months.", "answers": ["covered"] },
+   { "id": "vsim-6-1-i3", "prompt": "Water falls more than 800 metres at this _____.", "answers": ["waterfall"] },
+   { "id": "vsim-6-1-i4", "prompt": "The Pacific is the biggest _____ on earth.", "answers": ["ocean"] },
+   { "id": "vsim-6-1-i5", "prompt": "The Amazon _____ produces a huge amount of the world's oxygen.", "answers": ["rainforest", "rain forest"] },
+   { "id": "vsim-6-1-i6", "prompt": "We walked deep into the _____ with torches; it was completely dark inside.", "answers": ["cave"] }
+  ]
+ },
+ {
+  "id": "vsim-6-2",
+  "unit": 6,
+  "topic": "The physical world",
+  "bookInstruction": "Complete the sentences.",
+  "instruction": "Complete the sentences with a word about climate, direction or size.",
+  "items": [
+   { "id": "vsim-6-2-i1", "prompt": "Portugal is on the west coast; Spain is to the _____ of it.", "answers": ["east"] },
+   { "id": "vsim-6-2-i2", "prompt": "The country has a very dry _____, with rain only in December.", "answers": ["climate"] },
+   { "id": "vsim-6-2-i3", "prompt": "In January the temperature often falls to _____ fifteen degrees.", "answers": ["minus"] },
+   { "id": "vsim-6-2-i4", "prompt": "Water _____ about 70 per cent of the surface of the earth.", "answers": ["covers"] },
+   { "id": "vsim-6-2-i5", "prompt": "The _____ from London to Edinburgh is about 650 kilometres.", "answers": ["distance"] },
+   { "id": "vsim-6-2-i6", "prompt": "The United Kingdom _____ of England, Scotland, Wales and Northern Ireland.", "answers": ["consists"] }
+  ]
+ },
+
+ {
+  "id": "vsim-7-1",
+  "unit": 7,
+  "topic": "Weather",
+  "bookInstruction": "Complete the sentences.",
+  "instruction": "Complete the sentences with a weather word.",
+  "items": [
+   { "id": "vsim-7-1-i1", "prompt": "We couldn't see the road because of the thick _____.", "answers": ["fog"] },
+   { "id": "vsim-7-1-i2", "prompt": "It was _____ down when we left, so we took an umbrella.", "answers": ["pouring"] },
+   { "id": "vsim-7-1-i3", "prompt": "There was a loud crash of _____ and then the rain started.", "answers": ["thunder"] },
+   { "id": "vsim-7-1-i4", "prompt": "It's only a _____ — it will stop in five minutes.", "answers": ["shower"] },
+   { "id": "vsim-7-1-i5", "prompt": "It was minus twelve degrees this morning — absolutely _____.", "answers": ["freezing"] },
+   { "id": "vsim-7-1-i6", "prompt": "The air is very _____ in Singapore; you feel wet all the time.", "answers": ["humid"] }
+  ]
+ },
+ {
+  "id": "vsim-7-2",
+  "unit": 7,
+  "topic": "Weather",
+  "bookInstruction": "Complete the sentences.",
+  "instruction": "Complete the sentences with an adjective that describes the temperature or the sky.",
+  "items": [
+   { "id": "vsim-7-2-i1", "prompt": "It isn't cold today — it's quite _____ for December.", "answers": ["mild"] },
+   { "id": "vsim-7-2-i2", "prompt": "Take a jacket. It's a bit _____ out there this evening.", "answers": ["chilly", "cool"] },
+   { "id": "vsim-7-2-i3", "prompt": "It was 40 degrees in the shade — absolutely _____.", "answers": ["boiling"] },
+   { "id": "vsim-7-2-i4", "prompt": "There isn't a single cloud; the sky is completely _____.", "answers": ["clear"] },
+   { "id": "vsim-7-2-i5", "prompt": "The sun is _____ and there's no wind at all.", "answers": ["shining"] },
+   { "id": "vsim-7-2-i6", "prompt": "Be careful on the pavement this morning — it's very _____.", "answers": ["icy", "slippery"] }
+  ]
+ },
+
+ {
+  "id": "vsim-8-1",
+  "unit": 8,
+  "topic": "Animals and insects",
+  "bookInstruction": "Complete the sentences.",
+  "instruction": "Complete the sentences with the name of an animal or insect.",
+  "items": [
+   { "id": "vsim-8-1-i1", "prompt": "A _____ can go for days in the desert without water.", "answers": ["camel"] },
+   { "id": "vsim-8-1-i2", "prompt": "An elephant picks up food with its _____.", "answers": ["trunk"] },
+   { "id": "vsim-8-1-i3", "prompt": "A _____ has a very long neck, so it can eat leaves at the top of trees.", "answers": ["giraffe"] },
+   { "id": "vsim-8-1-i4", "prompt": "We keep bees because we like their honey, but a _____ can sting you.", "answers": ["bee"] },
+   { "id": "vsim-8-1-i5", "prompt": "The cat brought a dead _____ into the kitchen last night.", "answers": ["mouse"] },
+   { "id": "vsim-8-1-i6", "prompt": "The blue _____ is the largest animal that has ever lived.", "answers": ["whale"] }
+  ]
+ },
+ {
+  "id": "vsim-8-2",
+  "unit": 8,
+  "topic": "Animals and insects",
+  "bookInstruction": "Complete the sentences.",
+  "instruction": "Complete the sentences with a word about keeping or protecting animals.",
+  "items": [
+   { "id": "vsim-8-2-i1", "prompt": "Cats and dogs are the most common _____ in the UK.", "answers": ["pets"] },
+   { "id": "vsim-8-2-i2", "prompt": "I've only ever seen these animals in a _____ or on television.", "answers": ["zoo"] },
+   { "id": "vsim-8-2-i3", "prompt": "I don't like keeping birds in a _____; they need more space.", "answers": ["cage"] },
+   { "id": "vsim-8-2-i4", "prompt": "Tigers are hard to see in the _____ because there are so few left.", "answers": ["wild"] },
+   { "id": "vsim-8-2-i5", "prompt": "The panda is an _____ species — there are only a few thousand left.", "answers": ["endangered"] },
+   { "id": "vsim-8-2-i6", "prompt": "These laws exist to _____ animals from hunters.", "answers": ["protect"] }
+  ]
+ },
+
+ {
+  "id": "vsim-9-1",
+  "unit": 9,
+  "topic": "The body and movement",
+  "bookInstruction": "Find ten more words for parts of the body. / What do these actions often mean?",
+  "instruction": "Complete the sentences with the name of a part of the body.",
+  "items": [
+   { "id": "vsim-9-1-i1", "prompt": "I fell playing tennis and hurt my _____, so I can't walk properly.", "answers": ["ankle"] },
+   { "id": "vsim-9-1-i2", "prompt": "He rested his _____ on the table and put his chin in his hands.", "answers": ["elbows", "elbow"] },
+   { "id": "vsim-9-1-i3", "prompt": "She wears a watch on her left _____.", "answers": ["wrist"] },
+   { "id": "vsim-9-1-i4", "prompt": "The doctor said the pain in my _____ was nothing to do with my heart.", "answers": ["chest"] },
+   { "id": "vsim-9-1-i5", "prompt": "He kissed her on the _____ and she went red.", "answers": ["cheek"] },
+   { "id": "vsim-9-1-i6", "prompt": "These trousers are too big round the _____ — I need a belt.", "answers": ["waist"] }
+  ]
+ },
+ {
+  "id": "vsim-9-2",
+  "unit": 9,
+  "topic": "The body and movement",
+  "bookInstruction": "What do these actions often mean? (There may be several possible answers.)",
+  "instruction": "Complete the sentences with a verb for something you do with your body.",
+  "items": [
+   { "id": "vsim-9-2-i1", "prompt": "If you agree, just _____ your head.", "answers": ["nod"] },
+   { "id": "vsim-9-2-i2", "prompt": "In Britain people usually _____ hands when they meet for the first time.", "answers": ["shake"] },
+   { "id": "vsim-9-2-i3", "prompt": "She started to _____ when she heard the bad news.", "answers": ["cry"] },
+   { "id": "vsim-9-2-i4", "prompt": "I couldn't stop myself — I had to _____ at his terrible jokes.", "answers": ["laugh"] },
+   { "id": "vsim-9-2-i5", "prompt": "He stood at the window and started to _____ at us as the train left.", "answers": ["wave"] },
+   { "id": "vsim-9-2-i6", "prompt": "It's hard to _____ properly when the air is this polluted.", "answers": ["breathe"] }
+  ]
+ },
+
+ {
+  "id": "vsim-10-1",
+  "unit": 10,
+  "topic": "Describing appearance",
+  "bookInstruction": "Complete the sentences.",
+  "instruction": "Complete the sentences with a word describing someone's appearance.",
+  "items": [
+   { "id": "vsim-10-1-i1", "prompt": "She's got long _____ hair that goes into curls when it rains.", "answers": ["wavy", "curly"] },
+   { "id": "vsim-10-1-i2", "prompt": "He isn't tall and he isn't short — he's of _____ height.", "answers": ["medium", "average"] },
+   { "id": "vsim-10-1-i3", "prompt": "My brother is very _____; he goes to the gym five times a week.", "answers": ["athletic"] },
+   { "id": "vsim-10-1-i4", "prompt": "The doctor told him he was ten kilos _____ and should eat less.", "answers": ["overweight"] },
+   { "id": "vsim-10-1-i5", "prompt": "We use 'handsome' about a man and '_____' about a woman.", "answers": ["pretty", "beautiful"] },
+   { "id": "vsim-10-1-i6", "prompt": "He's got _____ hair, like a lot of people in Sweden.", "answers": ["blond", "fair", "blonde"] }
+  ]
+ },
+ {
+  "id": "vsim-10-2",
+  "unit": 10,
+  "topic": "Describing appearance",
+  "bookInstruction": "Complete the dialogues using words that are similar to the underlined words.",
+  "instruction": "Complete the second sentence so it means the same as the first.",
+  "items": [
+   { "id": "vsim-10-2-i1", "prompt": "She's about twenty. → She's _____.", "answers": ["twentyish"] },
+   { "id": "vsim-10-2-i2", "prompt": "He's approximately 1.80 metres. → He's _____ 1.80 metres.", "answers": ["roughly", "about", "approximately"] },
+   { "id": "vsim-10-2-i3", "prompt": "She's quite tall. → She's _____.", "answers": ["tallish"] },
+   { "id": "vsim-10-2-i4", "prompt": "He's very good-looking. → He's absolutely _____.", "answers": ["gorgeous"] },
+   { "id": "vsim-10-2-i5", "prompt": "How much does she weigh? → What's her _____?", "answers": ["weight"] },
+   { "id": "vsim-10-2-i6", "prompt": "He always wears good clothes. → He always looks very _____.", "answers": ["smart"] }
+  ]
+ },
+
+ {
+  "id": "vsim-11-1",
+  "unit": 11,
+  "topic": "Describing character",
+  "bookInstruction": "Complete the sentences.",
+  "instruction": "Complete the sentences with an adjective describing character.",
+  "items": [
+   { "id": "vsim-11-1-i1", "prompt": "She gives money to charity every month — she's very _____.", "answers": ["generous"] },
+   { "id": "vsim-11-1-i2", "prompt": "He never does anything he promises. He's completely _____.", "answers": ["unreliable"] },
+   { "id": "vsim-11-1-i3", "prompt": "He can wait for hours without complaining — he's a very _____ man.", "answers": ["patient"] },
+   { "id": "vsim-11-1-i4", "prompt": "She doesn't say much when she meets new people; she's quite _____.", "answers": ["shy"] },
+   { "id": "vsim-11-1-i5", "prompt": "He works twelve hours a day — he's extremely _____.", "answers": ["hard-working", "hardworking"] },
+   { "id": "vsim-11-1-i6", "prompt": "She won't spend a penny on anyone else. She's very _____.", "answers": ["mean"] }
+  ]
+ },
+ {
+  "id": "vsim-11-2",
+  "unit": 11,
+  "topic": "Describing character",
+  "bookInstruction": "Describe the person in the sentences, in one word.",
+  "instruction": "Describe each person in one word. Use the opposite of the adjective in brackets where it helps.",
+  "items": [
+   { "id": "vsim-11-2-i1", "prompt": "He always tells the truth, even when it costs him. He's _____. (opposite of dishonest)", "answers": ["honest"] },
+   { "id": "vsim-11-2-i2", "prompt": "She makes good decisions and doesn't do stupid things. She's very _____.", "answers": ["sensible"] },
+   { "id": "vsim-11-2-i3", "prompt": "He believes in himself and isn't afraid to speak to a big group. He's _____.", "answers": ["confident"] },
+   { "id": "vsim-11-2-i4", "prompt": "She hates waiting for anything, even for a minute. She's very _____.", "answers": ["impatient"] },
+   { "id": "vsim-11-2-i5", "prompt": "He has a great _____ of humour — he makes everybody laugh.", "answers": ["sense"] },
+   { "id": "vsim-11-2-i6", "prompt": "She paints, writes and plays two instruments. She's very _____.", "answers": ["creative", "talented"] }
+  ]
+ },
+
+ {
+  "id": "vsim-12-1",
+  "unit": 12,
+  "topic": "Feelings",
+  "bookInstruction": "Complete the sentences.",
+  "instruction": "Complete the sentences with an adjective describing how someone feels.",
+  "items": [
+   { "id": "vsim-12-1-i1", "prompt": "She didn't get the job and she's very _____ about it.", "answers": ["disappointed", "upset"] },
+   { "id": "vsim-12-1-i2", "prompt": "He's been _____ since his wife died — he hardly leaves the house.", "answers": ["depressed", "miserable"] },
+   { "id": "vsim-12-1-i3", "prompt": "I'm always _____ before an exam; I can't eat anything.", "answers": ["nervous", "anxious"] },
+   { "id": "vsim-12-1-i4", "prompt": "The children were _____ of the dog and ran into the house.", "answers": ["frightened", "scared"] },
+   { "id": "vsim-12-1-i5", "prompt": "His parents are very _____ of him — he came first in the whole country.", "answers": ["proud"] },
+   { "id": "vsim-12-1-i6", "prompt": "She gets _____ when he talks to other women.", "answers": ["jealous"] }
+  ]
+ },
+ {
+  "id": "vsim-12-2",
+  "unit": 12,
+  "topic": "Feelings",
+  "bookInstruction": "Complete the sentences.",
+  "instruction": "Complete the sentences with the NOUN form of the feeling.",
+  "items": [
+   { "id": "vsim-12-2-i1", "prompt": "He couldn't hide his _____ when they told him he had lost. (angry)", "answers": ["anger"] },
+   { "id": "vsim-12-2-i2", "prompt": "Waiting for the results caused her a lot of _____. (anxious)", "answers": ["anxiety"] },
+   { "id": "vsim-12-2-i3", "prompt": "Children are full of _____ — they want to know how everything works. (curious)", "answers": ["curiosity"] },
+   { "id": "vsim-12-2-i4", "prompt": "Her _____ was obvious when she saw him with someone else. (jealous)", "answers": ["jealousy"] },
+   { "id": "vsim-12-2-i5", "prompt": "He watched his daughter graduate with enormous _____. (proud)", "answers": ["pride"] },
+   { "id": "vsim-12-2-i6", "prompt": "She's in a terrible _____ this morning — don't talk to her.", "answers": ["mood"] }
+  ]
+ },
+
+ {
+  "id": "vsim-13-1",
+  "unit": 13,
+  "topic": "Family and friends",
+  "bookInstruction": "Look at the family tree, then complete the sentences below.",
+  "instruction": "Complete the sentences with the word for the family relation.",
+  "items": [
+   { "id": "vsim-13-1-i1", "prompt": "My brother's son is my _____.", "answers": ["nephew"] },
+   { "id": "vsim-13-1-i2", "prompt": "My sister's daughters are my _____.", "answers": ["nieces"] },
+   { "id": "vsim-13-1-i3", "prompt": "My aunt's children are my _____.", "answers": ["cousins"] },
+   { "id": "vsim-13-1-i4", "prompt": "My wife's mother is my mother-_____-law.", "answers": ["in"] },
+   { "id": "vsim-13-1-i5", "prompt": "My mother married again, so her new husband is my _____.", "answers": ["stepfather"] },
+   { "id": "vsim-13-1-i6", "prompt": "Her husband died two years ago, so she is a _____.", "answers": ["widow"] }
+  ]
+ },
+ {
+  "id": "vsim-13-2",
+  "unit": 13,
+  "topic": "Family and friends",
+  "bookInstruction": "Complete the text.",
+  "instruction": "Complete the sentences about friendship and family.",
+  "items": [
+   { "id": "vsim-13-2-i1", "prompt": "We got to _____ each other at university and we've been friends ever since.", "answers": ["know"] },
+   { "id": "vsim-13-2-i2", "prompt": "She isn't just a colleague — she's a very _____ friend.", "answers": ["close", "good", "old"] },
+   { "id": "vsim-13-2-i3", "prompt": "They're not identical, but they were born on the same day: they're _____.", "answers": ["twins"] },
+   { "id": "vsim-13-2-i4", "prompt": "My _____ brother is three years older than me.", "answers": ["elder", "older", "big"] },
+   { "id": "vsim-13-2-i5", "prompt": "I have no brothers or sisters — I'm an _____ child.", "answers": ["only"] },
+   { "id": "vsim-13-2-i6", "prompt": "After the divorce he _____ and had two more children.", "answers": ["remarried"] }
+  ]
+ },
+
+ {
+  "id": "vsim-14-1",
+  "unit": 14,
+  "topic": "Growing up",
+  "bookInstruction": "Complete the sentences.",
+  "instruction": "Complete the sentences with a word about age or stage of life.",
+  "items": [
+   { "id": "vsim-14-1-i1", "prompt": "A child of two who has just learned to walk is a _____.", "answers": ["toddler"] },
+   { "id": "vsim-14-1-i2", "prompt": "Between 13 and 19 you are a _____.", "answers": ["teenager"] },
+   { "id": "vsim-14-1-i3", "prompt": "He's 45, so he's _____-aged.", "answers": ["middle"] },
+   { "id": "vsim-14-1-i4", "prompt": "She stopped working at 65 and has enjoyed her _____ ever since.", "answers": ["retirement"] },
+   { "id": "vsim-14-1-i5", "prompt": "My grandmother is 88 — she's quite _____ now.", "answers": ["elderly", "old"] },
+   { "id": "vsim-14-1-i6", "prompt": "I had a very happy _____; we lived by the sea.", "answers": ["childhood"] }
+  ]
+ },
+ {
+  "id": "vsim-14-2",
+  "unit": 14,
+  "topic": "Growing up",
+  "bookInstruction": "Rewrite the sentences without using the underlined words and phrases. Keep a similar meaning.",
+  "instruction": "Complete the second sentence so it means the same as the first.",
+  "items": [
+   { "id": "vsim-14-2-i1", "prompt": "He's about 55. → He's in his mid-_____.", "answers": ["fifties"] },
+   { "id": "vsim-14-2-i2", "prompt": "She's 23. → She's in her _____.", "answers": ["twenties"] },
+   { "id": "vsim-14-2-i3", "prompt": "My parents didn't let me go out on school nights. → My parents didn't _____ me to go out on school nights.", "answers": ["allow"] },
+   { "id": "vsim-14-2-i4", "prompt": "My father was very strict. → My father didn't _____ us do very much.", "answers": ["let"] },
+   { "id": "vsim-14-2-i5", "prompt": "He is not dead. → He is still _____.", "answers": ["alive"] },
+   { "id": "vsim-14-2-i6", "prompt": "She is almost forty. → She is _____ forty.", "answers": ["nearly", "almost"] }
+  ]
+ },
+
+ {
+  "id": "vsim-15-1",
+  "unit": 15,
+  "topic": "Romance, marriage and divorce",
+  "bookInstruction": "Complete the dialogues.",
+  "instruction": "Complete the sentences with a word about romance and marriage.",
+  "items": [
+   { "id": "vsim-15-1-i1", "prompt": "They got _____ in June and the wedding is next spring.", "answers": ["engaged"] },
+   { "id": "vsim-15-1-i2", "prompt": "The _____ wore a beautiful white dress.", "answers": ["bride"] },
+   { "id": "vsim-15-1-i3", "prompt": "After the ceremony there was a _____ for a hundred guests.", "answers": ["reception"] },
+   { "id": "vsim-15-1-i4", "prompt": "They spent their _____ in Greece.", "answers": ["honeymoon"] },
+   { "id": "vsim-15-1-i5", "prompt": "Next week is our tenth wedding _____.", "answers": ["anniversary"] },
+   { "id": "vsim-15-1-i6", "prompt": "They didn't get on, so they got _____ after three years.", "answers": ["divorced"] }
+  ]
+ },
+ {
+  "id": "vsim-15-2",
+  "unit": 15,
+  "topic": "Romance, marriage and divorce",
+  "bookInstruction": "Which words are being defined?",
+  "instruction": "Complete the sentences with the missing verb or noun.",
+  "items": [
+   { "id": "vsim-15-2-i1", "prompt": "I've been going _____ with Sam for about six months.", "answers": ["out"] },
+   { "id": "vsim-15-2-i2", "prompt": "They were together for years, but they _____ up last month.", "answers": ["broke"] },
+   { "id": "vsim-15-2-i3", "prompt": "She's three months _____ — the baby is due in July.", "answers": ["pregnant"] },
+   { "id": "vsim-15-2-i4", "prompt": "It isn't just a friendship any more; they're in a serious _____.", "answers": ["relationship"] },
+   { "id": "vsim-15-2-i5", "prompt": "He asked her to _____ him and she said yes.", "answers": ["marry"] },
+   { "id": "vsim-15-2-i6", "prompt": "They're going out for dinner to _____ their engagement.", "answers": ["celebrate"] }
+  ]
+ },
+
+ {
+  "id": "vsim-16-1",
+  "unit": 16,
+  "topic": "Daily routines",
+  "bookInstruction": "One word is missing in each sentence. What is it and where does it go?",
+  "instruction": "Complete the sentences about a daily routine.",
+  "items": [
+   { "id": "vsim-16-1-i1", "prompt": "I usually _____ up at about seven o'clock.", "answers": ["wake", "get"] },
+   { "id": "vsim-16-1-i2", "prompt": "I have a _____ every morning before breakfast.", "answers": ["shower"] },
+   { "id": "vsim-16-1-i3", "prompt": "I _____ my teeth twice a day.", "answers": ["brush", "clean"] },
+   { "id": "vsim-16-1-i4", "prompt": "He doesn't _____ at weekends, so he has a beard by Monday.", "answers": ["shave"] },
+   { "id": "vsim-16-1-i5", "prompt": "I fall _____ the moment my head touches the pillow.", "answers": ["asleep"] },
+   { "id": "vsim-16-1-i6", "prompt": "We were too tired to cook, so we ordered a _____.", "answers": ["takeaway"] }
+  ]
+ },
+ {
+  "id": "vsim-16-2",
+  "unit": 16,
+  "topic": "Daily routines",
+  "bookInstruction": "One word is missing in each sentence. What is it and where does it go?",
+  "instruction": "Complete the sentences with a word about housework and meals.",
+  "items": [
+   { "id": "vsim-16-2-i1", "prompt": "I hate doing the _____ — cleaning, washing, all of it.", "answers": ["housework"] },
+   { "id": "vsim-16-2-i2", "prompt": "I do the _____ on Sunday so I have clean shirts for the week.", "answers": ["ironing", "washing"] },
+   { "id": "vsim-16-2-i3", "prompt": "I only have time for a quick _____ between meetings.", "answers": ["snack"] },
+   { "id": "vsim-16-2-i4", "prompt": "Dinner is our _____ meal of the day.", "answers": ["main"] },
+   { "id": "vsim-16-2-i5", "prompt": "I don't cook in the morning — I just have _____ with milk.", "answers": ["cereal"] },
+   { "id": "vsim-16-2-i6", "prompt": "I came home late and went _____ to bed.", "answers": ["straight"] }
+  ]
+ },
+
+ {
+  "id": "vsim-17-1",
+  "unit": 17,
+  "topic": "The place where you live",
+  "bookInstruction": "Complete the sentences.",
+  "instruction": "Complete the sentences with a word about homes and location.",
+  "items": [
+   { "id": "vsim-17-1-i1", "prompt": "We live on the fourth floor, but luckily there's a _____.", "answers": ["lift"] },
+   { "id": "vsim-17-1-i2", "prompt": "In the summer we have breakfast out on the _____.", "answers": ["balcony"] },
+   { "id": "vsim-17-1-i3", "prompt": "They live in a small _____ in the countryside, with a garden.", "answers": ["cottage"] },
+   { "id": "vsim-17-1-i4", "prompt": "The flat is on the _____ floor, so we don't have any stairs.", "answers": ["ground"] },
+   { "id": "vsim-17-1-i5", "prompt": "We don't own it — we _____ it from a landlord.", "answers": ["rent"] },
+   { "id": "vsim-17-1-i6", "prompt": "It's a very _____ location — five minutes from the station.", "answers": ["central", "good", "convenient"] }
+  ]
+ },
+ {
+  "id": "vsim-17-2",
+  "unit": 17,
+  "topic": "The place where you live",
+  "bookInstruction": "Are these generally positive or negative features of a home?",
+  "instruction": "Complete the sentences describing what a home is like.",
+  "items": [
+   { "id": "vsim-17-2-i1", "prompt": "The house is 200 years old and full of _____.", "answers": ["character"] },
+   { "id": "vsim-17-2-i2", "prompt": "There's central _____, so it's warm even in January.", "answers": ["heating"] },
+   { "id": "vsim-17-2-i3", "prompt": "You can see the sea from the window — the _____ are wonderful.", "answers": ["views"] },
+   { "id": "vsim-17-2-i4", "prompt": "It's a bit _____ inside because the windows are very small.", "answers": ["dark"] },
+   { "id": "vsim-17-2-i5", "prompt": "There's plenty of _____ for a family of five.", "answers": ["space", "room"] },
+   { "id": "vsim-17-2-i6", "prompt": "We _____ here three years ago, just after the baby was born.", "answers": ["moved"] }
+  ]
+ },
+
+ {
+  "id": "vsim-18-1",
+  "unit": 18,
+  "topic": "Around the home",
+  "bookInstruction": "Complete the sentences.",
+  "instruction": "Complete the sentences with the name of something in the kitchen or bathroom.",
+  "items": [
+   { "id": "vsim-18-1-i1", "prompt": "Put the milk in the _____ or it will go off.", "answers": ["fridge"] },
+   { "id": "vsim-18-1-i2", "prompt": "I'll put the _____ on and make us some tea.", "answers": ["kettle"] },
+   { "id": "vsim-18-1-i3", "prompt": "Heat it up in the _____ — it only takes two minutes.", "answers": ["microwave"] },
+   { "id": "vsim-18-1-i4", "prompt": "Don't wash those up; just put them in the _____.", "answers": ["dishwasher"] },
+   { "id": "vsim-18-1-i5", "prompt": "Turn the _____ off — you're wasting water.", "answers": ["tap"] },
+   { "id": "vsim-18-1-i6", "prompt": "The cake needs 40 minutes in a hot _____.", "answers": ["oven"] }
+  ]
+ },
+ {
+  "id": "vsim-18-2",
+  "unit": 18,
+  "topic": "Around the home",
+  "bookInstruction": "What are these things, and which room(s) do you usually find them in?",
+  "instruction": "Complete the sentences with the name of something in the bedroom or living room.",
+  "items": [
+   { "id": "vsim-18-2-i1", "prompt": "It was cold, so I put an extra _____ on the bed.", "answers": ["blanket", "duvet"] },
+   { "id": "vsim-18-2-i2", "prompt": "I can't sleep without a soft _____ under my head.", "answers": ["pillow"] },
+   { "id": "vsim-18-2-i3", "prompt": "Close the _____ — people can see straight into the room.", "answers": ["curtains", "blinds"] },
+   { "id": "vsim-18-2-i4", "prompt": "There's a thick _____ on the floor, so the room is very warm.", "answers": ["carpet", "rug"] },
+   { "id": "vsim-18-2-i5", "prompt": "Three people can sit on the _____ in front of the television.", "answers": ["sofa"] },
+   { "id": "vsim-18-2-i6", "prompt": "We keep the plates and glasses in that _____.", "answers": ["cupboard"] }
+  ]
+ },
+
+ {
+  "id": "vsim-19-1",
+  "unit": 19,
+  "topic": "Money",
+  "bookInstruction": "Complete the text.",
+  "instruction": "Complete the sentences with a word about money.",
+  "items": [
+   { "id": "vsim-19-1-i1", "prompt": "I haven't got any _____ on me — can I pay by card?", "answers": ["cash", "money"] },
+   { "id": "vsim-19-1-i2", "prompt": "I've been _____ up for a car for the last two years.", "answers": ["saving"] },
+   { "id": "vsim-19-1-i3", "prompt": "I can't _____ a new laptop this month; it's too expensive.", "answers": ["afford"] },
+   { "id": "vsim-19-1-i4", "prompt": "I took £50 out of the _____ on the corner.", "answers": ["cashpoint"] },
+   { "id": "vsim-19-1-i5", "prompt": "She took out a _____ from the bank to pay for the wedding.", "answers": ["loan"] },
+   { "id": "vsim-19-1-i6", "prompt": "£30 for a taxi is a complete _____ of money.", "answers": ["waste"] }
+  ]
+ },
+ {
+  "id": "vsim-19-2",
+  "unit": 19,
+  "topic": "Money",
+  "bookInstruction": "Rewrite the sentences without using the underlined words and phrases. Keep the same meaning.",
+  "instruction": "Complete the second sentence so it means the same as the first.",
+  "items": [
+   { "id": "vsim-19-2-i1", "prompt": "The price is not too high. → The price is quite _____.", "answers": ["reasonable"] },
+   { "id": "vsim-19-2-i2", "prompt": "We paid to use a car for a week. → We _____ a car for a week.", "answers": ["hired", "rented"] },
+   { "id": "vsim-19-2-i3", "prompt": "The bank asked me for £20 for the transfer. → The bank _____ me £20 for the transfer.", "answers": ["charged"] },
+   { "id": "vsim-19-2-i4", "prompt": "How much money do you get every month? → How much are you _____ every month?", "answers": ["earning"] },
+   { "id": "vsim-19-2-i5", "prompt": "I have to give him back £100. → I _____ him £100.", "answers": ["owe"] },
+   { "id": "vsim-19-2-i6", "prompt": "The pound is the currency of the UK. → _____ is the currency of the UK.", "answers": ["sterling", "Sterling"] }
+  ]
+ },
+
+ {
+  "id": "vsim-20-1",
+  "unit": 20,
+  "topic": "Health",
+  "bookInstruction": "Complete the dialogues.",
+  "instruction": "Complete the sentences with a word about common health problems.",
+  "items": [
+   { "id": "vsim-20-1-i1", "prompt": "I've got a terrible _____ — have you got an aspirin?", "answers": ["headache"] },
+   { "id": "vsim-20-1-i2", "prompt": "I've got a _____ throat and I can hardly speak.", "answers": ["sore"] },
+   { "id": "vsim-20-1-i3", "prompt": "He was in bed for a week with _____.", "answers": ["flu"] },
+   { "id": "vsim-20-1-i4", "prompt": "My back really _____ when I sit for too long.", "answers": ["hurts", "aches"] },
+   { "id": "vsim-20-1-i5", "prompt": "She's had a bad _____ since she caught a cold.", "answers": ["cough"] },
+   { "id": "vsim-20-1-i6", "prompt": "The nurse put a _____ round the cut on his arm.", "answers": ["bandage"] }
+  ]
+ },
+ {
+  "id": "vsim-20-2",
+  "unit": 20,
+  "topic": "Health",
+  "bookInstruction": "Complete the sentences with a or nothing.",
+  "instruction": "Complete the sentences with a word about treatment and serious illness.",
+  "items": [
+   { "id": "vsim-20-2-i1", "prompt": "The doctor gave me some _____ to take three times a day.", "answers": ["medicine", "tablets", "pills"] },
+   { "id": "vsim-20-2-i2", "prompt": "He had an _____ on his knee and was in hospital for four days.", "answers": ["operation"] },
+   { "id": "vsim-20-2-i3", "prompt": "The _____ who did the operation trained in Edinburgh.", "answers": ["surgeon"] },
+   { "id": "vsim-20-2-i4", "prompt": "She has a serious heart _____ and can't do any sport.", "answers": ["disease", "condition"] },
+   { "id": "vsim-20-2-i5", "prompt": "You look terrible — have you got a _____?", "answers": ["temperature"] },
+   { "id": "vsim-20-2-i6", "prompt": "The _____ in my stomach was so bad I couldn't stand up.", "answers": ["pain"] }
+  ]
+ }
+]

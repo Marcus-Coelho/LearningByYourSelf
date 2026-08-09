@@ -36,6 +36,7 @@ import { userKey } from './App';
 import grammarExercises from './grammar_vocab_exercises_grammar.json';
 import vocabExercises from './grammar_vocab_exercises_vocab.json';
 import similarBlocks from './grammar_vocab_exercises_similar.json';
+import vocabSimilarBlocks from './grammar_vocab_exercises_vocab_similar.json';
 import './GrammarVocabExercises.css';
 
 const GRAMMAR_VOCAB_EXERCISES_POSITION_KEY = 'grammarVocabExercisesPosition';
@@ -94,6 +95,13 @@ const SOURCES = [
     title: 'Similar Exercises from Grammar Elementary',
     description: 'Harder, write-in practice modelled on the last exercises of every unit of the book — you type the answer, not choose it.',
     blocks: similarBlocks,
+  },
+  {
+    id: 'vocabSimilar',
+    kind: 'written',
+    title: 'Similar Exercises from English Vocabulary B',
+    description: 'Write-in practice modelled on the “complete the sentences” exercises of the book — fill each gap with the right word.',
+    blocks: vocabSimilarBlocks,
   },
 ];
 
@@ -340,11 +348,12 @@ export default function GrammarVocabExercisesPage({ userName }) {
   // falhado. Só filtra a EXIBIÇÃO — placar e "N answered" continuam contando
   // a seção inteira, igual ao blockFilter acima.
   const [hideSolved, setHideSolved] = useState(loadSavedHideSolved);
-  const [answersBySource, setAnswersBySource] = useState(() => ({
-    grammar: loadAnswers(userName, 'grammar'),
-    vocabulary: loadAnswers(userName, 'vocabulary'),
-    similar: loadAnswers(userName, 'similar'),
-  }));
+  const [answersBySource, setAnswersBySource] = useState(() => (
+    SOURCES.reduce((acc, source) => {
+      acc[source.id] = loadAnswers(userName, source.id);
+      return acc;
+    }, {})
+  ));
 
   useEffect(() => {
     try {
@@ -369,22 +378,25 @@ export default function GrammarVocabExercisesPage({ userName }) {
 
   // Seção escrita: grava de uma vez o texto digitado em cada item do bloco
   // + o marcador 'checked' do próprio bloco (ver WrittenExerciseBlock).
+  // Escopado no activeSourceId, não no literal 'similar': desde que existe
+  // mais de uma seção escrita (Grammar Elementary e English Vocabulary B), o
+  // literal gravaria as respostas da Vocabulary por cima das da Grammar.
   const handleCheckBlock = (block, drafts) => {
     setAnswersBySource((prev) => {
-      const merged = { ...prev.similar, [block.id]: 'checked' };
+      const merged = { ...prev[activeSourceId], [block.id]: 'checked' };
       block.items.forEach((item) => { merged[item.id] = drafts[item.id] || ''; });
-      saveAnswers(userName, 'similar', merged);
-      return { ...prev, similar: merged };
+      saveAnswers(userName, activeSourceId, merged);
+      return { ...prev, [activeSourceId]: merged };
     });
   };
 
   const handleResetBlock = (block) => {
     setAnswersBySource((prev) => {
-      const merged = { ...prev.similar };
+      const merged = { ...prev[activeSourceId] };
       delete merged[block.id];
       block.items.forEach((item) => { delete merged[item.id]; });
-      saveAnswers(userName, 'similar', merged);
-      return { ...prev, similar: merged };
+      saveAnswers(userName, activeSourceId, merged);
+      return { ...prev, [activeSourceId]: merged };
     });
   };
 
