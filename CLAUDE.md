@@ -503,6 +503,30 @@ internet nem conta nenhuma.
   diálogo sozinho ao carregar a página — a tela pede autorização explícita (2 botões: escolher
   pasta ou pular) antes de disparar o diálogo nativo do SO.
 
+### Sound Bank — 3 páginas, DOIS cursos (2026-08-09)
+
+O Sound Bank do menu abre `american1-reference` com `{type:'sound', pages:[166,167]}`. Desde
+2026-08-09 ele serve **3** páginas: as 2 do American English A1 (166-167) mais a **p. 3 do
+American Accent** ("Main Vowel Sounds of American English", capítulo 1, faixa 4 = página 11 do
+PDF). É o **único lugar do app onde uma tela mistura PDF de dois cursos**.
+
+- **Merge**: feito na rota `/american1-pages/ref/:type/:page` (`setupProxy.js`), com um `if
+  (type === 'sound')` explícito — não virou campo genérico em `AMERICAN1_REFERENCE_FOLDERS`,
+  que descreve pastas do American1 e não comportaria um PDF de outro curso.
+- **Falha em silêncio de propósito**: o American Accent é o único curso cuja pasta pode não
+  existir na máquina (caminho por tentativa, ver Quick Start). O append vai dentro de um
+  `try/catch` — sem ele, a pasta ausente derrubaria o Sound Bank INTEIRO, que é material do
+  American1 e não tem nada a ver com isso.
+- **Âncora do player** (`american1_reference_audio_anchors.json`, chave `sound:166`, `page: 2`):
+  x=76.4, y=94.7, `pageWidth`/`pageHeight` da página do Accent (562.9×782.8 — cada página usa a
+  SUA dimensão, o `scale` é calculado por página). Esses números **não são a posição visual**:
+  `.american1-audio-anchor` tem `transform: translate(-20px, -7px)` em pixels FIXOS (não
+  escalados), então a âncora precisa compensar `20/scale` e `7/scale`. Com o `defaultScale` de
+  1.5, isso põe a pílula em (63.1, 90.1) no PDF — alinhada à margem esquerda da palavra
+  "American" (x0=63.1) e 2,9pt abaixo da base dela (y1=87.2), que foi o pedido do dono.
+  Conferido por medição no navegador, não a olho. **Se o `defaultScale` do `PdfWorkspace` ou o
+  `translate` do CSS mudarem, essa âncora sai do lugar** — recalcular, não arrastar no olho.
+
 ### Repetição espaçada do My Words (reescrita em 2026-08-08)
 
 O motor já existia, mas três coisas o mascaravam: palavra nova nascia vencida (`due:
@@ -737,12 +761,19 @@ Não há testes unitários automatizados (`npm test` funciona mas CRA cria um es
 
 1. **`npm run build`** — é a checagem padrão (sintaxe/JSX, imports quebrados, símbolo não usado
    depois de uma remoção). Rodar depois de qualquer mudança.
-2. **Verificação visual é do DONO, na mão.** Instrução explícita dele em 2026-08-08: **não usar
-   Playwright, screenshots ou qualquer teste de captura**, e não gastar tokens procurando o
-   Playwright no cache do npx. Entregar a mudança com o build passando e **esperar o retorno
-   dele**. Se uma dúvida só puder ser respondida olhando o app rodando, perguntar — não
-   automatizar. (Rodadas anteriores do projeto usaram Playwright ad-hoc; ficou no histórico,
-   mas não é mais o procedimento.)
+2. **Playwright/capturas: perguntar antes.** Em 2026-08-08 o dono proibiu (queria o orçamento
+   de tokens na implementação, não na verificação, e prefere conferir a olho). Em 2026-08-09 ele
+   liberou explicitamente — "autorizado quaisquer tipos de verificações" — mas no contexto de
+   uma rodada longa em que ele ia dormir. Ou seja: **não é padrão nem proibição permanente**.
+   Sem autorização na conversa, entregar com o build passando e esperar o retorno dele.
+   O Playwright não está no `package.json`; roda pelo cache do npx
+   (`NODE_PATH=$HOME/AppData/Local/npm-cache/_npx/<hash>/node_modules node script.js`).
+3. **Ao verificar no navegador, subir o dev server numa porta livre** (`PORT=3002 npm start`),
+   não matar o que estiver na 3000 — costuma ser a sessão do próprio dono. O `setupProxy.js` só
+   é lido no boot, então mudança nele EXIGE reiniciar (não tem hot reload).
+4. **Medir, não olhar.** Posição de elemento se confere por `boundingBox()` convertido pras
+   coordenadas do PDF, não por screenshot — foi assim que a âncora do Sound Bank foi ajustada,
+   e foi assim que se descobriu o `translate(-20px,-7px)` que a screenshot não denunciava.
 
 ---
 
