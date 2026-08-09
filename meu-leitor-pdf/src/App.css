@@ -5074,11 +5074,17 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 1px 8px;
+  /* 13.5px/3px-11px (era 12px/1px-8px): ela fica ao lado da palavra, que é
+     19px/800 — no tamanho anterior parecia uma nota de rodapé grudada ali,
+     em vez de um selo de estado. Pedido do dono, 2026-08-09. */
+  padding: 3px 11px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 13.5px;
   font-weight: 700;
   white-space: nowrap;
+  /* Respiro extra da palavra: o gap de 4px da linha é calibrado pro 🔊
+     colado no texto, e é apertado demais entre a palavra e um selo. */
+  margin-left: 4px;
   /* Não deixa a pílula esticar nem encolher junto da palavra no flex da
      .wordbook-entry-word-row — ela tem largura de conteúdo, sempre. */
   flex: 0 0 auto;

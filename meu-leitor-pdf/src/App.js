@@ -8384,14 +8384,15 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
                       <>
                         {entry.image && <img src={entry.image} alt="" className="wordbook-entry-thumb" />}
                         <div className="wordbook-entry-main">
-                          {/* Pílula da última classificação ANTES da palavra
-                              (pedido do dono, 2026-08-08) — no fim do card,
-                              junto do contexto, ela ficava na 4ª linha e só
-                              era vista depois de ler tudo; aqui ela é a
-                              primeira coisa da entrada, então dá pra varrer a
-                              lista inteira pelo estado de cada palavra sem
-                              ler nenhuma delas. */}
+                          {/* Pílula da última classificação na LINHA da
+                              palavra, logo à direita dela (pedido do dono,
+                              2026-08-08/09). No fim do card ela caía na 4ª
+                              linha e só era vista depois de ler tudo; aqui a
+                              lista inteira pode ser varrida pelo estado de
+                              cada palavra sem ler nenhuma delas. */}
                           <span className="wordbook-entry-word-row">
+                            <WordAudioButton word={entry.word} />
+                            <span className="wordbook-entry-word">{entry.word}</span>
                             {entry.lastGrade && FLASHCARD_GRADE_LABELS[entry.lastGrade] && (
                               <span className={`wordbook-grade-pill wordbook-grade-pill--${entry.lastGrade}`}>
                                 {FLASHCARD_GRADE_LABELS[entry.lastGrade]}
@@ -8402,8 +8403,6 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
                                 })()}
                               </span>
                             )}
-                            <WordAudioButton word={entry.word} />
-                            <span className="wordbook-entry-word">{entry.word}</span>
                           </span>
                           {entry.meaning && <p className="wordbook-entry-meaning">{entry.meaning}</p>}
                           {entry.example && <p className="wordbook-entry-example">“{entry.example}”</p>}

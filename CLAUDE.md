@@ -506,9 +506,10 @@ filtrou por vencidas; o que faltava era entrada controlada, teto e visibilidade.
   "(+N to repeat)": `practiceIds` cresce com a reciclagem, e um "of N" mudando sozinho no meio
   da sessão pareceria erro.
 - **Rastro da última avaliação** (`lastGrade`/`lastGradedAt`/`lastIntervalDays`) exibido como
-  pílula colorida **ANTES da palavra**, abrindo a `.wordbook-entry-word-row` (pedido do dono —
-  no fim do card ela caía na 4ª linha e só era vista depois de ler tudo; na frente, dá pra
-  varrer a lista inteira pelo estado das palavras sem ler nenhuma). A linha meta de baixo ficou
+  pílula colorida **na linha da palavra, logo à direita dela** (dentro da
+  `.wordbook-entry-word-row`, depois do 🔊 e do texto — pedido do dono: no fim do card ela caía
+  na 4ª linha e só era vista depois de ler tudo; nessa linha, dá pra varrer a lista inteira pelo
+  estado das palavras sem ler nenhuma). A linha meta de baixo ficou
   só com o `context`, e **não mostra mais** o "review in N days" (`formatDue`, removida): o que
   interessa é o que o usuário respondeu, não a contagem regressiva. Palavra nunca avaliada não
   ganha pílula (sem migração de dado); sem `context`, a linha meta inteira não renderiza, pra
