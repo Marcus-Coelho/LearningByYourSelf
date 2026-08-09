@@ -5033,9 +5033,34 @@ body {
   opacity: 0.85;
 }
 
+/* A cor É a informação aqui (mesma exceção à paleta que o verde/vermelho de
+   acerto e erro): vermelho = errei, verde = acertei, e o "known" precisava de
+   um 4º tom que lesse como "já dominei, some por um mês" sem virar mais um
+   verde. Navy da paleta — o mais "encerrado" dos 4. */
 .flashcard-grade.again { background: #c95555; }
 .flashcard-grade.good { background: var(--purple-500); }
 .flashcard-grade.easy { background: #3e9e6e; }
+.flashcard-grade.known { background: var(--navy-900); }
+
+/* Última classificação dada, na lista do My Words. Mesmas 4 cores dos botões
+   acima de propósito: a pílula é o eco do botão que foi clicado, então quem
+   clicou no verde procura o verde na lista. Fundo bem claro (a cor cheia dos
+   botões deixaria a lista listrada e ilegível) com o texto na cor forte. */
+.wordbook-grade-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.wordbook-grade-pill--again { background: rgba(201, 85, 85, 0.14); color: #a53d3d; }
+.wordbook-grade-pill--good { background: rgba(96, 103, 240, 0.14); color: var(--brand-600); }
+.wordbook-grade-pill--easy { background: rgba(62, 158, 110, 0.16); color: #2c7752; }
+.wordbook-grade-pill--known { background: rgba(35, 43, 58, 0.1); color: var(--navy-900); }
 
 /* Botão flutuante "+ Word" + mini formulário, presentes nas telas de estudo. */
 .word-fab {

@@ -307,7 +307,12 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
   visitadas (`findNextUnvisitedByCourse`, ordena por `courseId` cruzando os 4 cursos — não é
   mais sempre Vocabulary primeiro); "Practice listening" é uma faixa de Listening/Dictation de
   verdade nunca tentada em nenhum dos 2 modos (`findUnpracticedListeningTrack`, varre os 359
-  tracks dos 2 cursos), não mais o 2º curso da lista de units
+  tracks dos 2 cursos), não mais o 2º curso da lista de units. **"Review words" (My Words) é
+  sempre o ÚLTIMO item** (pedido do dono, 2026-08-08) — mesma posição do "Practice N words" no
+  `ReviewCard` da tela Courses, que também foi movido pro fim (antes abria a lista). Essa linha
+  aparece mesmo com nada vencido, desde que tenham sido adicionadas palavras HOJE
+  (`wordbookAddedTodayCount`): palavra nova só vence na virada do dia, então sem ela adicionar
+  palavras não mudava nada visível na Home e parecia que não tinham sido salvas
 - **`DailyGoalCard`**: meta diária com 3 componentes togglináveis via "Customize goal" —
   aprender unit nova, zerar revisões do dia, praticar Listening/Dictation. Os 3 usam uma flag
   própria em `dailyGoalToday` (nenhum é `reviewQueue.length === 0` — isso dava um check de
@@ -319,11 +324,15 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
   — fica sempre a mesma string, ex. `"grammarElem-unit"` — então uma revisão que vencesse
   DURANTE uma sessão de navegação assim nunca era reconhecida como vencida, mesmo reavaliando
   o item certo; state pode ficar desatualizado por tempo indeterminado, localStorage nunca) —
-  **também marca ao graduar um flashcard vencido do My Words** (`handleGradeWord`, mesmo
-  critério `(entry.due ?? 0) <= agora` que `wordbookDueCount` já usa, checado ANTES de
-  sobrescrever o `due`; corrigido 2026-07-24 — o card "Today's Review" já mostra "Practice N
-  words" junto com as revisões de curso como se fossem a mesma coisa, então só contar um dos
-  dois tipos era inconsistente com o que a tela promete); os outros 2 via `markDailyGoalDone`
+  **também marca ao TERMINAR uma sessão de flashcards do My Words**
+  (`handleWordbookSessionComplete`, passado como `onSessionComplete` pro `WordbookPage`). Era
+  por card avaliado (`handleGradeWord`) até 2026-08-08; mudou junto com a reciclagem do "Again"
+  (ver "Revisão espaçada / My Words"): como a sessão só acaba quando toda palavra vencida foi
+  respondida sem "Again", chegar ao fim já é prova de que a revisão inteira aconteceu, enquanto
+  avaliar 1 card de 25 não era. **Avaliado e rejeitado no mesmo dia:** marcar por tempo de
+  permanência na tela (ex. N × 4s) — proxy que erra pros dois lados (marca sozinho com a aba
+  aberta e esquecida; deixa de marcar quem revisa rápido) e ainda exigiria pausar em
+  `visibilitychange`/blur, tudo pra aproximar algo que o fim da sessão já mede exato; os outros 2 via `markDailyGoalDone`
   (visitar unit nunca visitada / terminar Listening ou Dictation, `onPracticed` prop em
   `ListeningClozeExercise`/`DictationExercise`). Progresso do dia em `dailyGoal:<YYYY-MM-DD>`
   (data LOCAL, nunca `toISOString`), nunca desmarcado — dia novo já nasce zerado porque a
@@ -386,7 +395,14 @@ u:<nome>:notes:americanAccent:<screenId> — string, notas da tela
 # Revisão espaçada / My Words (compartilhado entre os 4 cursos)
 u:<nome>:review:<curso>:<id>       — JSON {rating, ratedAt, due}
 u:<nome>:wordbook                  — array JSON de palavras + flashcards ({id, word, meaning,
-                                      example, context, image, createdAt, step, due}).
+                                      example, context, image, createdAt, step, due,
+                                      lastGrade, lastGradedAt, lastIntervalDays}).
+                                      `due` NUMÉRICO é o que define "vencida" (isWordDue) —
+                                      palavra nova nasce com o início do dia SEGUINTE, nunca
+                                      mais com Date.now(). `lastIntervalDays` fica gravado, não
+                                      recalculado do grau: se a tabela de intervalos mudar, o
+                                      histórico continua contando a verdade da época. `step`
+                                      só sobrevive por compatibilidade, não agenda mais nada.
                                       TODA gravação passa por persistWordbook, que recebe uma
                                       FUNÇÃO (lista atual) => lista nova e relê a base do
                                       localStorage antes de aplicar — nunca passar um array
@@ -455,6 +471,52 @@ internet nem conta nenhuma.
   a feature existia. `showDirectoryPicker()` exige gesto do usuário, então não dá pra abrir o
   diálogo sozinho ao carregar a página — a tela pede autorização explícita (2 botões: escolher
   pasta ou pular) antes de disparar o diálogo nativo do SO.
+
+### Repetição espaçada do My Words (reescrita em 2026-08-08)
+
+O motor já existia, mas três coisas o mascaravam: palavra nova nascia vencida (`due:
+Date.now()`), não havia teto de sessão, e nada mostrava o que o usuário tinha respondido — daí
+a percepção, relatada pelo dono, de que "a revisão mostra todos os cards". A sessão **sempre**
+filtrou por vencidas; o que faltava era entrada controlada, teto e visibilidade.
+
+- **Intervalos FIXOS por grau** (`FLASHCARD_GRADE_DAYS`): `again: 1`, `good: 3`, `easy: 7`,
+  `known: 30`. Substituiu a escada progressiva (`FLASHCARD_STEPS_DAYS = [1,3,7,14,30,60]`, onde
+  "Good" subia um degrau e "Easy" dois, então o mesmo botão dava intervalos diferentes conforme
+  o `step`). Escolha do dono: o número escrito no botão é o que acontece.
+  **Consequência aceita conscientemente:** sem progressão, o intervalo máximo é 30 dias — o
+  volume diário estabiliza em vez de diminuir com o tempo. O 4º grau "Known" existe justamente
+  pra isso: sem ele, palavra dominada nunca se afastaria. Quem gradua a palavra é o usuário,
+  declarando, não o algoritmo inferindo pelo histórico.
+- **Palavra nova não nasce vencida** — `due` = início do dia LOCAL seguinte
+  (`startOfNextLocalDay`, nunca `toISOString`). "As adicionadas no dia não entram na lista"
+  (pedido do dono). Era a causa principal do "mostra tudo": adicionar 20 palavras jogava as 20
+  na sessão do mesmo dia.
+- **`isWordDue(entry, at)`** é o único critério de "vencida": `due` NUMÉRICO e `<= agora`. O
+  `(entry.due ?? 0) <= agora` de antes tratava entrada SEM `due` como eternamente vencida (todo
+  valor é > 0), grudando na fila qualquer dado antigo/importado; agora ela só espera a virada
+  do dia. Usar esse helper — não repetir a comparação à mão.
+- **Ordem da sessão**: vencida há mais tempo primeiro, e as de `lastGrade === 'again'` no
+  **FIM** (pedido do dono — chegar nas difíceis depois de aquecer, não travar nelas na
+  abertura). Cortada em `WORDBOOK_DAILY_REVIEW_CAP` (25).
+- **"Again" recicla o card pro fim da fila da sessão atual** (`gradeCard`), além de reagendar
+  pra 1 dia. A sessão só termina quando toda palavra foi respondida sem "Again" — é isso que
+  torna "terminou a sessão" prova de revisão, e por isso a meta diária se apoia nesse evento
+  (ver "Trilha de estudo"). Não vale no "view larger" de um card só (`isSingleView`), que não é
+  sessão. O contador mostra palavras DISTINTAS (`new Set(practiceIds).size`) + um sufixo
+  "(+N to repeat)": `practiceIds` cresce com a reciclagem, e um "of N" mudando sozinho no meio
+  da sessão pareceria erro.
+- **Rastro da última avaliação** (`lastGrade`/`lastGradedAt`/`lastIntervalDays`) exibido como
+  pílula colorida na lista (`.wordbook-grade-pill--<grau>`), reaproveitando as 4 cores dos
+  botões — a pílula é o eco do botão clicado. A linha meta do card **não mostra mais** o
+  "review in N days" (`formatDue`, removida): o dono pediu pra tirar, o que interessa é o que
+  ele respondeu, não a contagem regressiva. Palavra nunca avaliada não ganha pílula (sem
+  migração de dado); se ela também não tiver `context`, a linha inteira não renderiza, pra não
+  sobrar um `<p>` vazio.
+- **Botão "Practice" promete `sessionQueue.length`, não `dueEntries.length`** — com o teto os
+  dois divergem (40 vencidas → sessão de 25), e o hint ao lado avisa da diferença.
+- **Arquivar palavra conhecida** (parar de revisar sem deletar) foi discutido e **adiado** pelo
+  dono — reavaliar depois de usar o "Known · 30 dias". Deletar continua sendo a saída, com o
+  custo de levar junto significado/exemplo/imagem/contexto e o cache de pronúncia.
 
 ### Pronúncia (🔊) no My Words (2026-07-24, trocado de Cambridge pra Google TTS em 2026-07-25)
 
@@ -614,9 +676,16 @@ Se os PDFs/áudios de origem mudarem, os índices precisam ser regenerados.
 
 ## Testing & Verification
 
-Não há testes unitários automatizados (`npm test` funciona mas CRA cria um esqueleto vazio). Verificação de features é feita via:
-1. `npm run build` — pega erros de sintaxe/JSX
-2. Playwright (scripts ad-hoc, não persistidos no repo — rodados a partir de um scratchpad de sessão) — navegação ponta-a-ponta, persistência em localStorage, ausência de overflow/scroll indevido na página, sem erros no console
+Não há testes unitários automatizados (`npm test` funciona mas CRA cria um esqueleto vazio).
+
+1. **`npm run build`** — é a checagem padrão (sintaxe/JSX, imports quebrados, símbolo não usado
+   depois de uma remoção). Rodar depois de qualquer mudança.
+2. **Verificação visual é do DONO, na mão.** Instrução explícita dele em 2026-08-08: **não usar
+   Playwright, screenshots ou qualquer teste de captura**, e não gastar tokens procurando o
+   Playwright no cache do npx. Entregar a mudança com o build passando e **esperar o retorno
+   dele**. Se uma dúvida só puder ser respondida olhando o app rodando, perguntar — não
+   automatizar. (Rodadas anteriores do projeto usaram Playwright ad-hoc; ficou no histórico,
+   mas não é mais o procedimento.)
 
 ---
 
@@ -670,8 +739,8 @@ Não há testes unitários automatizados (`npm test` funciona mas CRA cria um es
   anterior **sem erro nenhum**, já que a tela continuava mostrando o state novo até o próximo
   reload (sintoma relatado pelo dono em 2026-08-08: "editei essa palavra umas dez vezes e
   sempre volta o texto original ao reiniciar o servidor"). Hoje `persistWordbook` recebe uma
-  FUNÇÃO `(lista atual) => lista nova` e relê a base do `localStorage` antes de aplicar; o
-  `handleGradeWord` também lê o `wasDue` de lá, não do state. Mesma lição do `dailyGoal`
+  FUNÇÃO `(lista atual) => lista nova` e relê a base do `localStorage` antes de aplicar (o
+  `readStoredWordbook` ao lado existe pra isso). Mesma lição do `dailyGoal`
   "reviews": **o state pode ficar desatualizado por tempo indeterminado, o localStorage nunca.**
   Vale pro `wordbook` e valeria pra qualquer coleção futura guardada numa chave só.
 

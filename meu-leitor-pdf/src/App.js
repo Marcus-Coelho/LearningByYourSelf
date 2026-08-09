@@ -146,10 +146,42 @@ const todayDateKey = () => {
 
 const DEFAULT_DAILY_GOAL_PREFS = { newUnit: true, reviews: true, listening: true };
 
-// Escada de intervalos (em dias) dos flashcards do "My Words": palavra nova
-// nasce vencida (revisar já); "Again" volta ao primeiro degrau, "Good" sobe
-// um degrau, "Easy" sobe dois.
-const FLASHCARD_STEPS_DAYS = [1, 3, 7, 14, 30, 60];
+// Intervalos (em dias) dos flashcards do "My Words". FIXOS por grau — pedido
+// do dono, 2026-08-08: o número escrito no botão é exatamente o que acontece,
+// independente do histórico da palavra.
+//
+// Substituiu a escada progressiva antiga (FLASHCARD_STEPS_DAYS = [1,3,7,14,
+// 30,60], onde "Good" subia um degrau e "Easy" dois, então o mesmo botão dava
+// intervalos diferentes conforme o `step` acumulado). O 4º grau "Known" (30
+// dias) existe justamente porque, sem progressão, não haveria como uma palavra
+// já dominada se afastar: aqui quem gradua a palavra é o usuário, declarando,
+// em vez do algoritmo inferindo pelo histórico de acertos.
+const FLASHCARD_GRADE_DAYS = { again: 1, good: 3, easy: 7, known: 30 };
+const FLASHCARD_GRADES = ['again', 'good', 'easy', 'known'];
+const FLASHCARD_GRADE_LABELS = { again: 'Again', good: 'Good', easy: 'Easy', known: 'Known' };
+
+// Teto de cards por sessão de revisão (pedido do dono, 2026-08-08). Sem ele,
+// um dia em que 60 palavras vencem junto vira uma sessão de 60 cards — que é
+// o que fazia a revisão "parecer que mostra todos os cards".
+const WORDBOOK_DAILY_REVIEW_CAP = 25;
+
+// Palavra nova NÃO nasce mais vencida (era `due: Date.now()`, o que jogava
+// tudo que foi adicionado hoje na revisão de hoje). Ela vence só na virada do
+// dia LOCAL — pedido do dono, 2026-08-08: "as novas adicionadas no dia não
+// entram na lista". Data local de propósito, nunca UTC/toISOString (mesma
+// regra do dailyGoal, ver todayDateKey acima).
+const startOfNextLocalDay = () => {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + 1);
+  return d.getTime();
+};
+
+// Uma palavra só entra na fila de revisão quando tem `due` NUMÉRICO e vencido.
+// O `?? 0` de antes tratava entrada sem `due` como eternamente vencida (todo
+// valor é > 0), o que grudava na fila qualquer dado antigo/importado sem esse
+// campo; agora ela simplesmente espera a virada do dia, igual a uma nova.
+const isWordDue = (entry, at) => typeof entry?.due === 'number' && entry.due <= at;
 
 // Imagem de mnemônica do "My Words": redimensionada no navegador (maior lado
 // até 640px, JPEG 72%) antes de virar data URL e ir pro localStorage — sem
@@ -2067,7 +2099,9 @@ function App() {
 
   // Caderno de vocabulário ("My Words"): um único array JSON por usuário
   // (chave "u:<nome>:wordbook") com as palavras salvas e o agendamento de
-  // flashcard de cada uma ({step, due} — ver FLASHCARD_STEPS_DAYS).
+  // flashcard de cada uma ({due, lastGrade, lastGradedAt, lastIntervalDays} —
+  // ver FLASHCARD_GRADE_DAYS; `step` ainda é escrito, mas só por compatibilidade
+  // com dado antigo, não determina mais intervalo).
   useEffect(() => {
     if (!userName) {
       setWordbookEntries([]);
@@ -2124,8 +2158,11 @@ function App() {
     }
   };
 
-  // Palavra nova nasce vencida (due = agora): entra direto na próxima sessão
-  // de flashcards, que é quando o usuário de fato a grava pela primeira vez.
+  // Palavra nova vence só na virada do dia (ver startOfNextLocalDay): ela não
+  // entra na revisão de hoje, aparece na de amanhã. Antes nascia vencida
+  // (`due: Date.now()`), o que fazia toda palavra adicionada hoje cair na
+  // sessão de hoje — a causa principal da revisão "parecer que mostra todos os
+  // cards" quando se adicionava um lote de palavras de uma vez.
   // `image` é opcional (data URL já redimensionada — ver resizeImageFileToDataUrl).
   const handleAddWord = ({ word, meaning, example, context, image }) => {
     const trimmedWord = (word || '').trim();
@@ -2139,7 +2176,7 @@ function App() {
       image: image || null,
       createdAt: Date.now(),
       step: 0,
-      due: Date.now(),
+      due: startOfNextLocalDay(),
     };
     persistWordbook((list) => [entry, ...list]);
     // Aquece o cache de pronúncia (ver pronunciationTts.js) em segundo
@@ -2158,30 +2195,49 @@ function App() {
     persistWordbook((list) => list.filter((item) => item.id !== id));
   };
 
-  // Autoavaliação do flashcard: "again" volta ao primeiro degrau da escada
-  // de intervalos, "good" sobe um degrau, "easy" sobe dois.
+  // Autoavaliação do flashcard: o grau define o intervalo direto, sem escada
+  // (ver FLASHCARD_GRADE_DAYS). Grava também o RASTRO da avaliação
+  // (lastGrade/lastGradedAt/lastIntervalDays) — sem ele a lista não tinha como
+  // mostrar o que o usuário respondeu da última vez, e o agendamento parecia
+  // não estar acontecendo.
+  //
+  // `lastIntervalDays` fica GRAVADO em vez de ser recalculado a partir do
+  // grau na hora de exibir: se um dia a tabela de intervalos mudar, o
+  // histórico das palavras já avaliadas continuaria contando a verdade do dia
+  // em que foram avaliadas, não a regra nova.
+  //
+  // `step` continua sendo escrito só pra não quebrar dado antigo que ainda o
+  // tenha; ele não determina mais intervalo nenhum.
+  //
+  // NÃO marca mais a meta diária aqui. Com a reciclagem do "Again" dentro da
+  // sessão (ver gradeCard em WordbookPage), avaliar UM card deixou de ser
+  // prova de que a revisão aconteceu — quem marca agora é o fim da sessão
+  // inteira (handleWordbookSessionComplete).
   const handleGradeWord = (id, grade) => {
-    // "Clear today's reviews" (DailyGoalCard) também conta um flashcard do My
-    // Words graduado — o card "Today's Review" já mostra "Practice N words"
-    // junto com as revisões de curso, como se fossem a mesma coisa (mesmo
-    // título, mesma contagem "N items"), então só marcar pra um dos dois
-    // tipos seria inconsistente com o que a tela promete. Mesmo critério de
-    // "estava vencido" usado em wordbookDueCount: (entry.due ?? 0) <= agora,
-    // checado ANTES de sobrescrever o `due` com a próxima data.
-    // Do localStorage, não do state — mesmo motivo de persistWordbook.
-    const entry = readStoredWordbook().find((item) => item.id === id);
-    const wasDue = Boolean(entry) && (entry.due ?? 0) <= Date.now();
+    const days = FLASHCARD_GRADE_DAYS[grade];
+    if (!days) return;
     persistWordbook((list) => list.map((item) => {
       if (item.id !== id) return item;
-      const currentStep = Number.isInteger(item.step) ? item.step : 0;
-      const nextStep = grade === 'again'
-        ? 0
-        : Math.min(FLASHCARD_STEPS_DAYS.length - 1, currentStep + (grade === 'easy' ? 2 : 1));
-      return { ...item, step: nextStep, due: Date.now() + FLASHCARD_STEPS_DAYS[nextStep] * DAY_MS };
+      return {
+        ...item,
+        step: Math.max(0, FLASHCARD_GRADES.indexOf(grade)),
+        due: Date.now() + days * DAY_MS,
+        lastGrade: grade,
+        lastGradedAt: Date.now(),
+        lastIntervalDays: days,
+      };
     }));
-    if (wasDue) {
-      markDailyGoalDone('reviews');
-    }
+  };
+
+  // Fim de uma sessão de revisão do My Words: TODAS as palavras vencidas da
+  // sessão foram respondidas ao menos uma vez (o "Again" recicla o card pro
+  // fim da fila, então a sessão só termina quando não sobra nenhuma pendente).
+  // É esse o evento que cumpre o item "reviews" da meta diária — avaliado e
+  // preferido a um contador de tempo na tela (proxy que erra pros dois lados:
+  // marca sozinho com a aba aberta e esquecida, e deixa de marcar quem revisa
+  // rápido). Ver DAILY_GOAL_EXPLANATIONS.reviews.
+  const handleWordbookSessionComplete = () => {
+    markDailyGoalDone('reviews');
   };
 
   const handleUpdateWordMeaning = (id, meaning) => {
@@ -2200,7 +2256,19 @@ function App() {
     )));
   };
 
-  const wordbookDueCount = wordbookEntries.filter((entry) => (entry.due ?? 0) <= Date.now()).length;
+  const wordbookDueCount = wordbookEntries.filter((entry) => isWordDue(entry, Date.now())).length;
+
+  // Palavras adicionadas HOJE — não entram na revisão de hoje (só vencem na
+  // virada do dia, ver startOfNextLocalDay), mas precisam aparecer na Home:
+  // sem isso, adicionar palavras não mudava nada visível na tela inicial e
+  // parecia que elas não tinham sido registradas. Comparação por data LOCAL
+  // (todayDateKey), nunca por "createdAt > agora - 24h".
+  const wordbookAddedTodayCount = wordbookEntries.filter((entry) => {
+    if (!entry.createdAt) return false;
+    const d = new Date(entry.createdAt);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` === todayDateKey();
+  }).length;
 
   useEffect(() => {
     return () => {
@@ -6360,6 +6428,7 @@ function App() {
             onGrade={handleGradeWord}
             onUpdateMeaning={handleUpdateWordMeaning}
             onUpdateEntry={handleUpdateWordEntry}
+            onSessionComplete={handleWordbookSessionComplete}
           />
         </main>
       ) : activePage === 'my-notes' ? (
@@ -6823,6 +6892,11 @@ function App() {
               <TodayPlanCard
                 newUnit={planNewUnit}
                 listening={planListening}
+                words={{
+                  dueCount: wordbookDueCount,
+                  addedTodayCount: wordbookAddedTodayCount,
+                  onOpen: handleOpenWordbook,
+                }}
                 reviewQueue={reviewQueue}
                 onOpenReviewItem={handleOpenReviewItem}
                 onSeeAllReviews={handleCourses}
@@ -6997,11 +7071,18 @@ function UnitBadgeLegend() {
   );
 }
 
-function TodayPlanCard({ newUnit, listening, reviewQueue, onOpenReviewItem, onSeeAllReviews }) {
+// `words` = { dueCount, addedTodayCount, onOpen } do My Words. A linha dele
+// fica SEMPRE por último no plano (pedido do dono, 2026-08-08) e aparece
+// também quando nada está vencido, desde que tenham sido adicionadas palavras
+// hoje: palavra nova só vence na virada do dia (ver startOfNextLocalDay),
+// então sem essa linha adicionar palavras não mudava nada visível na Home e
+// parecia que elas não tinham sido registradas.
+function TodayPlanCard({ newUnit, listening, words, reviewQueue, onOpenReviewItem, onSeeAllReviews }) {
   const reviewItems = reviewQueue.slice(0, 2);
   const moreReviewCount = reviewQueue.length - reviewItems.length;
+  const showWords = Boolean(words) && (words.dueCount > 0 || words.addedTodayCount > 0);
 
-  if (!newUnit && !listening && reviewItems.length === 0) {
+  if (!newUnit && !listening && reviewItems.length === 0 && !showWords) {
     return null;
   }
 
@@ -7052,6 +7133,24 @@ function TodayPlanCard({ newUnit, listening, reviewQueue, onOpenReviewItem, onSe
             </span>
           </button>
         )}
+        {showWords && (
+          <button type="button" className="plan-item" onClick={words.onOpen}>
+            <span className="plan-item-icon" aria-hidden="true">🗂️</span>
+            <span className="plan-item-main">
+              <span className="plan-item-title">Review words</span>
+              <span className="plan-item-detail">
+                {words.dueCount > 0
+                  ? `${words.dueCount} word${words.dueCount === 1 ? '' : 's'} due today`
+                  : 'Nothing due today'}
+              </span>
+              <span className="plan-item-sub">
+                {words.addedTodayCount > 0
+                  ? `My Words — ${words.addedTodayCount} new word${words.addedTodayCount === 1 ? '' : 's'} added today, ready tomorrow`
+                  : 'My Words — flashcards'}
+              </span>
+            </span>
+          </button>
+        )}
       </div>
       {moreReviewCount > 0 && (
         <button type="button" className="plan-more-link" onClick={onSeeAllReviews}>
@@ -7074,11 +7173,13 @@ const DAILY_GOAL_EXPLANATIONS = {
   newUnit: 'You get this the first time today that you open a unit you\'ve never visited '
     + 'before, in any of the 3 courses (English Vocabulary B, American English A1, or '
     + 'Grammar English A1). Reopening a unit you already visited doesn\'t count.',
-  reviews: 'You get this when you re-rate an item that was already due for spaced review. '
-    + 'Find due items either in the "Review" line of Today\'s Plan above (Home), or in the '
-    + '"Today\'s Review" card at the top of the Courses screen (menu → Courses) — open one '
-    + 'from either place and give it a new star rating. Rating something for the first time '
-    + 'isn\'t a "review", so it doesn\'t count toward this.',
+  reviews: 'Two ways to get this. Either re-rate a course item that was already due for '
+    + 'spaced review — find them in the "Review" line of Today\'s Plan above (Home) or in the '
+    + '"Today\'s Review" card on the Courses screen, open one and give it a new star rating '
+    + '(rating something for the first time isn\'t a "review", so it doesn\'t count). Or '
+    + 'finish a whole flashcard session in My Words: the session only ends once every due '
+    + 'word has been answered without "Again", so getting to the end is proof you reviewed '
+    + 'them all. Grading a single card is not enough.',
   listening: 'You get this the first time today that you finish checking a Listening exercise '
     + '(press "Check answers" after filling in at least one blank) or a Dictation exercise '
     + '(press "Check my answer").',
@@ -7198,17 +7299,6 @@ function ReviewCard({ items, dueWordsCount, onOpenItem, onOpenWords, embedded })
         schedule the next repetition.
       </p>
       <div className="review-items">
-        {dueWordsCount > 0 && (
-          <button type="button" className="review-item review-item--words" onClick={onOpenWords}>
-            <span className="review-item-main">
-              <span className="review-item-title">
-                Practice {dueWordsCount} word{dueWordsCount === 1 ? '' : 's'}
-              </span>
-              <span className="review-item-sub">My Words — flashcards</span>
-            </span>
-            <span className="review-item-badge">Practice</span>
-          </button>
-        )}
         {shown.map((item) => {
           const label = reviewItemLabel(item);
           return (
@@ -7226,6 +7316,20 @@ function ReviewCard({ items, dueWordsCount, onOpenItem, onOpenWords, embedded })
             </button>
           );
         })}
+        {/* "Practice N words" fica por ÚLTIMO (pedido do dono, 2026-08-08 —
+            mesma ordem do item equivalente no Today's Plan da Home); antes
+            abria a lista, na frente das revisões de curso. */}
+        {dueWordsCount > 0 && (
+          <button type="button" className="review-item review-item--words" onClick={onOpenWords}>
+            <span className="review-item-main">
+              <span className="review-item-title">
+                Practice {dueWordsCount} word{dueWordsCount === 1 ? '' : 's'}
+              </span>
+              <span className="review-item-sub">My Words — flashcards</span>
+            </span>
+            <span className="review-item-badge">Practice</span>
+          </button>
+        )}
       </div>
       {hiddenCount > 0 && (
         <p className="review-more">…and {hiddenCount} more waiting after these.</p>
@@ -7668,8 +7772,10 @@ const maskWordInExample = (example, word) => {
 
 // Página "My Words": caderno de vocabulário pessoal do usuário. Lista as
 // palavras salvas (com significado/exemplo/contexto/imagem), permite
-// adicionar e apagar, e tem o modo de prática por flashcards. Again/Good/Easy
-// agenda a próxima revisão (ver FLASHCARD_STEPS_DAYS).
+// adicionar e apagar, e tem o modo de prática por flashcards.
+// Again/Good/Easy/Known agenda a próxima revisão com intervalo FIXO por grau
+// (ver FLASHCARD_GRADE_DAYS); "Again" ainda recicla o card dentro da sessão
+// atual, então a sessão só termina quando toda palavra foi respondida sem ele.
 //
 // Direção do flashcard depende de ter imagem ou não:
 // - Sem imagem: frente = palavra, verso = significado + exemplo (recall
@@ -7678,7 +7784,7 @@ const maskWordInExample = (example, word) => {
 //   invertido de propósito (pedido do usuário): força o aluno a olhar a
 //   imagem, ler o significado, e tentar lembrar/reconhecer a palavra em
 //   inglês antes de revelar, em vez de só reconhecer a tradução.
-function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUpdateEntry }) {
+function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUpdateEntry, onSessionComplete }) {
   const [word, setWord] = useState('');
   const [meaning, setMeaning] = useState('');
   const [example, setExample] = useState('');
@@ -7761,7 +7867,22 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
   }, [editingMeaning]);
 
   const now = Date.now();
-  const dueEntries = entries.filter((entry) => (entry.due ?? 0) <= now);
+  // Só o que está vencido DE VERDADE (ver isWordDue): palavra nova só vence na
+  // virada do dia, então não aparece aqui no dia em que foi adicionada.
+  const dueEntries = entries.filter((entry) => isWordDue(entry, now));
+
+  // Ordem da sessão (pedido do dono, 2026-08-08): a que está vencida há mais
+  // tempo vem primeiro, e as marcadas como "Again" na última revisão vão pro
+  // FIM — a ideia é chegar nas palavras difíceis depois de já ter aquecido nas
+  // que você lembra, não abrir a sessão travando nelas.
+  const sessionQueue = [...dueEntries]
+    .sort((a, b) => {
+      const aAgain = a.lastGrade === 'again' ? 1 : 0;
+      const bAgain = b.lastGrade === 'again' ? 1 : 0;
+      if (aAgain !== bAgain) return aAgain - bAgain;
+      return (a.due ?? 0) - (b.due ?? 0);
+    })
+    .slice(0, WORDBOOK_DAILY_REVIEW_CAP);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -7803,7 +7924,7 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
   };
 
   const startPractice = () => {
-    setPracticeIds(dueEntries.map((entry) => entry.id));
+    setPracticeIds(sessionQueue.map((entry) => entry.id));
     setPracticeIndex(0);
     setFlipped(false);
     setSpellAttempt('');
@@ -7843,13 +7964,27 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
     setSpellAttempt('');
     setSpellFeedback(null);
     setEditingMeaning(false);
-    if (practiceIndex < practiceIds.length - 1) {
+
+    // "Again" devolve o card pro FIM da fila da sessão atual, em vez de só
+    // reagendar pra amanhã e sumir: a sessão só acaba quando cada palavra foi
+    // respondida ao menos uma vez sem "Again". É isso que torna "terminou a
+    // sessão" uma prova de que a revisão aconteteu de verdade — e por isso a
+    // meta diária pode se apoiar nesse evento em vez de num cronômetro.
+    // Marcar "Again" de novo recicla de novo; quem encerra é o usuário, dando
+    // outro grau. Não vale no "view larger" de um card só (isSingleView), que
+    // não é uma sessão de revisão.
+    const recycle = grade === 'again' && !isSingleView;
+    const nextIds = recycle ? [...practiceIds, currentCard.id] : practiceIds;
+    if (recycle) setPracticeIds(nextIds);
+
+    if (practiceIndex < nextIds.length - 1) {
       setPracticeIndex(practiceIndex + 1);
     } else if (isSingleView) {
       setPracticeIds(null);
     } else {
       setFinished(true);
       setPracticeIds(null);
+      onSessionComplete?.();
     }
   };
 
@@ -7890,13 +8025,6 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
   const handleMeaningInputBlur = () => {
     if (!document.hasFocus()) return;
     saveMeaningDraft();
-  };
-
-  const formatDue = (entry) => {
-    const due = entry.due ?? 0;
-    if (due <= now) return 'review now';
-    const days = Math.ceil((due - now) / DAY_MS);
-    return `review in ${days} day${days === 1 ? '' : 's'}`;
   };
 
   // Bloco do significado no flashcard: texto clicavel (vira input on click)
@@ -7955,23 +8083,26 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
       {practicing && currentCard ? (() => {
         const hasImage = Boolean(currentCard.image);
         const gradeButtons = (
+          // Os 4 graus saem direto de FLASHCARD_GRADE_DAYS — o número embaixo
+          // do botão é o intervalo real que aquele clique aplica, sem depender
+          // do histórico da palavra (era o caso na escada antiga, em que
+          // "Good" mostrava 3, 7 ou 14 dias conforme o `step` acumulado).
+          // Sem font-family própria: `button` herda a Quicksand do body
+          // (regra global em index.css) — ver Decisões Imutáveis 9.
           <div className="flashcard-actions">
-            <button type="button" className="flashcard-grade again" onClick={() => gradeCard('again')}>
-              Again
-              <small>1 day</small>
-            </button>
-            <button type="button" className="flashcard-grade good" onClick={() => gradeCard('good')}>
-              Good
-              <small>
-                {FLASHCARD_STEPS_DAYS[Math.min(FLASHCARD_STEPS_DAYS.length - 1, (currentCard.step || 0) + 1)]} days
-              </small>
-            </button>
-            <button type="button" className="flashcard-grade easy" onClick={() => gradeCard('easy')}>
-              Easy
-              <small>
-                {FLASHCARD_STEPS_DAYS[Math.min(FLASHCARD_STEPS_DAYS.length - 1, (currentCard.step || 0) + 2)]} days
-              </small>
-            </button>
+            {FLASHCARD_GRADES.map((grade) => (
+              <button
+                key={grade}
+                type="button"
+                className={`flashcard-grade ${grade}`}
+                onClick={() => gradeCard(grade)}
+              >
+                {FLASHCARD_GRADE_LABELS[grade]}
+                <small>
+                  {FLASHCARD_GRADE_DAYS[grade]} day{FLASHCARD_GRADE_DAYS[grade] === 1 ? '' : 's'}
+                </small>
+              </button>
+            ))}
           </div>
         );
 
@@ -7979,8 +8110,16 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
           <>
             {wordbookHeadEl}
             <div className="flashcard">
+              {/* practiceIds CRESCE quando um card é reciclado por "Again"
+                  (ver gradeCard), então "of N" mudaria sozinho no meio da
+                  sessão e pareceria erro. O total mostrado é o de palavras
+                  DISTINTAS; as repetições vão num sufixo à parte, que é o que
+                  de fato falta refazer. */}
               <p className="flashcard-progress">
-                Card {practiceIndex + 1} of {practiceIds.length}
+                Card {practiceIndex + 1} of {new Set(practiceIds).size}
+                {practiceIds.length > new Set(practiceIds).size && (
+                  <> (+{practiceIds.length - new Set(practiceIds).size} to repeat)</>
+                )}
               </p>
 
             {hasImage ? (
@@ -8116,10 +8255,13 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
                 type="button"
                 className="show-answers-btn"
                 onClick={startPractice}
-                disabled={dueEntries.length === 0}
-                title={dueEntries.length === 0 ? 'No words due for review right now' : ''}
+                disabled={sessionQueue.length === 0}
+                title={sessionQueue.length === 0 ? 'No words due for review right now' : ''}
               >
-                Practice {dueEntries.length > 0 ? `${dueEntries.length} word${dueEntries.length === 1 ? '' : 's'}` : 'words'}
+                {/* sessionQueue, não dueEntries: com o teto diário os dois
+                    números divergem (40 vencidas -> sessão de 25), e o botão
+                    tem que prometer o tamanho da sessão que vai abrir. */}
+                Practice {sessionQueue.length > 0 ? `${sessionQueue.length} word${sessionQueue.length === 1 ? '' : 's'}` : 'words'}
               </button>
               <button
                 type="button"
@@ -8129,9 +8271,11 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
                 {showAddForm ? 'Hide add word form' : '+ Add Words'}
               </button>
               <span className="wordbook-practice-hint">
-                {dueEntries.length > 0
-                  ? 'These words are due for review today.'
-                  : 'Nothing due right now — add new words or come back later.'}
+                {dueEntries.length > sessionQueue.length
+                  ? `${dueEntries.length} words are due — today's session covers the first ${WORDBOOK_DAILY_REVIEW_CAP}.`
+                  : dueEntries.length > 0
+                    ? 'These words are due for review today.'
+                    : 'Nothing due right now — words you add today show up here tomorrow.'}
               </span>
             </div>
 
@@ -8246,10 +8390,31 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
                           </span>
                           {entry.meaning && <p className="wordbook-entry-meaning">{entry.meaning}</p>}
                           {entry.example && <p className="wordbook-entry-example">“{entry.example}”</p>}
-                          <p className="wordbook-entry-meta">
-                            {entry.context ? `${entry.context} · ` : ''}
-                            {formatDue(entry)}
-                          </p>
+                          {/* Última classificação dada nesta palavra. Antes
+                              esta linha terminava no formatDue ("review in 4
+                              hours"): o dono pediu pra tirar (2026-08-08) — o
+                              que interessa é o que VOCÊ respondeu, não uma
+                              contagem regressiva. Palavra ainda não avaliada
+                              não ganha pílula nenhuma (nada de migrar dado
+                              antigo); se ela também não tiver `context`, a
+                              linha inteira não é renderizada, pra não sobrar
+                              um <p> vazio ocupando altura no card. */}
+                          {(entry.context || entry.lastGrade) && (
+                            <p className="wordbook-entry-meta">
+                              {entry.context}
+                              {entry.context && entry.lastGrade ? ' · ' : ''}
+                              {entry.lastGrade && FLASHCARD_GRADE_LABELS[entry.lastGrade] && (
+                                <span className={`wordbook-grade-pill wordbook-grade-pill--${entry.lastGrade}`}>
+                                  {FLASHCARD_GRADE_LABELS[entry.lastGrade]}
+                                  {' · '}
+                                  {(() => {
+                                    const days = entry.lastIntervalDays ?? FLASHCARD_GRADE_DAYS[entry.lastGrade];
+                                    return `${days} day${days === 1 ? '' : 's'}`;
+                                  })()}
+                                </span>
+                              )}
+                            </p>
+                          )}
                           <div className="wordbook-entry-links">
                             <a
                               href={wordReferenceUrlFor(entry.word)}
