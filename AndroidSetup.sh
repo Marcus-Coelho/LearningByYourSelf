@@ -79,7 +79,12 @@ NEEDS_MATERIAL=0
 [ -z "$(ls -A "$REPO_DIR/American English Level 1" 2>/dev/null)" ] && NEEDS_MATERIAL=1
 [ -z "$(ls -A "$REPO_DIR/Grammar Elemetary" 2>/dev/null)" ] && NEEDS_MATERIAL=1
 
-EMPTY_SUBFOLDERS="$(find "$REPO_DIR/Pre Intermediate and Intermediate" "$REPO_DIR/American English Level 1" "$REPO_DIR/Grammar Elemetary" -mindepth 1 -type d -empty 2>/dev/null)"
+# "teacher_book/Grammar Bank" (American English Level 1) fica de fora de
+# propósito: confirmado em setupProxy.js (2026-08-09) que o app so serve
+# teacher_book/Units, teacher_book/practical_english e
+# teacher_book/review_and_check_revisions - essa pasta nunca e lida, entao
+# ficar vazia nao deveria bloquear a instalacao.
+EMPTY_SUBFOLDERS="$(find "$REPO_DIR/Pre Intermediate and Intermediate" "$REPO_DIR/American English Level 1" "$REPO_DIR/Grammar Elemetary" -mindepth 1 -type d -empty -not -path "*/teacher_book/Grammar Bank" 2>/dev/null)"
 
 if [ "$NEEDS_MATERIAL" = "1" ] || [ -n "$EMPTY_SUBFOLDERS" ]; then
   cat <<MSG
