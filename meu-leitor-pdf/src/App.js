@@ -2082,7 +2082,36 @@ function App() {
     }
   }, [userName]);
 
-  const persistWordbook = (next) => {
+  // Lista do My Words como está NO localStorage agora — não o snapshot
+  // `wordbookEntries` do render. Ver persistWordbook abaixo.
+  const readStoredWordbook = () => {
+    if (!userName) return [];
+    try {
+      const raw = window.localStorage.getItem(userKey(userName, 'wordbook'));
+      const list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list : [];
+    } catch (error) {
+      return [];
+    }
+  };
+
+  // Recebe uma FUNÇÃO (lista atual) => lista nova, nunca um array pronto.
+  //
+  // Motivo (bug real relatado pelo dono em 2026-08-08: edições de palavra no
+  // My Words sumiam ao reiniciar o servidor): toda gravação aqui reescreve o
+  // array INTEIRO. Quando os handlers montavam esse array a partir do
+  // `wordbookEntries` do render (`persistWordbook(wordbookEntries.map(...))`),
+  // bastava um handler rodar com um snapshot defasado pra a gravação dele
+  // levar junto a versão VELHA de todas as outras palavras — desfazendo uma
+  // edição anterior sem nenhum erro aparente, já que a tela continuava
+  // mostrando o state novo até o próximo reload. É a mesma lição já aprendida
+  // no dailyGoal "reviews" (ver CLAUDE.md): o state pode ficar desatualizado
+  // por tempo indeterminado, o localStorage nunca. Lendo a base do disco a
+  // cada gravação, uma edição perdida deixa de ser possível mesmo que algum
+  // handler futuro segure um snapshot antigo.
+  const persistWordbook = (updater) => {
+    if (!userName) return;
+    const next = updater(readStoredWordbook());
     setWordbookEntries(next);
     try {
       window.localStorage.setItem(userKey(userName, 'wordbook'), JSON.stringify(next));
@@ -2112,7 +2141,7 @@ function App() {
       step: 0,
       due: Date.now(),
     };
-    persistWordbook([entry, ...wordbookEntries]);
+    persistWordbook((list) => [entry, ...list]);
     // Aquece o cache de pronúncia (ver pronunciationTts.js) em segundo
     // plano, pra o áudio já estar pronto quando o usuário clicar no 🔊 —
     // silenciosamente ignorado se falhar (o clique manual tenta de novo).
@@ -2126,7 +2155,7 @@ function App() {
       { confirmLabel: 'Delete' },
     );
     if (!proceed) return;
-    persistWordbook(wordbookEntries.filter((item) => item.id !== id));
+    persistWordbook((list) => list.filter((item) => item.id !== id));
   };
 
   // Autoavaliação do flashcard: "again" volta ao primeiro degrau da escada
@@ -2139,9 +2168,10 @@ function App() {
     // tipos seria inconsistente com o que a tela promete. Mesmo critério de
     // "estava vencido" usado em wordbookDueCount: (entry.due ?? 0) <= agora,
     // checado ANTES de sobrescrever o `due` com a próxima data.
-    const entry = wordbookEntries.find((item) => item.id === id);
+    // Do localStorage, não do state — mesmo motivo de persistWordbook.
+    const entry = readStoredWordbook().find((item) => item.id === id);
     const wasDue = Boolean(entry) && (entry.due ?? 0) <= Date.now();
-    persistWordbook(wordbookEntries.map((item) => {
+    persistWordbook((list) => list.map((item) => {
       if (item.id !== id) return item;
       const currentStep = Number.isInteger(item.step) ? item.step : 0;
       const nextStep = grade === 'again'
@@ -2155,7 +2185,7 @@ function App() {
   };
 
   const handleUpdateWordMeaning = (id, meaning) => {
-    persistWordbook(wordbookEntries.map((entry) => (
+    persistWordbook((list) => list.map((entry) => (
       entry.id === id ? { ...entry, meaning } : entry
     )));
   };
@@ -2165,7 +2195,7 @@ function App() {
   // combinação de campos (word/meaning/example/image) de uma vez, vindos do
   // formulário de edição do card na lista (ver WordbookPage).
   const handleUpdateWordEntry = (id, updates) => {
-    persistWordbook(wordbookEntries.map((entry) => (
+    persistWordbook((list) => list.map((entry) => (
       entry.id === id ? { ...entry, ...updates } : entry
     )));
   };

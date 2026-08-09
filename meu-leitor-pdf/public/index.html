@@ -15,7 +15,13 @@
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet" />
+    <!-- Peso 400 incluído desde 2026-08-08, quando a Quicksand virou a fonte
+         padrão do app inteiro (body, em src/index.css): texto corrido usa
+         font-weight 400, e um peso ausente aqui faz o navegador sintetizar
+         (faux bold/thin) em cima do peso mais próximo, borrando o traço
+         arredondado da fonte. Só adicionar peso aqui; nunca usar em CSS um
+         peso que não esteja nesta URL. -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <!--
       manifest.json provides metadata used when your web app is installed on a
       user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
