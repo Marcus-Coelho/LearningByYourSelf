@@ -82,6 +82,10 @@ module.exports = function (app) {
   // Bank e Sound Bank sempre ocupam um par de páginas (a referência impressa
   // aponta pra primeira; a segunda é a próxima); Vocabulary/Communication/
   // Writing são página única.
+  // Página do PDF do American Accent que vira a 3ª página do Sound Bank
+  // (p. 3 impressa = página 11 do PDF). Ver o append em /american1-pages/ref.
+  const SOUND_BANK_ACCENT_PDF_PAGE = 11;
+
   const AMERICAN1_REFERENCE_FOLDERS = {
     // grammar_bank foi renomeada manualmente para "grammar bank L pNNN.pdf"
     // (páginas pares, L de Leitura/Learning) / "grammar bank E pNNN.pdf"
@@ -133,6 +137,29 @@ module.exports = function (app) {
           const source = await PDFDocument.load(bytes);
           const [copiedPage] = await merged.copyPages(source, [0]);
           merged.addPage(copiedPage);
+        }
+        // 3ª página do Sound Bank, vinda de OUTRO curso: American Accent,
+        // p. 3 do livro = página 11 do PDF ("Main Vowel Sounds of American
+        // English", capítulo 1, faixa 4). Pedido do dono em 2026-08-09 — é o
+        // único lugar do app onde uma tela mistura PDF de dois cursos, por
+        // isso o caso é explícito aqui em vez de virar mais um campo genérico
+        // em AMERICAN1_REFERENCE_FOLDERS (que descreve pastas do American1).
+        //
+        // Falha em silêncio de propósito: o American Accent é o único curso
+        // cuja pasta pode não existir nesta máquina (ver o americanAccentRoot
+        // por tentativa, mais abaixo). Sem o try/catch, a pasta ausente
+        // derrubaria o Sound Bank INTEIRO — que é material do American1 e não
+        // tem nada a ver com isso; assim ele continua servindo as 2 páginas
+        // originais.
+        if (req.params.type === 'sound') {
+          try {
+            const accentBytes = fs.readFileSync(americanAccentPdfPath);
+            const accentDoc = await PDFDocument.load(accentBytes);
+            const [accentPage] = await merged.copyPages(accentDoc, [SOUND_BANK_ACCENT_PDF_PAGE - 1]);
+            merged.addPage(accentPage);
+          } catch (accentError) {
+            // Material do American Accent indisponível — segue com 166-167.
+          }
         }
         const mergedBytes = await merged.save();
         res.type('application/pdf').send(Buffer.from(mergedBytes));

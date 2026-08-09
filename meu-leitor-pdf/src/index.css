@@ -1,11 +1,36 @@
+/* Quicksand é a fonte do app INTEIRO (pedido do dono, 2026-08-08) — antes
+   ela era aplicada seletor a seletor em App.css, tela por tela, e tudo que
+   nunca ganhou uma regra própria (botões, a tela Progress, etc.) caía no
+   sans-serif do sistema. Declarar aqui no body faz a herança cobrir o resto
+   sozinha; as declarações que já existem em App.css continuam válidas (só
+   viraram redundantes) e as poucas exceções deliberadas continuam vencendo
+   por serem explícitas — ver o Georgia dos botões "i" abaixo.
+   O peso 400 (padrão do texto corrido) PRECISA estar na URL do Google Fonts
+   em public/index.html, senão o navegador engrossa/afina o peso mais próximo
+   por conta própria e borra o traço arredondado — mesma armadilha já
+   documentada em App.css sobre o peso 800. */
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* <button>/<input>/<select>/<textarea> não herdam font-family do pai (padrão
+   do navegador) — é o único caso que a herança do body acima não resolve
+   sozinha, e era a causa dos botões continuarem em Segoe UI. App.css já
+   fazia isso pontualmente em algumas telas; aqui vale pra todas. */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+/* Exceção deliberada, não esquecimento: o "i" dos botões de ajuda redondos
+   (.unit-badge-legend-toggle, .daily-goal-info-toggle) é um glifo, não texto
+   de interface — o "i" itálico serifado é o que faz o ícone ser reconhecível
+   como "informação". Fica em Georgia de propósito, declarado em App.css. */
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',

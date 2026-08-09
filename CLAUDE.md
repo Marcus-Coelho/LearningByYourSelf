@@ -44,6 +44,10 @@ meu-leitor-pdf/
 │   ├── App.js (arquivo único, ~10000 linhas — tudo aqui: 4 cursos, Listening, Dictation,
 │   │           My Words, Dashboard, Sound Bank, etc.)
 │   ├── App.css (~3700 linhas, também um arquivo único)
+│   ├── GrammarVocabExercises.js / .css (ÚNICA tela em arquivo próprio — ver a seção
+│   │           "Grammar & Vocabulary Exercises"; não é precedente pra novas telas)
+│   ├── grammar_vocab_exercises_grammar.json / _vocab.json / _similar.json (exercícios
+│   │           dessa tela — dados editáveis com cuidado, não índices gerados de PDF)
 │   ├── setupProxy.js (middleware do dev server — serve áudio/PDF das pastas irmãs)
 │   ├── exercises_coords.json / answers_coords.json / audio_anchors_coords.json (Vocabulary)
 │   ├── american1_index.json / american1_audio_anchors.json / american1_references.json /
@@ -66,7 +70,7 @@ meu-leitor-pdf/
 ### Padrão de Desenvolvimento
 
 - **Nenhum roteamento** — tudo é estado local (`activePage`, `selectedUnit`, etc.), um único componente `App()`
-- **Praticamente nenhum componente em arquivo separado** — funções/componentes adicionais moram todos dentro de `App.js` (ex.: `WordbookPage`, `ListeningClozeExercise`, `DictationExercise`, `ReviewCard`, `TodayPlanCard`)
+- **Praticamente nenhum componente em arquivo separado** — funções/componentes adicionais moram todos dentro de `App.js` (ex.: `WordbookPage`, `ListeningClozeExercise`, `DictationExercise`, `ReviewCard`, `TodayPlanCard`). **Única exceção:** a tela Grammar & Vocabulary Exercises (`GrammarVocabExercises.js`/`.css`), por volume de dados/UI — ver a seção dela; tela nova continua indo pra dentro de `App.js`
 - **LocalStorage única** — sem backend, sem servidor, sem contas de verdade
 - **`npm run build` compila** (usado como verificação de sintaxe/regressão), mas **não há deploy/hospedagem** — ver acima
 
@@ -180,6 +184,87 @@ externo, mesmo espírito dos ícones do resto do app).
   chave configurada, a rota responde 500 com mensagem explicando o que falta — o resto do app
   funciona normal.
 
+### Grammar & Vocabulary Exercises (menu principal, fora dos 4 cursos)
+
+Quiz **só de texto** — sem PDF, sem áudio, sem pasta irmã de material. Não substitui nem toca
+nos cursos Grammar English A1 / English Vocabulary B "de verdade" (que continuam PDF+áudio unit
+por unit): é prática extra, com dados próprios. `activePage: 'grammar-vocab-exercises'`, uma
+tela só, entrada pelo menu lateral (ícone `IconQuiz`).
+
+- **ÚNICA exceção real à regra "tudo dentro de `App.js`"** ([Decisões Imutáveis](#-design-decisions-por-que-é-assim)
+  item 3): mora em `src/GrammarVocabExercises.js` + `src/GrammarVocabExercises.css`, arquivos
+  próprios. Motivo: o volume de dados+UI dessa feature sozinha (>500 exercícios) inflaria
+  `App.js`/`App.css` a ponto de piorar a navegação dos dois — decisão tomada ao encomendar os
+  exercícios, não um deslize. **Isso não reabre a regra**: qualquer outra tela nova continua
+  indo pra dentro de `App.js`. `App.js` importa só o componente default; **zero linhas novas em
+  `App.css`**.
+- Por causa disso, `userKey` é o **único named export** de `App.js` (`export const userKey`) —
+  existe pra essa tela namespacear o `localStorage` igual ao resto do app sem duplicar a função.
+  Não crescer essa lista de exports sem necessidade real.
+- **4 seções, 2 mecânicas diferentes** (`SOURCES`, `kind`). Nada mais pode ser escopado no
+  literal `'similar'`: desde que existe mais de uma seção `written`, `handleCheckBlock`/
+  `handleResetBlock` usam `activeSourceId` — com o literal, responder na Vocabulary gravava por
+  cima das respostas da Grammar. `answersBySource` também é montado a partir de `SOURCES`, não
+  de uma lista de 3 ids escrita à mão:
+  - `grammar` (`multipleChoice`, 200 exercícios, 2 por unit, units 1-100 do "Essential Grammar
+    in Use") — escritos **à mão** a partir dos títulos reais de `grammar_elem_index.json`,
+    porque o app não tem o texto das lições extraído, só os títulos.
+  - `vocabulary` (`multipleChoice`, 200 exercícios, 1-3 por unit nas units **4-100** — as 3
+    primeiras não têm faixa de Listening da qual tirar uma frase real) — gerados por script,
+    sempre *grounded* em dado real: palavra-alvo de `vocabulary_target_words.json` numa frase de
+    `listening_vocabulary.json`, nunca inventada.
+  - `vocabSimilar` (`written`, 148 blocos / 971 itens, **as 96 units** de 5 a 100) —
+    "Similar Exercises from English Vocabulary B", exercícios de **preencher lacuna**. **Units
+    1-4 ficam de fora por decisão do dono** (são as de método — "Learning vocabulary", "Using a
+    dictionary" — não de vocabulário temático). Tipos EXCLUÍDOS, também por decisão dele:
+    "Over to you", os com imagem/mapa/diagrama, os de marcar (underline/circle/tick/
+    true-false), os de casar colunas e os de separar palavras em colunas.
+    **Três procedências, de propósito** (ver "Dados Gerados"): units 5-20 escritas à mão no
+    estilo do livro; units 21-100 extraídas por script do PRÓPRIO livro (o dono autorizou em
+    2026-08-09 — livros comprados, uso doméstico entre ele, a esposa e a irmã); e as **24 units
+    que o extrator não conseguia ler** (22, 24, 25, 29, 30, 35, 40, 46, 47, 49, 53, 56, 62, 63,
+    75, 79, 88, 89, 90, 91, 92, 95, 96, 97) transcritas à mão do livro + gabarito, 2 blocos cada.
+    Essas 24 não têm exercício de lacuna que o script leia — são de **reescrever a frase**
+    ("Rewrite the sentences starting with the words given"), **definição → palavra** ("Which
+    words are being defined?"), **corrigir o erro** ("Correct the mistakes"), **diálogo não
+    numerado** (`SHOP ASSISTANT:` em vez de `1`) ou **lista com resposta curta**. Todas viram
+    lacuna quando se constrói o enunciado (`definição → _____`, `frase errada → frase certa com
+    lacuna`), que é o que foi feito. Em 3 casos o livro **não tem gabarito** (24.4 "Do you
+    usually eat the skin of these fruits?", 63.2 materiais, 95.2 sinônimos) — as respostas ali
+    são análise própria, com as variantes plausíveis todas aceitas.
+  - `similar` (`written`, 115 blocos, um por unit) — "Similar Exercises from Grammar
+    Elementary": o aluno **digita** a resposta, não escolhe. Não é multiple choice **de
+    propósito** — os 2 últimos exercícios de cada unit do livro são de produção, e é isso que os
+    torna mais difíceis que os primeiros. Cada item traz um **array** de respostas aceitas (o
+    próprio Key to Exercises lista variantes: "It isn't/it's not big enough", "nobody/no-one"),
+    e `normalizeWrittenAnswer` ignora o que não é erro de gramática: maiúscula, espaço sobrando,
+    ponto final e **tipo de apóstrofo** (o aluno digita `'` reto, o livro usa `’` curvo — sem
+    isso "I'd buy" nunca casaria com "I’d buy"). Não remover essa normalização.
+- **Qualidade dos distratores (2 rodadas de feedback do dono, não mexer sem motivo)**: frases
+  que eram só LISTAS de palavras do PDF ("Forehead, cheek, ___, neck...") viravam exercício
+  ambíguo (qualquer item da lista serve) — trocadas por frase de verdade quando havia uma pro
+  mesmo unit/palavra-alvo; distratores quase-sinônimos da resposta certa ("totally"/"absolutely"
+  pra "completely") foram trocados por palavras plausíveis que mudam o **sentido**, não só o
+  registro. Distratores nunca são número ou contração solta (óbvios demais de descartar).
+- **Persistência**: respostas em `u:<nome>:grammarVocabAnswers:<sourceId>` (localStorage, uma
+  chave por seção). A posição atual (seção aberta) e o estado do "Hide solved" ficam em
+  **`sessionStorage`**, não localStorage (`grammarVocabExercisesPosition`, um objeto
+  `{activeSourceId, hideSolved}`) — são retomados dentro da sessão, de propósito não sobrevivem
+  a fechar o navegador. Reabrir pelo menu apaga essa chave (volta pra lista completa) e remonta
+  o componente via `grammarVocabExercisesResetKey` (prop `key`).
+- **"Hide N solved exercises"** (botão nas 3 seções, 2026-08-09): esconde o que saiu 100%. As
+  duas mecânicas têm definições diferentes de 100%, daí dois predicados —
+  `isMultipleChoicePerfect` (1 pergunta, acertar já é o 100%) e `isWrittenBlockPerfect` (bloco
+  checado E **todos** os itens certos; 9 de 10 continua aparecendo, que é o que ainda vale
+  refazer). Errar nunca esconde nada. **Só filtra a EXIBIÇÃO** — placar, "N answered" e o
+  `solvedCount` do próprio botão contam sempre a seção inteira, mesma regra do `blockFilter`.
+  Um estado só pras 3 seções (ligar numa e achar a outra cheia pareceria o botão ter falhado),
+  e o botão nem aparece com `solvedCount === 0`. Lista vazia tem mensagem PRÓPRIA por causa:
+  dizer "nada casa com o filtro" quando foi o Hide solved que esvaziou mandaria o usuário
+  caçar erro de digitação à toa.
+- Precisa de `app-shell--allow-grow` (já na lista em `App.js`) — a lista de exercícios cresce
+  além da viewport, ver "Quirks & Gotchas".
+
 ### Listening (menu principal, fora dos 4 cursos)
 - Tela própria (`activePage: 'listening' → 'listening-tracks' → 'listening-exercise'`),
   reaproveita os mesmos tracks/áudio dos cursos (`listening_vocabulary.json`/
@@ -256,7 +341,12 @@ externo, mesmo espírito dos ícones do resto do app).
   visitadas (`findNextUnvisitedByCourse`, ordena por `courseId` cruzando os 4 cursos — não é
   mais sempre Vocabulary primeiro); "Practice listening" é uma faixa de Listening/Dictation de
   verdade nunca tentada em nenhum dos 2 modos (`findUnpracticedListeningTrack`, varre os 359
-  tracks dos 2 cursos), não mais o 2º curso da lista de units
+  tracks dos 2 cursos), não mais o 2º curso da lista de units. **"Review words" (My Words) é
+  sempre o ÚLTIMO item** (pedido do dono, 2026-08-08) — mesma posição do "Practice N words" no
+  `ReviewCard` da tela Courses, que também foi movido pro fim (antes abria a lista). Essa linha
+  aparece mesmo com nada vencido, desde que tenham sido adicionadas palavras HOJE
+  (`wordbookAddedTodayCount`): palavra nova só vence na virada do dia, então sem ela adicionar
+  palavras não mudava nada visível na Home e parecia que não tinham sido salvas
 - **`DailyGoalCard`**: meta diária com 3 componentes togglináveis via "Customize goal" —
   aprender unit nova, zerar revisões do dia, praticar Listening/Dictation. Os 3 usam uma flag
   própria em `dailyGoalToday` (nenhum é `reviewQueue.length === 0` — isso dava um check de
@@ -268,11 +358,15 @@ externo, mesmo espírito dos ícones do resto do app).
   — fica sempre a mesma string, ex. `"grammarElem-unit"` — então uma revisão que vencesse
   DURANTE uma sessão de navegação assim nunca era reconhecida como vencida, mesmo reavaliando
   o item certo; state pode ficar desatualizado por tempo indeterminado, localStorage nunca) —
-  **também marca ao graduar um flashcard vencido do My Words** (`handleGradeWord`, mesmo
-  critério `(entry.due ?? 0) <= agora` que `wordbookDueCount` já usa, checado ANTES de
-  sobrescrever o `due`; corrigido 2026-07-24 — o card "Today's Review" já mostra "Practice N
-  words" junto com as revisões de curso como se fossem a mesma coisa, então só contar um dos
-  dois tipos era inconsistente com o que a tela promete); os outros 2 via `markDailyGoalDone`
+  **também marca ao TERMINAR uma sessão de flashcards do My Words**
+  (`handleWordbookSessionComplete`, passado como `onSessionComplete` pro `WordbookPage`). Era
+  por card avaliado (`handleGradeWord`) até 2026-08-08; mudou junto com a reciclagem do "Again"
+  (ver "Revisão espaçada / My Words"): como a sessão só acaba quando toda palavra vencida foi
+  respondida sem "Again", chegar ao fim já é prova de que a revisão inteira aconteceu, enquanto
+  avaliar 1 card de 25 não era. **Avaliado e rejeitado no mesmo dia:** marcar por tempo de
+  permanência na tela (ex. N × 4s) — proxy que erra pros dois lados (marca sozinho com a aba
+  aberta e esquecida; deixa de marcar quem revisa rápido) e ainda exigiria pausar em
+  `visibilitychange`/blur, tudo pra aproximar algo que o fim da sessão já mede exato; os outros 2 via `markDailyGoalDone`
   (visitar unit nunca visitada / terminar Listening ou Dictation, `onPracticed` prop em
   `ListeningClozeExercise`/`DictationExercise`). Progresso do dia em `dailyGoal:<YYYY-MM-DD>`
   (data LOCAL, nunca `toISOString`), nunca desmarcado — dia novo já nasce zerado porque a
@@ -335,7 +429,28 @@ u:<nome>:notes:americanAccent:<screenId> — string, notas da tela
 # Revisão espaçada / My Words (compartilhado entre os 4 cursos)
 u:<nome>:review:<curso>:<id>       — JSON {rating, ratedAt, due}
 u:<nome>:wordbook                  — array JSON de palavras + flashcards ({id, word, meaning,
-                                      example, context, image, createdAt, step, due})
+                                      example, context, image, createdAt, step, due,
+                                      lastGrade, lastGradedAt, lastIntervalDays}).
+                                      `due` NUMÉRICO é o que define "vencida" (isWordDue) —
+                                      palavra nova nasce com o início do dia SEGUINTE, nunca
+                                      mais com Date.now(). `lastIntervalDays` fica gravado, não
+                                      recalculado do grau: se a tabela de intervalos mudar, o
+                                      histórico continua contando a verdade da época. `step`
+                                      só sobrevive por compatibilidade, não agenda mais nada.
+                                      TODA gravação passa por persistWordbook, que recebe uma
+                                      FUNÇÃO (lista atual) => lista nova e relê a base do
+                                      localStorage antes de aplicar — nunca passar um array
+                                      montado a partir do state `wordbookEntries` do render
+                                      (era o que fazia edição de palavra sumir no reload, ver
+                                      "Quirks & Gotchas")
+
+# Grammar & Vocabulary Exercises (tela própria, ver seção acima)
+u:<nome>:grammarVocabAnswers:<sourceId> — JSON com as respostas dadas, uma chave por seção
+                                      ("grammar"/"vocabulary"/"similar"). A posição atual e o
+                                      "Hide solved" moram em sessionStorage, juntos num objeto
+                                      {activeSourceId, hideSolved} sob a chave
+                                      "grammarVocabExercisesPosition" — SEM namespace de
+                                      usuário e de propósito fora do localStorage
 
 # Listening / Dictation (por track, namespaces separados um do outro)
 u:<nome>:listening:<trackId>:stats — JSON {attempts, lastScorePercent, lastAttemptAt}
@@ -393,6 +508,86 @@ internet nem conta nenhuma.
   diálogo sozinho ao carregar a página — a tela pede autorização explícita (2 botões: escolher
   pasta ou pular) antes de disparar o diálogo nativo do SO.
 
+### Sound Bank — 3 páginas, DOIS cursos (2026-08-09)
+
+O Sound Bank do menu abre `american1-reference` com `{type:'sound', pages:[166,167]}`. Desde
+2026-08-09 ele serve **3** páginas: as 2 do American English A1 (166-167) mais a **p. 3 do
+American Accent** ("Main Vowel Sounds of American English", capítulo 1, faixa 4 = página 11 do
+PDF). É o **único lugar do app onde uma tela mistura PDF de dois cursos**.
+
+- **Merge**: feito na rota `/american1-pages/ref/:type/:page` (`setupProxy.js`), com um `if
+  (type === 'sound')` explícito — não virou campo genérico em `AMERICAN1_REFERENCE_FOLDERS`,
+  que descreve pastas do American1 e não comportaria um PDF de outro curso.
+- **Falha em silêncio de propósito**: o American Accent é o único curso cuja pasta pode não
+  existir na máquina (caminho por tentativa, ver Quick Start). O append vai dentro de um
+  `try/catch` — sem ele, a pasta ausente derrubaria o Sound Bank INTEIRO, que é material do
+  American1 e não tem nada a ver com isso.
+- **Âncora do player** (`american1_reference_audio_anchors.json`, chave `sound:166`, `page: 2`):
+  x=76.4, y=94.7, `pageWidth`/`pageHeight` da página do Accent (562.9×782.8 — cada página usa a
+  SUA dimensão, o `scale` é calculado por página). Esses números **não são a posição visual**:
+  `.american1-audio-anchor` tem `transform: translate(-20px, -7px)` em pixels FIXOS (não
+  escalados), então a âncora precisa compensar `20/scale` e `7/scale`. Com o `defaultScale` de
+  1.5, isso põe a pílula em (63.1, 90.1) no PDF — alinhada à margem esquerda da palavra
+  "American" (x0=63.1) e 2,9pt abaixo da base dela (y1=87.2), que foi o pedido do dono.
+  Conferido por medição no navegador, não a olho. **Se o `defaultScale` do `PdfWorkspace` ou o
+  `translate` do CSS mudarem, essa âncora sai do lugar** — recalcular, não arrastar no olho.
+
+### Repetição espaçada do My Words (reescrita em 2026-08-08)
+
+O motor já existia, mas três coisas o mascaravam: palavra nova nascia vencida (`due:
+Date.now()`), não havia teto de sessão, e nada mostrava o que o usuário tinha respondido — daí
+a percepção, relatada pelo dono, de que "a revisão mostra todos os cards". A sessão **sempre**
+filtrou por vencidas; o que faltava era entrada controlada, teto e visibilidade.
+
+- **Intervalos FIXOS por grau** (`FLASHCARD_GRADE_DAYS`): `again: 1`, `good: 3`, `easy: 7`,
+  `known: 30`. Substituiu a escada progressiva (`FLASHCARD_STEPS_DAYS = [1,3,7,14,30,60]`, onde
+  "Good" subia um degrau e "Easy" dois, então o mesmo botão dava intervalos diferentes conforme
+  o `step`). Escolha do dono: o número escrito no botão é o que acontece.
+  **Consequência aceita conscientemente:** sem progressão, o intervalo máximo é 30 dias — o
+  volume diário estabiliza em vez de diminuir com o tempo. O 4º grau "Known" existe justamente
+  pra isso: sem ele, palavra dominada nunca se afastaria. Quem gradua a palavra é o usuário,
+  declarando, não o algoritmo inferindo pelo histórico.
+- **Palavra nova não nasce vencida** — `due` = início do dia LOCAL seguinte
+  (`startOfNextLocalDay`, nunca `toISOString`). "As adicionadas no dia não entram na lista"
+  (pedido do dono). Era a causa principal do "mostra tudo": adicionar 20 palavras jogava as 20
+  na sessão do mesmo dia.
+- **`isWordDue(entry, at)`** é o único critério de "vencida": `due` NUMÉRICO e `<= agora`. O
+  `(entry.due ?? 0) <= agora` de antes tratava entrada SEM `due` como eternamente vencida (todo
+  valor é > 0), grudando na fila qualquer dado antigo/importado; agora ela só espera a virada
+  do dia. Usar esse helper — não repetir a comparação à mão.
+- **Ordem da sessão**: vencida há mais tempo primeiro, e as de `lastGrade === 'again'` no
+  **FIM** (pedido do dono — chegar nas difíceis depois de aquecer, não travar nelas na
+  abertura). Cortada em `WORDBOOK_DAILY_REVIEW_CAP` (25).
+- **"Again" recicla o card pro fim da fila da sessão atual** (`gradeCard`), além de reagendar
+  pra 1 dia. A sessão só termina quando toda palavra foi respondida sem "Again" — é isso que
+  torna "terminou a sessão" prova de revisão, e por isso a meta diária se apoia nesse evento
+  (ver "Trilha de estudo"). Não vale no "view larger" de um card só (`isSingleView`), que não é
+  sessão. O contador mostra palavras DISTINTAS (`new Set(practiceIds).size`) + um sufixo
+  "(+N to repeat)": `practiceIds` cresce com a reciclagem, e um "of N" mudando sozinho no meio
+  da sessão pareceria erro.
+- **Rastro da última avaliação** (`lastGrade`/`lastGradedAt`/`lastIntervalDays`) exibido como
+  pílula colorida **na linha da palavra, logo à direita dela** (dentro da
+  `.wordbook-entry-word-row`, depois do 🔊 e do texto — pedido do dono: no fim do card ela caía
+  na 4ª linha e só era vista depois de ler tudo; nessa linha, dá pra varrer a lista inteira pelo
+  estado das palavras sem ler nenhuma). A linha meta de baixo ficou
+  só com o `context`, e **não mostra mais** o "review in N days" (`formatDue`, removida): o que
+  interessa é o que o usuário respondeu, não a contagem regressiva. Palavra nunca avaliada não
+  ganha pílula (sem migração de dado); sem `context`, a linha meta inteira não renderiza, pra
+  não sobrar um `<p>` vazio.
+- **As 4 cores dos graus são um termômetro, não cores de interface** (definidas pelo dono,
+  2026-08-08): `again` vermelho `#c95555` → `good` laranja `#d9812f` → `easy` azul `#3277c4` →
+  `known` verde `#3e9e6e`, do "não sei" ao "dominei". Literais de propósito, fora da paleta
+  (mesma exceção do verde/vermelho de acerto e erro): o verde aqui **não** significa "acertei"
+  e sim o degrau final, e o azul do `easy` não é o índigo da marca. **Botão e pílula usam
+  sempre o mesmo par** — a pílula é o eco do botão clicado, então mudar um sem o outro quebra a
+  leitura; a pílula usa a versão clara (fundo ~14% + texto escurecido), porque a cor cheia do
+  botão deixaria a lista listrada.
+- **Botão "Practice" promete `sessionQueue.length`, não `dueEntries.length`** — com o teto os
+  dois divergem (40 vencidas → sessão de 25), e o hint ao lado avisa da diferença.
+- **Arquivar palavra conhecida** (parar de revisar sem deletar) foi discutido e **adiado** pelo
+  dono — reavaliar depois de usar o "Known · 30 dias". Deletar continua sendo a saída, com o
+  custo de levar junto significado/exemplo/imagem/contexto e o cache de pronúncia.
+
 ### Pronúncia (🔊) no My Words (2026-07-24, trocado de Cambridge pra Google TTS em 2026-07-25)
 
 Cada entrada (palavra OU expressão de várias palavras) na lista do My Words ganha um botão 🔊
@@ -447,6 +642,22 @@ Estes arquivos **não devem ser editados manualmente** (todos gerados por script
   `american1_videos.json` — American English A1
 - `grammar_elem_index.json`, `grammar_elem_appendix_index.json`, `grammar_elem_audio.json` —
   Grammar English A1
+- `grammar_vocab_exercises_vocab_similar.json` — units 21-100 são GERADAS por script (units 5-20
+  são escritas à mão, não regerar). O gerador cruza duas fontes: `EVIU_PI-<n>_E.pdf` (enunciados)
+  e `English_Vocabulary_Pre_Intermediate_Answers_Key.pdf` (respostas, numeradas por item; `;`
+  separa lacunas diferentes do MESMO item, `/` separa alternativas da mesma lacuna). Três coisas
+  que o gerador aprendeu na marra e que qualquer reconstrução precisa repetir:
+  1. **A lacuna não existe como texto** — é um SALTO HORIZONTAL de X entre duas palavras da
+     mesma linha (> 20pt). Não há underline nem caractere nenhum para procurar.
+  2. **O item 1 é sempre o exemplo já resolvido** (a resposta vem impressa dentro da lacuna, e o
+     gabarito só começa no item 2) — incluí-lo geraria uma frase com a resposta e uma lacuna
+     falsa logo depois.
+  3. **Item com N lacunas vira N itens**, cada um com uma lacuna aberta e as outras preenchidas
+     pelo gabarito — o componente tem uma caixa de texto só por item, e mandar digitar
+     "makes; replace" numa caixa cobraria a pontuação entre as respostas.
+  Além disso, `with_partial_answers` aceita só a parte que falta quando o gabarito repete o que
+  já está impresso ("...in the rubbish ___" com gabarito "rubbish bin" aceita "bin"; "...general
+  paper ___" com "paperwork" aceita "work") — sem isso esses itens ficam impossíveis de acertar.
 - `listening_vocabulary.json`, `listening_american1.json`, `listening_american_accent.json` —
   tracks de Listening/Dictation/Speaking (os 3 foram escritos/ajustados manualmente ao longo do
   tempo — o do American Accent especialmente, com bastante revisão manual pontual por track
@@ -477,7 +688,7 @@ Se os PDFs/áudios de origem mudarem, os índices precisam ser regenerados.
 
 2. **Sem hospedagem/deploy** — `setupProxy.js` só existe em `npm start`. `npm run build` compila normalmente (é usado como checagem de erros), mas o build resultante não seria funcional publicado num servidor real, porque não há servidor de produção com acesso às pastas irmãs de material. Razão: repositório é apenas para uso local com acesso direto aos arquivos de material.
 
-3. **Praticamente tudo dentro de `App.js`** — sem fragmentação em arquivos de componente separados. Razão: simplicidade, sem fragmentação de estado, no estilo em que o projeto já cresceu.
+3. **Praticamente tudo dentro de `App.js`** — sem fragmentação em arquivos de componente separados. Razão: simplicidade, sem fragmentação de estado, no estilo em que o projeto já cresceu. Uma exceção deliberada e fechada: `GrammarVocabExercises.js`/`.css` (volume de dados/UI — ver a seção dessa tela). Ela é o motivo do único named export de `App.js` (`userKey`); não tratar como precedente.
 
 4. **Sem roteamento** — state machine com `activePage`. Razão: poucas telas, lógica simples.
 
@@ -485,14 +696,65 @@ Se os PDFs/áudios de origem mudarem, os índices precisam ser regenerados.
 
 6. **Isolamento automático por porta** — pendrive em 3001, PC em 3000. Razão: localStorage é por origem, evitar mistura de usuários.
 
-7. **Fundo desfocado/translúcido (`--page-hero-bg`) nas telas leves** (Courses, My Words, Listening, Dictation, My Profile, Dashboard) — reaproveita a imagem da Home. Qualquer "cartão"/retângulo de conteúdo dentro dessas telas precisa de fundo **opaco** (`#f3f5f7`/`#fbfcfd`, não `rgba(...)` translúcido), senão a imagem vaza através dele — bug já corrigido uma vez, não reintroduzir.
+7. **Fundo desfocado/translúcido (`--page-hero-bg`) nas telas leves** (Courses, My Words, Listening, Dictation, My Profile, Dashboard) — reaproveita a imagem da Home. Qualquer "cartão"/retângulo de conteúdo dentro dessas telas precisa de fundo **opaco** (`#f2f3f6`/`#fbfcfd`, não `rgba(...)` translúcido), senão a imagem vaza através dele — bug já corrigido uma vez, não reintroduzir.
+
+8. **Paleta de cores fechada, 4 cores** (definida pelo dono em 2026-08-07, substituiu o tema
+   roxo+azul-marinho original): `#4c45de` índigo escuro (primária), `#6067f0` índigo claro
+   (hover/ativo), `#232b3a` azul-marinho (texto e superfícies escuras), `#e2e3e7` cinza claro
+   (superfícies/bordas). Declaradas no `:root` de `App.css` como `--brand-600`/`--brand-500`/
+   `--navy-900`/`--gray-200` — **usar essas em código novo**. Os nomes `--purple-*` continuam
+   existindo por serem usados em ~700 lugares, mas hoje guardam os índigos da paleta (não são
+   mais roxo). Cor nova fora da paleta só com pedido explícito.
+   **Exceções deliberadas** (não "esqueci de trocar"): verde/vermelho de acerto e erro
+   (Dictation/Listening/exercícios) — cor É a informação ali; o amarelo do marca-texto do
+   My Notes; o amarelo das pílulas de áudio **ancoradas nos PDFs** (`.audio-anchor`,
+   `.american1-audio-anchor`, `.ap-btn`, `.audio-anchor-inline`, `.wide-player-label`), que o
+   dono pediu explicitamente pra não mexer — por isso `.ap-btn.ap-btn-ab.is-armed/.is-looping`
+   usam roxo LITERAL em vez de `var(--purple-700)`, senão virariam índigo junto com o resto.
+   Os desenhos SVG da mascote Adele (pele, cabelo, olhos) também ficaram intactos — são
+   ilustração de personagem, não cor de interface.
+
+9. **Quicksand é a fonte do app INTEIRO** (2026-08-08). Antes ela era aplicada seletor a
+   seletor em `App.css`, tela por tela (conforme o dono ia pedindo, desde 2026-08-06), e tudo
+   que nunca ganhou regra própria — botões, a tela Progress, etc. — caía no sans-serif do
+   sistema. Hoje o padrão vem do `body` em **`src/index.css`**; código novo não precisa
+   declarar `font-family` nenhuma. Dois detalhes que não podem ser desfeitos:
+   - `button, input, select, textarea { font-family: inherit }` (também em `index.css`): esses
+     elementos **não herdam** fonte do pai por padrão do navegador — sem essa regra os botões
+     voltam pro Segoe UI, que era exatamente o bug relatado.
+   - **Todo peso usado em CSS precisa estar na URL do Google Fonts** em `public/index.html`
+     (hoje `400;500;600;700`). Peso ausente faz o navegador sintetizar (faux bold/thin) em cima
+     do mais próximo, borrando o traço arredondado que é a graça da fonte — é por isso que o
+     peso 400 entrou junto com essa mudança, e por isso `.brand-mark` usa 700 e não 800.
+   **Exceção deliberada:** o "i" dos botões de ajuda redondos (`.unit-badge-legend-toggle`,
+   `.daily-goal-info-toggle`) continua em `Georgia` itálico — ali é um glifo de ícone, não texto
+   de interface; o "i" serifado itálico é o que faz o ícone ser lido como "informação".
+
+10. **Texto secundário tem cor e tamanho de token, nunca `rgba(35, 43, 58, α)` solto**
+    (2026-08-08). Cada regra escrevia o próprio cinza com α entre 0.45 e 0.75; sobre as
+    superfícies claras do app (`#fbfcfd`/`#f2f3f6`) isso dava ~3:1 a 4.4:1 de contraste — abaixo
+    do mínimo legível (4.5:1) — e ainda em 11-13px, cada tela com um tamanho diferente. O dono
+    reportou como "cinza quase não perceptível". Tokens no `:root` de `App.css`:
+    - `--text-secondary` (`#4a5163`, ~7.7:1) — rótulos, hints, parágrafos de apoio. **É o
+      padrão**: rótulo/hint novo usa este, sem declarar cinza próprio.
+    - `--text-muted` (`#6b7385`, ~4.6:1) — só onde o apagado é INTENCIONAL e carrega
+      significado: estado "off" do auto-pause do Dictation, campo desabilitado, `::placeholder`
+      e botão de ícone em repouso (`.word-audio-btn`/`.wordbook-expand`/`.wordbook-delete`/
+      `.my-notes-card-delete`/`.word-quickadd-close`, que ganham cor no hover). Continua
+      visivelmente mais claro que o secundário — que era a razão de existir do tom claro — só
+      deixou de ser ilegível.
+    - `--text-secondary-size` (`13.5px`) — tamanho padrão desses rótulos. Aplicado onde o
+      tamanho era menor; quem já era ≥ 13.5px ficou como estava. Única exceção de tamanho:
+      `.unit-badge-legend-info-btn` segue em 12px, porque é um glifo dentro de um círculo de
+      tamanho fixo e aumentar estouraria o controle.
+    Vale também no `GrammarVocabExercises.css`, que importa os tokens do `App.css` via `:root`.
 
 ### ❌ Não Faça
 
 - **Não exporte áudio/PDF de curso para GitHub** — eles continuam ignorados de propósito
 - **Não tente hospedar/publicar o build** — a arquitetura de áudio/PDF não suporta (sem servidor); `npm run build` em si funciona bem e deve ser usado para verificar erros
 - **Não edite os índices JSON à mão** (exceto os dois `listening_*.json`, que são dados editáveis com cuidado — ver acima)
-- **Não fragmente `App.js` em componentes de arquivo separado** — é o padrão deste projeto
+- **Não fragmente `App.js` em componentes de arquivo separado** — é o padrão deste projeto (a tela Grammar & Vocabulary Exercises é a única exceção já concedida, e não abre precedente)
 - **Não adicione rotas** — use o state machine existente (`activePage`)
 - **Não misture o namespace do Listening com o do Dictation** (`listening:` vs `dictation:`) — são features irmãs, mas com estado/estatísticas isolados de propósito
 
@@ -500,9 +762,23 @@ Se os PDFs/áudios de origem mudarem, os índices precisam ser regenerados.
 
 ## Testing & Verification
 
-Não há testes unitários automatizados (`npm test` funciona mas CRA cria um esqueleto vazio). Verificação de features é feita via:
-1. `npm run build` — pega erros de sintaxe/JSX
-2. Playwright (scripts ad-hoc, não persistidos no repo — rodados a partir de um scratchpad de sessão) — navegação ponta-a-ponta, persistência em localStorage, ausência de overflow/scroll indevido na página, sem erros no console
+Não há testes unitários automatizados (`npm test` funciona mas CRA cria um esqueleto vazio).
+
+1. **`npm run build`** — é a checagem padrão (sintaxe/JSX, imports quebrados, símbolo não usado
+   depois de uma remoção). Rodar depois de qualquer mudança.
+2. **Playwright/capturas: perguntar antes.** Em 2026-08-08 o dono proibiu (queria o orçamento
+   de tokens na implementação, não na verificação, e prefere conferir a olho). Em 2026-08-09 ele
+   liberou explicitamente — "autorizado quaisquer tipos de verificações" — mas no contexto de
+   uma rodada longa em que ele ia dormir. Ou seja: **não é padrão nem proibição permanente**.
+   Sem autorização na conversa, entregar com o build passando e esperar o retorno dele.
+   O Playwright não está no `package.json`; roda pelo cache do npx
+   (`NODE_PATH=$HOME/AppData/Local/npm-cache/_npx/<hash>/node_modules node script.js`).
+3. **Ao verificar no navegador, subir o dev server numa porta livre** (`PORT=3002 npm start`),
+   não matar o que estiver na 3000 — costuma ser a sessão do próprio dono. O `setupProxy.js` só
+   é lido no boot, então mudança nele EXIGE reiniciar (não tem hot reload).
+4. **Medir, não olhar.** Posição de elemento se confere por `boundingBox()` convertido pras
+   coordenadas do PDF, não por screenshot — foi assim que a âncora do Sound Bank foi ajustada,
+   e foi assim que se descobriu o `translate(-20px,-7px)` que a screenshot não denunciava.
 
 ---
 
@@ -546,6 +822,20 @@ Não há testes unitários automatizados (`npm test` funciona mas CRA cria um es
 - 3 páginas realmente em branco (38, 88, 140) — excluídas da lista de telas, não geram merge
 - Ordem das faixas dentro de cada tela: sempre ordenar numericamente (`tracks.sort()`) — a
   ordem de aparição no texto corrido não é a ordem numérica
+
+### Estado vs. localStorage (bugs já resolvidos, não reintroduzir)
+- **Gravação que reescreve uma coleção inteira nunca pode ser montada a partir do state do
+  render.** O My Words guarda TODAS as palavras num único valor (`u:<nome>:wordbook`), então
+  cada gravação reescreve o array completo. Enquanto os handlers faziam
+  `persistWordbook(wordbookEntries.map(...))`, bastava um deles rodar com um snapshot defasado
+  pra a gravação levar junto a versão VELHA das outras palavras — desfazendo uma edição
+  anterior **sem erro nenhum**, já que a tela continuava mostrando o state novo até o próximo
+  reload (sintoma relatado pelo dono em 2026-08-08: "editei essa palavra umas dez vezes e
+  sempre volta o texto original ao reiniciar o servidor"). Hoje `persistWordbook` recebe uma
+  FUNÇÃO `(lista atual) => lista nova` e relê a base do `localStorage` antes de aplicar (o
+  `readStoredWordbook` ao lado existe pra isso). Mesma lição do `dailyGoal`
+  "reviews": **o state pode ficar desatualizado por tempo indeterminado, o localStorage nunca.**
+  Vale pro `wordbook` e valeria pra qualquer coleção futura guardada numa chave só.
 
 ### Layout/CSS (bugs já resolvidos, não reintroduzir)
 - `min-height: calc(100vh - 72px)` na regra base `.landing-page` assume um header de 72px,
@@ -636,11 +926,13 @@ node scripts/preload-pronunciations.js caminho/para/backup.json
 
 ## Para Outra IA
 
-- Tudo (ou quase tudo) está em `App.js` — comece lá, é grande (~10000 linhas) mas um arquivo só
+- Tudo (ou quase tudo) está em `App.js` — comece lá, é grande (~10000 linhas) mas um arquivo só.
+  A única tela fora dele é `GrammarVocabExercises.js` (+ `.css`), exceção fechada e justificada
 - `setupProxy.js` é crítico (middleware de áudio/PDF, só funciona em `npm start`)
 - Índices JSON (exceto `listening_*.json`) são **fonte de verdade gerada**, não edite à mão
 - `localStorage` é o único storage; tudo namespaced por usuário via `userKey`
-- Sem rotas, sem componentes em arquivo separado, sem backend — tudo inline em `App.js`
+- Sem rotas, sem backend — tudo inline em `App.js` (fora a exceção do Grammar & Vocabulary
+  Exercises acima)
 - `npm run build` funciona e deve ser rodado depois de qualquer mudança — não presuma que
   "não há build de produção" significa que o comando não funciona
 - Ao adicionar uma tela nova sobre o fundo claro (`vocabulary-mode`/`landing-page--courses`),

@@ -31,12 +31,40 @@
 // por palavras plausíveis mas que mudam o sentido, não só o registro —
 // Grammar é escrito à mão porque o app não tem o texto das lições, só os
 // títulos reais das units.
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { userKey } from './App';
 import grammarExercises from './grammar_vocab_exercises_grammar.json';
 import vocabExercises from './grammar_vocab_exercises_vocab.json';
 import similarBlocks from './grammar_vocab_exercises_similar.json';
+import vocabSimilarBlocks from './grammar_vocab_exercises_vocab_similar.json';
 import './GrammarVocabExercises.css';
+
+const GRAMMAR_VOCAB_EXERCISES_POSITION_KEY = 'grammarVocabExercisesPosition';
+
+const loadSavedActiveSourceId = () => {
+  try {
+    const raw = window.sessionStorage.getItem(GRAMMAR_VOCAB_EXERCISES_POSITION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.activeSourceId || null;
+  } catch (error) {
+    return null;
+  }
+};
+
+// "Hide solved" mora na MESMA chave de sessionStorage da seção aberta, e não
+// no localStorage: é uma preferência de sessão, igual à posição — voltar pela
+// tela inicial do menu apaga a chave e devolve a lista completa, que é o
+// estado em que se quer começar.
+const loadSavedHideSolved = () => {
+  try {
+    const raw = window.sessionStorage.getItem(GRAMMAR_VOCAB_EXERCISES_POSITION_KEY);
+    if (!raw) return false;
+    return Boolean(JSON.parse(raw)?.hideSolved);
+  } catch (error) {
+    return false;
+  }
+};
 
 // `kind` distingue as duas MECÂNICAS de exercício desta tela:
 // - 'multipleChoice' (as 2 seções originais): lista plana de cards, clicar
@@ -68,6 +96,13 @@ const SOURCES = [
     description: 'Harder, write-in practice modelled on the last exercises of every unit of the book — you type the answer, not choose it.',
     blocks: similarBlocks,
   },
+  {
+    id: 'vocabSimilar',
+    kind: 'written',
+    title: 'Similar Exercises from English Vocabulary B',
+    description: 'Write-in practice modelled on the “complete the sentences” exercises of the book — fill each gap with the right word.',
+    blocks: vocabSimilarBlocks,
+  },
 ];
 
 // Normalização pra comparar o que o aluno digitou com o gabarito: o livro
@@ -92,6 +127,22 @@ function isWrittenAnswerCorrect(item, value) {
   if (!typed) return false;
   return item.answers.some((answer) => normalizeWrittenAnswer(answer) === typed);
 }
+
+// "Feito com 100% de acerto" — o que o botão "Hide solved" esconde. As duas
+// mecânicas da tela têm definições diferentes de 100%, por isso são dois
+// predicados e não um:
+// - múltipla escolha: 1 pergunta só, então acertar É o 100%.
+// - escrita: o bloco inteiro tem que estar checado E com TODOS os itens
+//   certos — um bloco de 10 itens com 9 certos continua aparecendo, que é
+//   justamente o que ainda vale refazer.
+// Errar não esconde nada em nenhuma das duas: exercício errado é o que mais
+// interessa continuar vendo.
+const isMultipleChoicePerfect = (exercise, answers) => answers[exercise.id] === exercise.answer;
+
+const isWrittenBlockPerfect = (block, answers) => (
+  answers[block.id] === 'checked'
+  && block.items.every((item) => isWrittenAnswerCorrect(item, answers[item.id]))
+);
 
 const answersStorageKey = (userName, courseId) => userKey(userName, `grammarVocabAnswers:${courseId}`);
 
@@ -285,17 +336,35 @@ function WrittenExerciseBlock({ block, index, total, savedAnswers, onCheck, onRe
 }
 
 export default function GrammarVocabExercisesPage({ userName }) {
-  const [activeSourceId, setActiveSourceId] = useState(null);
+  const [activeSourceId, setActiveSourceId] = useState(loadSavedActiveSourceId);
   const [resetToken, setResetToken] = useState(0);
   // Filtro da seção escrita: são 115 exercícios (um por unit do livro), longe
   // demais pra rolar até a unit que se está estudando. Só filtra a EXIBIÇÃO —
   // placar e progresso continuam contando a seção inteira.
   const [blockFilter, setBlockFilter] = useState('');
-  const [answersBySource, setAnswersBySource] = useState(() => ({
-    grammar: loadAnswers(userName, 'grammar'),
-    vocabulary: loadAnswers(userName, 'vocabulary'),
-    similar: loadAnswers(userName, 'similar'),
-  }));
+  // Esconder o que já foi acertado 100% (pedido do dono, 2026-08-09). Vale
+  // pras 3 seções com um estado só, de propósito: se fosse por seção, ligar o
+  // filtro numa e encontrar a outra cheia de novo pareceria o botão ter
+  // falhado. Só filtra a EXIBIÇÃO — placar e "N answered" continuam contando
+  // a seção inteira, igual ao blockFilter acima.
+  const [hideSolved, setHideSolved] = useState(loadSavedHideSolved);
+  const [answersBySource, setAnswersBySource] = useState(() => (
+    SOURCES.reduce((acc, source) => {
+      acc[source.id] = loadAnswers(userName, source.id);
+      return acc;
+    }, {})
+  ));
+
+  useEffect(() => {
+    try {
+      window.sessionStorage.setItem(
+        GRAMMAR_VOCAB_EXERCISES_POSITION_KEY,
+        JSON.stringify({ activeSourceId, hideSolved }),
+      );
+    } catch (error) {
+      // Ignore storage errors.
+    }
+  }, [activeSourceId, hideSolved]);
 
   const activeSource = SOURCES.find((source) => source.id === activeSourceId) || null;
 
@@ -309,22 +378,25 @@ export default function GrammarVocabExercisesPage({ userName }) {
 
   // Seção escrita: grava de uma vez o texto digitado em cada item do bloco
   // + o marcador 'checked' do próprio bloco (ver WrittenExerciseBlock).
+  // Escopado no activeSourceId, não no literal 'similar': desde que existe
+  // mais de uma seção escrita (Grammar Elementary e English Vocabulary B), o
+  // literal gravaria as respostas da Vocabulary por cima das da Grammar.
   const handleCheckBlock = (block, drafts) => {
     setAnswersBySource((prev) => {
-      const merged = { ...prev.similar, [block.id]: 'checked' };
+      const merged = { ...prev[activeSourceId], [block.id]: 'checked' };
       block.items.forEach((item) => { merged[item.id] = drafts[item.id] || ''; });
-      saveAnswers(userName, 'similar', merged);
-      return { ...prev, similar: merged };
+      saveAnswers(userName, activeSourceId, merged);
+      return { ...prev, [activeSourceId]: merged };
     });
   };
 
   const handleResetBlock = (block) => {
     setAnswersBySource((prev) => {
-      const merged = { ...prev.similar };
+      const merged = { ...prev[activeSourceId] };
       delete merged[block.id];
       block.items.forEach((item) => { delete merged[item.id]; });
-      saveAnswers(userName, 'similar', merged);
-      return { ...prev, similar: merged };
+      saveAnswers(userName, activeSourceId, merged);
+      return { ...prev, [activeSourceId]: merged };
     });
   };
 
@@ -344,8 +416,11 @@ export default function GrammarVocabExercisesPage({ userName }) {
   if (!activeSource) {
     return (
       <div className="landing-panel gve-panel">
-        <p className="eyebrow">Exercises</p>
-        <h1>Grammar &amp; Vocabulary Exercises</h1>
+        {/* O rótulo "Exercises" que ficava acima saiu (2026-08-06): nesta
+            tela, diferente do Listening, o TÍTULO já é o h1 — deixar os dois
+            daria "Exercises" grande e roxo em cima de "Grammar & Vocabulary
+            Exercises", dizendo a mesma coisa duas vezes. */}
+        <h1 className="gve-page-title">Grammar &amp; Vocabulary Exercises</h1>
         <p className="landing-meta">
           Extra practice, separate from the reading units — pick a set to start.
         </p>
@@ -409,9 +484,27 @@ export default function GrammarVocabExercisesPage({ userName }) {
     correctCount = answered.filter((exercise) => answers[exercise.id] === exercise.answer).length;
   }
 
+  // Quantos exercícios o "Hide solved" tem pra esconder nesta seção. O botão
+  // só aparece quando há pelo menos 1 — antes da primeira resposta certa ele
+  // não teria efeito nenhum e seria só ruído no topo da lista.
+  const solvedCount = isWritten
+    ? activeSource.blocks.filter((block) => isWrittenBlockPerfect(block, answers)).length
+    : activeSource.exercises.filter((exercise) => isMultipleChoicePerfect(exercise, answers)).length;
+
   return (
     <div className="landing-panel gve-panel">
-      <button type="button" className="upload-button" onClick={() => setActiveSourceId(null)}>
+      <button
+        type="button"
+        className="upload-button"
+        onClick={() => {
+          setActiveSourceId(null);
+          try {
+            window.sessionStorage.removeItem('grammarVocabExercisesPosition');
+          } catch (error) {
+            // Ignore storage issues.
+          }
+        }}
+      >
         ‹ Back to Grammar &amp; Vocabulary Exercises
       </button>
       <p className="gve-source-heading">{activeSource.title}</p>
@@ -423,6 +516,24 @@ export default function GrammarVocabExercisesPage({ userName }) {
           </button>
         )}
       </p>
+      {/* Esconder o que já saiu 100%. Fica FORA do <p> do placar (que já tem o
+          "Reset") pra a linha não virar uma fileira de botões, e antes do
+          campo de filtro pra os dois controles de exibição ficarem juntos.
+          O rótulo diz o número pra deixar claro o que some/volta. */}
+      {solvedCount > 0 && (
+        <div className="gve-list-controls">
+          <button
+            type="button"
+            className={`gve-hide-solved-btn${hideSolved ? ' is-active' : ''}`}
+            onClick={() => setHideSolved((value) => !value)}
+            aria-pressed={hideSolved}
+          >
+            {hideSolved
+              ? `Show ${solvedCount} solved exercise${solvedCount === 1 ? '' : 's'}`
+              : `Hide ${solvedCount} solved exercise${solvedCount === 1 ? '' : 's'}`}
+          </button>
+        </div>
+      )}
       {isWritten && (
         <input
           type="text"
@@ -446,9 +557,21 @@ export default function GrammarVocabExercisesPage({ userName }) {
                 || String(block.unit) === needle
                 || String(block.unit).startsWith(needle)
                 || block.topic.toLowerCase().includes(needle)
-                || block.instruction.toLowerCase().includes(needle));
+                || block.instruction.toLowerCase().includes(needle))
+              .filter(({ block }) => !hideSolved || !isWrittenBlockPerfect(block, answers));
             if (visible.length === 0) {
-              return <p className="gve-filter-empty">No exercise matches “{blockFilter}”.</p>;
+              // Dois motivos possíveis pra lista vazia — dizer "nada casa com
+              // o filtro" quando na verdade foi o "Hide solved" que esvaziou
+              // mandaria o usuário procurar erro de digitação à toa.
+              if (needle) {
+                return <p className="gve-filter-empty">No exercise matches “{blockFilter}”.</p>;
+              }
+              return (
+                <p className="gve-filter-empty">
+                  Every exercise in this set is solved. Use “Show {solvedCount} solved
+                  exercise{solvedCount === 1 ? '' : 's'}” above to see them again.
+                </p>
+              );
             }
             return visible.map(({ block, index }) => (
               <WrittenExerciseBlock
@@ -462,14 +585,26 @@ export default function GrammarVocabExercisesPage({ userName }) {
               />
             ));
           })()
-          : activeSource.exercises.map((exercise) => (
-            <ExerciseCard
-              key={exercise.id}
-              exercise={exercise}
-              savedChoice={answers[exercise.id]}
-              onCheck={(option) => handleCheckAnswer(exercise, option)}
-            />
-          ))}
+          : (() => {
+            const visible = activeSource.exercises
+              .filter((exercise) => !hideSolved || !isMultipleChoicePerfect(exercise, answers));
+            if (visible.length === 0) {
+              return (
+                <p className="gve-filter-empty">
+                  Every exercise in this set is solved. Use “Show {solvedCount} solved
+                  exercise{solvedCount === 1 ? '' : 's'}” above to see them again.
+                </p>
+              );
+            }
+            return visible.map((exercise) => (
+              <ExerciseCard
+                key={exercise.id}
+                exercise={exercise}
+                savedChoice={answers[exercise.id]}
+                onCheck={(option) => handleCheckAnswer(exercise, option)}
+              />
+            ));
+          })()}
       </div>
     </div>
   );
