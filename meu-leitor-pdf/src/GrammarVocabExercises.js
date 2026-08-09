@@ -51,6 +51,20 @@ const loadSavedActiveSourceId = () => {
   }
 };
 
+// "Hide solved" mora na MESMA chave de sessionStorage da seção aberta, e não
+// no localStorage: é uma preferência de sessão, igual à posição — voltar pela
+// tela inicial do menu apaga a chave e devolve a lista completa, que é o
+// estado em que se quer começar.
+const loadSavedHideSolved = () => {
+  try {
+    const raw = window.sessionStorage.getItem(GRAMMAR_VOCAB_EXERCISES_POSITION_KEY);
+    if (!raw) return false;
+    return Boolean(JSON.parse(raw)?.hideSolved);
+  } catch (error) {
+    return false;
+  }
+};
+
 // `kind` distingue as duas MECÂNICAS de exercício desta tela:
 // - 'multipleChoice' (as 2 seções originais): lista plana de cards, clicar
 //   numa opção e checar.
@@ -105,6 +119,22 @@ function isWrittenAnswerCorrect(item, value) {
   if (!typed) return false;
   return item.answers.some((answer) => normalizeWrittenAnswer(answer) === typed);
 }
+
+// "Feito com 100% de acerto" — o que o botão "Hide solved" esconde. As duas
+// mecânicas da tela têm definições diferentes de 100%, por isso são dois
+// predicados e não um:
+// - múltipla escolha: 1 pergunta só, então acertar É o 100%.
+// - escrita: o bloco inteiro tem que estar checado E com TODOS os itens
+//   certos — um bloco de 10 itens com 9 certos continua aparecendo, que é
+//   justamente o que ainda vale refazer.
+// Errar não esconde nada em nenhuma das duas: exercício errado é o que mais
+// interessa continuar vendo.
+const isMultipleChoicePerfect = (exercise, answers) => answers[exercise.id] === exercise.answer;
+
+const isWrittenBlockPerfect = (block, answers) => (
+  answers[block.id] === 'checked'
+  && block.items.every((item) => isWrittenAnswerCorrect(item, answers[item.id]))
+);
 
 const answersStorageKey = (userName, courseId) => userKey(userName, `grammarVocabAnswers:${courseId}`);
 
@@ -304,6 +334,12 @@ export default function GrammarVocabExercisesPage({ userName }) {
   // demais pra rolar até a unit que se está estudando. Só filtra a EXIBIÇÃO —
   // placar e progresso continuam contando a seção inteira.
   const [blockFilter, setBlockFilter] = useState('');
+  // Esconder o que já foi acertado 100% (pedido do dono, 2026-08-09). Vale
+  // pras 3 seções com um estado só, de propósito: se fosse por seção, ligar o
+  // filtro numa e encontrar a outra cheia de novo pareceria o botão ter
+  // falhado. Só filtra a EXIBIÇÃO — placar e "N answered" continuam contando
+  // a seção inteira, igual ao blockFilter acima.
+  const [hideSolved, setHideSolved] = useState(loadSavedHideSolved);
   const [answersBySource, setAnswersBySource] = useState(() => ({
     grammar: loadAnswers(userName, 'grammar'),
     vocabulary: loadAnswers(userName, 'vocabulary'),
@@ -314,12 +350,12 @@ export default function GrammarVocabExercisesPage({ userName }) {
     try {
       window.sessionStorage.setItem(
         GRAMMAR_VOCAB_EXERCISES_POSITION_KEY,
-        JSON.stringify({ activeSourceId }),
+        JSON.stringify({ activeSourceId, hideSolved }),
       );
     } catch (error) {
       // Ignore storage errors.
     }
-  }, [activeSourceId]);
+  }, [activeSourceId, hideSolved]);
 
   const activeSource = SOURCES.find((source) => source.id === activeSourceId) || null;
 
@@ -436,6 +472,13 @@ export default function GrammarVocabExercisesPage({ userName }) {
     correctCount = answered.filter((exercise) => answers[exercise.id] === exercise.answer).length;
   }
 
+  // Quantos exercícios o "Hide solved" tem pra esconder nesta seção. O botão
+  // só aparece quando há pelo menos 1 — antes da primeira resposta certa ele
+  // não teria efeito nenhum e seria só ruído no topo da lista.
+  const solvedCount = isWritten
+    ? activeSource.blocks.filter((block) => isWrittenBlockPerfect(block, answers)).length
+    : activeSource.exercises.filter((exercise) => isMultipleChoicePerfect(exercise, answers)).length;
+
   return (
     <div className="landing-panel gve-panel">
       <button
@@ -461,6 +504,24 @@ export default function GrammarVocabExercisesPage({ userName }) {
           </button>
         )}
       </p>
+      {/* Esconder o que já saiu 100%. Fica FORA do <p> do placar (que já tem o
+          "Reset") pra a linha não virar uma fileira de botões, e antes do
+          campo de filtro pra os dois controles de exibição ficarem juntos.
+          O rótulo diz o número pra deixar claro o que some/volta. */}
+      {solvedCount > 0 && (
+        <div className="gve-list-controls">
+          <button
+            type="button"
+            className={`gve-hide-solved-btn${hideSolved ? ' is-active' : ''}`}
+            onClick={() => setHideSolved((value) => !value)}
+            aria-pressed={hideSolved}
+          >
+            {hideSolved
+              ? `Show ${solvedCount} solved exercise${solvedCount === 1 ? '' : 's'}`
+              : `Hide ${solvedCount} solved exercise${solvedCount === 1 ? '' : 's'}`}
+          </button>
+        </div>
+      )}
       {isWritten && (
         <input
           type="text"
@@ -484,9 +545,21 @@ export default function GrammarVocabExercisesPage({ userName }) {
                 || String(block.unit) === needle
                 || String(block.unit).startsWith(needle)
                 || block.topic.toLowerCase().includes(needle)
-                || block.instruction.toLowerCase().includes(needle));
+                || block.instruction.toLowerCase().includes(needle))
+              .filter(({ block }) => !hideSolved || !isWrittenBlockPerfect(block, answers));
             if (visible.length === 0) {
-              return <p className="gve-filter-empty">No exercise matches “{blockFilter}”.</p>;
+              // Dois motivos possíveis pra lista vazia — dizer "nada casa com
+              // o filtro" quando na verdade foi o "Hide solved" que esvaziou
+              // mandaria o usuário procurar erro de digitação à toa.
+              if (needle) {
+                return <p className="gve-filter-empty">No exercise matches “{blockFilter}”.</p>;
+              }
+              return (
+                <p className="gve-filter-empty">
+                  Every exercise in this set is solved. Use “Show {solvedCount} solved
+                  exercise{solvedCount === 1 ? '' : 's'}” above to see them again.
+                </p>
+              );
             }
             return visible.map(({ block, index }) => (
               <WrittenExerciseBlock
@@ -500,14 +573,26 @@ export default function GrammarVocabExercisesPage({ userName }) {
               />
             ));
           })()
-          : activeSource.exercises.map((exercise) => (
-            <ExerciseCard
-              key={exercise.id}
-              exercise={exercise}
-              savedChoice={answers[exercise.id]}
-              onCheck={(option) => handleCheckAnswer(exercise, option)}
-            />
-          ))}
+          : (() => {
+            const visible = activeSource.exercises
+              .filter((exercise) => !hideSolved || !isMultipleChoicePerfect(exercise, answers));
+            if (visible.length === 0) {
+              return (
+                <p className="gve-filter-empty">
+                  Every exercise in this set is solved. Use “Show {solvedCount} solved
+                  exercise{solvedCount === 1 ? '' : 's'}” above to see them again.
+                </p>
+              );
+            }
+            return visible.map((exercise) => (
+              <ExerciseCard
+                key={exercise.id}
+                exercise={exercise}
+                savedChoice={answers[exercise.id]}
+                onCheck={(option) => handleCheckAnswer(exercise, option)}
+              />
+            ));
+          })()}
       </div>
     </div>
   );

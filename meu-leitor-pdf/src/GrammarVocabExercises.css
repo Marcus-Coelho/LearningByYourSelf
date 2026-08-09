@@ -422,6 +422,49 @@
   color: var(--text-secondary);
 }
 
+/* Linha dos controles de EXIBIÇÃO da lista (hoje só o "Hide solved", presente
+   nas 3 seções). Separada do <p> do placar de propósito: lá já mora o botão
+   "Reset", e empilhar os dois na mesma linha faria um bloco de texto virar
+   uma barra de botões. */
+.gve-list-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 0;
+}
+
+/* Botão de alternar, não de ação destrutiva — por isso o índigo da marca e
+   não o vermelho do .gve-reset-btn ao lado, que apaga respostas. O estado
+   ligado é preenchido (não só uma borda): com a lista já filtrada, precisa
+   dar pra saber num relance que o que está faltando foi escondido de
+   propósito. */
+.gve-hide-solved-btn {
+  border: 1px solid rgba(76, 69, 222, 0.25);
+  background: rgba(76, 69, 222, 0.08);
+  color: var(--brand-600);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.gve-hide-solved-btn:hover {
+  background: rgba(76, 69, 222, 0.16);
+}
+
+.gve-hide-solved-btn.is-active {
+  background: var(--brand-600);
+  border-color: var(--brand-600);
+  color: #fff;
+}
+
+.gve-hide-solved-btn.is-active:hover {
+  background: var(--brand-500);
+  border-color: var(--brand-500);
+}
+
 /* Filtro por unit/tópico — só na seção escrita (115 exercícios). Gruda
    abaixo do header (81px reais, ver .app-header no App.css) enquanto a
    página rola: é a navegação principal desta tela, e sem isso seria preciso

@@ -224,10 +224,21 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
   pra "completely") foram trocados por palavras plausíveis que mudam o **sentido**, não só o
   registro. Distratores nunca são número ou contração solta (óbvios demais de descartar).
 - **Persistência**: respostas em `u:<nome>:grammarVocabAnswers:<sourceId>` (localStorage, uma
-  chave por seção). A posição atual (seção aberta) fica em **`sessionStorage`**, não
-  localStorage (`grammarVocabExercisesPosition`) — é retomada dentro da sessão, de propósito
-  não sobrevive a fechar o navegador. Reabrir pelo menu zera a posição e remonta o componente
-  via `grammarVocabExercisesResetKey` (prop `key`).
+  chave por seção). A posição atual (seção aberta) e o estado do "Hide solved" ficam em
+  **`sessionStorage`**, não localStorage (`grammarVocabExercisesPosition`, um objeto
+  `{activeSourceId, hideSolved}`) — são retomados dentro da sessão, de propósito não sobrevivem
+  a fechar o navegador. Reabrir pelo menu apaga essa chave (volta pra lista completa) e remonta
+  o componente via `grammarVocabExercisesResetKey` (prop `key`).
+- **"Hide N solved exercises"** (botão nas 3 seções, 2026-08-09): esconde o que saiu 100%. As
+  duas mecânicas têm definições diferentes de 100%, daí dois predicados —
+  `isMultipleChoicePerfect` (1 pergunta, acertar já é o 100%) e `isWrittenBlockPerfect` (bloco
+  checado E **todos** os itens certos; 9 de 10 continua aparecendo, que é o que ainda vale
+  refazer). Errar nunca esconde nada. **Só filtra a EXIBIÇÃO** — placar, "N answered" e o
+  `solvedCount` do próprio botão contam sempre a seção inteira, mesma regra do `blockFilter`.
+  Um estado só pras 3 seções (ligar numa e achar a outra cheia pareceria o botão ter falhado),
+  e o botão nem aparece com `solvedCount === 0`. Lista vazia tem mensagem PRÓPRIA por causa:
+  dizer "nada casa com o filtro" quando foi o Hide solved que esvaziou mandaria o usuário
+  caçar erro de digitação à toa.
 - Precisa de `app-shell--allow-grow` (já na lista em `App.js`) — a lista de exercícios cresce
   além da viewport, ver "Quirks & Gotchas".
 
@@ -412,9 +423,11 @@ u:<nome>:wordbook                  — array JSON de palavras + flashcards ({id,
 
 # Grammar & Vocabulary Exercises (tela própria, ver seção acima)
 u:<nome>:grammarVocabAnswers:<sourceId> — JSON com as respostas dadas, uma chave por seção
-                                      ("grammar"/"vocabulary"/"similar"). A posição atual mora
-                                      em sessionStorage ("grammarVocabExercisesPosition"), SEM
-                                      namespace de usuário e de propósito fora do localStorage
+                                      ("grammar"/"vocabulary"/"similar"). A posição atual e o
+                                      "Hide solved" moram em sessionStorage, juntos num objeto
+                                      {activeSourceId, hideSolved} sob a chave
+                                      "grammarVocabExercisesPosition" — SEM namespace de
+                                      usuário e de propósito fora do localStorage
 
 # Listening / Dictation (por track, namespaces separados um do outro)
 u:<nome>:listening:<trackId>:stats — JSON {attempts, lastScorePercent, lastAttemptAt}
