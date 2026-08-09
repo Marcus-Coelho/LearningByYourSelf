@@ -506,12 +506,21 @@ filtrou por vencidas; o que faltava era entrada controlada, teto e visibilidade.
   "(+N to repeat)": `practiceIds` cresce com a reciclagem, e um "of N" mudando sozinho no meio
   da sessão pareceria erro.
 - **Rastro da última avaliação** (`lastGrade`/`lastGradedAt`/`lastIntervalDays`) exibido como
-  pílula colorida na lista (`.wordbook-grade-pill--<grau>`), reaproveitando as 4 cores dos
-  botões — a pílula é o eco do botão clicado. A linha meta do card **não mostra mais** o
-  "review in N days" (`formatDue`, removida): o dono pediu pra tirar, o que interessa é o que
-  ele respondeu, não a contagem regressiva. Palavra nunca avaliada não ganha pílula (sem
-  migração de dado); se ela também não tiver `context`, a linha inteira não renderiza, pra não
-  sobrar um `<p>` vazio.
+  pílula colorida **ANTES da palavra**, abrindo a `.wordbook-entry-word-row` (pedido do dono —
+  no fim do card ela caía na 4ª linha e só era vista depois de ler tudo; na frente, dá pra
+  varrer a lista inteira pelo estado das palavras sem ler nenhuma). A linha meta de baixo ficou
+  só com o `context`, e **não mostra mais** o "review in N days" (`formatDue`, removida): o que
+  interessa é o que o usuário respondeu, não a contagem regressiva. Palavra nunca avaliada não
+  ganha pílula (sem migração de dado); sem `context`, a linha meta inteira não renderiza, pra
+  não sobrar um `<p>` vazio.
+- **As 4 cores dos graus são um termômetro, não cores de interface** (definidas pelo dono,
+  2026-08-08): `again` vermelho `#c95555` → `good` laranja `#d9812f` → `easy` azul `#3277c4` →
+  `known` verde `#3e9e6e`, do "não sei" ao "dominei". Literais de propósito, fora da paleta
+  (mesma exceção do verde/vermelho de acerto e erro): o verde aqui **não** significa "acertei"
+  e sim o degrau final, e o azul do `easy` não é o índigo da marca. **Botão e pílula usam
+  sempre o mesmo par** — a pílula é o eco do botão clicado, então mudar um sem o outro quebra a
+  leitura; a pílula usa a versão clara (fundo ~14% + texto escurecido), porque a cor cheia do
+  botão deixaria a lista listrada.
 - **Botão "Practice" promete `sessionQueue.length`, não `dueEntries.length`** — com o teto os
   dois divergem (40 vencidas → sessão de 25), e o hint ao lado avisa da diferença.
 - **Arquivar palavra conhecida** (parar de revisar sem deletar) foi discutido e **adiado** pelo

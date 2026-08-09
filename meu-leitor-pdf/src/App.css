@@ -4666,6 +4666,10 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
+  /* Desde que a pílula da última classificação passou a abrir esta linha
+     (2026-08-08), ela tem 3 filhos e pode não caber numa expressão longa em
+     tela estreita — sem o wrap, o texto vazaria do card em vez de quebrar. */
+  flex-wrap: wrap;
 }
 
 /* Ícone 🔊 de pronúncia (ver WordAudioButton, App.js) — mesma linguagem
@@ -5050,18 +5054,22 @@ body {
 }
 
 /* A cor É a informação aqui (mesma exceção à paleta que o verde/vermelho de
-   acerto e erro): vermelho = errei, verde = acertei, e o "known" precisava de
-   um 4º tom que lesse como "já dominei, some por um mês" sem virar mais um
-   verde. Navy da paleta — o mais "encerrado" dos 4. */
+   acerto e erro nos exercícios). Escala escolhida pelo dono em 2026-08-08,
+   do "não sei" ao "dominei": vermelho → laranja → azul → verde. Note que o
+   verde NÃO é "acertei" e sim o degrau final (Known/30 dias), e o azul do
+   Easy não é o índigo da marca — são 4 tons de um termômetro, não cores de
+   interface, por isso ficam literais aqui em vez de var(--brand-*). */
 .flashcard-grade.again { background: #c95555; }
-.flashcard-grade.good { background: var(--purple-500); }
-.flashcard-grade.easy { background: #3e9e6e; }
-.flashcard-grade.known { background: var(--navy-900); }
+.flashcard-grade.good { background: #d9812f; }
+.flashcard-grade.easy { background: #3277c4; }
+.flashcard-grade.known { background: #3e9e6e; }
 
 /* Última classificação dada, na lista do My Words. Mesmas 4 cores dos botões
    acima de propósito: a pílula é o eco do botão que foi clicado, então quem
-   clicou no verde procura o verde na lista. Fundo bem claro (a cor cheia dos
-   botões deixaria a lista listrada e ilegível) com o texto na cor forte. */
+   clicou no laranja procura o laranja na lista. Fundo bem claro (a cor cheia
+   dos botões deixaria a lista listrada e ilegível) com o texto na cor forte —
+   os tons de texto são escurecidos em relação ao fundo do botão pra manter
+   contraste de leitura sobre o claro. */
 .wordbook-grade-pill {
   display: inline-flex;
   align-items: center;
@@ -5071,12 +5079,15 @@ body {
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
+  /* Não deixa a pílula esticar nem encolher junto da palavra no flex da
+     .wordbook-entry-word-row — ela tem largura de conteúdo, sempre. */
+  flex: 0 0 auto;
 }
 
 .wordbook-grade-pill--again { background: rgba(201, 85, 85, 0.14); color: #a53d3d; }
-.wordbook-grade-pill--good { background: rgba(96, 103, 240, 0.14); color: var(--brand-600); }
-.wordbook-grade-pill--easy { background: rgba(62, 158, 110, 0.16); color: #2c7752; }
-.wordbook-grade-pill--known { background: rgba(35, 43, 58, 0.1); color: var(--navy-900); }
+.wordbook-grade-pill--good { background: rgba(217, 129, 47, 0.16); color: #9c5811; }
+.wordbook-grade-pill--easy { background: rgba(50, 119, 196, 0.14); color: #245c9c; }
+.wordbook-grade-pill--known { background: rgba(62, 158, 110, 0.16); color: #2c7752; }
 
 /* Botão flutuante "+ Word" + mini formulário, presentes nas telas de estudo. */
 .word-fab {

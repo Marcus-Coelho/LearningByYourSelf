@@ -8384,36 +8384,39 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
                       <>
                         {entry.image && <img src={entry.image} alt="" className="wordbook-entry-thumb" />}
                         <div className="wordbook-entry-main">
+                          {/* Pílula da última classificação ANTES da palavra
+                              (pedido do dono, 2026-08-08) — no fim do card,
+                              junto do contexto, ela ficava na 4ª linha e só
+                              era vista depois de ler tudo; aqui ela é a
+                              primeira coisa da entrada, então dá pra varrer a
+                              lista inteira pelo estado de cada palavra sem
+                              ler nenhuma delas. */}
                           <span className="wordbook-entry-word-row">
+                            {entry.lastGrade && FLASHCARD_GRADE_LABELS[entry.lastGrade] && (
+                              <span className={`wordbook-grade-pill wordbook-grade-pill--${entry.lastGrade}`}>
+                                {FLASHCARD_GRADE_LABELS[entry.lastGrade]}
+                                {' · '}
+                                {(() => {
+                                  const days = entry.lastIntervalDays ?? FLASHCARD_GRADE_DAYS[entry.lastGrade];
+                                  return `${days} day${days === 1 ? '' : 's'}`;
+                                })()}
+                              </span>
+                            )}
                             <WordAudioButton word={entry.word} />
                             <span className="wordbook-entry-word">{entry.word}</span>
                           </span>
                           {entry.meaning && <p className="wordbook-entry-meaning">{entry.meaning}</p>}
                           {entry.example && <p className="wordbook-entry-example">“{entry.example}”</p>}
-                          {/* Última classificação dada nesta palavra. Antes
-                              esta linha terminava no formatDue ("review in 4
-                              hours"): o dono pediu pra tirar (2026-08-08) — o
-                              que interessa é o que VOCÊ respondeu, não uma
-                              contagem regressiva. Palavra ainda não avaliada
-                              não ganha pílula nenhuma (nada de migrar dado
-                              antigo); se ela também não tiver `context`, a
-                              linha inteira não é renderizada, pra não sobrar
-                              um <p> vazio ocupando altura no card. */}
-                          {(entry.context || entry.lastGrade) && (
-                            <p className="wordbook-entry-meta">
-                              {entry.context}
-                              {entry.context && entry.lastGrade ? ' · ' : ''}
-                              {entry.lastGrade && FLASHCARD_GRADE_LABELS[entry.lastGrade] && (
-                                <span className={`wordbook-grade-pill wordbook-grade-pill--${entry.lastGrade}`}>
-                                  {FLASHCARD_GRADE_LABELS[entry.lastGrade]}
-                                  {' · '}
-                                  {(() => {
-                                    const days = entry.lastIntervalDays ?? FLASHCARD_GRADE_DAYS[entry.lastGrade];
-                                    return `${days} day${days === 1 ? '' : 's'}`;
-                                  })()}
-                                </span>
-                              )}
-                            </p>
+                          {/* Só o contexto ("American Accent p. 6"). A pílula
+                              da última classificação subiu pra linha da
+                              palavra (acima), e o formatDue ("review in 4
+                              hours") foi removido a pedido do dono — o que
+                              interessa é o que ele respondeu, não a contagem
+                              regressiva. Sem contexto, a linha inteira não
+                              renderiza, pra não sobrar um <p> vazio ocupando
+                              altura no card. */}
+                          {entry.context && (
+                            <p className="wordbook-entry-meta">{entry.context}</p>
                           )}
                           <div className="wordbook-entry-links">
                             <a
