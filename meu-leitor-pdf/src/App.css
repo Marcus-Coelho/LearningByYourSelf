@@ -4712,9 +4712,13 @@ body {
   color: #232b3a;
 }
 
+/* Mesmo tamanho do significado acima (era 15.5 contra 16.5 — 1px de
+   diferenca, que nao lia como hierarquia, so como desalinho). O italico e a
+   cor secundaria ja separam exemplo de definicao sem precisar encolher a
+   fonte. Mesma decisao aplicada ao flashcard, ver .flashcard-example. */
 .wordbook-entry .wordbook-entry-example {
   margin: 4px 0 0;
-  font-size: 15.5px;
+  font-size: 16.5px;
   font-style: italic;
   color: var(--text-secondary);
 }
@@ -4854,8 +4858,11 @@ body {
    certo, mas as antigas continuam no caderno — este tamanho as resgata sem
    precisar migrar dado nenhum. */
 .flashcard .flashcard-context {
+  /* 1rem (era 14px): ultimo degrau da escala do flashcard, ver
+     .flashcard-example. 14px contra os 1.2rem do exemplo logo acima abria um
+     buraco grande demais entre dois textos que se leem em sequencia. */
   margin: 6px 0 0;
-  font-size: 14px;
+  font-size: 1rem;
   line-height: 1.5;
   color: var(--text-secondary);
 }
@@ -4867,9 +4874,12 @@ body {
   color: #232b3a;
 }
 
+/* Mesmo tamanho da frase de exemplo (ver .flashcard-example): no verso do
+   card os dois sao informacao de apoio sob a palavra grande, entao 1.15 vs
+   1.1 era so ruido — nao havia hierarquia real pra sustentar a diferenca. */
 .flashcard .flashcard-meaning {
   margin: 0;
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   color: #232b3a;
 }
 
@@ -4892,7 +4902,9 @@ body {
   width: 100%;
   max-width: 320px;
   padding: 8px 12px;
-  font-size: 1.15rem;
+  /* Acompanha .flashcard-meaning — o texto nao pode mudar de tamanho ao
+     entrar/sair do modo de edicao. */
+  font-size: 1.2rem;
   font-family: inherit;
   color: #232b3a;
   border: 2px solid var(--purple-500);
@@ -4922,14 +4934,18 @@ body {
   font-weight: 700;
 }
 
-/* Tamanho explicito (antes so herdava ~1rem): a frase de exemplo e a PISTA
-   principal do card com imagem — o dono leu ela e reportou "escrito muito
-   pequeno" (2026-07-26). Agora fica maior que o texto corrido, so abaixo do
-   significado. */
+/* A frase de exemplo e a PISTA principal do card com imagem (a palavra fica
+   mascarada ali). Ja tinha sido aumentada uma vez em 2026-07-26 ("escrito
+   muito pequeno"), mas continuava 1.1rem contra 1.3rem + peso 700 da
+   definicao logo acima — dois degraus de diferenca (tamanho E peso) num
+   texto que deveria ser o mais lido do card. Agora empata com o significado
+   (1.2rem), um degrau abaixo do prompt, fechando a escala do flashcard:
+   2rem (palavra) / 1.3rem (prompt) / 1.2rem (significado + exemplo) /
+   1rem (contexto). Pedido do dono, 2026-08-08. */
 .flashcard .flashcard-example {
   margin: 10px 0 0;
   font-style: italic;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   line-height: 1.55;
   color: var(--text-secondary);
 }
