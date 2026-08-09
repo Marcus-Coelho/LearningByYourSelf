@@ -213,16 +213,20 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
     primeiras não têm faixa de Listening da qual tirar uma frase real) — gerados por script,
     sempre *grounded* em dado real: palavra-alvo de `vocabulary_target_words.json` numa frase de
     `listening_vocabulary.json`, nunca inventada.
-  - `vocabSimilar` (`written`, **EM CONSTRUÇÃO** — units 5-20 prontas, 5-100 é o alvo) —
-    "Similar Exercises from English Vocabulary B", 2-3 blocos por unit de 6 itens. Espelha os
-    exercícios de **preencher lacuna** do livro; cada bloco traz no `bookInstruction` a
-    instrução real do exercício que imita. **Units 1-4 ficam de fora por decisão do dono** (são
-    as de método — "Learning vocabulary", "Using a dictionary" — não de vocabulário temático).
-    Tipos EXCLUÍDOS, também por decisão dele: "Over to you", os com imagem/mapa/diagrama, os de
-    marcar (underline/circle/tick/true-false), os de casar colunas e os de separar palavras em
-    colunas. O mapa de quais exercícios de cada unit se qualificam foi extraído dos
-    `EVIU_PI-<n>_E.pdf` com PyMuPDF (ordenando por posição Y, nunca pela ordem crua do
-    `get_text()` — ver "Quirks"); deu 218 exercícios de lacuna em 96 units, média 2,3 por unit.
+  - `vocabSimilar` (`written`, 100 blocos / 686 itens, **72 das 96 units** de 5 a 100) —
+    "Similar Exercises from English Vocabulary B", exercícios de **preencher lacuna**. **Units
+    1-4 ficam de fora por decisão do dono** (são as de método — "Learning vocabulary", "Using a
+    dictionary" — não de vocabulário temático). Tipos EXCLUÍDOS, também por decisão dele:
+    "Over to you", os com imagem/mapa/diagrama, os de marcar (underline/circle/tick/
+    true-false), os de casar colunas e os de separar palavras em colunas.
+    **Duas procedências, de propósito** (ver "Dados Gerados"): units 5-20 escritas à mão no
+    estilo do livro; units 21-100 extraídas do PRÓPRIO livro (o dono autorizou em 2026-08-09 —
+    livros comprados, uso doméstico entre ele, a esposa e a irmã).
+    **As 24 units sem bloco** (22, 24, 25, 29, 30, 35, 40, 46, 47, 49, 53, 56, 62, 63, 75, 79,
+    88, 89, 90, 91, 92, 95, 96, 97) não têm exercício de lacuna que o extrator consiga ler: ou
+    são de reescrever a frase inteira (sem lacuna), ou o diálogo não é numerado
+    (`SHOP ASSISTANT:` em vez de `1`), ou têm menos de 4 itens aproveitáveis. Preencher essas
+    exige escrita à mão, como foi feito nas 5-20.
   - `similar` (`written`, 115 blocos, um por unit) — "Similar Exercises from Grammar
     Elementary": o aluno **digita** a resposta, não escolhe. Não é multiple choice **de
     propósito** — os 2 últimos exercícios de cada unit do livro são de produção, e é isso que os
@@ -609,6 +613,22 @@ Estes arquivos **não devem ser editados manualmente** (todos gerados por script
   `american1_videos.json` — American English A1
 - `grammar_elem_index.json`, `grammar_elem_appendix_index.json`, `grammar_elem_audio.json` —
   Grammar English A1
+- `grammar_vocab_exercises_vocab_similar.json` — units 21-100 são GERADAS por script (units 5-20
+  são escritas à mão, não regerar). O gerador cruza duas fontes: `EVIU_PI-<n>_E.pdf` (enunciados)
+  e `English_Vocabulary_Pre_Intermediate_Answers_Key.pdf` (respostas, numeradas por item; `;`
+  separa lacunas diferentes do MESMO item, `/` separa alternativas da mesma lacuna). Três coisas
+  que o gerador aprendeu na marra e que qualquer reconstrução precisa repetir:
+  1. **A lacuna não existe como texto** — é um SALTO HORIZONTAL de X entre duas palavras da
+     mesma linha (> 20pt). Não há underline nem caractere nenhum para procurar.
+  2. **O item 1 é sempre o exemplo já resolvido** (a resposta vem impressa dentro da lacuna, e o
+     gabarito só começa no item 2) — incluí-lo geraria uma frase com a resposta e uma lacuna
+     falsa logo depois.
+  3. **Item com N lacunas vira N itens**, cada um com uma lacuna aberta e as outras preenchidas
+     pelo gabarito — o componente tem uma caixa de texto só por item, e mandar digitar
+     "makes; replace" numa caixa cobraria a pontuação entre as respostas.
+  Além disso, `with_partial_answers` aceita só a parte que falta quando o gabarito repete o que
+  já está impresso ("...in the rubbish ___" com gabarito "rubbish bin" aceita "bin"; "...general
+  paper ___" com "paperwork" aceita "work") — sem isso esses itens ficam impossíveis de acertar.
 - `listening_vocabulary.json`, `listening_american1.json`, `listening_american_accent.json` —
   tracks de Listening/Dictation/Speaking (os 3 foram escritos/ajustados manualmente ao longo do
   tempo — o do American Accent especialmente, com bastante revisão manual pontual por track
