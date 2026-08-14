@@ -494,11 +494,27 @@ Primeiro cadastro neste navegador herda automaticamente progresso solto (sem nam
 
 Além do export/import manual (JSON, sempre disponível), My Profile → Backup & Restore tem
 "Link a backup folder": escolhe uma pasta local UMA vez (`window.showDirectoryPicker`), e o
-app salva um backup ali sozinho a cada 10 min enquanto estiver linkado, além de poder
-restaurar de lá. Decisão do dono depois de descartar e-mail/login com o Google (exigiria
-OAuth + credenciais de API, infraestrutura estranha a um app 100% local/sem backend) — pasta
-local resolve o mesmo problema (progresso preso ao cache de um navegador só) sem depender de
-internet nem conta nenhuma.
+app salva um backup ali sozinho enquanto estiver linkado, além de poder restaurar de lá.
+Decisão do dono depois de descartar e-mail/login com o Google (exigiria OAuth + credenciais de
+API, infraestrutura estranha a um app 100% local/sem backend) — pasta local resolve o mesmo
+problema (progresso preso ao cache de um navegador só) sem depender de internet nem conta
+nenhuma.
+- **DOIS gatilhos de autosave, não um** (os dois com `silent: true`, pra não interromper por
+  causa de save em segundo plano; os dois só rodam com pasta vinculada, permissão válida e
+  usuário ativo):
+  1. **Timer de 5 minutos** (`5 * 60 * 1000`, não 10 — este texto já disse 10 por engano até
+     2026-08-09). Meio-termo entre não perder trabalho se o navegador fechar sem aviso e não
+     ficar escrevendo no disco toda hora.
+  2. **Toda troca de unit/seção** (deps `selectedUnit`/`selectedAmerican1Unit`/
+     `selectedAmerican1Section`/`selectedGrammarElemUnit`). Existe pra não depender só do
+     relógio: uma sessão de 3 minutos que termina com o navegador fechando nunca chegaria a
+     disparar o timer. Dispara em QUALQUER troca, inclusive pra unit já visitada — o que
+     importa aqui é capturar nota/resposta/avaliação antes de sair da tela, não "primeira
+     visita" (esse é outro critério, do `markDailyGoalDone('newUnit')`).
+- **Nada disso é o que guarda o progresso.** Cada ação grava no `localStorage` na hora; a pasta
+  é uma CÓPIA. Nunca clicar em "Save progress now" não perde nada enquanto for o mesmo
+  navegador — a pasta protege contra limpar o cache, trocar de PC ou rodar o pendrive noutra
+  máquina.
 - **Handle da pasta vive num IndexedDB próprio** (`lets-learn-english-fs`), não no
   `localStorage` (não aceita objetos, só string) — sobrevive a fechar/reabrir o navegador;
   `queryPermission` (sem gesto do usuário) checa se ainda vale ao carregar a página,
