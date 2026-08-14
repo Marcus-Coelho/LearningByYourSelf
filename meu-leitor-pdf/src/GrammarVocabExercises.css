@@ -471,10 +471,30 @@
    voltar ao topo de 115 exercícios pra trocar de unit. Fundo opaco + a
    margem negativa/padding compensando o padding lateral do painel pra o
    conteúdo não aparecer por baixo dele nas beiradas. */
-.gve-filter-input {
+/* Topo FIXO da tela de uma seção: voltar + título + placar + "Hide solved" +
+   filtro. Só a lista de exercícios rola por baixo.
+   `top: 81px` é a altura REAL do .app-header (que é sticky) — o mesmo valor
+   que o campo de filtro usava sozinho antes; se o header mudar de altura,
+   este número muda junto, senão sobra um vão ou o bloco entra por baixo dele.
+   Fundo OPACO e igual ao do painel (#fbfcfd): em repouso o bloco some no
+   painel, e ao rolar ele esconde de verdade o que passa por baixo — fundo
+   translúcido deixaria os cards aparecerem através (mesma armadilha já
+   documentada no CLAUDE.md pras telas com fundo desfocado).
+   As margens negativas + padding replicam o truque que o filtro já usava:
+   estendem o bloco 12px pra cada lado, pra cobrir também a sombra dos cards,
+   que vaza um pouco além da caixa de conteúdo do painel. */
+.gve-sticky-top {
   position: sticky;
   top: 81px;
-  z-index: 4;
+  z-index: 5;
+  width: calc(100% + 24px);
+  margin: 0 -12px 6px;
+  padding: 0 12px 10px;
+  background: #fbfcfd;
+  box-shadow: 0 8px 16px -8px rgba(35, 43, 58, 0.25);
+}
+
+.gve-filter-input {
   width: calc(100% + 24px);
   margin: 10px -12px 0;
   padding: 10px 14px;

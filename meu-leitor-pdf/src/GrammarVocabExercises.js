@@ -524,6 +524,15 @@ export default function GrammarVocabExercisesPage({ userName }) {
 
   return (
     <div className="landing-panel gve-panel">
+      {/* Topo FIXO (pedido do dono, 2026-08-09): voltar + título + placar +
+          "Hide solved" + filtro ficam parados enquanto só a lista de
+          exercícios rola. Antes só o campo de filtro era sticky, então o
+          placar e os controles sumiam já nos primeiros exercícios — e são
+          justamente eles que o usuário quer consultar/acionar no meio da
+          lista. Um bloco sticky só, em vez de cada elemento com seu próprio
+          `top`, pra os itens não se sobreporem quando a altura mudar (o
+          "Hide solved" aparece e some conforme o placar). */}
+      <div className="gve-sticky-top">
       <button
         type="button"
         className="upload-button"
@@ -575,6 +584,7 @@ export default function GrammarVocabExercisesPage({ userName }) {
           autoComplete="off"
         />
       )}
+      </div>
       <div className="gve-list">
         {isWritten
           ? (() => {
