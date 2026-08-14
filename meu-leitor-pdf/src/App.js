@@ -818,11 +818,30 @@ const grammarElemAdditionalNumbers = Array.from({ length: GRAMMAR_ELEM_ADDITIONA
 // O editor quebra cada linha numa <div> própria (Shift+Enter vira <br>);
 // textContent sozinho ignora essas fronteiras de bloco e junta tudo sem
 // espaço nenhum, daí inserir "\n" manualmente antes de extrair.
+// HTML do editor de notas (contentEditable) -> texto puro com quebras de
+// linha de verdade. Usado pela tela My Notes (preview e busca) e pelo export
+// de notas em .txt.
+//
+// A quebra vai ANTES do bloco (prepend), não depois (append) — bug relatado
+// pelo dono em 2026-08-09: "a primeira linha encavala com a segunda, só
+// separa se eu der dois Enter".
+//
+// O motivo: o contentEditable do Chrome deixa a PRIMEIRA linha como texto
+// solto e só embrulha as seguintes em <div>. Com append, o `\n` caía no fim
+// de cada div e a linha 1 nunca ganhava separador nenhum:
+//   "linha1<div>linha2</div><div>linha3</div>"  ->  "linha1linha2\nlinha3\n"
+// Dois Enters mascaravam o problema porque criavam um <div><br></div> no
+// meio, cujo <br> virava justamente o `\n` que faltava.
+// Com prepend, o separador nasce na fronteira entre os blocos, que é onde a
+// quebra realmente existe:
+//   "linha1<div>linha2</div><div>linha3</div>"  ->  "linha1\nlinha2\nlinha3"
 function noteHtmlToText(html) {
   const container = document.createElement('div');
   container.innerHTML = html;
   container.querySelectorAll('br').forEach((br) => br.replaceWith('\n'));
-  container.querySelectorAll('div, p').forEach((el) => el.append('\n'));
+  container.querySelectorAll('div, p').forEach((el) => el.prepend('\n'));
+  // O \n{3,} -> \n\n existe pra bloco aninhado (que ganha prepend duas vezes)
+  // e pro caso do parágrafo vazio de dois Enters não virar 3 linhas em branco.
   return (container.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
 }
 
@@ -2229,9 +2248,9 @@ function App() {
     }));
   };
 
-  // Fim de uma sessão de revisão do My Words: TODAS as palavras vencidas da
-  // sessão foram respondidas ao menos uma vez (o "Again" recicla o card pro
-  // fim da fila, então a sessão só termina quando não sobra nenhuma pendente).
+  // Fim de uma sessão de revisão do My Words: o usuário chegou ao último card
+  // da fila (o "Again" ainda devolve a palavra pro fim uma vez, então ela é
+  // revista antes de a sessão acabar — ver o teto de reciclagem em gradeCard).
   // É esse o evento que cumpre o item "reviews" da meta diária — avaliado e
   // preferido a um contador de tempo na tela (proxy que erra pros dois lados:
   // marca sozinho com a aba aberta e esquecida, e deixa de marcar quem revisa
@@ -7178,9 +7197,9 @@ const DAILY_GOAL_EXPLANATIONS = {
     + 'spaced review — find them in the "Review" line of Today\'s Plan above (Home) or in the '
     + '"Today\'s Review" card on the Courses screen, open one and give it a new star rating '
     + '(rating something for the first time isn\'t a "review", so it doesn\'t count). Or '
-    + 'finish a whole flashcard session in My Words: the session only ends once every due '
-    + 'word has been answered without "Again", so getting to the end is proof you reviewed '
-    + 'them all. Grading a single card is not enough.',
+    + 'finish a whole flashcard session in My Words: you have to reach the end of the session, '
+    + 'and any word you mark "Again" comes back once more before it does. Grading a single '
+    + 'card is not enough.',
   listening: 'You get this the first time today that you finish checking a Listening exercise '
     + '(press "Check answers" after filling in at least one blank) or a Dictation exercise '
     + '(press "Check my answer").',
@@ -7983,14 +8002,22 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
     setEditingMeaning(false);
 
     // "Again" devolve o card pro FIM da fila da sessão atual, em vez de só
-    // reagendar pra amanhã e sumir: a sessão só acaba quando cada palavra foi
-    // respondida ao menos uma vez sem "Again". É isso que torna "terminou a
-    // sessão" uma prova de que a revisão aconteteu de verdade — e por isso a
-    // meta diária pode se apoiar nesse evento em vez de num cronômetro.
-    // Marcar "Again" de novo recicla de novo; quem encerra é o usuário, dando
-    // outro grau. Não vale no "view larger" de um card só (isSingleView), que
-    // não é uma sessão de revisão.
-    const recycle = grade === 'again' && !isSingleView;
+    // reagendar pra amanhã e sumir — a palavra que você não lembrou volta a
+    // aparecer antes de a sessão acabar. Não vale no "view larger" de um card
+    // só (isSingleView), que não é uma sessão de revisão.
+    //
+    // TETO DE UMA RECICLAGEM POR PALAVRA (bug relatado pelo dono em
+    // 2026-08-09: "a palavra fica em looping depois do Again, só saio com
+    // Stop Review"). Antes, todo "Again" reenfileirava: quem não lembrava a
+    // palavra na segunda tentativa também não lembrava na terceira, e como a
+    // única forma de encerrar era parar de clicar em "Again", a sessão virava
+    // uma armadilha — pior ainda com 1 card vencido, em que o mesmo card
+    // voltava na hora, indefinidamente.
+    // Agora a palavra volta UMA vez; no segundo "Again" ela é reagendada
+    // (1 dia, como todo Again) e a sessão segue. Contado pelas ocorrências
+    // dela na própria fila, sem estado novo: 1 = ainda não reciclou.
+    const alreadyRecycled = practiceIds.filter((id) => id === currentCard.id).length > 1;
+    const recycle = grade === 'again' && !isSingleView && !alreadyRecycled;
     const nextIds = recycle ? [...practiceIds, currentCard.id] : practiceIds;
     if (recycle) setPracticeIds(nextIds);
 
@@ -8127,16 +8154,14 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
           <>
             {wordbookHeadEl}
             <div className="flashcard">
-              {/* practiceIds CRESCE quando um card é reciclado por "Again"
-                  (ver gradeCard), então "of N" mudaria sozinho no meio da
-                  sessão e pareceria erro. O total mostrado é o de palavras
-                  DISTINTAS; as repetições vão num sufixo à parte, que é o que
-                  de fato falta refazer. */}
+              {/* O total inclui as repetições ("Again" devolve o card pro fim
+                  da fila — ver gradeCard), então ele CRESCE quando o usuário
+                  marca Again. Já foi o contrário: mostrava o total de palavras
+                  DISTINTAS pra o número não mudar sozinho, mas aí a posição
+                  passava do total e aparecia "Card 3 of 2", que é pior do que
+                  um total que cresce por uma ação do próprio usuário. */}
               <p className="flashcard-progress">
-                Card {practiceIndex + 1} of {new Set(practiceIds).size}
-                {practiceIds.length > new Set(practiceIds).size && (
-                  <> (+{practiceIds.length - new Set(practiceIds).size} to repeat)</>
-                )}
+                Card {practiceIndex + 1} of {practiceIds.length}
               </p>
 
             {hasImage ? (

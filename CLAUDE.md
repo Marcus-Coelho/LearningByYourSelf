@@ -252,6 +252,13 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
   `{activeSourceId, hideSolved}`) — são retomados dentro da sessão, de propósito não sobrevivem
   a fechar o navegador. Reabrir pelo menu apaga essa chave (volta pra lista completa) e remonta
   o componente via `grammarVocabExercisesResetKey` (prop `key`).
+- **"Try again" por exercício** (bug achado pelo dono em 2026-08-09): os blocos escritos já
+  tinham o seu (`handleResetBlock`), mas os de múltipla escolha só tinham o "Reset" do topo,
+  que zera a SEÇÃO inteira — refazer uma pergunta custava perder as outras 199.
+  `handleResetAnswer` apaga só a chave daquele exercício, escopado no `activeSourceId` pela
+  mesma razão do `handleCheckBlock`. O `ExerciseCard` troca o "Check Answer" (que ficava
+  inutilmente desabilitado depois de checado) pelo "Try again", e limpa também o
+  `selectedOption` local — sem isso a opção errada seguia marcada ao reabrir.
 - **"Hide N solved exercises"** (botão nas 3 seções, 2026-08-09): esconde o que saiu 100%. As
   duas mecânicas têm definições diferentes de 100%, daí dois predicados —
   `isMultipleChoicePerfect` (1 pergunta, acertar já é o 100%) e `isWrittenBlockPerfect` (bloco
@@ -361,9 +368,8 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
   **também marca ao TERMINAR uma sessão de flashcards do My Words**
   (`handleWordbookSessionComplete`, passado como `onSessionComplete` pro `WordbookPage`). Era
   por card avaliado (`handleGradeWord`) até 2026-08-08; mudou junto com a reciclagem do "Again"
-  (ver "Revisão espaçada / My Words"): como a sessão só acaba quando toda palavra vencida foi
-  respondida sem "Again", chegar ao fim já é prova de que a revisão inteira aconteceu, enquanto
-  avaliar 1 card de 25 não era. **Avaliado e rejeitado no mesmo dia:** marcar por tempo de
+  (ver "Revisão espaçada / My Words"): chegar ao fim da fila — revendo o que foi marcado como
+  "Again" — é prova de que a revisão inteira aconteceu, enquanto avaliar 1 card de 25 não era. **Avaliado e rejeitado no mesmo dia:** marcar por tempo de
   permanência na tela (ex. N × 4s) — proxy que erra pros dois lados (marca sozinho com a aba
   aberta e esquecida; deixa de marcar quem revisa rápido) e ainda exigiria pausar em
   `visibilitychange`/blur, tudo pra aproximar algo que o fim da sessão já mede exato; os outros 2 via `markDailyGoalDone`
@@ -589,12 +595,20 @@ filtrou por vencidas; o que faltava era entrada controlada, teto e visibilidade.
   **FIM** (pedido do dono — chegar nas difíceis depois de aquecer, não travar nelas na
   abertura). Cortada em `WORDBOOK_DAILY_REVIEW_CAP` (25).
 - **"Again" recicla o card pro fim da fila da sessão atual** (`gradeCard`), além de reagendar
-  pra 1 dia. A sessão só termina quando toda palavra foi respondida sem "Again" — é isso que
-  torna "terminou a sessão" prova de revisão, e por isso a meta diária se apoia nesse evento
-  (ver "Trilha de estudo"). Não vale no "view larger" de um card só (`isSingleView`), que não é
-  sessão. O contador mostra palavras DISTINTAS (`new Set(practiceIds).size`) + um sufixo
-  "(+N to repeat)": `practiceIds` cresce com a reciclagem, e um "of N" mudando sozinho no meio
-  da sessão pareceria erro.
+  pra 1 dia — a palavra que você não lembrou reaparece antes de a sessão acabar. Não vale no
+  "view larger" de um card só (`isSingleView`), que não é sessão.
+  **TETO DE UMA RECICLAGEM POR PALAVRA** (bug achado pelo dono em 2026-08-09: "fica em looping
+  depois do Again, só saio com Stop Review"). Antes, TODO "Again" reenfileirava, e como a única
+  forma de encerrar era parar de clicar em "Again", quem realmente não sabia a palavra ficava
+  preso — pior com 1 card vencido, em que ele voltava na hora, para sempre. O teto é contado
+  pelas ocorrências do id na própria fila (`practiceIds.filter(...).length > 1`), sem estado
+  novo. Consequência: "terminou a sessão" continua exigindo passar por toda a fila **e** rever
+  o que foi marcado como Again, mas não exige mais acertar tudo — o texto do botão "i" da meta
+  diária (`DAILY_GOAL_EXPLANATIONS.reviews`) foi ajustado junto, e tem que continuar batendo.
+  O contador mostra `practiceIndex + 1` de `practiceIds.length` (total COM as repetições). Já
+  foi o total de palavras distintas, pra o número não mudar sozinho — mas aí a posição
+  ultrapassava o total e aparecia "Card 3 of 2", pior do que um total que cresce por uma ação
+  do próprio usuário.
 - **Rastro da última avaliação** (`lastGrade`/`lastGradedAt`/`lastIntervalDays`) exibido como
   pílula colorida **na linha da palavra, logo à direita dela** (dentro da
   `.wordbook-entry-word-row`, depois do 🔊 e do texto — pedido do dono: no fim do card ela caía
