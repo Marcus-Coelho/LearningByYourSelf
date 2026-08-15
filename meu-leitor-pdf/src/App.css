@@ -20,7 +20,13 @@
 :root {
   /* As 4 cores da paleta, com nome próprio (use estas em código novo). */
   --brand-600: #4c45de;
-  --brand-500: #6067f0;
+  /* #5a60ee, um fio mais escuro que o #6067f0 original. Motivo: este tom é o
+     fundo dos botões primários (.landing-cta, .show-answers-btn) e a ponta
+     clara do degradê dos demais — e com texto BRANCO em cima dava 4,47:1, a
+     0,03 do mínimo legível. A diferença é imperceptível a olho, mas resolve
+     de uma vez os botões sólidos e os de degradê, sem precisar de exceção
+     por seletor. */
+  --brand-500: #5a60ee;
   --navy-900: #232b3a;
   --gray-200: #e2e3e7;
 
@@ -1864,7 +1870,15 @@ body {
   justify-content: center;
   width: 36px;
   height: 36px;
-  border: 1px solid var(--border-strong);
+  /* 2px (era 1px) — pedido do dono, 2026-08-09: "pelo menos 40% mais grossa",
+     nos DOIS temas, porque a borda fina não separava o botão do fundo.
+     2px e não 1.4px porque o navegador ARREDONDA largura de borda pra pixel
+     inteiro de tela: em monitor comum (DPR 1) o 1.4px era desenhado como 1px
+     e a mudança não apareceria — medido, não suposto. 2px é o próximo passo
+     que existe de verdade.
+     Vale só pros botões de CONTORNO; os preenchidos (--main e --green)
+     seguem sem borda, que é justamente o que distingue um do outro. */
+  border: 2px solid var(--border-strong);
   border-radius: 10px;
   background: var(--surface-0);
   color: var(--text-primary);
@@ -1971,7 +1985,10 @@ body {
   padding: 4px;
   border-radius: 10px;
   background: var(--surface-0);
-  border: 1px solid var(--border);
+  /* Acompanha o engrossamento dos botões do player (ver .wide-player-btn): é
+     o menu de velocidade que sai deles, e uma borda mais fina que a do próprio
+     botão faria o menu parecer solto. */
+  border: 2px solid var(--border);
   box-shadow: 0 12px 30px rgba(35, 43, 58, 0.18);
 }
 
