@@ -75,6 +75,16 @@
   --border: rgba(35, 43, 58, 0.12);
   --border-strong: rgba(35, 43, 58, 0.3);
 
+  /* Contorno da barra do player (Listening/Dictation/Speaking). Token próprio,
+     e SÓLIDO, por dois motivos (pedido do dono, 2026-08-09 — "um cinza um
+     pouco mais escuro, de cor diferente do preto e do fundo em volta, um
+     destaque bem discreto"):
+     - --border/--border-strong são translúcidos, então tomam a cor do que
+       está atrás e nunca chegam a ser "outra cor" — só um fundo mais fraco;
+     - a barra é sticky e o conteúdo do exercício rola por baixo dela, então
+       esse contorno é o que diz onde ela termina. */
+  --player-border: #b3bac9;
+
   /* O índigo da marca tem DOIS papéis que puxam pra lados opostos no tema
      escuro, e por isso viraram tokens separados:
      - fundo de botão (com texto branco em cima): precisa ser ESCURO o
@@ -142,6 +152,10 @@
   --text-muted: #9aa3b8;
   --border: rgba(255, 255, 255, 0.12);
   --border-strong: rgba(255, 255, 255, 0.28);
+  /* Cinza-ardósia: mais claro que o painel (#1b2130) e que a página
+     (#131822), sem chegar a branco — é o "destaque discreto" pedido. Sólido
+     de propósito, ver o comentário no :root claro. */
+  --player-border: #4f596e;
 
   /* FUNDO de botão: quase o mesmo índigo do tema claro, de propósito. Clareá-lo
      (foi tentado: #7b7cf6/#9a9bfa) derrubou o texto branco em cima pra 2,5:1 —
@@ -1834,7 +1848,12 @@ body {
      através dos 5% de transparência antigos, mesmo padrão de bug já
      documentado no CLAUDE.md pra header/cards sobre --page-hero-bg. */
   background: var(--surface-1);
-  border: 1px solid var(--border);
+  /* 1px -> 2px -> 3px, e com cor PRÓPRIA (ver --player-border no :root).
+     Pedido do dono em duas etapas, 2026-08-09.
+     Largura sempre em pixel inteiro: o navegador arredonda border-width pra
+     pixel de tela, então 1.4px seria desenhado como 1px em monitor comum e a
+     mudança não apareceria — medido, não suposto. */
+  border: 3px solid var(--player-border);
   margin-bottom: 24px;
   /* Gruda logo abaixo do header quando a página rola — Listening, Dictation e
      Speaking (pedido do dono, 2026-08-06). A altura vem do token, não escrita
