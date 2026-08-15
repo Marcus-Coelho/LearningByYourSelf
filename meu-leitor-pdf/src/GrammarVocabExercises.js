@@ -353,7 +353,7 @@ function WrittenExerciseBlock({ block, index, total, savedAnswers, onCheck, onRe
   );
 }
 
-export default function GrammarVocabExercisesPage({ userName }) {
+export default function GrammarVocabExercisesPage({ userName, askConfirm }) {
   const [activeSourceId, setActiveSourceId] = useState(loadSavedActiveSourceId);
   const [resetToken, setResetToken] = useState(0);
   // Filtro da seção escrita: são 115 exercícios (um por unit do livro), longe
@@ -431,7 +431,25 @@ export default function GrammarVocabExercisesPage({ userName }) {
     });
   };
 
-  const handleResetCourse = () => {
+  // Apaga TODAS as respostas da seção aberta. Pede confirmação (pedido do
+  // dono, 2026-08-09): é a única ação destrutiva desta tela, some com o
+  // trabalho de centenas de exercícios e não tem desfazer — e o botão fica
+  // logo ao lado do placar, fácil de clicar sem querer.
+  //
+  // A mensagem diz o NÚMERO do que será perdido em vez de um aviso genérico:
+  // "apagar as 26 respostas" deixa claro o tamanho do estrago, e é o que
+  // diferencia um reset consciente de um clique errado. Usa o mesmo modal do
+  // resto do app (askConfirm), não window.confirm.
+  const handleResetCourse = async () => {
+    const proceed = askConfirm
+      ? await askConfirm(
+        `Erase ${doneCount} answer${doneCount === 1 ? '' : 's'} in "${activeSource.title}"? `
+        + 'Everything you have answered in this set is lost, including the exercises you got '
+        + 'right, and this cannot be undone.',
+        { confirmLabel: 'Erase answers' },
+      )
+      : true;
+    if (!proceed) return;
     setAnswersBySource((prev) => {
       const next = { ...prev, [activeSourceId]: {} };
       saveAnswers(userName, activeSourceId, {});

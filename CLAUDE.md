@@ -793,6 +793,35 @@ Se os PDFs/áudios de origem mudarem, os índices precisam ser regenerados.
       tamanho fixo e aumentar estouraria o controle.
     Vale também no `GrammarVocabExercises.css`, que importa os tokens do `App.css` via `:root`.
 
+11. **Tema claro/escuro por TOKEN, nunca por cor literal** (2026-08-09). O botão de sol/lua no
+    header põe `data-theme="dark"` no `<html>`; o CSS do tema redefine só variáveis em
+    `:root[data-theme='dark']` — **zero regra de componente duplicada**. A preferência fica em
+    `localStorage.theme` SEM namespace de usuário (é do aparelho, precisa valer na tela de
+    cadastro e não deve mudar ao trocar de nome); na 1ª visita segue o `prefers-color-scheme`.
+    Os tokens foram criados classificando cada literal pela PROPRIEDADE, que é o que revela o
+    papel: `background: #fff` é superfície (virou `--surface-0`), `color: #fff` é texto sobre
+    botão colorido e **continua branco** no escuro.
+    - Superfícies: `--surface-0` (campos/barra) > `--surface-1` (painel) > `--surface-2` (card).
+    - Texto: `--text-primary`, `--text-secondary`, `--text-muted`.
+    - **`--brand-text` é separado de `--brand-600`/`--brand-500` de propósito**: o índigo tem
+      dois papéis que puxam pra lados opostos no escuro — fundo de botão (precisa ser ESCURO
+      pro texto branco se ler) e texto colorido (precisa ser CLARO). Clarear os dois juntos
+      derrubou os botões pra 2,5:1. Nunca reunificar.
+    - `--danger-text`/`--success-text` em vez de listar seletores no bloco do tema: a lista
+      quebraria em silêncio no dia em que alguém criasse um texto vermelho novo.
+    - `--purple-900`/`--purple-950`/`--navy-900` são apelidos do azul-marinho e **não podem ser
+      cor de texto** — foram a causa raiz de uma leva inteira de textos invisíveis (players,
+      "Show answers", títulos do Listening/Dictation, "+ Add Words"...).
+    - **Degradês também precisam de token.** A 1ª conversão só via cor sólida e deixou
+      `linear-gradient(#fff, #f4f5f8)` no painel My Notes e na barra de botões: painel claro com
+      texto claro em cima.
+    - **Hover destaca pela BORDA, não pelo fundo** (pedido do dono): fundo claro fixo no hover
+      sobrevivia ao tema escuro e apagava o texto do card.
+    - **Fora do tema, de propósito:** o leitor de PDF (a página branca é o material do livro — o
+      dono pediu explicitamente pra não mexer) e as pílulas amarelas de áudio, cujo texto marrom
+      escuro está correto sobre amarelo nos dois temas.
+    - **Como verificar:** medir contraste, não olhar. Ver "Testing & Verification".
+
 ### ❌ Não Faça
 
 - **Não exporte áudio/PDF de curso para GitHub** — eles continuam ignorados de propósito
@@ -823,6 +852,19 @@ Não há testes unitários automatizados (`npm test` funciona mas CRA cria um es
 4. **Medir, não olhar.** Posição de elemento se confere por `boundingBox()` convertido pras
    coordenadas do PDF, não por screenshot — foi assim que a âncora do Sound Bank foi ajustada,
    e foi assim que se descobriu o `translate(-20px,-7px)` que a screenshot não denunciava.
+5. **Contraste de tema se verifica com DUAS ferramentas, não uma** (aprendido na marra ao fazer
+   o tema escuro, 2026-08-09 — o dono achou ~15 textos ilegíveis DEPOIS de a auditoria dinâmica
+   dar tudo verde):
+   - **Estática**, varrendo as declarações `color:` e `linear-gradient` dos CSS. Cobre 100% das
+     regras, inclusive de telas/estados que nenhum robô alcança. É o que pega o caso geral.
+   - **Dinâmica**, medindo contraste real no navegador. Só ela pega o que depende de composição
+     (fundo herdado, degradê, token que outra regra sobrescreveu).
+   Duas armadilhas que essa auditoria dinâmica teve e que vão se repetir: (a) visitar só o
+   estado INICIAL de cada tela deixa passar resposta da Adele, "Try again" que só existe com
+   histórico, dentro do exercício de Listening, tela de leitura; (b) ler o alfa de um
+   `rgba(255, 214, 0, 0.92)` com `Number(split(',')[3])` dá **NaN** — o fundo é descartado, o
+   auditor sobe pro ancestral e inventa um problema que não existe (foi o que "acusou" as
+   pílulas amarelas). Usar `parseFloat`.
 
 ---
 

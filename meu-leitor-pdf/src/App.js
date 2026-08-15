@@ -245,6 +245,28 @@ const getImageFileFromClipboardEvent = (event) => {
 const USERS_KEY = 'users';
 const ACTIVE_USER_KEY = 'activeUser';
 
+// Tema claro/escuro. SEM o prefixo "u:<nome>:" de propósito — junto com
+// `users`/`activeUser`, é uma das poucas chaves globais: preferência de
+// aparelho, não de aluno. Precisa valer também na tela de cadastro, onde
+// ainda não existe usuário nenhum, e trocar de nome no mesmo navegador não
+// deve acender a luz na cara de quem estava no escuro.
+const THEME_KEY = 'theme';
+const readStoredTheme = () => {
+  try {
+    const saved = window.localStorage.getItem(THEME_KEY);
+    if (saved === 'dark' || saved === 'light') return saved;
+  } catch (error) {
+    // Armazenamento indisponível — cai na preferência do sistema.
+  }
+  // Primeira visita: obedece o que o sistema operacional já pede, em vez de
+  // impor o claro. Quem nunca clicou no botão não tem opinião registrada.
+  try {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  } catch (error) {
+    return 'light';
+  }
+};
+
 const loadUsers = () => {
   try {
     const raw = window.localStorage.getItem(USERS_KEY);
@@ -1069,6 +1091,22 @@ const IconSound = () => (
 
 // Ícone do menu "Grammar & Vocabulary Exercises" — lista com marcas de
 // certo, mesmo estilo de traço dos outros ícones do drawer.
+// Ícone do botão de tema, no header. Sol quando o tema ATUAL é escuro (o
+// clique leva pro claro) e lua quando é claro — o ícone anuncia o destino,
+// não o estado, que é a convenção que as pessoas já esperam desse botão.
+const IconTheme = ({ dark }) => (
+  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    {dark ? (
+      <>
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4" />
+      </>
+    ) : (
+      <path d="M20 13.5A8 8 0 1 1 10.5 4a6.5 6.5 0 0 0 9.5 9.5z" />
+    )}
+  </svg>
+);
+
 const IconQuiz = () => (
   <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M4 6.5h14a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4z" />
@@ -1534,6 +1572,21 @@ function App() {
     setToast({ message, tone, id: Date.now() });
     toastTimeoutRef.current = setTimeout(() => setToast(null), 4500);
   };
+  // Tema claro/escuro (ver THEME_KEY no topo). Aplicado no <html>, não numa
+  // div do app: o CSS do tema redefine tokens em :root, e o :root É o <html>.
+  // Pôr o atributo mais pra dentro faria as regras :root[data-theme] não
+  // casarem com nada.
+  const [theme, setTheme] = useState(readStoredTheme);
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    try {
+      window.localStorage.setItem(THEME_KEY, theme);
+    } catch (error) {
+      // Sem persistência o tema vale só nesta aba; não é motivo pra falhar.
+    }
+  }, [theme]);
+  const toggleTheme = () => setTheme((value) => (value === 'dark' ? 'light' : 'dark'));
+
   const [confirmDialog, setConfirmDialog] = useState(null);
   const confirmResolveRef = useRef(null);
   const askConfirm = (message, { confirmLabel = 'OK', cancelLabel = 'Cancel' } = {}) => new Promise((resolve) => {
@@ -4453,7 +4506,14 @@ function App() {
 
   return (
     <div
-      className={`app-shell${['vocabulary', 'american1', 'grammarElem', 'courses', 'home', 'grammar-vocab-exercises'].includes(activePage) ? ' app-shell--allow-grow' : ''}`}
+      /* 'grammar-vocab-exercises' saiu desta lista em 2026-08-09: aquela tela
+         passou a rolar POR DENTRO — só a lista de exercícios rola, o topo com
+         placar/filtro fica imóvel (pedido do dono). Pra isso a lista precisa
+         de altura definida, e altura definida exige o .app-shell travado em
+         100vh: com allow-grow ele vira height:auto, a altura passa a ser
+         ditada pelo conteúdo, e aí o `flex:1` da lista não tem contra o que
+         calcular — a rolagem interna simplesmente não acontece. */
+      className={`app-shell${['vocabulary', 'american1', 'grammarElem', 'courses', 'home'].includes(activePage) ? ' app-shell--allow-grow' : ''}`}
       style={{ '--page-hero-bg': `url(${process.env.PUBLIC_URL}/openCourse.png)` }}
     >
       <header className="app-header">
@@ -4476,6 +4536,24 @@ function App() {
           <span className="brand-mark"><img src="/logo192.png" alt="" className="brand-mark-icon" /></span>
           <span>Let's Learn English</span>
         </div>
+
+        {/* Alternador de tema. Fica no header (pedido do dono: "acesso
+            fácil") e não dentro do My Profile, porque é ajuste de conforto
+            de leitura — quem cansa da tela clara quer resolver na hora, sem
+            navegar. Encostado à direita pelo margin-left:auto do CSS, longe
+            do hambúrguer pra não virar clique errado.
+            aria-pressed comunica o estado a leitor de tela; o title/aria-label
+            dizem pra onde o clique leva, igual o desenho do ícone. */}
+        <button
+          type="button"
+          className="theme-toggle"
+          onClick={toggleTheme}
+          aria-pressed={theme === 'dark'}
+          aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+          title={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+        >
+          <IconTheme dark={theme === 'dark'} />
+        </button>
 
         <div className={`side-drawer-backdrop${mobileMenuOpen ? ' is-visible' : ''}`} aria-hidden="true" />
         <nav
@@ -6463,7 +6541,14 @@ function App() {
         </main>
       ) : activePage === 'grammar-vocab-exercises' ? (
         <main className="landing-page vocabulary-mode gve-mode">
-          <GrammarVocabExercisesPage key={grammarVocabExercisesResetKey} userName={userName} />
+          {/* askConfirm vem do App (mesmo padrão do MyNotesPage/WordbookPage):
+              o "Reset" da seção apaga respostas de forma irreversível e precisa
+              do modal de confirmação do app, não de um window.confirm. */}
+          <GrammarVocabExercisesPage
+            key={grammarVocabExercisesResetKey}
+            userName={userName}
+            askConfirm={askConfirm}
+          />
         </main>
       ) : activePage === 'profile' ? (
         <main className="landing-page vocabulary-mode profile-mode">

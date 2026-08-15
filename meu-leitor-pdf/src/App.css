@@ -53,6 +53,166 @@
   --line: rgba(35, 43, 58, 0.18);
   --shadow: 0 22px 48px rgba(35, 43, 58, 0.18);
   --landing-light-gradient: linear-gradient(165deg, #ffffff 0%, #f2f3f6 55%, var(--gray-200) 100%);
+
+  /* ---- Superfícies e texto, por PAPEL (não por cor) ----------------------
+     Existem pra o tema escuro poder trocá-los num lugar só. Os valores aqui
+     são exatamente os literais que estavam espalhados pelo CSS, então o modo
+     claro não mudou nada.
+     A separação foi feita pela PROPRIEDADE em que a cor aparecia, porque é
+     ela que diz o papel: `background: #fff` é superfície (vira token), mas
+     `color: #fff` é texto branco sobre botão colorido e continua branco no
+     escuro — por isso NÃO virou token. */
+  --surface-0: #ffffff;   /* caixas "papel": inputs, cards mais claros */
+  --surface-1: #fbfcfd;   /* painel de conteúdo */
+  --surface-2: #f2f3f6;   /* card dentro do painel */
+  --text-primary: #232b3a;
+  --border: rgba(35, 43, 58, 0.12);
+  --border-strong: rgba(35, 43, 58, 0.3);
+
+  /* O índigo da marca tem DOIS papéis que puxam pra lados opostos no tema
+     escuro, e por isso viraram tokens separados:
+     - fundo de botão (com texto branco em cima): precisa ser ESCURO o
+       bastante pra o branco se ler -> --brand-600/--brand-500;
+     - texto colorido sobre superfície escura (títulos, links, estatísticas):
+       precisa ser CLARO o bastante pra se ler -> --brand-text.
+     No tema claro os dois são a mesma cor, então nada muda. Foi só ao medir
+     o contraste no escuro que o conflito apareceu: clarear o índigo salvava
+     os títulos e estragava os botões, e vice-versa. */
+  --brand-text: var(--brand-600);
+
+  /* TEXTO de erro e de acerto. A cor É a informação (a exceção à paleta já
+     documentada), então a matiz é fixa — o que muda por tema é só o tom, pra
+     continuar legível sobre fundo escuro.
+     Vira token em vez de virar uma lista de seletores no bloco do tema
+     escuro: aquela lista quebraria silenciosamente no dia em que alguém
+     acrescentasse um texto vermelho novo e esquecesse de incluí-lo lá.
+     Efeito colateral aceito: os 3 vermelhos (#c0392b/#dc2626/#b91c1c) e os 4
+     verdes que existiam viraram um de cada. Eram variações imperceptíveis da
+     mesma cor, então o tema claro fica praticamente igual — e agora tem uma
+     definição só pra manter. */
+  --danger-text: #c0392b;
+  --success-text: #1a7a3d;
+
+  /* Altura REAL do .app-header (min-height + padding + a borda de baixo).
+     Existe como token porque o header é sticky e várias telas grudam coisas
+     logo abaixo dele (`top: var(--app-header-h)`). Esse número já esteve
+     escrito à mão como "81px" em 3 lugares e virou fonte de erro quando a
+     altura mudou — se mexer no .app-header, mexa AQUI, não nos consumidores. */
+  --app-header-h: 63px;
+}
+
+/* =========================== TEMA ESCURO ===============================
+   Ligado pelo botão do header, que põe data-theme="dark" no <html> (ver
+   App.js). Redefine só TOKENS — nenhuma regra de componente é duplicada
+   aqui; foi pra isso que os literais viraram token logo acima.
+
+   A paleta não é um cinza neutro: é o próprio azul-marinho da marca
+   (#232b3a) escurecido, com o índigo clareado o suficiente pra continuar
+   legível sobre ele. A ideia é parecer o mesmo app com a luz baixa, não um
+   tema diferente.
+
+   Escala de superfícies, do fundo pra frente — cada degrau ~6% mais claro,
+   que é o bastante pra separar as camadas sem virar listra:
+     página #131822 < painel #1b2130 < card #232b3a < input #2c3purple...
+   Contraste conferido contra a superfície em que cada texto costuma cair:
+   --text-primary ~13:1, --text-secondary ~7:1, --text-muted ~4.6:1 — os
+   mesmos patamares que o modo claro tem hoje (ver o bloco de texto acima).
+
+   NÃO entram aqui, de propósito:
+   - verde/vermelho de acerto e erro e as 4 cores dos graus do flashcard:
+     ali a cor É a informação, e mudá-la mudaria o significado;
+   - `color: #fff` de texto sobre botão colorido: o botão continua índigo,
+     então o texto continua branco. */
+:root[data-theme='dark'] {
+  --surface-0: #2a3446;
+  --surface-1: #1b2130;
+  --surface-2: #232b3a;
+  --text-primary: #e9ecf3;
+  --text-secondary: #b6bece;
+  /* #9aa3b8 e não #8b94a8: o tom anterior dava 4,11:1 sobre a superfície mais
+     clara do tema (--surface-0, dos campos e da barra de botões) — abaixo do
+     legível. Este dá ~4,95:1 ali e continua visivelmente mais apagado que o
+     --text-secondary, que é a razão de o tom existir. */
+  --text-muted: #9aa3b8;
+  --border: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.28);
+
+  /* FUNDO de botão: quase o mesmo índigo do tema claro, de propósito. Clareá-lo
+     (foi tentado: #7b7cf6/#9a9bfa) derrubou o texto branco em cima pra 2,5:1 —
+     ilegível. Estes mantêm o branco acima de 4,5:1 no ponto mais claro do
+     degradê. Quem precisava clarear era o TEXTO da marca, que agora tem token
+     próprio logo abaixo. */
+  --brand-600: #4a4de3;
+  --brand-500: #6165ef;
+  --brand-text: #a9abff;
+  /* Mesma matiz do tema claro, clareada: os tons escolhidos pro fundo branco
+     (#c0392b / #1a7a3d) ficam em ~2,5:1 sobre superfície escura. */
+  --danger-text: #ff9a9a;
+  --success-text: #62d996;
+  --purple-300: #4d5480;
+  --gray-200: #333c50;
+
+  --ink: var(--text-primary);
+  --muted: var(--text-muted);
+  --paper: var(--surface-0);
+  --soft: #1f2534;
+  --line: var(--border);
+  --shadow: 0 22px 48px rgba(0, 0, 0, 0.55);
+  --landing-light-gradient: linear-gradient(165deg, #171d29 0%, #131822 55%, #10141d 100%);
+}
+
+/* O fundo do <body> vem do index.css e não é token — sem isto, sobra uma
+   faixa branca sempre que o conteúdo é mais curto que a janela. */
+:root[data-theme='dark'] body {
+  background: #131822;
+}
+
+/* (Aqui existiu uma lista de seletores forçando o verde/vermelho claros no
+   tema escuro. Saiu quando esses textos passaram a usar --success-text e
+   --danger-text: a lista tinha que ser atualizada à mão a cada texto de erro
+   novo, e um esquecimento voltaria a produzir texto invisível em silêncio.) */
+
+/* Botões de referência das telas de leitura (grammar p.124, vocabulary p.148,
+   sound bank p.166...). O `--ref-accent` de cada tipo é a cor do TEXTO e da
+   BORDA sobre um fundo --surface-0 — e todos os 7 são tons escuros, escolhidos
+   pro fundo branco. No tema escuro viravam texto invisível (relatado pelo
+   dono, 2026-08-09).
+   Aqui a lista explícita se justifica, ao contrário do caso do vermelho/verde:
+   é um conjunto FECHADO (os tipos de referência do American1 são esses e
+   pronto), e cada um precisa clarear mantendo a própria matiz, que é o que
+   distingue um botão do outro. */
+:root[data-theme='dark'] .reference-link-btn--grammar { --ref-accent: #9b98ff; }
+:root[data-theme='dark'] .reference-link-btn--vocabulary { --ref-accent: #b6bece; }
+:root[data-theme='dark'] .reference-link-btn--sound { --ref-accent: #a3a7ff; }
+:root[data-theme='dark'] .reference-link-btn--communication { --ref-accent: #8f8aff; }
+:root[data-theme='dark'] .reference-link-btn--writing { --ref-accent: #a7b0c6; }
+:root[data-theme='dark'] .reference-link-btn--video { --ref-accent: #a49bff; }
+:root[data-theme='dark'] .reference-link-btn--transcriptions { --ref-accent: #9aa6c4; }
+
+/* No hover o botão INVERTE (fundo vira o acento, texto vira branco). Com o
+   acento claro do tema escuro, texto branco em cima fica ilegível — aqui o
+   texto tem que escurecer. */
+:root[data-theme='dark'] .reference-link-btn:hover {
+  color: #131822;
+}
+
+/* Fundo desfocado das telas "leves" (Courses, My Words, Listening...): é uma
+   FOTO clara, que no escuro vira um facho de luz no meio da tela. Escurece e
+   dessatura em vez de remover — o desenho da tela conta com ela pra não ficar
+   um retângulo chapado. */
+:root[data-theme='dark'] .landing-page::before,
+:root[data-theme='dark'] .landing-page--courses::before {
+  filter: brightness(0.32) saturate(0.65);
+}
+
+/* A foto do hero da Home é um <img> de verdade (não fundo), então escapa da
+   regra acima e ficava como um bloco branco no meio da página escura — o
+   mesmo incômodo que motivou o tema. Escurecida só o suficiente pra deixar de
+   ofuscar; continua legível e colorida.
+   Isto NÃO vale pro leitor de PDF: ali a página branca é o próprio material
+   do livro, e o dono pediu explicitamente pra não mexer. */
+:root[data-theme='dark'] .home-hero-image {
+  filter: brightness(0.82) saturate(0.9);
 }
 
 .app-shell { display: flex; flex-direction: column; height: 100vh; }
@@ -126,8 +286,13 @@
   display: flex;
   align-items: center;
   gap: 11px;
-  min-height: 60px;
-  padding: 10px 22px 10px;
+  /* Barra mais fina: 81px -> 63px (-22%), pedido do dono em 2026-08-09. O
+     total é min-height (44) + padding vertical (9+9) + a borda de baixo (1).
+     O filho mais alto é o .menu-toggle, de 40px, então 44 de caixa ainda o
+     acomoda com folga. Quem depende dessa altura usa --app-header-h (ver o
+     :root) — atualize LÁ se mexer aqui. */
+  min-height: 44px;
+  padding: 9px 22px;
   /* Opaco (não rgba translúcido) — é sticky, então qualquer conteúdo que
      role por baixo (ex. a foto do hero na Home) sangrava através dos 10%
      de transparência. Passava despercebido enquanto a Home nunca rolava;
@@ -164,6 +329,31 @@
   transform: translateY(3px);
 }
 
+/* Botão de tema no header. `margin-left: auto` joga ele pro canto direito
+   sem precisar de wrapper — é o único filho do .app-header que fica à
+   direita, e o menu lateral (.side-drawer) é position:fixed, então não
+   disputa espaço no flex. */
+.theme-toggle {
+  margin-left: auto;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
 .brand-mark {
   display: inline-flex;
   align-items: center;
@@ -175,7 +365,12 @@
   color: #fff;
   font-size: 13px;
   letter-spacing: 0;
-  box-shadow: 0 12px 28px rgba(96, 103, 240, 0.36);
+  /* Sem halo índigo (era `0 12px 28px rgba(96,103,240,.36)`): o dono relatou
+     que os elementos "brilhantes" cansam a vista, e um ícone de 44px lançando
+     28px de brilho colorido é o caso mais gritante — ainda por cima sobre o
+     header escuro, onde o halo aparece muito mais. Sombra neutra e curta, só
+     pra descolar do fundo. Ver a mesma mudança em .upload-button/.word-fab. */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .brand-mark-icon {
@@ -491,7 +686,7 @@ body {
 
 .home-hero-tagline {
   margin: 0;
-  color: #5c6478;
+  color: var(--text-secondary);
   font-size: 15px;
   font-style: italic;
 }
@@ -545,7 +740,7 @@ body {
   gap: 2px;
   background: transparent;
   border: 2px solid var(--purple-500);
-  color: var(--purple-700);
+  color: var(--brand-text);
 }
 
 .continue-cta:hover {
@@ -577,12 +772,12 @@ body {
      cores da caixa mudam aqui pra um esquema claro; layout/estrutura
      continuam os mesmos. Opaco (não translúcido) — em My Words (também usa
      essa classe) esse painel fica sobre o fundo desfocado --page-hero-bg. */
-  background: #fbfcfd;
-  border: 1px solid rgba(35, 43, 58, 0.1);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
 }
 
 .landing-panel.vocabulary-page .vocabulary-title {
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 /* Texto de introdução do hub do American Accent — precisa de cor opaca
@@ -600,9 +795,9 @@ body {
 }
 
 .landing-panel.vocabulary-page .vocabulary-link {
-  color: #232b3a;
+  color: var(--text-primary);
   background: rgba(35, 43, 58, 0.05);
-  border-color: rgba(35, 43, 58, 0.12);
+  border-color: var(--border);
 }
 
 .landing-panel.vocabulary-page .vocabulary-link:hover,
@@ -717,7 +912,7 @@ body {
   font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 1.05rem;
   font-weight: 600;
-  color: var(--purple-700);
+  color: var(--brand-text);
 }
 
 .course-level-heading:first-child {
@@ -754,7 +949,7 @@ body {
   border: none;
   border-radius: 14px;
   background: rgba(76, 69, 222, 0.1);
-  color: var(--purple-700);
+  color: var(--brand-text);
   text-transform: none;
   letter-spacing: normal;
   font-size: 14px;
@@ -836,8 +1031,8 @@ body {
    de cores já feito em .landing-panel.vocabulary-page, texto branco original
    ficava ilegível — só cores, layout intacto. */
 .landing-panel.course-links-panel {
-  background: #fbfcfd;
-  border: 1px solid rgba(35, 43, 58, 0.1);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
 }
 
 /* Quicksand na tela Courses inteira (não só no título) — pedido do dono,
@@ -869,18 +1064,23 @@ body {
 }
 
 .landing-panel.course-links-panel .course-link {
-  color: #232b3a;
+  color: var(--text-primary);
   /* Opaco (não rgba translúcido) — essa tela tem o fundo desfocado
      (--page-hero-bg, ver .landing-page--courses::before) atrás do painel,
      e um fundo translúcido deixava a imagem vazar através dos cartões. */
-  background: #f2f3f6;
-  border-color: rgba(35, 43, 58, 0.12);
+  background: var(--surface-2);
+  border-color: var(--border);
 }
 
+/* Hover destaca pela BORDA, não pelo fundo (pedido do dono, 2026-08-09).
+   O fundo claro fixo (#e8e9ee) sobrevivia ao tema escuro e deixava o card
+   quase branco com texto claro por cima — ilegível. A borda índigo funciona
+   nos dois temas (--brand-500 clareia sozinho no escuro) e não mexe no
+   contraste do texto. Mesmo tratamento em .profile-course-toggle,
+   .ap-menu button, .my-notes-card e .gve-source-card. */
 .landing-panel.course-links-panel .course-link:hover,
 .landing-panel.course-links-panel .course-link:focus-visible {
-  background: #e8e9ee;
-  border-color: rgba(96, 103, 240, 0.5);
+  border-color: var(--brand-500);
 }
 
 .landing-panel.course-links-panel .course-link small {
@@ -894,9 +1094,9 @@ body {
    .vocabulary-link fica dentro de .course-links-panel, não de
    .vocabulary-page. */
 .landing-panel.course-links-panel .vocabulary-link {
-  color: #232b3a;
-  background: #f2f3f6;
-  border-color: rgba(35, 43, 58, 0.12);
+  color: var(--text-primary);
+  background: var(--surface-2);
+  border-color: var(--border);
 }
 
 .landing-panel.course-links-panel .vocabulary-link:hover,
@@ -918,7 +1118,7 @@ body {
 
 .unified-search-group-title {
   margin: 0 0 12px;
-  color: #232b3a;
+  color: var(--text-primary);
   font-size: 1.05rem;
   font-weight: 700;
 }
@@ -941,16 +1141,16 @@ body {
    branco original (herdado de .landing-panel) ficava ilegível. Layout e
    estrutura continuam os mesmos. */
 .landing-panel.profile-panel {
-  background: #fbfcfd;
-  border: 1px solid rgba(35, 43, 58, 0.1);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
 }
 
 .landing-panel.profile-panel .eyebrow {
-  color: var(--purple-700);
+  color: var(--brand-text);
 }
 
 .landing-panel.profile-panel h1 {
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 .landing-panel.profile-panel p {
@@ -1111,31 +1311,31 @@ body {
    acima) — mesmo layout, só troca as cores brancas/translúcidas pensadas
    pro fundo roxo escuro por versões escuras legíveis no fundo claro. */
 .profile-panel .profile-course-head {
-  border-top-color: rgba(35, 43, 58, 0.15);
+  border-top-color: var(--border);
 }
 
 .profile-panel .profile-section-divider {
-  border-top-color: rgba(35, 43, 58, 0.15);
+  border-top-color: var(--border);
 }
 
 .profile-panel .profile-course-heading {
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 .profile-panel .profile-course-toggle {
-  border-color: rgba(35, 43, 58, 0.25);
-  background: #f2f3f6;
-  color: #232b3a;
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text-primary);
 }
 
 .profile-panel .profile-course-toggle:hover {
-  background: #e8e9ee;
+  border-color: var(--brand-500);
 }
 
 .profile-panel .profile-reset-btn {
-  background: #f2f3f6;
-  border-color: rgba(35, 43, 58, 0.12);
-  color: #232b3a;
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text-primary);
 }
 
 .profile-panel .profile-reset-btn:hover {
@@ -1152,7 +1352,7 @@ body {
 }
 
 .profile-panel .profile-reset-btn.danger span {
-  color: #b91c1c;
+  color: var(--danger-text);
 }
 
 .profile-panel .profile-reset-btn.danger:hover {
@@ -1166,7 +1366,7 @@ body {
 }
 
 .profile-panel .profile-reset-btn.primary span {
-  color: var(--purple-700);
+  color: var(--brand-text);
 }
 
 .profile-panel .profile-reset-btn.primary:hover {
@@ -1186,8 +1386,8 @@ body {
   width: 100%;
   text-align: left;
   padding: 32px 36px 40px;
-  background: #fbfcfd;
-  border: 1px solid rgba(35, 43, 58, 0.1);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
 }
 
 /* Mesmo fix de min-height que .landing-page--home/.landing-page.vocabulary-
@@ -1203,13 +1403,13 @@ body {
 }
 
 .landing-panel.dashboard-panel .eyebrow {
-  color: var(--purple-700);
+  color: var(--brand-text);
 }
 
 .landing-panel.dashboard-panel h1 {
   margin: 0 0 10px;
   font-size: clamp(1.8rem, 2.6vw, 2.4rem);
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 .landing-panel.dashboard-panel > p {
@@ -1221,13 +1421,13 @@ body {
    Quirks & Gotchas no CLAUDE.md) — sem isso o eyebrow/h1/parágrafos da tela
    "My Notes" ficam quase invisíveis (branco sobre o fundo claro). */
 .landing-panel.my-notes-panel .eyebrow {
-  color: var(--purple-700);
+  color: var(--brand-text);
 }
 
 .landing-panel.my-notes-panel h1 {
   margin: 0 0 10px;
   font-size: clamp(1.8rem, 2.6vw, 2.4rem);
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 /* max-width mais largo que o padrão de outros painéis (640px) de propósito
@@ -1288,8 +1488,8 @@ body {
   gap: 4px;
   padding: 16px 18px;
   border-radius: 14px;
-  background: #f2f3f6;
-  border: 1px solid rgba(35, 43, 58, 0.12);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   text-align: left;
   font-family: inherit;
   cursor: pointer;
@@ -1308,8 +1508,8 @@ body {
 
 .dashboard-stat-tile--static:hover {
   transform: none;
-  background: #f2f3f6;
-  border-color: rgba(35, 43, 58, 0.12);
+  background: var(--surface-2);
+  border-color: var(--border);
 }
 
 /* Os NÚMEROS grandes dos tiles ("18", "12/400", "14/412"…). Quicksand, como
@@ -1326,7 +1526,7 @@ body {
   /* 1.45rem (era 1.7rem) — pedido do dono, 2026-08-06. */
   font-size: 1.45rem;
   font-weight: 700;
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 /* "% de domínio geral" (ROADMAP item 3, os 3 cursos somados — não é só o
@@ -1341,7 +1541,7 @@ body {
      proporção entre os dois continuar a mesma. */
   font-size: 0.85rem;
   font-weight: 700;
-  color: var(--purple-700);
+  color: var(--brand-text);
 }
 
 .dashboard-stat-label {
@@ -1352,7 +1552,7 @@ body {
 .dashboard-section-title {
   margin: 28px 0 14px;
   font-size: 1.1rem;
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 .dashboard-courses {
@@ -1364,8 +1564,8 @@ body {
 .dashboard-course-row {
   padding: 18px 20px;
   border-radius: 16px;
-  background: #f2f3f6;
-  border: 1px solid rgba(35, 43, 58, 0.12);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
 }
 
 .dashboard-course-head {
@@ -1379,7 +1579,7 @@ body {
 .dashboard-course-head h3 {
   margin: 0;
   font-size: 15px;
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 .dashboard-course-count {
@@ -1399,7 +1599,7 @@ body {
   height: 14px;
   margin: 12px 0 10px;
   border-radius: 999px;
-  background: #e2e3e7;
+  background: var(--gray-200);
   overflow: hidden;
 }
 
@@ -1432,7 +1632,7 @@ body {
 }
 
 .dashboard-course-legend-item strong {
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 .dashboard-continue-cta {
@@ -1466,7 +1666,7 @@ body {
    (mesma fonte "redonda"/amigável já usada nas grades de units) num peso e
    tamanho bem mais discretos. */
 .landing-panel.listening-panel h1 {
-  color: #232b3a;
+  color: var(--text-primary);
   font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 600;
   font-size: clamp(1.5rem, 2.2vw, 2rem);
@@ -1565,7 +1765,7 @@ body {
 .landing-panel.course-links-panel .course-link small.listening-track-stats {
   display: block;
   margin-top: 4px;
-  color: var(--purple-700);
+  color: var(--brand-text);
   font-weight: 700;
 }
 
@@ -1586,7 +1786,7 @@ body {
   font-size: 1.05rem;
   font-weight: 700;
   line-height: 1.35;
-  color: var(--purple-700);
+  color: var(--brand-text);
 }
 
 /* Listening, Dictation e Speaking: a PÁGINA rola inteira (overflow:auto já
@@ -1627,14 +1827,14 @@ body {
      abaixo), texto rolando por baixo dela (as falas do Listening) vazava
      através dos 5% de transparência antigos, mesmo padrão de bug já
      documentado no CLAUDE.md pra header/cards sobre --page-hero-bg. */
-  background: #fbfcfd;
-  border: 1px solid rgba(35, 43, 58, 0.12);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
   margin-bottom: 24px;
-  /* Gruda logo abaixo do header (81px reais, ver comentário em .app-header)
-     quando a página rola — Listening, Dictation e Speaking (pedido do dono,
-     2026-08-06). */
+  /* Gruda logo abaixo do header quando a página rola — Listening, Dictation e
+     Speaking (pedido do dono, 2026-08-06). A altura vem do token, não escrita
+     à mão: ver --app-header-h no :root. */
   position: sticky;
-  top: 81px;
+  top: var(--app-header-h);
   z-index: 5;
 }
 
@@ -1664,17 +1864,17 @@ body {
   justify-content: center;
   width: 36px;
   height: 36px;
-  border: 1px solid rgba(35, 43, 58, 0.2);
+  border: 1px solid var(--border-strong);
   border-radius: 10px;
-  background: #fff;
-  color: var(--purple-900);
+  background: var(--surface-0);
+  color: var(--text-primary);
   cursor: pointer;
   transition: background 120ms, border-color 120ms, color 120ms;
 }
 
 .wide-player-btn:hover {
   border-color: var(--purple-500);
-  color: var(--purple-700);
+  color: var(--brand-text);
   background: var(--soft);
 }
 
@@ -1702,7 +1902,7 @@ body {
   height: 44px;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, #0e9f4e, #19c964);
+  background: linear-gradient(135deg, #0b7f3e, #12a352);
   color: #fff;
 }
 
@@ -1729,14 +1929,14 @@ body {
 
 /* Mesmos estados do A-B do player compacto (ver .ap-btn.ap-btn-ab). */
 .wide-player-btn.is-armed {
-  color: var(--purple-700);
+  color: var(--brand-text);
   outline: 2px solid rgba(76, 69, 222, 0.55);
 }
 
 .wide-player-btn.is-looping {
   background: rgba(76, 69, 222, 0.22);
   border-color: rgba(76, 69, 222, 0.55);
-  color: var(--purple-700);
+  color: var(--brand-text);
 }
 
 .wide-player-time {
@@ -1770,8 +1970,8 @@ body {
   flex-direction: column;
   padding: 4px;
   border-radius: 10px;
-  background: #fff;
-  border: 1px solid rgba(35, 43, 58, 0.18);
+  background: var(--surface-0);
+  border: 1px solid var(--border);
   box-shadow: 0 12px 30px rgba(35, 43, 58, 0.18);
 }
 
@@ -1782,7 +1982,7 @@ body {
   border-radius: 6px;
   font-size: 13px;
   font-weight: 700;
-  color: var(--purple-900);
+  color: var(--text-primary);
   cursor: pointer;
   text-align: center;
 }
@@ -1793,7 +1993,7 @@ body {
 
 .wide-player-menu-item.is-active {
   background: rgba(76, 69, 222, 0.18);
-  color: var(--purple-700);
+  color: var(--brand-text);
 }
 
 /* Dentro da barra clara do exercício (não sobre um PDF), a pílula amarela
@@ -1873,7 +2073,7 @@ body {
    urgente. */
 .dictation-autopause-hint--ended {
   color: #fff;
-  background: linear-gradient(135deg, #0e9f4e, #19c964);
+  background: linear-gradient(135deg, #0b7f3e, #12a352);
   border-color: #0a6b35;
   box-shadow: 0 0 0 3px rgba(25, 201, 100, 0.3);
 }
@@ -1883,9 +2083,9 @@ body {
   min-height: 160px;
   padding: 14px 16px;
   border-radius: 14px;
-  border: 1px solid rgba(35, 43, 58, 0.18);
-  background: #fff;
-  color: #232b3a;
+  border: 1px solid var(--border);
+  background: var(--surface-0);
+  color: var(--text-primary);
   font-family: inherit;
   font-size: 1rem;
   line-height: 1.6;
@@ -1900,7 +2100,7 @@ body {
 }
 
 .dictation-textarea:disabled {
-  background: #f2f3f6;
+  background: var(--surface-2);
   color: var(--text-muted);
 }
 
@@ -1913,7 +2113,7 @@ body {
 .dictation-score {
   margin: 0;
   font-size: 1.2rem;
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 .dictation-score-hint {
@@ -1926,8 +2126,8 @@ body {
   margin: 0;
   padding: 14px 16px;
   border-radius: 14px;
-  background: #f2f3f6;
-  border: 1px solid rgba(35, 43, 58, 0.12);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   line-height: 1.8;
 }
 
@@ -1935,7 +2135,7 @@ body {
    da correção deve ler como prosa corrida colorida, não como uma sequência
    de fichas destacadas palavra por palavra. */
 .dictation-word-correct {
-  color: #1a7a3d;
+  color: var(--success-text);
 }
 
 /* Token de pontuação solta (ex.: um "—" separado por espaços) — não conta
@@ -1946,7 +2146,7 @@ body {
 }
 
 .dictation-word-wrong {
-  color: #c0392b;
+  color: var(--danger-text);
   text-decoration: underline;
   text-decoration-color: rgba(192, 57, 43, 0.45);
   text-underline-offset: 3px;
@@ -1967,8 +2167,8 @@ body {
   padding: 14px 16px;
   border-radius: 14px;
   background: rgba(35, 43, 58, 0.06);
-  border: 1px solid rgba(35, 43, 58, 0.15);
-  color: #232b3a;
+  border: 1px solid var(--border);
+  color: var(--text-primary);
   font-size: 15px;
 }
 
@@ -2016,7 +2216,7 @@ body {
    propósito — .vocabulary-title também titula as grades de units, que não
    fazem parte deste pedido. */
 .landing-panel.wordbook-panel .vocabulary-title {
-  color: var(--purple-700);
+  color: var(--brand-text);
   /* Mesma fonte/peso/tamanho do h1 desta tela ("Ask Adele about everything
      in English") — pedido do dono, 2026-08-06, depois de tentarmos
      11 → 16 → 20px no estilo antigo de rótulo. Só a COR continua diferente
@@ -2049,7 +2249,7 @@ body {
 .landing-panel.dashboard-panel h1,
 .landing-panel.my-notes-panel h1,
 .landing-panel.course-links-panel h1 {
-  color: #232b3a;
+  color: var(--text-primary);
   font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 600;
   font-size: clamp(1.05rem, 1.5vw, 1.3rem);
@@ -2067,7 +2267,7 @@ body {
    são elementos novos que essa regra não alcança; explícito aqui em vez de
    confiar em herança, mesmo padrão do resto do arquivo. */
 .landing-panel.ask-ai-panel .ask-ai-answer-body p {
-  color: #232b3a;
+  color: var(--text-primary);
   margin: 0 0 8px;
   font-size: 15.5px;
   line-height: 1.6;
@@ -2079,7 +2279,7 @@ body {
 
 .landing-panel.ask-ai-panel .ask-ai-answer-body h3 {
   margin: 14px 0 6px;
-  color: var(--purple-700);
+  color: var(--brand-text);
   font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 1rem;
   font-weight: 700;
@@ -2095,12 +2295,16 @@ body {
 }
 
 .landing-panel.ask-ai-panel .ask-ai-answer-body li {
-  color: #232b3a;
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 
 .landing-panel.ask-ai-panel .ask-ai-answer-body strong {
-  color: #171d27;
+  /* Era #171d27 (quase preto), que no tema escuro sumia no fundo — o negrito
+     das respostas da Adele ficava ilegível (relatado pelo dono, 2026-08-09).
+     O token já é o tom mais forte de texto disponível em cada tema, que é
+     justamente o papel deste <strong>. */
+  color: var(--text-primary);
 }
 
 .landing-panel.ask-ai-panel .ask-ai-answer-body .ask-ai-answer-quote {
@@ -2113,7 +2317,7 @@ body {
 .ask-ai-answer-divider {
   margin: 14px 0;
   border: none;
-  border-top: 1px dashed rgba(35, 43, 58, 0.2);
+  border-top: 1px dashed var(--border-strong);
 }
 
 .ask-ai-actions-row {
@@ -2188,7 +2392,7 @@ body {
 
 .ask-ai-error {
   margin: 0;
-  color: #c0392b;
+  color: var(--danger-text);
   font-size: 14.5px;
 }
 
@@ -2214,8 +2418,8 @@ body {
   max-width: 260px;
   border-radius: 14px;
   overflow: hidden;
-  border: 1px solid rgba(35, 43, 58, 0.18);
-  background: #f2f3f6;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
   line-height: 0;
 }
 
@@ -2248,8 +2452,8 @@ body {
 .ask-ai-answer {
   padding: 16px 18px;
   border-radius: 14px;
-  background: #f2f3f6;
-  border: 1px solid rgba(35, 43, 58, 0.12);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
 }
 
 .speaking-mic-error {
@@ -2258,7 +2462,7 @@ body {
   border-radius: 10px;
   background: rgba(192, 57, 43, 0.08);
   border: 1px solid rgba(192, 57, 43, 0.25);
-  color: #c0392b;
+  color: var(--danger-text);
   font-size: 14px;
 }
 
@@ -2278,7 +2482,7 @@ body {
   padding: 14px 16px;
   border-radius: 14px;
   background: rgba(35, 43, 58, 0.04);
-  border: 1px solid rgba(35, 43, 58, 0.1);
+  border: 1px solid var(--border);
 }
 
 .speaking-sentence-head {
@@ -2290,7 +2494,7 @@ body {
 
 .speaking-sentence-text {
   flex: 1 1 320px;
-  color: #232b3a;
+  color: var(--text-primary);
   line-height: 1.5;
   font-size: 1.05rem;
 }
@@ -2344,7 +2548,7 @@ body {
   padding: 14px 16px;
   border-radius: 14px;
   background: rgba(35, 43, 58, 0.04);
-  border: 1px solid rgba(35, 43, 58, 0.1);
+  border: 1px solid var(--border);
   transition: background 160ms ease, border-color 160ms ease;
 }
 
@@ -2357,14 +2561,14 @@ body {
   justify-content: center;
   border-radius: 50%;
   background: rgba(35, 43, 58, 0.1);
-  color: #232b3a;
+  color: var(--text-primary);
   font-size: 12px;
   font-weight: 700;
 }
 
 .listening-sentence-text {
   flex: 1 1 320px;
-  color: #232b3a;
+  color: var(--text-primary);
   line-height: 1.5;
 }
 
@@ -2377,7 +2581,7 @@ body {
   background: transparent;
   font: inherit;
   font-weight: 700;
-  color: var(--purple-700);
+  color: var(--brand-text);
   text-align: center;
 }
 
@@ -2390,16 +2594,16 @@ body {
    fala longa pode ter várias lacunas com resultados diferentes). */
 .listening-blank-input.is-correct {
   border-bottom-color: #16a34a;
-  color: #16a34a;
+  color: var(--success-text);
 }
 
 .listening-blank-input.is-incorrect {
   border-bottom-color: #dc2626;
-  color: #dc2626;
+  color: var(--danger-text);
 }
 
 .listening-blank-input.is-empty {
-  border-bottom-color: rgba(35, 43, 58, 0.35);
+  border-bottom-color: var(--border-strong);
   border-bottom-style: dashed;
 }
 
@@ -2421,7 +2625,7 @@ body {
 .listening-check-summary {
   font-size: 14px;
   font-weight: 700;
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 /* Feedback quando palavras erradas são adicionadas ao My Words — aparece
@@ -2429,7 +2633,7 @@ body {
 .listening-words-added {
   font-size: 14px;
   font-weight: 700;
-  color: #2fa86b;
+  color: var(--success-text);
   animation: fadeInOut 4s ease-in-out;
 }
 
@@ -2447,7 +2651,7 @@ body {
   padding: 1px 6px;
   border-radius: 6px;
   background: rgba(96, 103, 240, 0.14);
-  color: var(--purple-700);
+  color: var(--brand-text);
   font-size: 12px;
   font-weight: 700;
 }
@@ -2612,7 +2816,7 @@ body {
   width: 12px;
   height: 12px;
   border-radius: 999px;
-  border: 1px solid rgba(35, 43, 58, 0.25);
+  border: 1px solid var(--border-strong);
 }
 
 .unit-badge-dot--unvisited { background: transparent; opacity: 0.35; }
@@ -2630,14 +2834,14 @@ body {
   margin: 0 0 16px;
   padding: 0 12px;
   border-radius: 12px;
-  background: #f2f3f6;
-  border: 1px solid rgba(35, 43, 58, 0.12);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   color: var(--text-secondary);
 }
 
 .unit-search-box:focus-within {
   border-color: var(--purple-500);
-  background: #fff;
+  background: var(--surface-0);
 }
 
 .unit-search-input {
@@ -2645,7 +2849,7 @@ body {
   padding: 10px 8px;
   border: none;
   background: transparent;
-  color: #232b3a;
+  color: var(--text-primary);
   font-size: 14px;
   font-family: inherit;
   outline: none;
@@ -2672,7 +2876,7 @@ body {
 }
 
 .unit-search-clear:hover {
-  color: var(--purple-700);
+  color: var(--brand-text);
 }
 
 .unit-search-empty {
@@ -2712,7 +2916,7 @@ body {
   width: 20px;
   height: 20px;
   border-radius: 999px;
-  border: 1.5px solid rgba(35, 43, 58, 0.45);
+  border: 1.5px solid var(--border-strong);
   background: transparent;
   color: var(--text-secondary);
   font-size: 12px;
@@ -2740,12 +2944,12 @@ body {
   width: 300px;
   padding: 14px 16px;
   border-radius: 12px;
-  background: #fff;
-  border: 1px solid rgba(35, 43, 58, 0.15);
+  background: var(--surface-0);
+  border: 1px solid var(--border);
   box-shadow: 0 16px 40px rgba(35, 43, 58, 0.22);
   font-size: 13px;
   line-height: 1.5;
-  color: #232b3a;
+  color: var(--text-primary);
   text-align: left;
 }
 
@@ -2753,7 +2957,7 @@ body {
   margin: 0 0 8px;
   /* .landing-panel p (regra global mais antiga) força texto branco — sem
      isso o popover fica com texto invisível sobre o próprio fundo branco. */
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 .unit-badge-legend-info-popover p:last-child {
@@ -2779,7 +2983,7 @@ body {
   line-height: 1.4;
 }
 
-.side-panel { background: #f7f8fa; overflow-y: auto; }
+.side-panel { background: var(--surface-1); overflow-y: auto; }
 
 .side-panel.is-hidden { display: none; }
 
@@ -2818,7 +3022,7 @@ body {
      já usados em painéis e badges) — dá contraste real contra o fundo
      branco do leitor/painel, sem introduzir uma cor nova. */
   background: var(--purple-300);
-  color: var(--purple-900);
+  color: var(--text-primary);
   line-height: 1;
   cursor: pointer;
   box-shadow: 0 6px 18px rgba(35, 43, 58, 0.25);
@@ -2840,13 +3044,17 @@ body {
   overflow: auto;
 }
 
+/* Degradê em TOKENS. Era `#fff -> #f4f5f8` fixo: a conversão pro tema escuro
+   pegou só cores sólidas, então este painel (o "My Notes" das telas de
+   leitura) continuava claro enquanto o texto dentro dele virava claro também
+   — o título sumia (relatado pelo dono, 2026-08-09, com captura). */
 .related-panel {
-  background: linear-gradient(180deg, #fff 0%, #f4f5f8 100%);
+  background: linear-gradient(180deg, var(--surface-0) 0%, var(--surface-2) 100%);
 }
 
 .panel-content h2 {
   margin: 8px 0 10px;
-  color: var(--purple-950);
+  color: var(--text-primary);
   font-size: 25px;
   line-height: 1.12;
 }
@@ -2860,7 +3068,7 @@ body {
 
 .eyebrow {
   margin: 0;
-  color: var(--purple-700);
+  color: var(--brand-text);
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.08em;
@@ -2873,8 +3081,8 @@ body {
   margin-top: 8px;
   padding: 8px 12px;
   border-radius: 8px;
-  background: #e6e7ee;
-  color: var(--purple-900);
+  background: var(--surface-2);
+  color: var(--text-primary);
   font-size: 13px;
   font-weight: 800;
   overflow: hidden;
@@ -2892,8 +3100,10 @@ body {
   min-height: 38px;
   padding: 6px 14px;
   border-bottom: 1px solid var(--line);
-  background: linear-gradient(90deg, #fff 0%, #eef0f5 100%);
-  color: var(--purple-950);
+  /* Mesma correção do .related-panel: degradê fixo claro -> tokens. É a barra
+     de botões das 9 telas de leitura. */
+  background: linear-gradient(90deg, var(--surface-0) 0%, var(--surface-2) 100%);
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 800;
 }
@@ -2942,7 +3152,7 @@ body {
   gap: 4px 14px;
   padding: 8px 14px;
   border-bottom: 1px solid var(--line);
-  background: #fff;
+  background: var(--surface-0);
   font-size: 13px;
   color: var(--muted);
 }
@@ -2981,7 +3191,7 @@ body {
 .pdf-empty-state h2 {
   max-width: 520px;
   margin: 10px 0 10px;
-  color: var(--purple-950);
+  color: var(--text-primary);
   font-size: 42px;
   line-height: 1.05;
 }
@@ -3017,7 +3227,11 @@ body {
   cursor: pointer;
   font-size: 14px;
   font-weight: 900;
-  box-shadow: 0 14px 30px rgba(76, 69, 222, 0.32);
+  /* Brilho índigo removido (era `0 14px 30px rgba(76,69,222,.32)`) a pedido do
+     dono, 2026-08-09: o halo colorido em volta de cada botão cansa a vista,
+     e no tema escuro fica ainda mais evidente. Fica só uma sombra neutra
+     rasa, que dá relevo sem acender. */
+  box-shadow: 0 2px 6px rgba(35, 43, 58, 0.22);
   transition:
     transform 140ms ease,
     box-shadow 140ms ease,
@@ -3027,7 +3241,7 @@ body {
 .upload-button:hover {
   transform: translateY(-1px);
   filter: saturate(1.08);
-  box-shadow: 0 18px 36px rgba(76, 69, 222, 0.4);
+  box-shadow: 0 4px 10px rgba(35, 43, 58, 0.28);
 }
 
 /* Previous/Next Unit (American English A1) ficam sempre montados —
@@ -3077,7 +3291,7 @@ body {
   display: flex;
   flex-direction: column;
   border-top: 2px solid var(--purple-300);
-  background: #fff;
+  background: var(--surface-0);
 }
 
 /* American English A1 (tela de unit): a área de respostas já ganha um
@@ -3210,8 +3424,8 @@ body {
   position: absolute;
   top: 30px;
   left: 0;
-  background: #fff;
-  color: var(--purple-950);
+  background: var(--surface-0);
+  color: var(--text-primary);
   border-radius: 8px;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
   padding: 4px;
@@ -3232,13 +3446,16 @@ body {
   white-space: nowrap;
 }
 
+/* Este é um item de MENU (lista de velocidades do player), não um card com
+   borda — aqui um fundo é a única pista possível. Usa o token de superfície,
+   que acompanha o tema, em vez do cinza claro fixo de antes. */
 .ap-menu button:hover {
-  background: #e9ebf3;
+  background: var(--surface-2);
 }
 
 .ap-menu button.active {
   font-weight: 800;
-  color: var(--purple-700);
+  color: var(--brand-text);
 }
 
 /* Player de áudio ancorado do American English A1 — mesmo player do
@@ -3300,7 +3517,7 @@ body {
   height: 32px;
   transform: translate(-50%, -50%);
   border-radius: 999px;
-  background: #fff;
+  background: var(--surface-0);
   box-shadow: 0 0 0 1px rgba(35, 43, 58, 0.28);
 }
 
@@ -3347,7 +3564,7 @@ body {
   width: 32px;
   transform: translate(-50%, -50%);
   border-radius: 999px;
-  background: #fff;
+  background: var(--surface-0);
   box-shadow: 0 0 0 1px rgba(35, 43, 58, 0.28);
 }
 
@@ -3371,7 +3588,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: #fff;
+  background: var(--surface-0);
 }
 
 /* Canvas de desenho: por padrão invisível para eventos */
@@ -3424,7 +3641,7 @@ body {
    diferente: sai da unit atual, não navega dentro dela. */
 .all-units-link {
   background: transparent !important;
-  color: var(--purple-700) !important;
+  color: var(--brand-text) !important;
   box-shadow: none !important;
   border: 1.5px solid var(--purple-500) !important;
 }
@@ -3452,7 +3669,7 @@ body {
   /* padding horizontal 14px (não 18px) = mesmo valor de .pdf-toolbar —
      sem isso, os botões começavam 4px mais à direita que no Grammar. */
   padding: 6px 14px;
-  background: #fff;
+  background: var(--surface-0);
   border-bottom: 1px solid var(--line);
   flex-wrap: wrap;
 }
@@ -3497,8 +3714,11 @@ body {
   padding: 6px 10px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: #fff;
-  color: var(--muted);
+  background: var(--surface-0);
+  /* --text-secondary, não --muted: as abas A/B/C são navegação, não texto
+     apagado. Com --muted elas ficavam em 4,1:1 sobre a superfície escura —
+     abaixo do legível (relatado pelo dono, 2026-08-09). */
+  color: var(--text-secondary);
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
@@ -3507,7 +3727,7 @@ body {
 
 .exercise-tab:hover {
   border-color: var(--purple-500);
-  color: var(--purple-700);
+  color: var(--brand-text);
 }
 
 /* Aba da seção especial (American English A1): o texto alterna entre
@@ -3540,7 +3760,7 @@ body {
   padding: 5px 10px;
   border: 1.5px solid var(--ref-accent, var(--line));
   border-radius: 6px;
-  background: #fff;
+  background: var(--surface-0);
   color: var(--ref-accent, var(--muted));
   font-weight: 700;
   font-size: 12px;
@@ -3578,7 +3798,7 @@ body {
   padding: 4px 10px;
   font-size: 13px;
   font-weight: 800;
-  color: var(--purple-950);
+  color: var(--text-primary);
 }
 
 /* Ocupa o lugar do botão "‹ Back to Unit" quando a página de referência foi
@@ -3600,7 +3820,7 @@ body {
 .reference-standalone-label {
   display: inline-flex;
   align-items: center;
-  color: var(--purple-700);
+  color: var(--brand-text);
   font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: clamp(1.5rem, 2.2vw, 2rem);
   font-weight: 600;
@@ -3612,7 +3832,7 @@ body {
   padding: 6px 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--surface-0);
   color: var(--ink);
   font-weight: 600;
   font-size: 13px;
@@ -3622,7 +3842,7 @@ body {
 
 .ghost-button:hover:not(:disabled) {
   border-color: var(--purple-500);
-  color: var(--purple-700);
+  color: var(--brand-text);
 }
 
 .ghost-button:disabled {
@@ -3679,7 +3899,7 @@ body {
   /* Sem borda/sombra/cantos arredondados — igual ao .pdf-panel (Grammar/
      American1/unit do Vocabulary), que é liso, colado nas bordas, sem
      "flutuar" como um card separado. */
-  background: #fff;
+  background: var(--surface-0);
 }
 
 /* Área para exibir o PDF do gabarito (recortado) ao clicar em "Show answers". */
@@ -3689,7 +3909,7 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 0;
-  background: #fff;
+  background: var(--surface-0);
   border: 1px dashed var(--line);
   border-radius: 12px;
   color: var(--muted);
@@ -3742,7 +3962,7 @@ body {
      idêntico entre os cursos, não um card flutuante separado. */
   min-height: 0;
   overflow: hidden;
-  background: #f7f8fa;
+  background: var(--surface-1);
   border-radius: 0 14px 14px 0;
 }
 
@@ -3770,7 +3990,7 @@ body {
 .answers-head h2 {
   margin: 0;
   font-size: 20px;
-  color: var(--purple-900);
+  color: var(--text-primary);
 }
 
 .answers-nav {
@@ -3806,14 +4026,14 @@ body {
   font-size: 15px;
   line-height: 1.6;
   color: var(--ink);
-  background: #fff;
+  background: var(--surface-0);
   box-sizing: border-box;
 }
 
 .answer-box:focus {
   outline: none;
   border-color: var(--purple-500);
-  background: #fff;
+  background: var(--surface-0);
   box-shadow: 0 0 0 3px rgba(96, 103, 240, 0.15);
 }
 
@@ -3897,8 +4117,8 @@ body {
 }
 
 .show-answers-btn.secondary {
-  background: #fff;
-  color: var(--purple-700);
+  background: var(--surface-0);
+  color: var(--brand-text);
   border: 1px solid var(--purple-500);
 }
 
@@ -3931,8 +4151,8 @@ body {
   padding: 0 8px;
   border: 1px solid var(--purple-300);
   border-radius: 8px;
-  background: #fff;
-  color: var(--purple-900);
+  background: var(--surface-0);
+  color: var(--text-primary);
   font-size: 13px;
   cursor: pointer;
 }
@@ -3966,7 +4186,7 @@ body {
 .notes-editor:focus {
   outline: none;
   border-color: var(--purple-500);
-  background: #fff;
+  background: var(--surface-0);
   box-shadow: 0 0 0 3px rgba(96, 103, 240, 0.15);
 }
 
@@ -3990,8 +4210,8 @@ body {
   text-align: left;
   padding: 22px 24px;
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(35, 43, 58, 0.1);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
   box-shadow: 0 18px 48px rgba(35, 43, 58, 0.12);
 }
 
@@ -4002,10 +4222,19 @@ body {
 .plan-card-head h2 {
   margin: 0;
   font-size: 1.15rem;
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
-.plan-card .plan-card-hint {
+/* Os DOIS ancestrais: a mesma classe é usada no TodayPlanCard (.plan-card) e
+   no DailyGoalCard (.daily-goal-card, a linha "You've mastered X%"). Só o
+   primeiro estava coberto, então no segundo o texto não tinha cor NENHUMA e
+   herdava o preto do documento — invisível no tema escuro (relatado pelo dono,
+   2026-08-09). Em tema claro passava despercebido porque preto sobre fundo
+   claro se lê.
+   O ancestral precisa continuar no seletor (não basta `.plan-card-hint`):
+   ".landing-panel p" tem classe+tag e venceria uma classe sozinha. */
+.plan-card .plan-card-hint,
+.daily-goal-card .plan-card-hint {
   margin: 0 0 14px;
   font-size: var(--text-secondary-size);
   line-height: 1.5;
@@ -4024,9 +4253,9 @@ body {
   width: 100%;
   padding: 12px 16px;
   border-radius: 12px;
-  border: 1px solid rgba(35, 43, 58, 0.12);
+  border: 1px solid var(--border);
   background: rgba(35, 43, 58, 0.05);
-  color: #232b3a;
+  color: var(--text-primary);
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -4056,7 +4285,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--purple-700);
+  color: var(--brand-text);
 }
 
 .plan-item-detail {
@@ -4078,7 +4307,7 @@ body {
   padding: 0;
   border: none;
   background: none;
-  color: var(--purple-700);
+  color: var(--brand-text);
   font-size: 12.5px;
   font-weight: 700;
   text-decoration: underline;
@@ -4101,8 +4330,8 @@ body {
   text-align: left;
   padding: 22px 24px;
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(35, 43, 58, 0.1);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
   box-shadow: 0 18px 48px rgba(35, 43, 58, 0.12);
   margin-top: 16px;
 }
@@ -4118,7 +4347,7 @@ body {
   flex: 0 0 auto;
   font-size: 12.5px;
   font-weight: 700;
-  color: var(--purple-700);
+  color: var(--brand-text);
 }
 
 .daily-goal-items {
@@ -4141,7 +4370,7 @@ body {
 }
 
 .daily-goal-item.is-done {
-  color: #232b3a;
+  color: var(--text-primary);
   font-weight: 700;
   background: rgba(96, 103, 240, 0.12);
 }
@@ -4153,7 +4382,7 @@ body {
   width: 16px;
   height: 16px;
   border-radius: 4px;
-  border: 1.5px solid rgba(35, 43, 58, 0.35);
+  border: 1.5px solid var(--border-strong);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -4182,7 +4411,7 @@ body {
   width: 18px;
   height: 18px;
   border-radius: 999px;
-  border: 1.5px solid rgba(35, 43, 58, 0.35);
+  border: 1.5px solid var(--border-strong);
   background: transparent;
   color: var(--text-muted);
   font-size: 11px;
@@ -4207,8 +4436,8 @@ body {
   margin-top: 10px;
   padding: 12px 14px;
   border-radius: 12px;
-  background: #fff;
-  border: 1px solid rgba(35, 43, 58, 0.15);
+  background: var(--surface-0);
+  border: 1px solid var(--border);
   box-shadow: 0 4px 16px rgba(35, 43, 58, 0.1);
   font-size: 12.5px;
   line-height: 1.5;
@@ -4220,14 +4449,14 @@ body {
   margin: 0;
   /* .landing-panel p (regra global mais antiga) força texto branco — sem
      isso o popover fica com texto invisível sobre o próprio fundo branco. */
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 .daily-goal-complete {
   margin: 10px 0 0;
   font-size: 13px;
   font-weight: 700;
-  color: var(--purple-700);
+  color: var(--brand-text);
 }
 
 .daily-goal-edit-options {
@@ -4235,7 +4464,7 @@ body {
   gap: 6px;
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px dashed rgba(35, 43, 58, 0.15);
+  border-top: 1px dashed var(--border);
 }
 
 .daily-goal-edit-option {
@@ -4255,8 +4484,8 @@ body {
   text-align: left;
   padding: 22px 24px;
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(35, 43, 58, 0.1);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
   box-shadow: 0 18px 48px rgba(35, 43, 58, 0.12);
 }
 
@@ -4281,13 +4510,13 @@ body {
 .review-card-head h2 {
   margin: 0;
   font-size: 1.15rem;
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 .review-card-count {
   font-size: 12.5px;
   font-weight: 700;
-  color: var(--purple-700);
+  color: var(--brand-text);
   background: rgba(96, 103, 240, 0.14);
   padding: 4px 12px;
   border-radius: 999px;
@@ -4313,9 +4542,9 @@ body {
   width: 100%;
   padding: 10px 14px;
   border-radius: 12px;
-  border: 1px solid rgba(35, 43, 58, 0.12);
-  background: #f2f3f6;
-  color: #232b3a;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-primary);
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -4353,7 +4582,7 @@ body {
   flex: 0 0 auto;
   font-size: 12px;
   font-weight: 700;
-  color: var(--purple-700);
+  color: var(--brand-text);
   background: rgba(96, 103, 240, 0.14);
   padding: 4px 10px;
   border-radius: 999px;
@@ -4388,7 +4617,7 @@ body {
 
 .wordbook-sticky-top {
   flex: none;
-  background: rgba(255, 255, 255, 0.97);
+  background: var(--surface-1);
   padding-bottom: 18px;
   margin-bottom: 4px;
 }
@@ -4434,8 +4663,8 @@ body {
   margin-top: 16px;
   padding: 14px 16px;
   border-radius: 14px;
-  background: #f2f3f6;
-  border: 1px solid rgba(35, 43, 58, 0.12);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
 }
 
 .wordbook-form .wordbook-input--wide,
@@ -4450,9 +4679,9 @@ body {
 .wordbook-input {
   padding: 10px 12px;
   border-radius: 10px;
-  border: 1px solid rgba(35, 43, 58, 0.2);
-  background: #fff;
-  color: #232b3a;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-0);
+  color: var(--text-primary);
   font: inherit;
   font-size: 16px;
   min-width: 0;
@@ -4486,7 +4715,7 @@ body {
   transform: translateY(-50%);
   font-weight: 800;
   font-size: 22px;
-  color: #c0392b;
+  color: var(--danger-text);
   text-decoration: none;
   line-height: 1;
 }
@@ -4510,7 +4739,7 @@ body {
   gap: 2px;
   min-height: 92px;
   padding: 10px;
-  border: 2px dashed rgba(35, 43, 58, 0.25);
+  border: 2px dashed var(--border-strong);
   border-radius: 12px;
   background: rgba(35, 43, 58, 0.03);
   cursor: pointer;
@@ -4553,17 +4782,17 @@ body {
 .image-dropzone-error {
   margin-top: 4px;
   font-size: 11.5px;
-  color: #c0392b;
+  color: var(--danger-text);
 }
 
 .image-dropzone--filled {
   position: relative;
   padding: 0;
   border-style: solid;
-  border-color: rgba(35, 43, 58, 0.15);
+  border-color: var(--border);
   cursor: default;
   overflow: hidden;
-  background: #fff;
+  background: var(--surface-0);
 }
 
 .image-dropzone-preview {
@@ -4635,8 +4864,8 @@ body {
   gap: 14px;
   padding: 12px 16px;
   border-radius: 14px;
-  background: #f2f3f6;
-  border: 1px solid rgba(35, 43, 58, 0.12);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
 }
 
 .wordbook-entry-thumb {
@@ -4645,14 +4874,14 @@ body {
   height: 88px;
   object-fit: cover;
   border-radius: 12px;
-  border: 1px solid rgba(35, 43, 58, 0.15);
-  background: #fff;
+  border: 1px solid var(--border);
+  background: var(--surface-0);
 }
 
 .wordbook-entry-main {
   flex: 1;
   min-width: 0;
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 /* Fontes maiores em toda a lista de palavras (pedido do usuário) — só o
@@ -4688,7 +4917,7 @@ body {
 }
 
 .word-audio-btn:hover:not(:disabled) {
-  color: var(--purple-700);
+  color: var(--brand-text);
   background: rgba(76, 69, 222, 0.1);
 }
 
@@ -4698,7 +4927,7 @@ body {
 }
 
 .word-audio-btn--playing {
-  color: var(--purple-700);
+  color: var(--brand-text);
 }
 
 .word-audio-btn--error {
@@ -4713,7 +4942,7 @@ body {
 .wordbook-entry .wordbook-entry-meaning {
   margin: 2px 0 0;
   font-size: 16.5px;
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 /* Mesmo tamanho do significado acima (era 15.5 contra 16.5 — 1px de
@@ -4744,7 +4973,7 @@ body {
   display: inline-block;
   font-size: 12.5px;
   font-weight: 700;
-  color: #4c45de;
+  color: var(--brand-600);
   background: rgba(76, 69, 222, 0.1);
   border: 1px solid rgba(76, 69, 222, 0.25);
   border-radius: 999px;
@@ -4798,7 +5027,7 @@ body {
 }
 
 .wordbook-expand:hover {
-  color: var(--purple-700);
+  color: var(--brand-text);
   background: rgba(76, 69, 222, 0.1);
 }
 
@@ -4814,15 +5043,15 @@ body {
 }
 
 .wordbook-delete:hover {
-  color: #c0392b;
+  color: var(--danger-text);
   background: rgba(192, 57, 43, 0.08);
 }
 
 /* Flashcard do modo de prática. */
 .flashcard {
   border-radius: 18px;
-  border: 1px solid rgba(35, 43, 58, 0.15);
-  background: #fff;
+  border: 1px solid var(--border);
+  background: var(--surface-0);
   padding: 30px 28px;
   text-align: center;
   box-shadow: 0 14px 40px rgba(35, 43, 58, 0.12);
@@ -4843,7 +5072,7 @@ body {
   margin: 0;
   font-size: 2rem;
   font-weight: 800;
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 /* 🔊 na palavra do flashcard (ver WordAudioButton, App.js) — ouvir a
@@ -4874,8 +5103,8 @@ body {
 .flashcard-back {
   margin-top: 18px;
   padding-top: 18px;
-  border-top: 1px dashed rgba(35, 43, 58, 0.25);
-  color: #232b3a;
+  border-top: 1px dashed var(--border-strong);
+  color: var(--text-primary);
 }
 
 /* Mesmo tamanho da frase de exemplo (ver .flashcard-example): no verso do
@@ -4884,7 +5113,7 @@ body {
 .flashcard .flashcard-meaning {
   margin: 0;
   font-size: 1.2rem;
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 /* "Click to add meaning": texto clicavel no flashcard, sublinhado tracejado
@@ -4893,12 +5122,12 @@ body {
    em WordbookPage), que salva no blur/Enter. */
 .flashcard .flashcard-meaning-clickable {
   cursor: pointer;
-  border-bottom: 1px dashed rgba(35, 43, 58, 0.35);
+  border-bottom: 1px dashed var(--border-strong);
   display: inline-block;
 }
 
 .flashcard .flashcard-meaning-clickable:hover {
-  color: var(--purple-700);
+  color: var(--brand-text);
   border-bottom-color: var(--purple-500);
 }
 
@@ -4910,7 +5139,7 @@ body {
      entrar/sair do modo de edicao. */
   font-size: 1.2rem;
   font-family: inherit;
-  color: #232b3a;
+  color: var(--text-primary);
   border: 2px solid var(--purple-500);
   border-radius: 8px;
   box-sizing: border-box;
@@ -4959,7 +5188,7 @@ body {
 .flashcard-spell {
   margin-top: 20px;
   padding-top: 16px;
-  border-top: 1px dashed rgba(35, 43, 58, 0.2);
+  border-top: 1px dashed var(--border-strong);
 }
 
 .flashcard-spell-label {
@@ -4983,10 +5212,10 @@ body {
   max-width: 260px;
   padding: 10px 14px;
   border-radius: 10px;
-  border: 1px solid rgba(35, 43, 58, 0.25);
+  border: 1px solid var(--border-strong);
   font-family: inherit;
   font-size: 1rem;
-  color: #232b3a;
+  color: var(--text-primary);
   box-sizing: border-box;
 }
 
@@ -5011,11 +5240,11 @@ body {
 }
 
 .flashcard .flashcard-spell-feedback--correct {
-  color: #0e9f4e;
+  color: var(--success-text);
 }
 
 .flashcard .flashcard-spell-feedback--incorrect {
-  color: #c0392b;
+  color: var(--danger-text);
 }
 
 .flashcard-actions {
@@ -5109,7 +5338,10 @@ body {
   font-weight: 800;
   font-size: 14px;
   cursor: pointer;
-  box-shadow: 0 14px 36px rgba(76, 69, 222, 0.4);
+  /* Sem halo colorido, igual .upload-button/.brand-mark. Aqui a sombra é um
+     pouco mais presente que a dos botões normais porque o "+ Word" flutua
+     por cima do PDF e precisa se descolar dele. */
+  box-shadow: 0 4px 12px rgba(35, 43, 58, 0.35);
   transition: background 140ms, transform 140ms;
 }
 
@@ -5132,9 +5364,9 @@ body {
   padding: 8px 20px 8px 8px;
   border: none;
   border-radius: 999px;
-  background: #fff;
+  background: var(--surface-0);
   border: 1px solid rgba(76, 69, 222, 0.3);
-  color: var(--purple-700);
+  color: var(--brand-text);
   font-weight: 800;
   font-size: 14px;
   cursor: pointer;
@@ -5171,8 +5403,8 @@ body {
   gap: 8px;
   padding: 16px;
   border-radius: 16px;
-  background: #fff;
-  border: 1px solid rgba(35, 43, 58, 0.15);
+  background: var(--surface-0);
+  border: 1px solid var(--border);
   box-shadow: 0 24px 60px rgba(26, 33, 48, 0.3);
 }
 
@@ -5181,7 +5413,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 .word-quickadd-close {
@@ -5195,7 +5427,7 @@ body {
 }
 
 .word-quickadd-close:hover {
-  color: #232b3a;
+  color: var(--text-primary);
   background: rgba(35, 43, 58, 0.08);
 }
 
@@ -5257,7 +5489,7 @@ body {
 }
 
 .app-toast--success {
-  background: linear-gradient(135deg, #0e9f4e, #19c964);
+  background: linear-gradient(135deg, #0b7f3e, #12a352);
 }
 
 .app-toast--error {
@@ -5282,7 +5514,7 @@ body {
 .app-confirm-dialog {
   width: 100%;
   max-width: 420px;
-  background: #fff;
+  background: var(--surface-0);
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
@@ -5303,7 +5535,7 @@ body {
 
 .app-confirm-message {
   margin: 0 0 20px;
-  color: #232b3a;
+  color: var(--text-primary);
   font-size: 15.5px;
   line-height: 1.6;
 }
@@ -5325,7 +5557,7 @@ body {
 
 .app-confirm-btn--cancel {
   background: rgba(35, 43, 58, 0.08);
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 .app-confirm-btn--cancel:hover {
@@ -5350,8 +5582,8 @@ body {
    CLAUDE.md — esqueci de aplicar aqui na primeira versão). */
 .landing-panel.my-notes-panel {
   max-height: none;
-  background: #fbfcfd;
-  border: 1px solid rgba(35, 43, 58, 0.1);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
 }
 
 .my-notes-panel {
@@ -5393,7 +5625,7 @@ body {
   font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 18px;
   font-weight: 600;
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 .my-notes-card {
@@ -5402,13 +5634,12 @@ body {
   gap: 10px;
   padding: 12px 16px;
   border-radius: 14px;
-  background: #f2f3f6;
-  border: 1px solid rgba(35, 43, 58, 0.12);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
 }
 
 .my-notes-card:hover {
-  background: #eaebf0;
-  border-color: rgba(35, 43, 58, 0.22);
+  border-color: var(--brand-500);
 }
 
 .my-notes-card-link {
@@ -5424,7 +5655,7 @@ body {
 .my-notes-card-title {
   font-weight: 700;
   font-size: 17px;
-  color: var(--purple-700);
+  color: var(--brand-text);
 }
 
 .my-notes-card-preview {
@@ -5446,6 +5677,6 @@ body {
 }
 
 .my-notes-card-delete:hover {
-  color: #c0392b;
+  color: var(--danger-text);
   background: rgba(192, 57, 43, 0.08);
 }
