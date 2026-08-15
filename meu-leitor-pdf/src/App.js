@@ -1587,6 +1587,58 @@ function App() {
   }, [theme]);
   const toggleTheme = () => setTheme((value) => (value === 'dark' ? 'light' : 'dark'));
 
+  // Progresso de rolagem da Home (0 no topo, 1 no fim da página), publicado
+  // como variável CSS pra a camada .home-hero-bg crescer/aparecer junto — ver
+  // o comentário dela no JSX e as regras em App.css.
+  //
+  // Três decisões que valem manter:
+  // - Escrita numa VARIÁVEL CSS, não em estado do React: mudar estado a cada
+  //   quadro re-renderizaria a Home inteira durante a rolagem. Aqui o React
+  //   nem fica sabendo; só o compositor trabalha.
+  // - `requestAnimationFrame` como trava: o evento de scroll dispara muito
+  //   mais que a taxa de quadros, e sem isso escreveríamos várias vezes por
+  //   quadro à toa.
+  // - Só na Home e só com movimento permitido; ao sair da tela o valor volta
+  //   a 0, senão a variável ficaria "presa" no último progresso e a próxima
+  //   entrada na Home começaria com o fundo já aceso.
+  useEffect(() => {
+    const root = document.documentElement;
+    const clear = () => root.style.setProperty('--home-scroll', '0');
+    if (activePage !== 'home') {
+      clear();
+      return undefined;
+    }
+    let reduce = false;
+    try {
+      reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (error) {
+      // matchMedia indisponível — segue com o efeito.
+    }
+    if (reduce) {
+      clear();
+      return undefined;
+    }
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const max = root.scrollHeight - window.innerHeight;
+      const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+      root.style.setProperty('--home-scroll', p.toFixed(3));
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      clear();
+    };
+  }, [activePage]);
+
   const [confirmDialog, setConfirmDialog] = useState(null);
   const confirmResolveRef = useRef(null);
   const askConfirm = (message, { confirmLabel = 'OK', cancelLabel = 'Cancel' } = {}) => new Promise((resolve) => {
@@ -6971,6 +7023,19 @@ function App() {
         </main>
       ) : (
         <main className="landing-page landing-page--home">
+          {/* Camada de fundo que "recebe" a imagem do hero conforme a página
+              rola (pedido do dono, 2026-08-09): fixa, ocupando a janela toda,
+              nascendo invisível e ganhando presença + escala até o fim da
+              rolagem. É a MESMA imagem do hero, então lê-se como a foto se
+              espalhando pelo fundo.
+              Camada separada, e não a própria <img> saindo do fluxo: mover um
+              elemento de "no fluxo" para "fixo" exigiria medir e reposicionar
+              a cada quadro (FLIP), com risco de salto no layout. Aqui só
+              opacidade e escala mudam — as duas propriedades que o navegador
+              anima sem recalcular layout, o que importa no pendrive.
+              aria-hidden porque é decoração: a mesma imagem já tem alt no
+              hero, e anunciá-la duas vezes só atrapalharia. */}
+          <div className="home-hero-bg" aria-hidden="true" />
           <div className="home-hero">
             <img
               src="/openCourse.png"
@@ -7015,6 +7080,24 @@ function App() {
                 onTogglePref={handleToggleDailyGoalPref}
                 overallMasteryPercent={overallMasteryPercent}
               />
+            )}
+            {/* "Progress by course / level" também na Home (pedido do dono,
+                2026-08-09). É o MESMO componente do Progress Dashboard, não
+                uma cópia — ver CourseProgressList.
+                Além de ser informação que ele quer à mão, é o que dá ALTURA à
+                Home: ela tinha só ~200px de rolagem num monitor de 1080p, e o
+                efeito de scroll da imagem (próximo passo) precisa de pista pra
+                acontecer gradualmente em vez de num piscar. */}
+            {userName && (
+              <section className="home-progress" aria-label="Progress by course">
+                <h2 className="dashboard-section-title">Progress by course / level</h2>
+                <CourseProgressList
+                  courseProgress={courseProgress}
+                  lastVisitedByCourse={lastVisitedByCourse}
+                  formatLastVisitedLabel={formatLastVisitedLabel}
+                  onOpenLastVisited={openLastVisitedEntry}
+                />
+              </section>
             )}
           </div>
         </main>
@@ -7182,6 +7265,67 @@ function UnitBadgeLegend() {
 // hoje: palavra nova só vence na virada do dia (ver startOfNextLocalDay),
 // então sem essa linha adicionar palavras não mudava nada visível na Home e
 // parecia que elas não tinham sido registradas.
+// Conta de 0 até `target` quando o número entra na tela (pedido do dono,
+// 2026-08-09). Diferente de uma animação decorativa, esta CARREGA sentido: é
+// o app encenando o progresso de quem estuda, que é o assunto do próprio
+// número — por isso só é usada em contadores de avanço, nunca em número
+// qualquer (um "Card 3 of 12" contando seria só ruído).
+//
+// Decisões que valem manter:
+// - `requestAnimationFrame`, não `setInterval`: o passo acompanha a taxa real
+//   de quadros em vez de assumir 60fps, então não fica lento no pendrive.
+// - easing "out" (desacelera no fim): o número quase chega e assenta, que é o
+//   que dá a sensação de contagem em vez de rolagem uniforme.
+// - respeita `prefers-reduced-motion` — quem pediu menos movimento no sistema
+//   recebe o valor final direto, igual à regra em App.css.
+// - se o alvo mudar no meio (o usuário respondeu algo), recomeça do valor
+//   ATUAL, não de 0: reiniciar do zero pareceria o progresso ter sumido.
+function useCountUp(target, duration = 800) {
+  const safeTarget = Number.isFinite(target) ? target : 0;
+  // Começa em 0, NÃO no valor final: iniciar no alvo fazia `from === target`
+  // logo na montagem, o efeito saía sem animar e o número só reagiria a
+  // mudanças posteriores — ou seja, a contagem nunca aparecia ao abrir a tela,
+  // que é justamente quando ela deve acontecer.
+  const [value, setValue] = useState(0);
+  // Guarda o valor JÁ MOSTRADO, não o alvo. Essa distinção é o que faz o hook
+  // sobreviver ao StrictMode: em desenvolvimento o React monta o efeito, limpa
+  // e monta de novo. Numa versão anterior a limpeza gravava o ALVO aqui, então
+  // na segunda passada `from` já era igual ao alvo, a animação era pulada e o
+  // número ficava parado em 0 pra sempre (bug real, pego medindo).
+  // Guardando o valor exibido, a segunda passada simplesmente continua de onde
+  // a primeira parou.
+  const valueRef = useRef(0);
+  useEffect(() => {
+    let reduce = false;
+    try {
+      reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (error) {
+      // matchMedia indisponível — segue animando.
+    }
+    if (reduce || duration <= 0) {
+      valueRef.current = safeTarget;
+      setValue(safeTarget);
+      return undefined;
+    }
+    const from = valueRef.current;
+    if (from === safeTarget) return undefined;
+    const start = performance.now();
+    let raf = 0;
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - (1 - t) ** 3;
+      const current = Math.round(from + (safeTarget - from) * eased);
+      valueRef.current = current;
+      setValue(current);
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    // A limpeza só CANCELA o quadro pendente. Nunca mexer no valueRef aqui.
+    return () => cancelAnimationFrame(raf);
+  }, [safeTarget, duration]);
+  return value;
+}
+
 function TodayPlanCard({ newUnit, listening, words, reviewQueue, onOpenReviewItem, onSeeAllReviews }) {
   const reviewItems = reviewQueue.slice(0, 2);
   const moreReviewCount = reviewQueue.length - reviewItems.length;
@@ -7293,6 +7437,9 @@ const DAILY_GOAL_EXPLANATIONS = {
 function DailyGoalCard({ items, completedCount, allItems, onTogglePref, overallMasteryPercent }) {
   const [editing, setEditing] = useState(false);
   const [openInfoKey, setOpenInfoKey] = useState(null);
+  // ANTES do return abaixo: hook não pode ficar depois de uma saída
+  // antecipada, senão a ordem de chamada muda entre renders e o React quebra.
+  const animatedMastery = useCountUp(overallMasteryPercent);
 
   if (items.length === 0 && !editing) {
     return null;
@@ -7309,7 +7456,7 @@ function DailyGoalCard({ items, completedCount, allItems, onTogglePref, overallM
         )}
       </div>
       <p className="plan-card-hint">
-        You've mastered <strong>{overallMasteryPercent}%</strong> of your courses so far.
+        You've mastered <strong>{animatedMastery}%</strong> of your courses so far.
       </p>
       {items.length > 0 && (
         <ul className="daily-goal-items">
@@ -7453,6 +7600,43 @@ function ReviewCard({ items, dueWordsCount, onOpenItem, onOpenWords, embedded })
 const DASHBOARD_BAR_SEGMENTS = ['visited', 'rated', 'mastered'];
 const DASHBOARD_LEGEND_ORDER = ['unvisited', 'visited', 'rated', 'mastered'];
 
+// Bloco "Progress by course / level" — as 4 barras segmentadas com a contagem
+// por status e o "Continue where you left off" de cada curso.
+//
+// Vive num componente próprio porque aparece em DOIS lugares: no Progress
+// Dashboard (onde nasceu) e na Home (pedido do dono, 2026-08-09). Duplicar a
+// marcação nos dois seria a receita para os blocos divergirem — bastaria
+// alguém mexer no rótulo de nível ou na ordem dos cursos num só.
+function CourseProgressList({ courseProgress, lastVisitedByCourse, formatLastVisitedLabel, onOpenLastVisited }) {
+  return (
+    <div className="dashboard-courses">
+      {courseProgress.map((course, index) => {
+        const entry = lastVisitedByCourse[course.id];
+        // Mesmo rótulo "Beginner"/"Intermediate" das telas Courses/Listening/
+        // Dictation — só na 1ª linha de cada grupo (courseProgress já vem
+        // ordenado por nível, ver COURSE_LEVEL_ORDER).
+        const showLevelHeading = index === 0 || courseProgress[index - 1].level !== course.level;
+        return (
+          <Fragment key={course.id}>
+            {showLevelHeading && course.level && (
+              <span className="course-level-heading">{course.level}</span>
+            )}
+            <DashboardCourseRow
+              title={course.title}
+              total={course.total}
+              tally={course.tally}
+              unitLabel={course.unitLabel}
+              continueEntry={entry}
+              continueLabel={entry ? formatLastVisitedLabel(course.id, entry) : ''}
+              onContinue={() => onOpenLastVisited(course.id, entry)}
+            />
+          </Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
 function DashboardCourseRow({ title, total, tally, unitLabel = 'units', continueEntry, continueLabel, onContinue }) {
   const safeTotal = total || 1;
   return (
@@ -7531,6 +7715,19 @@ function DashboardPage({
   const masteredTotal = courseProgress.reduce((sum, course) => sum + course.tally.mastered, 0);
   const unitsTotal = courseProgress.reduce((sum, course) => sum + course.total, 0);
 
+  // Contagem de 0 até o valor ao abrir a tela (ver useCountUp). Anima só o
+  // número que MEDE avanço; o total ao lado ("/400") fica parado de
+  // propósito — ele é a régua, não a conquista, e vê-lo mexer junto tiraria
+  // a referência de quanto falta.
+  const animWords = useCountUp(wordbookCount);
+  const animWordsDue = useCountUp(wordbookDueCount);
+  const animReviews = useCountUp(reviewQueueCount);
+  const animMastered = useCountUp(masteredTotal);
+  const animMastery = useCountUp(overallMasteryPercent);
+  const animListening = useCountUp(listeningAttempted);
+  const animDictation = useCountUp(dictationAttempted);
+  const animSpeaking = useCountUp(speakingAttempted);
+
   return (
     <div className="landing-panel dashboard-panel">
       <p className="eyebrow">Progress</p>
@@ -7585,64 +7782,45 @@ function DashboardPage({
 
       <div className="dashboard-stats">
         <button type="button" className="dashboard-stat-tile" onClick={onOpenWordbook}>
-          <span className="dashboard-stat-value">{wordbookCount}</span>
+          <span className="dashboard-stat-value">{animWords}</span>
           <span className="dashboard-stat-label">Words learned</span>
         </button>
         <button type="button" className="dashboard-stat-tile" onClick={onOpenWordbook}>
-          <span className="dashboard-stat-value">{wordbookDueCount}</span>
+          <span className="dashboard-stat-value">{animWordsDue}</span>
           <span className="dashboard-stat-label">Words due for review</span>
         </button>
         <button type="button" className="dashboard-stat-tile" onClick={onOpenCourses}>
-          <span className="dashboard-stat-value">{reviewQueueCount}</span>
+          <span className="dashboard-stat-value">{animReviews}</span>
           <span className="dashboard-stat-label">Reviews due</span>
         </button>
         <div className="dashboard-stat-tile dashboard-stat-tile--static">
           <span className="dashboard-stat-value">
-            {masteredTotal}/{unitsTotal}
-            <small className="dashboard-stat-subvalue">{overallMasteryPercent}%</small>
+            {animMastered}/{unitsTotal}
+            <small className="dashboard-stat-subvalue">{animMastery}%</small>
           </span>
           <span className="dashboard-stat-label">Units mastered (all courses) — overall mastery</span>
         </div>
         <div className="dashboard-stat-tile dashboard-stat-tile--static">
-          <span className="dashboard-stat-value">{listeningAttempted}/{listeningTotal}</span>
+          <span className="dashboard-stat-value">{animListening}/{listeningTotal}</span>
           <span className="dashboard-stat-label">Listening exercises practiced</span>
         </div>
         <div className="dashboard-stat-tile dashboard-stat-tile--static">
-          <span className="dashboard-stat-value">{dictationAttempted}/{dictationTotal}</span>
+          <span className="dashboard-stat-value">{animDictation}/{dictationTotal}</span>
           <span className="dashboard-stat-label">Dictation exercises practiced</span>
         </div>
         <div className="dashboard-stat-tile dashboard-stat-tile--static">
-          <span className="dashboard-stat-value">{speakingAttempted}/{speakingTotal}</span>
+          <span className="dashboard-stat-value">{animSpeaking}/{speakingTotal}</span>
           <span className="dashboard-stat-label">Speaking exercises practiced</span>
         </div>
       </div>
 
       <h2 className="dashboard-section-title">Progress by course / level</h2>
-      <div className="dashboard-courses">
-        {courseProgress.map((course, index) => {
-          const entry = lastVisitedByCourse[course.id];
-          // Mesmo rótulo "Beginner"/"Intermediate" das telas Courses/
-          // Listening/Dictation — só na 1ª linha de cada grupo (courseProgress
-          // já vem ordenado por nível, ver COURSE_LEVEL_ORDER).
-          const showLevelHeading = index === 0 || courseProgress[index - 1].level !== course.level;
-          return (
-            <Fragment key={course.id}>
-              {showLevelHeading && course.level && (
-                <span className="course-level-heading">{course.level}</span>
-              )}
-              <DashboardCourseRow
-                title={course.title}
-                total={course.total}
-                tally={course.tally}
-                unitLabel={course.unitLabel}
-                continueEntry={entry}
-                continueLabel={entry ? formatLastVisitedLabel(course.id, entry) : ''}
-                onContinue={() => onOpenLastVisited(course.id, entry)}
-              />
-            </Fragment>
-          );
-        })}
-      </div>
+      <CourseProgressList
+        courseProgress={courseProgress}
+        lastVisitedByCourse={lastVisitedByCourse}
+        formatLastVisitedLabel={formatLastVisitedLabel}
+        onOpenLastVisited={onOpenLastVisited}
+      />
     </div>
   );
 }

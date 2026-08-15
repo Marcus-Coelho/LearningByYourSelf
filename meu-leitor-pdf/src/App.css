@@ -349,6 +349,143 @@
   transform: translateY(3px);
 }
 
+/* "Progress by course / level" na Home. As três medidas abaixo são as MESMAS
+   do .plan-card e do .daily-goal-card, de propósito: .home-hero é uma coluna
+   com `align-items: center`, então todo filho encolhe até o tamanho do
+   conteúdo a não ser que declare `width: 100%`. Sem isso este bloco nascia
+   mais estreito que os cards de cima (relatado pelo dono, 2026-08-09).
+   Se a largura dos cards mudar um dia, esta tem que acompanhar. */
+.home-progress {
+  /* +50px = o padding lateral (24+24) e a borda (1+1) do .daily-goal-card.
+     Aqueles cards não usam `border-box`, então o `max-width: 1120px` deles
+     vale só pra caixa de CONTEÚDO: na tela eles ocupam 1170 e transbordam o
+     pai (.home-hero, que tem 1120) em 25px de cada lado. Este bloco precisa
+     transbordar igual pra terminar na mesma linha vertical.
+     `max-width: 1170px` sozinho NÃO resolvia: max-width só limita, nunca
+     expande — com `width: 100%` o bloco continuava nos 1120 do pai (medido).
+     Se o padding ou a borda daqueles cards mudar, os 50px mudam junto. */
+  width: calc(100% + 50px);
+  text-align: left;
+  margin-top: 16px;
+}
+
+/* O título e os rótulos de nível ficam fora de card, direto sobre o fundo da
+   página — sem esta margem eles encostam no card anterior.
+   O tamanho iguala o dos títulos "Today's Plan"/"Today's Goal" (.plan-card-head
+   h2, 1.15rem): eles são o MESMO nível de hierarquia na Home — cada um titula
+   um bloco — e o 1.1rem herdado do Progress Dashboard destoava (relatado pelo
+   dono, 2026-08-09). Escopado em .home-progress pra não mexer no Dashboard,
+   onde aquele tamanho continua valendo. */
+.home-progress .dashboard-section-title {
+  margin-top: 8px;
+  font-size: 1.15rem;
+}
+
+/* ============ IMAGEM DO HERO VIRANDO FUNDO AO ROLAR (Home) =============
+   Pedido do dono, 2026-08-09. A foto do hero "se espalha" pelo fundo da
+   página conforme se rola, crescendo até o fim da rolagem.
+   O progresso 0->1 vem do JS numa variável CSS (--home-scroll, ver App.js);
+   aqui só se interpola. Nenhuma propriedade que force recálculo de layout —
+   só `opacity` e `transform`, que o navegador compõe na GPU. Isso importa
+   porque a Home também roda no pendrive.
+   Isto só faz sentido porque a Home ganhou altura: antes ela tinha ~200px de
+   rolagem num monitor de 1080p e o efeito inteiro aconteceria num piscar; com
+   o bloco "Progress by course" ela passou a ~850px. */
+.home-hero-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--page-hero-bg);
+  background-size: cover;
+  background-position: center;
+  /* TETO DA PRESENÇA DA FOTO — número em avaliação pelo dono (2026-08-09).
+     Histórico: 0.16 -> 0.28 -> 0.38. Ele pediu menos translucidez, ou seja, a foto
+     mais presente. Subir mais que isso começa a disputar com a leitura dos
+     textos que ficam FORA de card ("Progress by course / level" e os rótulos
+     de nível), que é o limite prático — os cards têm fundo opaco e não sofrem.
+     Se for mexer, mexa aqui e no valor do tema escuro logo abaixo. */
+  opacity: calc(var(--home-scroll, 0) * 0.38);
+  transform: scale(calc(1 + var(--home-scroll, 0) * 0.12));
+  transform-origin: center;
+}
+
+/* No escuro a mesma foto clareia demais o fundo — escurece e dessatura, igual
+   já se faz com o fundo desfocado das outras telas. */
+:root[data-theme='dark'] .home-hero-bg {
+  /* 0.13 -> 0.22 -> 0.30, acompanhando o aumento do tema claro. Fica ABAIXO dele de
+     propósito: aqui a foto é clara sobre fundo escuro, então o mesmo valor
+     pesaria bem mais na tela. O brightness/saturate seguem segurando o
+     brilho. */
+  opacity: calc(var(--home-scroll, 0) * 0.30);
+  filter: brightness(0.5) saturate(0.7);
+}
+
+/* O conteúdo tem que ficar ACIMA da camada, senão a foto passa por cima dos
+   cards ao ganhar opacidade. */
+.landing-page--home .home-hero {
+  position: relative;
+  z-index: 1;
+}
+
+/* ===================== ENTRADA DOS ELEMENTOS ==========================
+   Movimento de entrada da Home e da tela de cadastro (pedido do dono,
+   2026-08-09: "algo que dê vida, movimento", inspirado num site que revela
+   o conteúdo conforme ele aparece).
+   Três regras que valem pra qualquer animação que venha depois nesse app:
+   1) Acontece UMA VEZ por montagem da tela, nunca em loop. Isto aqui é
+      ferramenta de estudo aberta todo dia — o que encanta na 1ª vez irrita
+      na ducentésima.
+   2) Nada nas 9 telas de leitura. Ali a pessoa está lendo PDF e ouvindo
+      áudio; movimento na periferia atrapalha.
+   3) `both` no shorthand pra o elemento já nascer invisível (estado do
+      `from` aplicado durante o atraso) — sem isso ele pisca visível antes de
+      a animação começar.
+   O deslocamento é pequeno (10px) e a curva desacelera no fim: a intenção é
+   parecer que a tela se MONTOU, não que os elementos voaram. */
+@keyframes ll-rise-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Só as FOLHAS entram, nunca um contêiner e os filhos dele ao mesmo tempo —
+   duas opacidades animando encaixadas dão um fade duplo, que borra. Por isso
+   .home-hero-footer não está na lista, só os filhos dele. */
+.home-hero > .home-hero-image,
+.home-hero > .plan-card,
+.home-hero > .daily-goal-card,
+.home-hero-footer > *,
+.landing-panel.register-panel > * {
+  animation: ll-rise-in 340ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.home-hero > .home-hero-image { animation-delay: 0ms; }
+.home-hero-footer > *:nth-child(1) { animation-delay: 90ms; }
+.home-hero-footer > *:nth-child(2) { animation-delay: 150ms; }
+.home-hero-footer > *:nth-child(3) { animation-delay: 200ms; }
+.home-hero > .plan-card { animation-delay: 260ms; }
+.home-hero > .daily-goal-card { animation-delay: 330ms; }
+
+.landing-panel.register-panel > *:nth-child(1) { animation-delay: 0ms; }
+.landing-panel.register-panel > *:nth-child(2) { animation-delay: 70ms; }
+.landing-panel.register-panel > *:nth-child(3) { animation-delay: 130ms; }
+.landing-panel.register-panel > *:nth-child(4) { animation-delay: 190ms; }
+.landing-panel.register-panel > *:nth-child(n+5) { animation-delay: 240ms; }
+
+/* Desliga TUDO pra quem pediu menos movimento no sistema. Além de ser o
+   certo, é a válvula de escape: dá pra desligar a animação inteira sem tocar
+   no código. Vale também pro contador de números (ver useCountUp em App.js),
+   que checa a mesma preferência por JS. */
+@media (prefers-reduced-motion: reduce) {
+  .home-hero > .home-hero-image,
+  .home-hero > .plan-card,
+  .home-hero > .daily-goal-card,
+  .home-hero-footer > *,
+  .landing-panel.register-panel > * {
+    animation: none;
+  }
+}
+
 /* Botão de tema no header. `margin-left: auto` joga ele pro canto direito
    sem precisar de wrapper — é o único filho do .app-header que fica à
    direita, e o menu lateral (.side-drawer) é position:fixed, então não
@@ -760,6 +897,14 @@ body {
   gap: 2px;
   background: transparent;
   border: 2px solid var(--purple-500);
+  /* Índigo mais fechado que o --brand-text padrão (#4c45de), a pedido do dono
+     — este botão fica sobre a foto do hero, onde o tom normal lia claro
+     demais. Só no tema CLARO: no escuro o texto precisa ser claro, então lá
+     ele volta pro token (regra logo abaixo). */
+  color: #3a34b8;
+}
+
+:root[data-theme='dark'] .continue-cta {
   color: var(--brand-text);
 }
 
@@ -772,7 +917,12 @@ body {
   letter-spacing: normal;
   font-weight: 600;
   font-size: 12px;
-  opacity: 0.75;
+  /* Sem o `opacity: 0.75` de antes (pedido do dono, 2026-08-09: "deixe essas
+     letras um pouco mais escuras"). Era ele o principal motivo de a segunda
+     linha — "Unit 1A · American English A1" — parecer apagada: opacidade
+     desbota o texto contra QUALQUER fundo, e este botão ainda tem a foto do
+     hero passando por trás. Vale pras 3 telas que usam o botão (Home, Courses
+     e as de Listening/Dictation/Speaking), que tinham o mesmo problema. */
 }
 
 .landing-panel.vocabulary-page {
@@ -4326,6 +4476,10 @@ body {
 
 .plan-item-detail {
   display: block;
+  /* 15px explícito: herdava 16px do pai e ficava MAIOR que o nome dos cursos
+     no bloco de progresso logo abaixo, sendo o mesmo papel (o nome da coisa
+     dentro de um card). Padronização pedida pelo dono, 2026-08-09. */
+  font-size: 15px;
   font-weight: 700;
   margin-top: 2px;
 }
@@ -4344,7 +4498,9 @@ body {
   border: none;
   background: none;
   color: var(--brand-text);
-  font-size: 12.5px;
+  /* Mesmo token do .daily-goal-count acima — os dois são rótulos de apoio no
+     mesmo card e não tinham motivo pra medir diferente do resto. */
+  font-size: var(--text-secondary-size);
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -4381,7 +4537,9 @@ body {
 
 .daily-goal-count {
   flex: 0 0 auto;
-  font-size: 12.5px;
+  /* Token do texto secundário (13.5px) no lugar de um 12.5px avulso — ver
+     Decisões Imutáveis 10 no CLAUDE.md. */
+  font-size: var(--text-secondary-size);
   font-weight: 700;
   color: var(--brand-text);
 }
