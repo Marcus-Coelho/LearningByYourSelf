@@ -10,40 +10,59 @@
    ficarem mais específicos que ".landing-panel h1"/".landing-panel p"/
    ".landing-panel .eyebrow" do App.css e vencerem de qualquer jeito,
    independente da ordem de import. */
-/* A PÁGINA rola inteira, o painel cresce com o conteúdo (2026-08-06).
-   Antes era o contrário — página travada (overflow:hidden + align-items:
-   stretch) com rolagem interna só em .gve-list — pra evitar as DUAS barras
-   de rolagem que apareciam com 100+ exercícios (o .app-shell tem
-   height:100vh fixo e o conteúdo estourava pra fora dele). Só que travar a
-   página trata o SINTOMA: o remédio certo pra esse mesmo problema, já usado
-   nas grades de unit e na Home, é a classe .app-shell--allow-grow (aplicada
-   via JS em App.js, lista de activePage — 'grammar-vocab-exercises' entrou
-   lá junto com esta mudança), que deixa o app-shell crescer em vez de
-   cortar. Sem isso o painel media por uma altura que não era a real e o
-   conteúdo VAZAVA pra fora da caixa branca, com uma faixa vazia no meio
-   (bug real reportado pelo dono, com screenshot). align-items:flex-start é
-   obrigatório junto (nunca o center herdado de .landing-page): centralizar
-   conteúdo mais alto que a tela esconde a metade de cima atrás do header
-   sticky — mesma armadilha documentada no CLAUDE.md.
-   overflow:visible (não auto) é de propósito: com o app-shell crescendo,
-   quem rola de verdade é o documento. Se esta página continuasse com
-   overflow:auto ela seria um scroll container que nunca rola, e qualquer
-   position:sticky dentro dela (o filtro, ver .gve-filter-input) grudaria
-   nESSE container parado, ou seja, não funcionaria. */
+/* Esta tela NÃO rola na janela: quem rola é a lista de exercícios, por dentro
+   (ver .gve-list). O topo (voltar/título/placar/filtro) fica imóvel — pedido
+   do dono, 2026-08-09.
+   HISTÓRICO, pra ninguém refazer o caminho errado. Já foram tentados:
+   (a) página rolando inteira com .app-shell--allow-grow (2026-08-06) — o topo
+       ia embora junto e era justamente o que o dono não queria;
+   (b) o mesmo, com o bloco do topo em `position: sticky` — não bastou: ele
+       ainda deslizava os 40px de padding-top até encostar no header, e a
+       barra de rolagem da janela continuava lá.
+   Só a rolagem interna deixa o topo parado de verdade. Ela exige o
+   .app-shell travado em 100vh, por isso 'grammar-vocab-exercises' SAIU da
+   lista do .app-shell--allow-grow em App.js (ver o comentário lá).
+   `align-items: stretch` (não o flex-start de antes, nem o center herdado de
+   .landing-page) é o que faz o painel ocupar a altura toda; sem isso ele teria
+   altura de conteúdo e a lista não teria contra o que calcular o próprio
+   tamanho.
+   `min-height: 0` continua necessário pelo motivo já documentado no CLAUDE.md:
+   a regra base .landing-page tem min-height calculado com um header de 72px,
+   mas o real tem 81px. */
 .landing-page.vocabulary-mode.gve-mode {
-  align-items: flex-start;
-  overflow: visible;
+  align-items: stretch;
+  overflow: hidden;
   min-height: 0;
-  padding-top: 40px;
+  /* 20px (era 40px) — sobe o painel inteiro, e com ele o cabeçalho fixo, na
+     mesma medida (pedido do dono, 2026-08-09). Como esta tela não rola na
+     janela, todo pixel de respiro aqui em cima é altura que a lista de
+     exercícios deixa de ter. */
+  padding-top: 20px;
 }
 
 .gve-panel {
-  /* Mais largo que os 900px originais: os exercícios escritos têm frase +
-     campo de resposta por item, e a coluna estreita deixava tudo espremido
-     no meio de uma tela larga. */
-  max-width: 1080px;
+  /* Largura, em ordem cronológica: 900px -> 1080 -> 1320 -> 1600 (pedidos do
+     dono; o último em 2026-08-09, "aumente mais"). Os exercícios escritos têm
+     frase + campo de resposta por item, e a coluna estreita deixava tudo
+     espremido no meio de uma tela larga.
+     É `max-width`, então em tela menor o painel só encolhe junto — o limite
+     real vira a largura da janela menos os 24px de padding lateral que a
+     .landing-page já reserva de cada lado. Num monitor de ~1900px sobra
+     margem; num notebook de 1440px o painel encosta nesse limite e passa a
+     ocupar a largura toda disponível. */
+  max-width: 1600px;
   display: flex;
   flex-direction: column;
+  /* Deixa os filhos ENCOLHEREM: sem isso um item de flex não passa do tamanho
+     do próprio conteúdo, a lista fica do tamanho dos 115 exercícios e nunca
+     ganha barra própria. */
+  min-height: 0;
+  /* NÃO colocar overflow aqui. Já foi tentado (como rede de segurança) e
+     causou dois estragos: virando contêiner de rolagem, o painel passou a
+     contar o sangramento de 12px do .gve-sticky-top como overflow horizontal
+     — aparecia uma BARRA HORIZONTAL — e a barra vertical ainda comia largura
+     dos cards. Quem rola é só a .gve-list (e, na tela inicial, a
+     .gve-source-list). */
 }
 
 /* .landing-panel sozinho é o tema roxo escuro original (fundo quase
@@ -52,8 +71,8 @@
    Gotchas no CLAUDE.md); replicado aqui porque esta tela vive no próprio
    arquivo, fora de App.css. */
 .landing-panel.gve-panel {
-  background: #fbfcfd;
-  border: 1px solid rgba(35, 43, 58, 0.1);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
   /* Quicksand na tela inteira (não só nos títulos) — pedido do dono,
      2026-08-06. Herda pra todo texto descendente; os <button> desta tela
      precisam de "font-family: inherit" à parte (botão não herda fonte do
@@ -77,7 +96,7 @@
 .landing-panel.gve-panel .gve-source-heading,
 .landing-panel.gve-panel h1.gve-page-title {
   margin: 0 0 6px;
-  color: var(--purple-700);
+  color: var(--brand-text);
   font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 600;
   font-size: clamp(1.5rem, 2.2vw, 2rem);
@@ -91,7 +110,7 @@
    acima, mesma proporção usada no Listening/Ask Adele. */
 .landing-panel.gve-panel h1 {
   margin: 0 0 10px;
-  color: #232b3a;
+  color: var(--text-primary);
   font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 600;
   font-size: clamp(1.05rem, 1.5vw, 1.3rem);
@@ -107,6 +126,15 @@
   flex-direction: column;
   gap: 12px;
   margin-top: 16px;
+  /* Tela INICIAL (as 4 seções): ela não tem .gve-list pra rolar por dentro, e
+     desde que o painel passou a ter altura travada os cards ficariam cortados
+     numa janela muito baixa. Rola aqui, escopado só nesta lista — pôr o
+     overflow no painel fazia aparecer barra horizontal (ver .gve-panel). */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  margin-right: -16px;
+  padding-right: 16px;
 }
 
 .gve-source-card {
@@ -116,15 +144,17 @@
   text-align: left;
   padding: 18px 20px;
   border-radius: 14px;
-  background: #f2f3f6;
-  border: 1px solid rgba(35, 43, 58, 0.12);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   cursor: pointer;
   font: inherit;
 }
 
+/* Só a borda muda (pedido do dono, 2026-08-09): o fundo claro fixo daqui
+   sobrevivia ao tema escuro e apagava o texto do card. Ver o mesmo em
+   .course-link:hover no App.css. */
 .gve-source-card:hover {
-  background: #eaebf0;
-  border-color: rgba(35, 43, 58, 0.22);
+  border-color: var(--brand-500);
 }
 
 /* 700, não 800: o index.html só importa 500/600/700 da Quicksand — pedir
@@ -133,7 +163,7 @@
 .gve-source-title {
   font-size: 17px;
   font-weight: 700;
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 .gve-source-card small {
@@ -142,7 +172,7 @@
 }
 
 .gve-source-stats {
-  color: var(--purple-700) !important;
+  color: var(--brand-text) !important;
   font-weight: 700;
 }
 
@@ -159,7 +189,7 @@
 .gve-reset-btn {
   border: none;
   background: rgba(192, 57, 43, 0.08);
-  color: #c0392b;
+  color: var(--danger-text);
   font-family: inherit;
   font-weight: 700;
   font-size: 13px;
@@ -172,13 +202,25 @@
   background: rgba(192, 57, 43, 0.16);
 }
 
-/* Sem flex:1/min-height:0/overflow-y:auto — quem rola agora é a página
-   inteira (ver .gve-mode acima). Esta lista só empilha os cards. */
 .gve-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-top: 14px;
+  /* A ÚNICA parte que rola nesta tela. `min-height: 0` junto do `flex: 1` é o
+     par obrigatório: sem ele o item de flex não encolhe abaixo do conteúdo e
+     a barra nunca aparece (a lista simplesmente estoura o painel). */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  /* A barra de rolagem tira largura de DENTRO da lista, o que encolheria os
+     cards em relação a como eram antes desta tela rolar por dentro. Estender
+     a lista pra dentro do padding direito do painel e devolver o mesmo tanto
+     em padding faz a barra ocupar esse espaço em vez da largura dos cards —
+     eles ficam exatamente com a largura de sempre. O painel tem 40px de
+     padding lateral, então os 16px cabem com folga. */
+  margin-right: -16px;
+  padding-right: 16px;
 }
 
 .gve-card {
@@ -187,8 +229,8 @@
   gap: 10px;
   padding: 16px 18px;
   border-radius: 14px;
-  background: #f2f3f6;
-  border: 1px solid rgba(35, 43, 58, 0.12);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   /* .landing-panel herda text-align:center do tema roxo original — reseta
      aqui pro texto da pergunta ficar alinhado à esquerda (pedido do dono). */
   text-align: left;
@@ -206,7 +248,7 @@
   margin: 0;
   font-size: 16px;
   line-height: 1.5;
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 .gve-card-options {
@@ -216,9 +258,9 @@
 }
 
 .gve-option {
-  border: 1px solid rgba(35, 43, 58, 0.2);
-  background: #fff;
-  color: #232b3a;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-0);
+  color: var(--text-primary);
   font-family: inherit;
   font-weight: 600;
   font-size: 14.5px;
@@ -239,13 +281,13 @@
 .gve-option.is-correct {
   background: rgba(22, 163, 74, 0.12);
   border-color: #16a34a;
-  color: #16a34a;
+  color: var(--success-text);
 }
 
 .gve-option.is-wrong {
   background: rgba(220, 38, 38, 0.1);
   border-color: #dc2626;
-  color: #dc2626;
+  color: var(--danger-text);
 }
 
 /* Selecionada mas ainda NÃO checada — neutra de propósito (nem verde nem
@@ -254,7 +296,7 @@
 .gve-option.is-selected {
   border-color: var(--purple-500);
   background: rgba(96, 103, 240, 0.14);
-  color: var(--purple-700);
+  color: var(--brand-text);
 }
 
 .gve-card-actions {
@@ -282,8 +324,8 @@
 }
 
 .gve-unit-toggle-btn {
-  border: 1px solid rgba(35, 43, 58, 0.2);
-  background: #fff;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-0);
   color: var(--text-secondary);
   font-family: inherit;
   font-weight: 600;
@@ -295,7 +337,7 @@
 
 .gve-unit-toggle-btn:hover {
   border-color: var(--purple-500);
-  color: var(--purple-700);
+  color: var(--brand-text);
 }
 
 /* ==== Seção "Similar Exercises from Grammar Elementary" (write-in) ====
@@ -318,7 +360,7 @@
   font-size: 15.5px;
   font-weight: 700;
   line-height: 1.45;
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 /* Caixa de palavras do enunciado (ex.: os phrasal verbs da unit 115) — o
@@ -334,7 +376,7 @@
   border-radius: 999px;
   background: rgba(96, 103, 240, 0.12);
   border: 1px solid rgba(96, 103, 240, 0.3);
-  color: var(--purple-700);
+  color: var(--brand-text);
   font-size: 13.5px;
   font-weight: 700;
 }
@@ -356,11 +398,11 @@
   display: block;
   font-size: 15px;
   line-height: 1.5;
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 .gve-item-hint {
-  color: var(--purple-700);
+  color: var(--brand-text);
   font-weight: 700;
   font-style: normal;
 }
@@ -371,9 +413,9 @@
   margin-top: 6px;
   padding: 8px 12px;
   border-radius: 10px;
-  border: 1px solid rgba(35, 43, 58, 0.22);
-  background: #fff;
-  color: #232b3a;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-0);
+  color: var(--text-primary);
   font: inherit;
   font-size: 15px;
   box-sizing: border-box;
@@ -388,14 +430,14 @@
 .gve-item-input.is-correct {
   border-color: #16a34a;
   background: rgba(22, 163, 74, 0.1);
-  color: #15803d;
+  color: var(--success-text);
   font-weight: 700;
 }
 
 .gve-item-input.is-wrong {
   border-color: #dc2626;
   background: rgba(220, 38, 38, 0.08);
-  color: #b91c1c;
+  color: var(--danger-text);
   font-weight: 700;
 }
 
@@ -405,13 +447,13 @@
   margin-top: 5px;
   font-size: 13.5px;
   font-weight: 700;
-  color: #15803d;
+  color: var(--success-text);
 }
 
 .gve-block-score {
   font-size: 14px;
   font-weight: 700;
-  color: #232b3a;
+  color: var(--text-primary);
 }
 
 /* Instrução original do livro, revelada junto com a unit no "Show unit". */
@@ -465,23 +507,45 @@
   border-color: var(--brand-500);
 }
 
-/* Filtro por unit/tópico — só na seção escrita (115 exercícios). Gruda
-   abaixo do header (81px reais, ver .app-header no App.css) enquanto a
-   página rola: é a navegação principal desta tela, e sem isso seria preciso
-   voltar ao topo de 115 exercícios pra trocar de unit. Fundo opaco + a
-   margem negativa/padding compensando o padding lateral do painel pra o
-   conteúdo não aparecer por baixo dele nas beiradas. */
+/* Filtro por unit/tópico — só na seção escrita (115 exercícios): é a navegação
+   principal dessa lista, e sem ele seria preciso voltar ao topo de 115
+   exercícios pra trocar de unit. Não precisa mais de `sticky` próprio — mora
+   dentro do .gve-sticky-top, que já é o bloco imóvel da tela. */
+/* Topo FIXO da tela de uma seção: voltar + título + placar + "Hide solved" +
+   filtro. Só a lista de exercícios rola por baixo.
+   `top: 81px` é a altura REAL do .app-header (que é sticky) — o mesmo valor
+   que o campo de filtro usava sozinho antes; se o header mudar de altura,
+   este número muda junto, senão sobra um vão ou o bloco entra por baixo dele.
+   Fundo OPACO e igual ao do painel (#fbfcfd): em repouso o bloco some no
+   painel, e ao rolar ele esconde de verdade o que passa por baixo — fundo
+   translúcido deixaria os cards aparecerem através (mesma armadilha já
+   documentada no CLAUDE.md pras telas com fundo desfocado).
+   As margens negativas + padding replicam o truque que o filtro já usava:
+   estendem o bloco 12px pra cada lado, pra cobrir também a sombra dos cards,
+   que vaza um pouco além da caixa de conteúdo do painel. */
+.gve-sticky-top {
+  /* Imóvel por ESTRUTURA, não por `position: sticky`: é um item de flex de
+     tamanho fixo no topo de um painel de altura travada, e quem rola é a
+     lista abaixo. Foi tentado com sticky antes e não bastava — o bloco ainda
+     deslizava os 40px de padding-top até encostar no header, e a barra de
+     rolagem da janela continuava lá.
+     `flex: 0 0 auto` pra ele nunca encolher quando a lista crescer. */
+  flex: 0 0 auto;
+  width: calc(100% + 24px);
+  margin: 0 -12px 6px;
+  padding: 0 12px 10px;
+  background: var(--surface-1);
+  box-shadow: 0 8px 16px -8px rgba(35, 43, 58, 0.25);
+}
+
 .gve-filter-input {
-  position: sticky;
-  top: 81px;
-  z-index: 4;
   width: calc(100% + 24px);
   margin: 10px -12px 0;
   padding: 10px 14px;
   border-radius: 12px;
-  border: 1px solid rgba(35, 43, 58, 0.2);
-  background: #fff;
-  color: #232b3a;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-0);
+  color: var(--text-primary);
   font: inherit;
   font-size: 15px;
   box-sizing: border-box;

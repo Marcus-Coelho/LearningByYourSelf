@@ -172,7 +172,7 @@ function saveAnswers(userName, courseId, answers) {
 // tela sem checar); savedChoice (vindo do pai) é o que já foi CHECADO de
 // verdade, esse sim persistido. "Show unit"/"Hide unit" revela a unit de
 // origem do exercício sob demanda — escondida por padrão (pedido do dono).
-function ExerciseCard({ exercise, savedChoice, onCheck }) {
+function ExerciseCard({ exercise, savedChoice, onCheck, onReset }) {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showUnit, setShowUnit] = useState(false);
   const checked = Boolean(savedChoice);
@@ -180,6 +180,15 @@ function ExerciseCard({ exercise, savedChoice, onCheck }) {
   const handleCheck = () => {
     if (!selectedOption) return;
     onCheck(selectedOption);
+  };
+
+  // "Try again" DESTE exercício (pedido do dono, 2026-08-09). Antes só existia
+  // o "Reset" do topo, que apaga a seção inteira — refazer uma pergunta
+  // custava perder as outras 199. Limpa também a seleção local, senão a opção
+  // errada continuaria marcada ao reabrir as opções.
+  const handleRetry = () => {
+    setSelectedOption(null);
+    onReset();
   };
 
   return (
@@ -211,14 +220,23 @@ function ExerciseCard({ exercise, savedChoice, onCheck }) {
         })}
       </div>
       <div className="gve-card-actions">
-        <button
-          type="button"
-          className="gve-check-btn"
-          onClick={handleCheck}
-          disabled={checked || !selectedOption}
-        >
-          Check Answer
-        </button>
+        {/* Depois de checado, o "Check Answer" desabilitado não serve pra
+            nada — dá lugar ao "Try again", mesmo par de estados que os blocos
+            escritos (WrittenExerciseBlock) já usavam. */}
+        {!checked ? (
+          <button
+            type="button"
+            className="gve-check-btn"
+            onClick={handleCheck}
+            disabled={!selectedOption}
+          >
+            Check Answer
+          </button>
+        ) : (
+          <button type="button" className="gve-unit-toggle-btn" onClick={handleRetry}>
+            Try again
+          </button>
+        )}
         <button type="button" className="gve-unit-toggle-btn" onClick={() => setShowUnit((value) => !value)}>
           {showUnit ? 'Hide unit' : 'Show unit'}
         </button>
@@ -335,7 +353,7 @@ function WrittenExerciseBlock({ block, index, total, savedAnswers, onCheck, onRe
   );
 }
 
-export default function GrammarVocabExercisesPage({ userName }) {
+export default function GrammarVocabExercisesPage({ userName, askConfirm }) {
   const [activeSourceId, setActiveSourceId] = useState(loadSavedActiveSourceId);
   const [resetToken, setResetToken] = useState(0);
   // Filtro da seção escrita: são 115 exercícios (um por unit do livro), longe
@@ -376,6 +394,19 @@ export default function GrammarVocabExercisesPage({ userName }) {
     });
   };
 
+  // "Try again" de UM exercício de múltipla escolha: apaga só a resposta dele,
+  // deixando as outras da seção intactas (o handleResetCourse abaixo é o que
+  // zera a seção inteira). Escopado no activeSourceId pela mesma razão do
+  // handleCheckBlock — há mais de uma seção usando estes handlers.
+  const handleResetAnswer = (exercise) => {
+    setAnswersBySource((prev) => {
+      const merged = { ...prev[activeSourceId] };
+      delete merged[exercise.id];
+      saveAnswers(userName, activeSourceId, merged);
+      return { ...prev, [activeSourceId]: merged };
+    });
+  };
+
   // Seção escrita: grava de uma vez o texto digitado em cada item do bloco
   // + o marcador 'checked' do próprio bloco (ver WrittenExerciseBlock).
   // Escopado no activeSourceId, não no literal 'similar': desde que existe
@@ -400,7 +431,25 @@ export default function GrammarVocabExercisesPage({ userName }) {
     });
   };
 
-  const handleResetCourse = () => {
+  // Apaga TODAS as respostas da seção aberta. Pede confirmação (pedido do
+  // dono, 2026-08-09): é a única ação destrutiva desta tela, some com o
+  // trabalho de centenas de exercícios e não tem desfazer — e o botão fica
+  // logo ao lado do placar, fácil de clicar sem querer.
+  //
+  // A mensagem diz o NÚMERO do que será perdido em vez de um aviso genérico:
+  // "apagar as 26 respostas" deixa claro o tamanho do estrago, e é o que
+  // diferencia um reset consciente de um clique errado. Usa o mesmo modal do
+  // resto do app (askConfirm), não window.confirm.
+  const handleResetCourse = async () => {
+    const proceed = askConfirm
+      ? await askConfirm(
+        `Erase ${doneCount} answer${doneCount === 1 ? '' : 's'} in "${activeSource.title}"? `
+        + 'Everything you have answered in this set is lost, including the exercises you got '
+        + 'right, and this cannot be undone.',
+        { confirmLabel: 'Erase answers' },
+      )
+      : true;
+    if (!proceed) return;
     setAnswersBySource((prev) => {
       const next = { ...prev, [activeSourceId]: {} };
       saveAnswers(userName, activeSourceId, {});
@@ -493,6 +542,15 @@ export default function GrammarVocabExercisesPage({ userName }) {
 
   return (
     <div className="landing-panel gve-panel">
+      {/* Topo FIXO (pedido do dono, 2026-08-09): voltar + título + placar +
+          "Hide solved" + filtro ficam parados enquanto só a lista de
+          exercícios rola. Antes só o campo de filtro era sticky, então o
+          placar e os controles sumiam já nos primeiros exercícios — e são
+          justamente eles que o usuário quer consultar/acionar no meio da
+          lista. Um bloco sticky só, em vez de cada elemento com seu próprio
+          `top`, pra os itens não se sobreporem quando a altura mudar (o
+          "Hide solved" aparece e some conforme o placar). */}
+      <div className="gve-sticky-top">
       <button
         type="button"
         className="upload-button"
@@ -544,6 +602,7 @@ export default function GrammarVocabExercisesPage({ userName }) {
           autoComplete="off"
         />
       )}
+      </div>
       <div className="gve-list">
         {isWritten
           ? (() => {
@@ -602,6 +661,7 @@ export default function GrammarVocabExercisesPage({ userName }) {
                 exercise={exercise}
                 savedChoice={answers[exercise.id]}
                 onCheck={(option) => handleCheckAnswer(exercise, option)}
+                onReset={() => handleResetAnswer(exercise)}
               />
             ));
           })()}

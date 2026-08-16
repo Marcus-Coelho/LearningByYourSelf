@@ -252,6 +252,13 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
   `{activeSourceId, hideSolved}`) — são retomados dentro da sessão, de propósito não sobrevivem
   a fechar o navegador. Reabrir pelo menu apaga essa chave (volta pra lista completa) e remonta
   o componente via `grammarVocabExercisesResetKey` (prop `key`).
+- **"Try again" por exercício** (bug achado pelo dono em 2026-08-09): os blocos escritos já
+  tinham o seu (`handleResetBlock`), mas os de múltipla escolha só tinham o "Reset" do topo,
+  que zera a SEÇÃO inteira — refazer uma pergunta custava perder as outras 199.
+  `handleResetAnswer` apaga só a chave daquele exercício, escopado no `activeSourceId` pela
+  mesma razão do `handleCheckBlock`. O `ExerciseCard` troca o "Check Answer" (que ficava
+  inutilmente desabilitado depois de checado) pelo "Try again", e limpa também o
+  `selectedOption` local — sem isso a opção errada seguia marcada ao reabrir.
 - **"Hide N solved exercises"** (botão nas 3 seções, 2026-08-09): esconde o que saiu 100%. As
   duas mecânicas têm definições diferentes de 100%, daí dois predicados —
   `isMultipleChoicePerfect` (1 pergunta, acertar já é o 100%) e `isWrittenBlockPerfect` (bloco
@@ -361,9 +368,8 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
   **também marca ao TERMINAR uma sessão de flashcards do My Words**
   (`handleWordbookSessionComplete`, passado como `onSessionComplete` pro `WordbookPage`). Era
   por card avaliado (`handleGradeWord`) até 2026-08-08; mudou junto com a reciclagem do "Again"
-  (ver "Revisão espaçada / My Words"): como a sessão só acaba quando toda palavra vencida foi
-  respondida sem "Again", chegar ao fim já é prova de que a revisão inteira aconteceu, enquanto
-  avaliar 1 card de 25 não era. **Avaliado e rejeitado no mesmo dia:** marcar por tempo de
+  (ver "Revisão espaçada / My Words"): chegar ao fim da fila — revendo o que foi marcado como
+  "Again" — é prova de que a revisão inteira aconteceu, enquanto avaliar 1 card de 25 não era. **Avaliado e rejeitado no mesmo dia:** marcar por tempo de
   permanência na tela (ex. N × 4s) — proxy que erra pros dois lados (marca sozinho com a aba
   aberta e esquecida; deixa de marcar quem revisa rápido) e ainda exigiria pausar em
   `visibilitychange`/blur, tudo pra aproximar algo que o fim da sessão já mede exato; os outros 2 via `markDailyGoalDone`
@@ -494,11 +500,27 @@ Primeiro cadastro neste navegador herda automaticamente progresso solto (sem nam
 
 Além do export/import manual (JSON, sempre disponível), My Profile → Backup & Restore tem
 "Link a backup folder": escolhe uma pasta local UMA vez (`window.showDirectoryPicker`), e o
-app salva um backup ali sozinho a cada 10 min enquanto estiver linkado, além de poder
-restaurar de lá. Decisão do dono depois de descartar e-mail/login com o Google (exigiria
-OAuth + credenciais de API, infraestrutura estranha a um app 100% local/sem backend) — pasta
-local resolve o mesmo problema (progresso preso ao cache de um navegador só) sem depender de
-internet nem conta nenhuma.
+app salva um backup ali sozinho enquanto estiver linkado, além de poder restaurar de lá.
+Decisão do dono depois de descartar e-mail/login com o Google (exigiria OAuth + credenciais de
+API, infraestrutura estranha a um app 100% local/sem backend) — pasta local resolve o mesmo
+problema (progresso preso ao cache de um navegador só) sem depender de internet nem conta
+nenhuma.
+- **DOIS gatilhos de autosave, não um** (os dois com `silent: true`, pra não interromper por
+  causa de save em segundo plano; os dois só rodam com pasta vinculada, permissão válida e
+  usuário ativo):
+  1. **Timer de 5 minutos** (`5 * 60 * 1000`, não 10 — este texto já disse 10 por engano até
+     2026-08-09). Meio-termo entre não perder trabalho se o navegador fechar sem aviso e não
+     ficar escrevendo no disco toda hora.
+  2. **Toda troca de unit/seção** (deps `selectedUnit`/`selectedAmerican1Unit`/
+     `selectedAmerican1Section`/`selectedGrammarElemUnit`). Existe pra não depender só do
+     relógio: uma sessão de 3 minutos que termina com o navegador fechando nunca chegaria a
+     disparar o timer. Dispara em QUALQUER troca, inclusive pra unit já visitada — o que
+     importa aqui é capturar nota/resposta/avaliação antes de sair da tela, não "primeira
+     visita" (esse é outro critério, do `markDailyGoalDone('newUnit')`).
+- **Nada disso é o que guarda o progresso.** Cada ação grava no `localStorage` na hora; a pasta
+  é uma CÓPIA. Nunca clicar em "Save progress now" não perde nada enquanto for o mesmo
+  navegador — a pasta protege contra limpar o cache, trocar de PC ou rodar o pendrive noutra
+  máquina.
 - **Handle da pasta vive num IndexedDB próprio** (`lets-learn-english-fs`), não no
   `localStorage` (não aceita objetos, só string) — sobrevive a fechar/reabrir o navegador;
   `queryPermission` (sem gesto do usuário) checa se ainda vale ao carregar a página,
@@ -573,12 +595,20 @@ filtrou por vencidas; o que faltava era entrada controlada, teto e visibilidade.
   **FIM** (pedido do dono — chegar nas difíceis depois de aquecer, não travar nelas na
   abertura). Cortada em `WORDBOOK_DAILY_REVIEW_CAP` (25).
 - **"Again" recicla o card pro fim da fila da sessão atual** (`gradeCard`), além de reagendar
-  pra 1 dia. A sessão só termina quando toda palavra foi respondida sem "Again" — é isso que
-  torna "terminou a sessão" prova de revisão, e por isso a meta diária se apoia nesse evento
-  (ver "Trilha de estudo"). Não vale no "view larger" de um card só (`isSingleView`), que não é
-  sessão. O contador mostra palavras DISTINTAS (`new Set(practiceIds).size`) + um sufixo
-  "(+N to repeat)": `practiceIds` cresce com a reciclagem, e um "of N" mudando sozinho no meio
-  da sessão pareceria erro.
+  pra 1 dia — a palavra que você não lembrou reaparece antes de a sessão acabar. Não vale no
+  "view larger" de um card só (`isSingleView`), que não é sessão.
+  **TETO DE UMA RECICLAGEM POR PALAVRA** (bug achado pelo dono em 2026-08-09: "fica em looping
+  depois do Again, só saio com Stop Review"). Antes, TODO "Again" reenfileirava, e como a única
+  forma de encerrar era parar de clicar em "Again", quem realmente não sabia a palavra ficava
+  preso — pior com 1 card vencido, em que ele voltava na hora, para sempre. O teto é contado
+  pelas ocorrências do id na própria fila (`practiceIds.filter(...).length > 1`), sem estado
+  novo. Consequência: "terminou a sessão" continua exigindo passar por toda a fila **e** rever
+  o que foi marcado como Again, mas não exige mais acertar tudo — o texto do botão "i" da meta
+  diária (`DAILY_GOAL_EXPLANATIONS.reviews`) foi ajustado junto, e tem que continuar batendo.
+  O contador mostra `practiceIndex + 1` de `practiceIds.length` (total COM as repetições). Já
+  foi o total de palavras distintas, pra o número não mudar sozinho — mas aí a posição
+  ultrapassava o total e aparecia "Card 3 of 2", pior do que um total que cresce por uma ação
+  do próprio usuário.
 - **Rastro da última avaliação** (`lastGrade`/`lastGradedAt`/`lastIntervalDays`) exibido como
   pílula colorida **na linha da palavra, logo à direita dela** (dentro da
   `.wordbook-entry-word-row`, depois do 🔊 e do texto — pedido do dono: no fim do card ela caía
@@ -763,6 +793,35 @@ Se os PDFs/áudios de origem mudarem, os índices precisam ser regenerados.
       tamanho fixo e aumentar estouraria o controle.
     Vale também no `GrammarVocabExercises.css`, que importa os tokens do `App.css` via `:root`.
 
+11. **Tema claro/escuro por TOKEN, nunca por cor literal** (2026-08-09). O botão de sol/lua no
+    header põe `data-theme="dark"` no `<html>`; o CSS do tema redefine só variáveis em
+    `:root[data-theme='dark']` — **zero regra de componente duplicada**. A preferência fica em
+    `localStorage.theme` SEM namespace de usuário (é do aparelho, precisa valer na tela de
+    cadastro e não deve mudar ao trocar de nome); na 1ª visita segue o `prefers-color-scheme`.
+    Os tokens foram criados classificando cada literal pela PROPRIEDADE, que é o que revela o
+    papel: `background: #fff` é superfície (virou `--surface-0`), `color: #fff` é texto sobre
+    botão colorido e **continua branco** no escuro.
+    - Superfícies: `--surface-0` (campos/barra) > `--surface-1` (painel) > `--surface-2` (card).
+    - Texto: `--text-primary`, `--text-secondary`, `--text-muted`.
+    - **`--brand-text` é separado de `--brand-600`/`--brand-500` de propósito**: o índigo tem
+      dois papéis que puxam pra lados opostos no escuro — fundo de botão (precisa ser ESCURO
+      pro texto branco se ler) e texto colorido (precisa ser CLARO). Clarear os dois juntos
+      derrubou os botões pra 2,5:1. Nunca reunificar.
+    - `--danger-text`/`--success-text` em vez de listar seletores no bloco do tema: a lista
+      quebraria em silêncio no dia em que alguém criasse um texto vermelho novo.
+    - `--purple-900`/`--purple-950`/`--navy-900` são apelidos do azul-marinho e **não podem ser
+      cor de texto** — foram a causa raiz de uma leva inteira de textos invisíveis (players,
+      "Show answers", títulos do Listening/Dictation, "+ Add Words"...).
+    - **Degradês também precisam de token.** A 1ª conversão só via cor sólida e deixou
+      `linear-gradient(#fff, #f4f5f8)` no painel My Notes e na barra de botões: painel claro com
+      texto claro em cima.
+    - **Hover destaca pela BORDA, não pelo fundo** (pedido do dono): fundo claro fixo no hover
+      sobrevivia ao tema escuro e apagava o texto do card.
+    - **Fora do tema, de propósito:** o leitor de PDF (a página branca é o material do livro — o
+      dono pediu explicitamente pra não mexer) e as pílulas amarelas de áudio, cujo texto marrom
+      escuro está correto sobre amarelo nos dois temas.
+    - **Como verificar:** medir contraste, não olhar. Ver "Testing & Verification".
+
 ### ❌ Não Faça
 
 - **Não exporte áudio/PDF de curso para GitHub** — eles continuam ignorados de propósito
@@ -793,6 +852,19 @@ Não há testes unitários automatizados (`npm test` funciona mas CRA cria um es
 4. **Medir, não olhar.** Posição de elemento se confere por `boundingBox()` convertido pras
    coordenadas do PDF, não por screenshot — foi assim que a âncora do Sound Bank foi ajustada,
    e foi assim que se descobriu o `translate(-20px,-7px)` que a screenshot não denunciava.
+5. **Contraste de tema se verifica com DUAS ferramentas, não uma** (aprendido na marra ao fazer
+   o tema escuro, 2026-08-09 — o dono achou ~15 textos ilegíveis DEPOIS de a auditoria dinâmica
+   dar tudo verde):
+   - **Estática**, varrendo as declarações `color:` e `linear-gradient` dos CSS. Cobre 100% das
+     regras, inclusive de telas/estados que nenhum robô alcança. É o que pega o caso geral.
+   - **Dinâmica**, medindo contraste real no navegador. Só ela pega o que depende de composição
+     (fundo herdado, degradê, token que outra regra sobrescreveu).
+   Duas armadilhas que essa auditoria dinâmica teve e que vão se repetir: (a) visitar só o
+   estado INICIAL de cada tela deixa passar resposta da Adele, "Try again" que só existe com
+   histórico, dentro do exercício de Listening, tela de leitura; (b) ler o alfa de um
+   `rgba(255, 214, 0, 0.92)` com `Number(split(',')[3])` dá **NaN** — o fundo é descartado, o
+   auditor sobe pro ancestral e inventa um problema que não existe (foi o que "acusou" as
+   pílulas amarelas). Usar `parseFloat`.
 
 ---
 
