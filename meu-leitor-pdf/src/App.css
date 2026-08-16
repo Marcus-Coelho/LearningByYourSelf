@@ -1804,6 +1804,43 @@ body {
   height: 100%;
 }
 
+/* ---- Preenchimento animado das barras ---------------------------------
+   Pedido do dono, 2026-08-16 (Home) e estendido ao Progress no mesmo dia.
+
+   O `to` do keyframe é OMITIDO de propósito: sem ele o navegador usa como
+   destino o valor especificado do próprio elemento — que aqui é a
+   porcentagem no `style` inline de cada segmento. É o que permite uma regra
+   só servir a todos os segmentos, de todos os cursos, sem o CSS precisar
+   saber nenhuma largura.
+   E é também o que dispensa `!important`: CSS normal perde pro estilo
+   inline, mas ANIMAÇÃO ganha dele. */
+@keyframes ll-bar-grow {
+  from { width: 0; }
+}
+
+/* Declarada PAUSADA em todos os segmentos: parada no quadro 0, a animação
+   segura a barra vazia até a classe `is-filled` chegar (posta pelo
+   IntersectionObserver em CourseProgressList quando a barra entra na tela).
+   Sem isso o segmento mostraria a largura cheia do inline antes de animar, e
+   a barra "esvaziaria" na frente do usuário pra então encher de novo. */
+.dashboard-progress-segment {
+  animation: ll-bar-grow 900ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation-play-state: paused;
+}
+
+.dashboard-progress-bar.is-filled .dashboard-progress-segment {
+  animation-play-state: running;
+}
+
+/* SEM escopo de tela: vale nas duas (Home e Progress). Isto é seguro porque
+   TODA barra do app nasce dentro de um CourseProgressList — .dashboard-
+   progress-bar só existe em DashboardCourseRow, que só é usado por ele — e é
+   ele quem marca `is-filled` via IntersectionObserver.
+   Essa dependência é o que sustenta a regra: uma barra renderizada FORA do
+   CourseProgressList nunca receberia a classe e ficaria vazia pra sempre,
+   escondendo o progresso real. Se um dia surgir uma barra dessas, ou ela
+   ganha o mesmo observer, ou esta regra volta a ser escopada. */
+
 .dashboard-progress-segment--visited { background: #6067f0; }
 .dashboard-progress-segment--rated { background: var(--purple-500); }
 .dashboard-progress-segment--mastered { background: #2fa86b; }

@@ -7608,8 +7608,61 @@ const DASHBOARD_LEGEND_ORDER = ['unvisited', 'visited', 'rated', 'mastered'];
 // marcação nos dois seria a receita para os blocos divergirem — bastaria
 // alguém mexer no rótulo de nível ou na ordem dos cursos num só.
 function CourseProgressList({ courseProgress, lastVisitedByCourse, formatLastVisitedLabel, onOpenLastVisited }) {
+  const listRef = useRef(null);
+
+  // Preenchimento das barras quando elas ENTRAM na tela, não na montagem
+  // (pedido do dono, 2026-08-16 — primeiro na Home, estendido ao Progress no
+  // mesmo dia). O detalhe que obriga o observer: nas DUAS telas essas barras
+  // ficam abaixo da dobra — animar na montagem seria animar fora do campo de
+  // visão, e quem rolasse até lá só veria a barra já cheia.
+  //
+  // Na Progress quem rola não é a página e sim um container interno
+  // (.landing-page.dashboard-mode). Funciona igual: o IntersectionObserver
+  // considera o recorte dos ancestrais, não só a janela.
+  //
+  // A classe `is-filled` só LIBERA a animação; ela já está declarada no CSS
+  // em estado pausado (ver .dashboard-progress-segment lá). Fazer assim
+  // resolve um problema chato: a largura de cada segmento é `style` inline
+  // (a porcentagem real), e CSS normal não vence inline — mas ANIMAÇÃO vence.
+  // Uma animação pausada no quadro 0 segura o segmento em largura zero sem
+  // precisar de `!important` em lugar nenhum.
+  useEffect(() => {
+    const root = listRef.current;
+    if (!root) return undefined;
+    const bars = Array.from(root.querySelectorAll('.dashboard-progress-bar'));
+    if (bars.length === 0) return undefined;
+
+    // Sem observer, ou com movimento reduzido, as barras aparecem cheias na
+    // hora. A rede de segurança importa: se algo impedisse a marcação, elas
+    // ficariam vazias PARA SEMPRE — um enfeite quebrado que esconde dado.
+    let reduce = false;
+    try {
+      reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (error) {
+      // matchMedia indisponível — segue com a animação.
+    }
+    if (reduce || typeof IntersectionObserver === 'undefined') {
+      bars.forEach((bar) => bar.classList.add('is-filled'));
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-filled');
+        // Uma vez só: sem isso a barra recomeçaria do zero a cada vez que
+        // saísse e voltasse à tela, o que vira distração numa página que se
+        // rola pra cima e pra baixo.
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.4 });
+
+    bars.forEach((bar) => observer.observe(bar));
+    return () => observer.disconnect();
+  }, [courseProgress]);
+
   return (
-    <div className="dashboard-courses">
+    <div className="dashboard-courses" ref={listRef}>
       {courseProgress.map((course, index) => {
         const entry = lastVisitedByCourse[course.id];
         // Mesmo rótulo "Beginner"/"Intermediate" das telas Courses/Listening/
