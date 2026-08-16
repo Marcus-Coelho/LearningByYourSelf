@@ -381,6 +381,33 @@
   font-size: 1.15rem;
 }
 
+/* Correção 2026-08-16 (relatado pelo dono): título e rótulos de nível ficam
+   direto sobre a foto do hero aqui na Home (as OUTRAS 5 telas que reusam
+   .dashboard-section-title/.course-level-heading já vivem dentro de um
+   .landing-panel/.dashboard-course-row opaco, então não precisam disso).
+   --text-primary/--brand-text são calibrados contra superfície opaca, não
+   contra a foto — no tema claro ficavam ilegíveis. Em vez de recalcular cor
+   pra contrastar com uma foto (frágil, muda com a imagem), os dois ganham o
+   MESMO fundo opaco dos cards de curso logo abaixo (--surface-2), como um
+   "falso botão"/pílula — inline-block pra encolher no tamanho do texto em
+   vez de ocupar a linha toda. */
+.home-progress .dashboard-section-title,
+.home-progress .course-level-heading {
+  display: inline-block;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 14px;
+}
+
+/* .course-level-heading é filho flex de .dashboard-courses (coluna,
+   align-items padrão "stretch") — sem isso o inline-block acima é ignorado
+   e a pílula esticaria pra largura inteira do bloco, viraria uma barra em
+   vez de um "falso botão" do tamanho do texto. */
+.home-progress .course-level-heading {
+  align-self: flex-start;
+}
+
 /* ============ IMAGEM DO HERO VIRANDO FUNDO AO ROLAR (Home) =============
    Pedido do dono, 2026-08-09. A foto do hero "se espalha" pelo fundo da
    página conforme se rola, crescendo até o fim da rolagem.
