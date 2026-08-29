@@ -97,7 +97,7 @@
   --brand-text: var(--brand-600);
 
   /* Índigo mais FECHADO, pros botões "Continue where you left off" (queixa do
-     dono em 2026-08-09 e de novo em 2026-08-16). Esses botões põem texto
+     dono em 2026-08-09 e de novo em 2026-08-29). Esses botões põem texto
      pequeno sobre fundo levemente tingido de índigo ou sobre a foto do hero:
      o --brand-text normal mede 5,5:1 ali — passa no mínimo, mas cor de marca
      em 12-13px lê como enfeite, não como texto. Este mede ~7,5:1.
@@ -105,7 +105,7 @@
      usada em três lugares (hero da Home, cartão de curso na Home e na
      Progress) — e porque no tema escuro o certo é o oposto: lá o índigo
      precisa ser CLARO, então o token volta pro --brand-text normal.
-     Fechado mais uma vez em 2026-08-16, de #3a34b8 (~7,5:1) pra ~9:1, ainda
+     Fechado mais uma vez em 2026-08-29, de #3a34b8 (~7,5:1) pra ~9:1, ainda
      na mesma matiz índigo. */
   --brand-text-strong: #2f2a9e;
 
@@ -399,7 +399,7 @@
   font-size: 1.15rem;
 }
 
-/* Correção 2026-08-16 (relatado pelo dono): título e rótulos de nível ficam
+/* Correção 2026-08-29 (relatado pelo dono): título e rótulos de nível ficam
    direto sobre a foto do hero aqui na Home (as OUTRAS 5 telas que reusam
    .dashboard-section-title/.course-level-heading já vivem dentro de um
    .landing-panel/.dashboard-course-row opaco, então não precisam disso).
@@ -962,7 +962,7 @@ body {
      app. Estava em 12px, abaixo do próprio mínimo. */
   font-size: var(--text-secondary-size);
   /* As duas linhas do botão têm PAPÉIS diferentes, e é isso que faltava
-     separar (2ª queixa do dono sobre elas, 2026-08-16). A 1ª linha é a AÇÃO,
+     separar (2ª queixa do dono sobre elas, 2026-08-29). A 1ª linha é a AÇÃO,
      e índigo da marca é o certo pra ela. A 2ª — "Unit 1A · American English
      A1" — é INFORMAÇÃO, e estava só herdando o mesmo índigo: uma cor de
      marca, pensada pra chamar atenção como link, é justamente a que menos
@@ -1834,7 +1834,7 @@ body {
 }
 
 /* ---- Preenchimento animado das barras ---------------------------------
-   Pedido do dono, 2026-08-16 (Home) e estendido ao Progress no mesmo dia.
+   Pedido do dono, 2026-08-29 (Home) e estendido ao Progress no mesmo dia.
 
    O `to` do keyframe é OMITIDO de propósito: sem ele o navegador usa como
    destino o valor especificado do próprio elemento — que aqui é a
@@ -3718,7 +3718,7 @@ body {
   text-align: left;
   border: none;
   background: transparent;
-  /* OBRIGATÓRIO (bug achado pelo dono, 2026-08-16: as velocidades apareciam
+  /* OBRIGATÓRIO (bug achado pelo dono, 2026-08-29: as velocidades apareciam
      pretas no tema escuro). <button> NÃO herda `color` do pai — o navegador
      impõe o preto dele, exatamente como faz com `font-family` (mesma pegadinha
      já documentada em index.css). O .ap-menu em volta já acerta fundo e cor
@@ -5436,10 +5436,28 @@ body {
      entrar/sair do modo de edicao. */
   font-size: 1.2rem;
   font-family: inherit;
+  /* MESMO bug do .flashcard-spell-input, achado pelo dono em 2026-08-29 no
+     campo de significado: sem `background` o input fica com o branco PADRAO
+     DO NAVEGADOR, que nao acompanha tema nenhum, enquanto --text-primary vira
+     claro no escuro — letra branca sobre caixa branca, o texto some enquanto
+     se digita.
+     Ao corrigir o outro campo eu afirmei que ele era o unico assim; estava
+     errado, a varredura da primeira vez foi rasa. A checagem que vale parte
+     dos <input>/<textarea>/<select> realmente renderizados no JSX e agrega
+     TODAS as regras de cada classe (background pode estar numa regra separada
+     da que define color) — ver o script no fim deste comentario historico. */
+  background: var(--surface-0);
   color: var(--text-primary);
   border: 2px solid var(--purple-500);
   border-radius: 8px;
   box-sizing: border-box;
+}
+
+/* O texto-guia nao herda cor: sem isto ele fica no cinza padrao do navegador,
+   calibrado pra fundo claro, e some sobre o fundo escuro que a regra acima
+   passou a dar ao campo. --text-muted e o token ja designado pra placeholder. */
+.flashcard .flashcard-meaning-input::placeholder {
+  color: var(--text-muted);
 }
 
 .flashcard .flashcard-meaning-input:focus {
@@ -5513,7 +5531,7 @@ body {
   font-family: inherit;
   font-size: 1rem;
   /* O `background` é OBRIGATÓRIO aqui, não decoração (bug achado pelo dono,
-     2026-08-16: no tema escuro a palavra digitada sumia). Sem ele o input
+     2026-08-29: no tema escuro a palavra digitada sumia). Sem ele o input
      fica com o branco PADRÃO DO NAVEGADOR, que não acompanha tema nenhum —
      enquanto --text-primary vira claro no escuro. Resultado: letra clara
      sobre campo branco, invisível. Era o único campo do app sem background

@@ -7611,7 +7611,7 @@ function CourseProgressList({ courseProgress, lastVisitedByCourse, formatLastVis
   const listRef = useRef(null);
 
   // Preenchimento das barras quando elas ENTRAM na tela, não na montagem
-  // (pedido do dono, 2026-08-16 — primeiro na Home, estendido ao Progress no
+  // (pedido do dono, 2026-08-29 — primeiro na Home, estendido ao Progress no
   // mesmo dia). O detalhe que obriga o observer: nas DUAS telas essas barras
   // ficam abaixo da dobra — animar na montagem seria animar fora do campo de
   // visão, e quem rolasse até lá só veria a barra já cheia.
