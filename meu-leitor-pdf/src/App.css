@@ -96,6 +96,19 @@
      os títulos e estragava os botões, e vice-versa. */
   --brand-text: var(--brand-600);
 
+  /* Índigo mais FECHADO, pros botões "Continue where you left off" (queixa do
+     dono em 2026-08-09 e de novo em 2026-08-16). Esses botões põem texto
+     pequeno sobre fundo levemente tingido de índigo ou sobre a foto do hero:
+     o --brand-text normal mede 5,5:1 ali — passa no mínimo, mas cor de marca
+     em 12-13px lê como enfeite, não como texto. Este mede ~7,5:1.
+     Existe como TOKEN, e não como literal na regra, porque a mesma cor é
+     usada em três lugares (hero da Home, cartão de curso na Home e na
+     Progress) — e porque no tema escuro o certo é o oposto: lá o índigo
+     precisa ser CLARO, então o token volta pro --brand-text normal.
+     Fechado mais uma vez em 2026-08-16, de #3a34b8 (~7,5:1) pra ~9:1, ainda
+     na mesma matiz índigo. */
+  --brand-text-strong: #2f2a9e;
+
   /* TEXTO de erro e de acerto. A cor É a informação (a exceção à paleta já
      documentada), então a matiz é fixa — o que muda por tema é só o tom, pra
      continuar legível sobre fundo escuro.
@@ -165,6 +178,11 @@
   --brand-600: #4a4de3;
   --brand-500: #6165ef;
   --brand-text: #a9abff;
+  /* No escuro NÃO existe "índigo mais fechado": fechar a cor aqui apagaria o
+     texto. O token vira o --brand-text normal de propósito — o dono aprovou o
+     escuro como está ("quase bom"), então esta linha é o que garante que
+     mexer no tema claro não encoste nele. */
+  --brand-text-strong: var(--brand-text);
   /* Mesma matiz do tema claro, clareada: os tons escolhidos pro fundo branco
      (#c0392b / #1a7a3d) ficam em ~2,5:1 sobre superfície escura. */
   --danger-text: #ff9a9a;
@@ -924,15 +942,12 @@ body {
   gap: 2px;
   background: transparent;
   border: 2px solid var(--purple-500);
-  /* Índigo mais fechado que o --brand-text padrão (#4c45de), a pedido do dono
-     — este botão fica sobre a foto do hero, onde o tom normal lia claro
-     demais. Só no tema CLARO: no escuro o texto precisa ser claro, então lá
-     ele volta pro token (regra logo abaixo). */
-  color: #3a34b8;
-}
-
-:root[data-theme='dark'] .continue-cta {
-  color: var(--brand-text);
+  /* Era um literal #3a34b8 aqui + uma regra de tema logo abaixo pra desfazê-lo
+     no escuro. Virou token (--brand-text-strong) quando o mesmo problema
+     apareceu nos botões de curso: a troca por tema agora mora na definição do
+     token, e a regra de tema específica deste seletor deixou de ser
+     necessária. */
+  color: var(--brand-text-strong);
 }
 
 .continue-cta:hover {
@@ -943,13 +958,20 @@ body {
   text-transform: none;
   letter-spacing: normal;
   font-weight: 600;
-  font-size: 12px;
-  /* Sem o `opacity: 0.75` de antes (pedido do dono, 2026-08-09: "deixe essas
-     letras um pouco mais escuras"). Era ele o principal motivo de a segunda
-     linha — "Unit 1A · American English A1" — parecer apagada: opacidade
-     desbota o texto contra QUALQUER fundo, e este botão ainda tem a foto do
-     hero passando por trás. Vale pras 3 telas que usam o botão (Home, Courses
-     e as de Listening/Dictation/Speaking), que tinham o mesmo problema. */
+  /* 13.5px = --text-secondary-size, o tamanho padrão de texto de apoio do
+     app. Estava em 12px, abaixo do próprio mínimo. */
+  font-size: var(--text-secondary-size);
+  /* As duas linhas do botão têm PAPÉIS diferentes, e é isso que faltava
+     separar (2ª queixa do dono sobre elas, 2026-08-16). A 1ª linha é a AÇÃO,
+     e índigo da marca é o certo pra ela. A 2ª — "Unit 1A · American English
+     A1" — é INFORMAÇÃO, e estava só herdando o mesmo índigo: uma cor de
+     marca, pensada pra chamar atenção como link, é justamente a que menos
+     firma como texto pequeno sobre a foto do hero.
+     --text-primary resolve nos DOIS temas por ser um token de papel, não uma
+     cor fixa: vira o azul-marinho escuro no claro (o "mais escuras" que ele
+     pediu) e o texto claro no escuro. Tirar a opacidade antes já tinha
+     ajudado, mas não tocava na cor herdada, que era o resto do problema. */
+  color: var(--text-primary);
 }
 
 .landing-panel.vocabulary-page {
@@ -1146,7 +1168,7 @@ body {
   border: none;
   border-radius: 14px;
   background: rgba(76, 69, 222, 0.1);
-  color: var(--brand-text);
+  color: var(--brand-text-strong);
   text-transform: none;
   letter-spacing: normal;
   font-size: 14px;
@@ -1160,7 +1182,14 @@ body {
 
 .course-continue-cta small {
   max-width: 100%;
-  font-size: 12.5px;
+  /* Mesmo tratamento já dado ao .continue-cta small da Home: a 2ª linha
+     ("Unit 1A · American English A1") é INFORMAÇÃO, não a ação do botão, e
+     herdar o índigo da marca era o que a deixava apagada. --text-primary
+     acerta nos dois temas por ser token de papel, e 12,5px estava abaixo do
+     --text-secondary-size padrão do app. Este botão aparece na Home E na
+     Progress (mesmo componente), então a correção vale nas duas de uma vez. */
+  font-size: var(--text-secondary-size);
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -3689,6 +3718,16 @@ body {
   text-align: left;
   border: none;
   background: transparent;
+  /* OBRIGATÓRIO (bug achado pelo dono, 2026-08-16: as velocidades apareciam
+     pretas no tema escuro). <button> NÃO herda `color` do pai — o navegador
+     impõe o preto dele, exatamente como faz com `font-family` (mesma pegadinha
+     já documentada em index.css). O .ap-menu em volta já acerta fundo e cor
+     por token, mas a cor nunca chegava aos itens; só o "1x" se lia, porque
+     .active declara cor própria — o que fazia o bug parecer coisa do estado
+     ativo, e não da regra base.
+     `inherit` em vez de repetir --text-primary: assim o item acompanha o menu
+     se a cor dele mudar, em vez de virar uma segunda fonte da verdade. */
+  color: inherit;
   padding: 6px 10px;
   font-size: 12px;
   border-radius: 6px;
@@ -5473,6 +5512,13 @@ body {
   border: 1px solid var(--border-strong);
   font-family: inherit;
   font-size: 1rem;
+  /* O `background` é OBRIGATÓRIO aqui, não decoração (bug achado pelo dono,
+     2026-08-16: no tema escuro a palavra digitada sumia). Sem ele o input
+     fica com o branco PADRÃO DO NAVEGADOR, que não acompanha tema nenhum —
+     enquanto --text-primary vira claro no escuro. Resultado: letra clara
+     sobre campo branco, invisível. Era o único campo do app sem background
+     declarado; todos os outros já traziam o seu. */
+  background: var(--surface-0);
   color: var(--text-primary);
   box-sizing: border-box;
 }
