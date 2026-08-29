@@ -1081,7 +1081,7 @@ feliz também dá sincronização em nuvem de graça, sem o app precisar saber d
   fechar/reabrir o navegador. `queryPermission` (sem gesto do usuário, pode rodar sozinho ao
   carregar a página) confere se a permissão ainda vale; se não valer mais, UI mostra
   "Reconnect folder" (que usa `requestPermission`, esse sim exige clique).
-- **Escrita automática a cada 10 min** enquanto a pasta estiver linkada e com permissão válida
+- **Escrita automática a cada 5 min** enquanto a pasta estiver linkada e com permissão válida
   (`useEffect` com `setInterval`, silencioso — não interrompe o usuário por um save em segundo
   plano) + botão manual "Save backup now" (esse sim avisa com um alert). "Restore from
   folder" lê de volta o arquivo daquele usuário específico dentro da pasta.
