@@ -124,8 +124,14 @@ const RESPONSIVE_WIDTH_BUFFER = 24;
 // só muda onde o painel nasce.
 const RIGHT_PANEL_WIDTH_RATIO = 0.21;
 
-// Velocidades disponíveis no player de áudio ancorado.
-const AUDIO_SPEEDS = [0.75, 0.9, 1, 1.1, 1.25, 1.5, 2];
+// Velocidades disponíveis nos players que usam AudioPlayerControls: o
+// ancorado do Vocabulary (AudioAnchorPlayer), o simples do Grammar Elem /
+// American Accent (SimpleAudioPlayer) e o ancorado do American1, que é também
+// o do Sound Bank (American1AudioAnchorPlayer). Mexer aqui muda os três.
+// 0.5x incluído a pedido do dono em 2026-08-29, pra igualar o WideAudioPlayer
+// (Listening/Dictation/Speaking), que já tinha essa marcha em
+// WIDE_PLAYER_SPEEDS — a diferença entre os dois menus não era intencional.
+const AUDIO_SPEEDS = [0.5, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 2];
 
 // Revisão espaçada ("Today's Review"): dias até um item autoavaliado voltar
 // à fila de revisão, conforme a nota dada — nota baixa volta logo, nota alta
