@@ -733,7 +733,11 @@ Estes arquivos **não devem ser editados manualmente** (todos gerados por script
   (`FORCE_CONTINUE_PRINTED_PAGES`/`FORCE_FRESH_PRINTED_PAGES`/`EXCLUDED_PRINTED_PAGES`/
   `EXTRA_TRACKS_BY_PRINTED_PAGE` no gerador) pra casos que o heurístico não pega sozinho —
   regenerar do zero SEM essas exceções reintroduziria bugs já corrigidos por revisão visual do
-  dono; se for regenerar, portar a lista de exceções do histórico do git primeiro
+  dono; se for regenerar, portar a lista de exceções do histórico do git primeiro.
+  **Uma correção feita À MÃO no JSON** (2026-09-13, pedido do dono): `page-11` (p. 3) tinha
+  `topic` "Main Vowel Sounds of" — o heading quebra em 2 linhas no PDF e o gerador só pegou a
+  1ª. Corrigido pra "Main Vowel Sounds of American English". Era o único dos 90 `topic`
+  terminando em palavra de ligação; uma regeneração precisa repetir essa correção
 
 Se os PDFs/áudios de origem mudarem, os índices precisam ser regenerados.
 

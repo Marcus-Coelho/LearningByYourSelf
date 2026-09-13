@@ -2008,14 +2008,14 @@ body {
 
 /* .upload-button já é um gradiente roxo com borda 0 — pro estado "ativo"
    (filtro ligado) precisa de uma cor bem diferente pra ficar óbvio que é um
-   toggle, não só outro botão de ação. */
-.listening-hide-mastered-toggle.is-active {
-  background: #2fa86b;
-  box-shadow: 0 14px 30px rgba(47, 168, 107, 0.32);
-}
-
+   toggle, não só outro botão de ação. Verde CHAPADO, sem sombra/brilho
+   (pedido do dono, 2026-09-13) — nem no hover, que no .upload-button base
+   ganha sombra e saturação. */
+.listening-hide-mastered-toggle.is-active,
 .listening-hide-mastered-toggle.is-active:hover {
-  box-shadow: 0 18px 36px rgba(47, 168, 107, 0.4);
+  background: #2fa86b;
+  box-shadow: none;
+  filter: none;
 }
 
 /* Linha "Done 2× · Last score: 83%" dentro do card do exercício — só
@@ -3781,6 +3781,18 @@ body {
 .american1-audio-anchor .ap-btn {
   width: 22px;
   height: 14px;
+}
+
+/* Player com o menu de velocidades ABERTO fica acima dos vizinhos (bug achado
+   pelo dono em 2026-09-13: com dois players próximos, a lista de velocidades
+   do de cima sumia atrás do de baixo). O `transform` do
+   .american1-audio-anchor cria um contexto de empilhamento por player, então
+   o z-index do .ap-menu só vale DENTRO da própria pílula — quem precisa subir
+   é a pílula inteira. Vale também pro .audio-anchor do Vocabulary, pra não
+   depender de ele continuar sem transform. */
+.american1-audio-anchor:has(.ap-menu),
+.audio-anchor:has(.ap-menu) {
+  z-index: 30;
 }
 
 /* Linha bem fina por padrão (quase invisível) com uma pequena pílula de
