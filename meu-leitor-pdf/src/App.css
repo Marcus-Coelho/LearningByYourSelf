@@ -4408,6 +4408,15 @@ body {
   background: var(--purple-900);
 }
 
+/* Save do My Notes quando o localStorage recusou a gravação — fica assim até
+   uma gravação dar certo, pra não parecer salvo quando não está. */
+.show-answers-btn.is-error,
+.show-answers-btn.is-error:hover:not(:disabled) {
+  background: var(--surface-0);
+  color: var(--danger-text);
+  border: 1px solid var(--danger-text);
+}
+
 .show-answers-btn:disabled {
   opacity: 0.4;
   cursor: default;

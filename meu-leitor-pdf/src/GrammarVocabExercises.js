@@ -144,6 +144,30 @@ const isWrittenBlockPerfect = (block, answers) => (
   && block.items.every((item) => isWrittenAnswerCorrect(item, answers[item.id]))
 );
 
+const sourceItems = (source) => (source.kind === 'written' ? source.blocks : source.exercises);
+
+const isSourceItemPerfect = (source, item, answers) => (
+  source.kind === 'written' ? isWrittenBlockPerfect(item, answers) : isMultipleChoicePerfect(item, answers)
+);
+
+// "Hide solved" esconde uma FOTO do que estava resolvido no momento do
+// clique, não o estado ao vivo (pedido do dono, 2026-09-13). Com o filtro ao
+// vivo, acertar um exercício com o Hide ligado fazia o card sumir no mesmo
+// instante do "Check Answer" — o erro ficava vermelho na tela, mas o acerto
+// simplesmente desaparecia, e o aluno não sabia se tinha acertado. Agora o
+// que é resolvido DEPOIS do clique continua visível, com o verde do acerto,
+// até o aluno pedir pra esconder ("Hide N more solved"). Foto das seções
+// todas de uma vez, porque o hideSolved é um estado só pras seções.
+const snapshotSolvedIds = (answersBySource) => SOURCES.reduce((acc, source) => {
+  const answers = answersBySource[source.id] || {};
+  acc[source.id] = new Set(
+    sourceItems(source).filter((item) => isSourceItemPerfect(source, item, answers)).map((item) => item.id),
+  );
+  return acc;
+}, {});
+
+const EMPTY_ID_SET = new Set();
+
 const answersStorageKey = (userName, courseId) => userKey(userName, `grammarVocabAnswers:${courseId}`);
 
 function loadAnswers(userName, courseId) {
@@ -372,6 +396,16 @@ export default function GrammarVocabExercisesPage({ userName, askConfirm }) {
       return acc;
     }, {})
   ));
+  // Ids escondidos pelo "Hide solved" (ver snapshotSolvedIds). Ao voltar com
+  // o Hide já ligado pela sessão, a foto é tirada das respostas carregadas.
+  const [hiddenIdsBySource, setHiddenIdsBySource] = useState(() => (
+    hideSolved ? snapshotSolvedIds(answersBySource) : {}
+  ));
+
+  const handleHideSolved = () => {
+    setHiddenIdsBySource(snapshotSolvedIds(answersBySource));
+    setHideSolved(true);
+  };
 
   useEffect(() => {
     try {
@@ -536,9 +570,19 @@ export default function GrammarVocabExercisesPage({ userName, askConfirm }) {
   // Quantos exercícios o "Hide solved" tem pra esconder nesta seção. O botão
   // só aparece quando há pelo menos 1 — antes da primeira resposta certa ele
   // não teria efeito nenhum e seria só ruído no topo da lista.
-  const solvedCount = isWritten
-    ? activeSource.blocks.filter((block) => isWrittenBlockPerfect(block, answers)).length
-    : activeSource.exercises.filter((exercise) => isMultipleChoicePerfect(exercise, answers)).length;
+  const solvedCount = sourceItems(activeSource)
+    .filter((item) => isSourceItemPerfect(activeSource, item, answers)).length;
+  // Escondido = estava na foto do clique E continua 100% (um "Try again"/
+  // Reset devolve o exercício à lista na hora).
+  const hiddenIds = hiddenIdsBySource[activeSource.id] || EMPTY_ID_SET;
+  const isHidden = (item) => (
+    hideSolved && hiddenIds.has(item.id) && isSourceItemPerfect(activeSource, item, answers)
+  );
+  const hiddenCount = sourceItems(activeSource).filter(isHidden).length;
+  // Com a foto vazia (nada escondido de fato), o botão volta a oferecer
+  // "Hide" em vez de um "Show 0" sem efeito.
+  const isHideActive = hiddenCount > 0;
+  const newlySolvedCount = isHideActive ? solvedCount - hiddenCount : 0;
 
   return (
     <div className="landing-panel gve-panel">
@@ -582,14 +626,19 @@ export default function GrammarVocabExercisesPage({ userName, askConfirm }) {
         <div className="gve-list-controls">
           <button
             type="button"
-            className={`gve-hide-solved-btn${hideSolved ? ' is-active' : ''}`}
-            onClick={() => setHideSolved((value) => !value)}
-            aria-pressed={hideSolved}
+            className={`gve-hide-solved-btn${isHideActive ? ' is-active' : ''}`}
+            onClick={isHideActive ? () => setHideSolved(false) : handleHideSolved}
+            aria-pressed={isHideActive}
           >
-            {hideSolved
-              ? `Show ${solvedCount} solved exercise${solvedCount === 1 ? '' : 's'}`
+            {isHideActive
+              ? `Show ${hiddenCount} solved exercise${hiddenCount === 1 ? '' : 's'}`
               : `Hide ${solvedCount} solved exercise${solvedCount === 1 ? '' : 's'}`}
           </button>
+          {newlySolvedCount > 0 && (
+            <button type="button" className="gve-hide-solved-btn" onClick={handleHideSolved}>
+              {`Hide ${newlySolvedCount} more solved`}
+            </button>
+          )}
         </div>
       )}
       {isWritten && (
@@ -617,7 +666,7 @@ export default function GrammarVocabExercisesPage({ userName, askConfirm }) {
                 || String(block.unit).startsWith(needle)
                 || block.topic.toLowerCase().includes(needle)
                 || block.instruction.toLowerCase().includes(needle))
-              .filter(({ block }) => !hideSolved || !isWrittenBlockPerfect(block, answers));
+              .filter(({ block }) => !isHidden(block));
             if (visible.length === 0) {
               // Dois motivos possíveis pra lista vazia — dizer "nada casa com
               // o filtro" quando na verdade foi o "Hide solved" que esvaziou
@@ -627,8 +676,8 @@ export default function GrammarVocabExercisesPage({ userName, askConfirm }) {
               }
               return (
                 <p className="gve-filter-empty">
-                  Every exercise in this set is solved. Use “Show {solvedCount} solved
-                  exercise{solvedCount === 1 ? '' : 's'}” above to see them again.
+                  Every exercise in this set is solved. Use “Show {hiddenCount} solved
+                  exercise{hiddenCount === 1 ? '' : 's'}” above to see them again.
                 </p>
               );
             }
@@ -646,12 +695,12 @@ export default function GrammarVocabExercisesPage({ userName, askConfirm }) {
           })()
           : (() => {
             const visible = activeSource.exercises
-              .filter((exercise) => !hideSolved || !isMultipleChoicePerfect(exercise, answers));
+              .filter((exercise) => !isHidden(exercise));
             if (visible.length === 0) {
               return (
                 <p className="gve-filter-empty">
-                  Every exercise in this set is solved. Use “Show {solvedCount} solved
-                  exercise{solvedCount === 1 ? '' : 's'}” above to see them again.
+                  Every exercise in this set is solved. Use “Show {hiddenCount} solved
+                  exercise{hiddenCount === 1 ? '' : 's'}” above to see them again.
                 </p>
               );
             }

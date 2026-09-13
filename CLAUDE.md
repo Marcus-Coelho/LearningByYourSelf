@@ -266,7 +266,12 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
   refazer). Errar nunca esconde nada. **Só filtra a EXIBIÇÃO** — placar, "N answered" e o
   `solvedCount` do próprio botão contam sempre a seção inteira, mesma regra do `blockFilter`.
   Um estado só pras 3 seções (ligar numa e achar a outra cheia pareceria o botão ter falhado),
-  e o botão nem aparece com `solvedCount === 0`. Lista vazia tem mensagem PRÓPRIA por causa:
+  e o botão nem aparece com `solvedCount === 0`.
+  **Esconde uma FOTO, não o estado ao vivo** (`snapshotSolvedIds`, 2026-09-13): o que já
+  estava 100% no clique some; o que for acertado DEPOIS continua na tela, verde, até o aluno
+  clicar em "Hide N more solved". Com o filtro ao vivo, o card sumia no próprio "Check
+  Answer" — o erro ficava vermelho, mas o acerto desaparecia e o aluno não sabia se tinha
+  acertado. Não voltar ao filtro ao vivo. Lista vazia tem mensagem PRÓPRIA por causa:
   dizer "nada casa com o filtro" quando foi o Hide solved que esvaziou mandaria o usuário
   caçar erro de digitação à toa.
 - Precisa de `app-shell--allow-grow` (já na lista em `App.js`) — a lista de exercícios cresce
@@ -423,6 +428,10 @@ Todas as chaves por usuário: `u:<nome>:<chave-base>` (`userKey(name, base)`)
 # Vocabulary
 u:<nome>:visitedUnits              — array de unit numbers
 u:<nome>:notes:<unit>              — string, notas da unit
+                                      (salva SOZINHA ~1s depois de parar de digitar, ao trocar
+                                      de unit e no pagehide, SEM piscar "Saved" — tirava o foco
+                                      do estudo; só a falha aparece. O botão Save grava na hora e
+                                      mostra "Saved"/"Couldn't save" de verdade; ver UnitNotes)
 u:<nome>:answers:<exerciseId>      — string, resposta do user
 u:<nome>:rating:<exerciseId>       — número 1-5, autoavaliação por EXERCÍCIO (tela "exercises")
 u:<nome>:unit-rating:<unit>        — número 1-5, autoavaliação da UNIT inteira (tela de leitura,
@@ -448,6 +457,12 @@ u:<nome>:notes:americanAccent:<screenId> — string, notas da tela
 
 # Revisão espaçada / My Words (compartilhado entre os 4 cursos)
 u:<nome>:review:<curso>:<id>       — JSON {rating, ratedAt, due}
+                                      Só unit/seção/tela — NUNCA exercício (decisão do dono,
+                                      2026-09-13: enchia a fila com "Exercise 9.1…9.4").
+                                      Avaliar exercício não agenda mais; chaves antigas
+                                      "review:vocabulary:<exercício>" são ignoradas por
+                                      loadDueReviews (EXERCISE_REVIEW_COURSE), não apagadas.
+                                      "review:vocabulary-unit:" é a unit e continua valendo
 u:<nome>:wordbook                  — array JSON de palavras + flashcards ({id, word, meaning,
                                       example, context, image, createdAt, step, due,
                                       lastGrade, lastGradedAt, lastIntervalDays}).

@@ -415,6 +415,15 @@ const migrateLegacyDataToUser = (name) => {
 // Varre as chaves "u:<nome>:review:<curso>:<id>" e devolve só os itens já
 // vencidos (due <= agora), mais atrasados primeiro — é o conteúdo do card
 // "Today's Review" da Home/Courses.
+//
+// Revisão é só de UNIT/SEÇÃO/TELA, nunca de exercício (decisão do dono,
+// 2026-09-13): cada unit do Vocabulary tem 4-6 exercícios, então avaliar uma
+// unit enchia a fila com "Exercise 9.1 … 9.4" — dezenas de itens pra quem mal
+// tem tempo de revisar as próprias units. Avaliar exercício não agenda mais
+// nada (ver handleRateExercise); o filtro de 'vocabulary' abaixo esconde as
+// chaves "review:vocabulary:<exercício>" que já estavam gravadas, sem apagar
+// dado nenhum. Não confundir com 'vocabulary-unit', que é a unit inteira.
+const EXERCISE_REVIEW_COURSE = 'vocabulary';
 const loadDueReviews = (name) => {
   const due = [];
   try {
@@ -426,6 +435,7 @@ const loadDueReviews = (name) => {
       const remainder = key.slice(prefix.length);
       const separator = remainder.indexOf(':');
       if (separator === -1) continue;
+      if (remainder.slice(0, separator) === EXERCISE_REVIEW_COURSE) continue;
       let entry;
       try {
         entry = JSON.parse(window.localStorage.getItem(key));
@@ -1987,7 +1997,8 @@ function App() {
   };
 
   // Autoavaliação é voluntária: só entra na média o exercício em que o
-  // usuário realmente clicou numa estrela.
+  // usuário realmente clicou numa estrela. A nota só alimenta "Your Score" —
+  // NÃO agenda revisão espaçada (ver EXERCISE_REVIEW_COURSE em loadDueReviews).
   const handleRateExercise = (exerciseId, value) => {
     if (!exerciseId || !userName) return;
     setExerciseRatings((prev) => ({ ...prev, [exerciseId]: value }));
@@ -1996,13 +2007,12 @@ function App() {
     } catch (error) {
       // Armazenamento indisponível — a nota fica só nesta sessão.
     }
-    scheduleReview('vocabulary', exerciseId, value);
   };
 
   // Autoavaliação da UNIT inteira (tela de leitura) — "vocabulary-unit" (não
-  // "vocabulary") como curso do scheduleReview, pra não colidir com a
-  // revisão espaçada por exercício: handleOpenReviewItem trata os dois
-  // separadamente (um navega pra "exercises", o outro pra "unit").
+  // "vocabulary") como curso do scheduleReview: "review:vocabulary:" eram as
+  // revisões por exercício, que não existem mais mas ainda podem estar
+  // gravadas (ver EXERCISE_REVIEW_COURSE).
   const handleRateVocabularyUnit = (unit, value) => {
     if (!unit || !userName) return;
     setVocabularyUnitRatings((prev) => ({ ...prev, [unit]: value }));
@@ -3207,14 +3217,7 @@ function App() {
   // Abre um item vencido do "Today's Review" direto na tela onde ele é
   // estudado (e reavaliado — é a reavaliação que agenda a próxima repetição).
   const handleOpenReviewItem = (item) => {
-    if (item.course === 'vocabulary') {
-      const unit = Number(item.id.split('.')[0]);
-      if (!exerciseCoords[item.id] || !unit) return;
-      setSelectedUnit(unit);
-      setSelectedExercise(item.id);
-      setActiveCourseId('vocabulary');
-      setActivePage('exercises');
-    } else if (item.course === 'american1') {
+    if (item.course === 'american1') {
       const unit = Number(item.id);
       const sections = american1SectionsByUnit[unit] || [];
       if (sections.length === 0) return;
@@ -7517,13 +7520,6 @@ function DailyGoalCard({ items, completedCount, allItems, onTogglePref, overallM
 
 // Título/subtítulo de um item da fila "Today's Review", conforme o curso.
 const reviewItemLabel = (item) => {
-  if (item.course === 'vocabulary') {
-    const unit = Number(item.id.split('.')[0]);
-    return {
-      title: `Exercise ${item.id}`,
-      subtitle: `English Vocabulary B${unitTable[unit] ? ` — ${unitTable[unit]}` : ''}`,
-    };
-  }
   if (item.course === 'american1') {
     return { title: `Unit ${item.id}`, subtitle: 'American English A1' };
   }
@@ -11326,30 +11322,117 @@ function UnitNotes({
   onRate,
 }) {
   const editorRef = useRef(null);
-  const [justSaved, setJustSaved] = useState(false);
+  // 'idle' | 'saved' (pisca depois de gravar) | 'error' (fica até a próxima
+  // gravação dar certo).
+  const [saveStatus, setSaveStatus] = useState('idle');
   const storageKey = userKey(userName, storageKeyBase || `notes:${unit}`);
 
-  // Carrega a anotação salva desta unit (se houver) ao entrar na tela.
+  // Autosave (2026-09-13). Até aqui a nota só ia pro localStorage no clique
+  // em "Save": trocar de unit ("Next Unit"/"All Units" — todo UnitNotes é
+  // montado com key={unit}) ou fechar a aba jogava fora o que foi digitado,
+  // sem aviso. Agora grava sozinha ~1s depois de parar de digitar, ao sair da
+  // tela e no pagehide; o botão Save continua como "grava agora".
+  //
+  // O HTML mais recente fica num ref (não só em editorRef.current) porque no
+  // cleanup de desmontagem o React já zerou editorRef — ler de lá perderia
+  // justamente o último trecho digitado.
+  const latestHtmlRef = useRef(null);
+  const isDirtyRef = useRef(false);
+  const autosaveTimerRef = useRef(null);
+  const savedFlashTimerRef = useRef(null);
+
+  const writeNote = (key, html) => {
+    try {
+      window.localStorage.setItem(key, html);
+      return true;
+    } catch (error) {
+      // Provavelmente cota do localStorage estourada.
+      return false;
+    }
+  };
+
+  const flushNote = () => {
+    window.clearTimeout(autosaveTimerRef.current);
+    const el = editorRef.current;
+    if (el) latestHtmlRef.current = el.innerHTML;
+    if (latestHtmlRef.current === null) return true;
+    const ok = writeNote(storageKey, latestHtmlRef.current);
+    if (ok) isDirtyRef.current = false;
+    return ok;
+  };
+
+  // Mostra o resultado REAL da gravação — antes o botão dizia "Saved" mesmo
+  // quando o setItem falhava em silêncio.
+  const showSaveResult = (ok) => {
+    window.clearTimeout(savedFlashTimerRef.current);
+    if (!ok) {
+      setSaveStatus('error');
+      return;
+    }
+    setSaveStatus('saved');
+    savedFlashTimerRef.current = window.setTimeout(() => setSaveStatus('idle'), 1500);
+  };
+
+  // Chamado a cada mudança no editor: digitação (onInput) e os botões da
+  // barra (A-/A+/B/H), que mexem no DOM depois do execCommand.
+  //
+  // O autosave é SILENCIOSO quando dá certo (pedido do dono, 2026-09-13): o
+  // botão piscando "Saved" a cada pausa na digitação tirava o foco do estudo.
+  // Só a falha aparece (e some na próxima gravação que der certo); o "Saved"
+  // fica reservado pro clique manual em Save.
+  const markNoteChanged = () => {
+    const el = editorRef.current;
+    if (!el) return;
+    latestHtmlRef.current = el.innerHTML;
+    isDirtyRef.current = true;
+    window.clearTimeout(autosaveTimerRef.current);
+    autosaveTimerRef.current = window.setTimeout(() => {
+      const ok = flushNote();
+      setSaveStatus((status) => {
+        if (!ok) return 'error';
+        return status === 'error' ? 'idle' : status;
+      });
+    }, 1000);
+  };
+
+  // Carrega a anotação salva desta unit (se houver) ao entrar na tela. O
+  // cleanup grava o que ainda estiver pendente na chave ANTIGA (capturada no
+  // closure) antes de trocar de unit/desmontar.
   useEffect(() => {
     const el = editorRef.current;
-    if (!el) return;
-    try {
-      el.innerHTML = window.localStorage.getItem(storageKey) || '';
-    } catch (error) {
-      el.innerHTML = '';
+    if (el) {
+      try {
+        el.innerHTML = window.localStorage.getItem(storageKey) || '';
+      } catch (error) {
+        el.innerHTML = '';
+      }
     }
+    latestHtmlRef.current = null;
+    isDirtyRef.current = false;
+    return () => {
+      window.clearTimeout(autosaveTimerRef.current);
+      if (isDirtyRef.current && latestHtmlRef.current !== null) {
+        writeNote(storageKey, latestHtmlRef.current);
+        isDirtyRef.current = false;
+      }
+    };
   }, [storageKey]);
 
+  // Fechar/recarregar a aba não desmonta nada — sem isso o último segundo
+  // digitado (ainda no debounce) se perderia.
+  useEffect(() => {
+    const handlePageHide = () => {
+      if (isDirtyRef.current) flushNote();
+    };
+    window.addEventListener('pagehide', handlePageHide);
+    return () => window.removeEventListener('pagehide', handlePageHide);
+  });
+
+  useEffect(() => () => window.clearTimeout(savedFlashTimerRef.current), []);
+
   const handleSave = () => {
-    const el = editorRef.current;
-    if (!el) return;
-    try {
-      window.localStorage.setItem(storageKey, el.innerHTML);
-    } catch (error) {
-      // Armazenamento indisponível — a nota fica só na tela até recarregar.
-    }
-    setJustSaved(true);
-    setTimeout(() => setJustSaved(false), 1500);
+    if (!editorRef.current) return;
+    showSaveResult(flushNote());
   };
 
   // Garante que exista uma seleção dentro do editor antes de aplicar um
@@ -11375,6 +11458,7 @@ function UnitNotes({
   const exec = (command, value) => {
     focusEditorSelection();
     document.execCommand(command, false, value);
+    markNoteChanged();
   };
 
   // O texto copiado do leitor de PDF (pdf.js) vem com uma camada de spans
@@ -11410,6 +11494,7 @@ function UnitNotes({
     const currentBg = node ? window.getComputedStyle(node).backgroundColor : '';
     const isHighlighted = currentBg === NOTES_HIGHLIGHT_RGB;
     document.execCommand('hiliteColor', false, isHighlighted ? 'transparent' : NOTES_HIGHLIGHT_COLOR);
+    markNoteChanged();
   };
 
   // Aumenta/diminui o tamanho só do trecho selecionado, como no Word — não
@@ -11433,6 +11518,7 @@ function UnitNotes({
       fontEl.removeAttribute('size');
       fontEl.style.fontSize = `${nextPx}px`;
     });
+    markNoteChanged();
   };
 
   return (
@@ -11467,6 +11553,7 @@ function UnitNotes({
         contentEditable
         suppressContentEditableWarning
         onPaste={handlePaste}
+        onInput={markNoteChanged}
         data-placeholder="Write anything you want to remember about this unit..."
       />
 
@@ -11494,10 +11581,10 @@ function UnitNotes({
       <div className="answers-actions">
         <button
           type="button"
-          className={`show-answers-btn${justSaved ? ' is-active' : ''}`}
+          className={`show-answers-btn${saveStatus === 'saved' ? ' is-active' : ''}${saveStatus === 'error' ? ' is-error' : ''}`}
           onClick={handleSave}
         >
-          {justSaved ? 'Saved' : 'Save'}
+          {saveStatus === 'saved' ? 'Saved' : saveStatus === 'error' ? "Couldn't save" : 'Save'}
         </button>
         {hasAnswers && (
           <button
