@@ -3702,7 +3702,15 @@ body {
 .ap-menu {
   position: absolute;
   top: 30px;
-  left: 0;
+  /* Alinhado pela DIREITA (bug achado pelo dono em 2026-09-13): com `left: 0`
+     o menu crescia pra direita a partir dos três pontos, e no player mais à
+     direita da barra metade da lista saía da tela. Os três pontos são sempre
+     o último controle da pílula, então ancorar a borda direita do menu na
+     do .ap-wrap o faz crescer pra ESQUERDA, por dentro da largura do player.
+     -3px = padding (2px) + borda (1px) da pílula amarela, pra a borda do
+     menu coincidir com a borda de FORA do player, como ele pediu. */
+  left: auto;
+  right: -3px;
   background: var(--surface-0);
   color: var(--text-primary);
   border-radius: 8px;
@@ -4477,6 +4485,24 @@ body {
   border-color: var(--purple-500);
   background: var(--surface-0);
   box-shadow: 0 0 0 3px rgba(96, 103, 240, 0.15);
+}
+
+/* Texto sobre o MARCA-TEXTO amarelo (bug achado pelo dono em 2026-09-13: no
+   tema escuro a letra ficava branca sobre amarelo, quase ilegível).
+   O execCommand('hiliteColor') grava só o FUNDO num <span style>, e a cor da
+   letra continua herdada do editor — --ink, que vira clara no escuro. O
+   amarelo é cor fixa (exceção da paleta, Decisões Imutáveis item 8), então a
+   letra em cima dele também precisa ser fixa e escura nos DOIS temas, pelo
+   mesmo motivo das pílulas amarelas de áudio.
+   Por CSS e não gravando uma cor de letra junto no HTML: a nota salva não
+   carrega preto nenhum, então tirar o destaque devolve a letra ao tema na
+   hora. O seletor casa o rgb que o navegador serializa (NOTES_HIGHLIGHT_RGB
+   em App.js) e o hex (NOTES_HIGHLIGHT_COLOR), por robustez entre navegadores.
+   Casar pela cor exata também evita pegar o "transparent" que o próprio
+   toggleHighlight grava ao REMOVER o destaque. */
+.notes-editor [style*="background-color: rgb(255, 224, 102)"],
+.notes-editor [style*="#ffe066" i] {
+  color: #1a1a1a;
 }
 
 .notes-editor:empty::before {

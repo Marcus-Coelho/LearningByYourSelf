@@ -7530,6 +7530,32 @@ const reviewItemLabel = (item) => {
   if (item.course === 'grammarElem') {
     return { title: `Unit ${item.id}`, subtitle: 'Grammar English A1' };
   }
+  // Autoavaliação da UNIT inteira do Vocabulary (tela de leitura) — curso
+  // separado de 'vocabulary' (que é por exercício), então caía no rótulo
+  // genérico lá embaixo e aparecia como "3 / vocabulary-unit".
+  if (item.course === 'vocabulary-unit') {
+    const unit = Number(item.id);
+    return {
+      title: `Unit ${unit}`,
+      subtitle: `English Vocabulary B${unitTable[unit] ? ` — ${unitTable[unit]}` : ''}`,
+    };
+  }
+  // Bug achado pelo dono em 2026-09-13: a fila mostrava "page-12 /
+  // americanAccent" e, ao abrir, a tela dizia "p. 4–5". A NAVEGAÇÃO sempre
+  // esteve certa — o id da tela é o número da página no PDF ("page-12" = PDF
+  // 12-13), mas o livro imprime essa mesma tela como p. 4–5. O item caía no
+  // rótulo genérico, que expunha o id interno como se fosse página do livro.
+  // Agora usa o mesmo par da tela de leitura: página impressa + tópico.
+  if (item.course === 'americanAccent') {
+    const screen = AMERICAN_ACCENT_SCREEN_BY_ID[item.id];
+    if (screen) {
+      const chapter = AMERICAN_ACCENT_CHAPTERS.find((entry) => entry.id === screen.chapter);
+      return {
+        title: `${americanAccentPrintedPageLabel(screen)}${screen.topic ? ` (${screen.topic})` : ''}`,
+        subtitle: `American Accent${chapter ? ` · ${chapter.name}${chapter.topic ? ` (${titleCase(chapter.topic)})` : ''}` : ''}`,
+      };
+    }
+  }
   return { title: item.id, subtitle: item.course };
 };
 
