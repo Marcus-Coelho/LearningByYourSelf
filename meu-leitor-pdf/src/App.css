@@ -96,6 +96,19 @@
      os títulos e estragava os botões, e vice-versa. */
   --brand-text: var(--brand-600);
 
+  /* Índigo mais FECHADO, pros botões "Continue where you left off" (queixa do
+     dono em 2026-08-09 e de novo em 2026-08-29). Esses botões põem texto
+     pequeno sobre fundo levemente tingido de índigo ou sobre a foto do hero:
+     o --brand-text normal mede 5,5:1 ali — passa no mínimo, mas cor de marca
+     em 12-13px lê como enfeite, não como texto. Este mede ~7,5:1.
+     Existe como TOKEN, e não como literal na regra, porque a mesma cor é
+     usada em três lugares (hero da Home, cartão de curso na Home e na
+     Progress) — e porque no tema escuro o certo é o oposto: lá o índigo
+     precisa ser CLARO, então o token volta pro --brand-text normal.
+     Fechado mais uma vez em 2026-08-29, de #3a34b8 (~7,5:1) pra ~9:1, ainda
+     na mesma matiz índigo. */
+  --brand-text-strong: #2f2a9e;
+
   /* TEXTO de erro e de acerto. A cor É a informação (a exceção à paleta já
      documentada), então a matiz é fixa — o que muda por tema é só o tom, pra
      continuar legível sobre fundo escuro.
@@ -165,6 +178,11 @@
   --brand-600: #4a4de3;
   --brand-500: #6165ef;
   --brand-text: #a9abff;
+  /* No escuro NÃO existe "índigo mais fechado": fechar a cor aqui apagaria o
+     texto. O token vira o --brand-text normal de propósito — o dono aprovou o
+     escuro como está ("quase bom"), então esta linha é o que garante que
+     mexer no tema claro não encoste nele. */
+  --brand-text-strong: var(--brand-text);
   /* Mesma matiz do tema claro, clareada: os tons escolhidos pro fundo branco
      (#c0392b / #1a7a3d) ficam em ~2,5:1 sobre superfície escura. */
   --danger-text: #ff9a9a;
@@ -381,7 +399,7 @@
   font-size: 1.15rem;
 }
 
-/* Correção 2026-08-16 (relatado pelo dono): título e rótulos de nível ficam
+/* Correção 2026-08-29 (relatado pelo dono): título e rótulos de nível ficam
    direto sobre a foto do hero aqui na Home (as OUTRAS 5 telas que reusam
    .dashboard-section-title/.course-level-heading já vivem dentro de um
    .landing-panel/.dashboard-course-row opaco, então não precisam disso).
@@ -924,15 +942,12 @@ body {
   gap: 2px;
   background: transparent;
   border: 2px solid var(--purple-500);
-  /* Índigo mais fechado que o --brand-text padrão (#4c45de), a pedido do dono
-     — este botão fica sobre a foto do hero, onde o tom normal lia claro
-     demais. Só no tema CLARO: no escuro o texto precisa ser claro, então lá
-     ele volta pro token (regra logo abaixo). */
-  color: #3a34b8;
-}
-
-:root[data-theme='dark'] .continue-cta {
-  color: var(--brand-text);
+  /* Era um literal #3a34b8 aqui + uma regra de tema logo abaixo pra desfazê-lo
+     no escuro. Virou token (--brand-text-strong) quando o mesmo problema
+     apareceu nos botões de curso: a troca por tema agora mora na definição do
+     token, e a regra de tema específica deste seletor deixou de ser
+     necessária. */
+  color: var(--brand-text-strong);
 }
 
 .continue-cta:hover {
@@ -943,13 +958,20 @@ body {
   text-transform: none;
   letter-spacing: normal;
   font-weight: 600;
-  font-size: 12px;
-  /* Sem o `opacity: 0.75` de antes (pedido do dono, 2026-08-09: "deixe essas
-     letras um pouco mais escuras"). Era ele o principal motivo de a segunda
-     linha — "Unit 1A · American English A1" — parecer apagada: opacidade
-     desbota o texto contra QUALQUER fundo, e este botão ainda tem a foto do
-     hero passando por trás. Vale pras 3 telas que usam o botão (Home, Courses
-     e as de Listening/Dictation/Speaking), que tinham o mesmo problema. */
+  /* 13.5px = --text-secondary-size, o tamanho padrão de texto de apoio do
+     app. Estava em 12px, abaixo do próprio mínimo. */
+  font-size: var(--text-secondary-size);
+  /* As duas linhas do botão têm PAPÉIS diferentes, e é isso que faltava
+     separar (2ª queixa do dono sobre elas, 2026-08-29). A 1ª linha é a AÇÃO,
+     e índigo da marca é o certo pra ela. A 2ª — "Unit 1A · American English
+     A1" — é INFORMAÇÃO, e estava só herdando o mesmo índigo: uma cor de
+     marca, pensada pra chamar atenção como link, é justamente a que menos
+     firma como texto pequeno sobre a foto do hero.
+     --text-primary resolve nos DOIS temas por ser um token de papel, não uma
+     cor fixa: vira o azul-marinho escuro no claro (o "mais escuras" que ele
+     pediu) e o texto claro no escuro. Tirar a opacidade antes já tinha
+     ajudado, mas não tocava na cor herdada, que era o resto do problema. */
+  color: var(--text-primary);
 }
 
 .landing-panel.vocabulary-page {
@@ -1146,7 +1168,7 @@ body {
   border: none;
   border-radius: 14px;
   background: rgba(76, 69, 222, 0.1);
-  color: var(--brand-text);
+  color: var(--brand-text-strong);
   text-transform: none;
   letter-spacing: normal;
   font-size: 14px;
@@ -1160,7 +1182,14 @@ body {
 
 .course-continue-cta small {
   max-width: 100%;
-  font-size: 12.5px;
+  /* Mesmo tratamento já dado ao .continue-cta small da Home: a 2ª linha
+     ("Unit 1A · American English A1") é INFORMAÇÃO, não a ação do botão, e
+     herdar o índigo da marca era o que a deixava apagada. --text-primary
+     acerta nos dois temas por ser token de papel, e 12,5px estava abaixo do
+     --text-secondary-size padrão do app. Este botão aparece na Home E na
+     Progress (mesmo componente), então a correção vale nas duas de uma vez. */
+  font-size: var(--text-secondary-size);
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1804,6 +1833,43 @@ body {
   height: 100%;
 }
 
+/* ---- Preenchimento animado das barras ---------------------------------
+   Pedido do dono, 2026-08-29 (Home) e estendido ao Progress no mesmo dia.
+
+   O `to` do keyframe é OMITIDO de propósito: sem ele o navegador usa como
+   destino o valor especificado do próprio elemento — que aqui é a
+   porcentagem no `style` inline de cada segmento. É o que permite uma regra
+   só servir a todos os segmentos, de todos os cursos, sem o CSS precisar
+   saber nenhuma largura.
+   E é também o que dispensa `!important`: CSS normal perde pro estilo
+   inline, mas ANIMAÇÃO ganha dele. */
+@keyframes ll-bar-grow {
+  from { width: 0; }
+}
+
+/* Declarada PAUSADA em todos os segmentos: parada no quadro 0, a animação
+   segura a barra vazia até a classe `is-filled` chegar (posta pelo
+   IntersectionObserver em CourseProgressList quando a barra entra na tela).
+   Sem isso o segmento mostraria a largura cheia do inline antes de animar, e
+   a barra "esvaziaria" na frente do usuário pra então encher de novo. */
+.dashboard-progress-segment {
+  animation: ll-bar-grow 900ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation-play-state: paused;
+}
+
+.dashboard-progress-bar.is-filled .dashboard-progress-segment {
+  animation-play-state: running;
+}
+
+/* SEM escopo de tela: vale nas duas (Home e Progress). Isto é seguro porque
+   TODA barra do app nasce dentro de um CourseProgressList — .dashboard-
+   progress-bar só existe em DashboardCourseRow, que só é usado por ele — e é
+   ele quem marca `is-filled` via IntersectionObserver.
+   Essa dependência é o que sustenta a regra: uma barra renderizada FORA do
+   CourseProgressList nunca receberia a classe e ficaria vazia pra sempre,
+   escondendo o progresso real. Se um dia surgir uma barra dessas, ou ela
+   ganha o mesmo observer, ou esta regra volta a ser escopada. */
+
 .dashboard-progress-segment--visited { background: #6067f0; }
 .dashboard-progress-segment--rated { background: var(--purple-500); }
 .dashboard-progress-segment--mastered { background: #2fa86b; }
@@ -1942,14 +2008,14 @@ body {
 
 /* .upload-button já é um gradiente roxo com borda 0 — pro estado "ativo"
    (filtro ligado) precisa de uma cor bem diferente pra ficar óbvio que é um
-   toggle, não só outro botão de ação. */
-.listening-hide-mastered-toggle.is-active {
-  background: #2fa86b;
-  box-shadow: 0 14px 30px rgba(47, 168, 107, 0.32);
-}
-
+   toggle, não só outro botão de ação. Verde CHAPADO, sem sombra/brilho
+   (pedido do dono, 2026-09-13) — nem no hover, que no .upload-button base
+   ganha sombra e saturação. */
+.listening-hide-mastered-toggle.is-active,
 .listening-hide-mastered-toggle.is-active:hover {
-  box-shadow: 0 18px 36px rgba(47, 168, 107, 0.4);
+  background: #2fa86b;
+  box-shadow: none;
+  filter: none;
 }
 
 /* Linha "Done 2× · Last score: 83%" dentro do card do exercício — só
@@ -3636,7 +3702,15 @@ body {
 .ap-menu {
   position: absolute;
   top: 30px;
-  left: 0;
+  /* Alinhado pela DIREITA (bug achado pelo dono em 2026-09-13): com `left: 0`
+     o menu crescia pra direita a partir dos três pontos, e no player mais à
+     direita da barra metade da lista saía da tela. Os três pontos são sempre
+     o último controle da pílula, então ancorar a borda direita do menu na
+     do .ap-wrap o faz crescer pra ESQUERDA, por dentro da largura do player.
+     -3px = padding (2px) + borda (1px) da pílula amarela, pra a borda do
+     menu coincidir com a borda de FORA do player, como ele pediu. */
+  left: auto;
+  right: -3px;
   background: var(--surface-0);
   color: var(--text-primary);
   border-radius: 8px;
@@ -3652,6 +3726,16 @@ body {
   text-align: left;
   border: none;
   background: transparent;
+  /* OBRIGATÓRIO (bug achado pelo dono, 2026-08-29: as velocidades apareciam
+     pretas no tema escuro). <button> NÃO herda `color` do pai — o navegador
+     impõe o preto dele, exatamente como faz com `font-family` (mesma pegadinha
+     já documentada em index.css). O .ap-menu em volta já acerta fundo e cor
+     por token, mas a cor nunca chegava aos itens; só o "1x" se lia, porque
+     .active declara cor própria — o que fazia o bug parecer coisa do estado
+     ativo, e não da regra base.
+     `inherit` em vez de repetir --text-primary: assim o item acompanha o menu
+     se a cor dele mudar, em vez de virar uma segunda fonte da verdade. */
+  color: inherit;
   padding: 6px 10px;
   font-size: 12px;
   border-radius: 6px;
@@ -3697,6 +3781,18 @@ body {
 .american1-audio-anchor .ap-btn {
   width: 22px;
   height: 14px;
+}
+
+/* Player com o menu de velocidades ABERTO fica acima dos vizinhos (bug achado
+   pelo dono em 2026-09-13: com dois players próximos, a lista de velocidades
+   do de cima sumia atrás do de baixo). O `transform` do
+   .american1-audio-anchor cria um contexto de empilhamento por player, então
+   o z-index do .ap-menu só vale DENTRO da própria pílula — quem precisa subir
+   é a pílula inteira. Vale também pro .audio-anchor do Vocabulary, pra não
+   depender de ele continuar sem transform. */
+.american1-audio-anchor:has(.ap-menu),
+.audio-anchor:has(.ap-menu) {
+  z-index: 30;
 }
 
 /* Linha bem fina por padrão (quase invisível) com uma pequena pílula de
@@ -4324,6 +4420,15 @@ body {
   background: var(--purple-900);
 }
 
+/* Save do My Notes quando o localStorage recusou a gravação — fica assim até
+   uma gravação dar certo, pra não parecer salvo quando não está. */
+.show-answers-btn.is-error,
+.show-answers-btn.is-error:hover:not(:disabled) {
+  background: var(--surface-0);
+  color: var(--danger-text);
+  border: 1px solid var(--danger-text);
+}
+
 .show-answers-btn:disabled {
   opacity: 0.4;
   cursor: default;
@@ -4401,6 +4506,24 @@ body {
   border-color: var(--purple-500);
   background: var(--surface-0);
   box-shadow: 0 0 0 3px rgba(96, 103, 240, 0.15);
+}
+
+/* Texto sobre o MARCA-TEXTO amarelo (bug achado pelo dono em 2026-09-13: no
+   tema escuro a letra ficava branca sobre amarelo, quase ilegível).
+   O execCommand('hiliteColor') grava só o FUNDO num <span style>, e a cor da
+   letra continua herdada do editor — --ink, que vira clara no escuro. O
+   amarelo é cor fixa (exceção da paleta, Decisões Imutáveis item 8), então a
+   letra em cima dele também precisa ser fixa e escura nos DOIS temas, pelo
+   mesmo motivo das pílulas amarelas de áudio.
+   Por CSS e não gravando uma cor de letra junto no HTML: a nota salva não
+   carrega preto nenhum, então tirar o destaque devolve a letra ao tema na
+   hora. O seletor casa o rgb que o navegador serializa (NOTES_HIGHLIGHT_RGB
+   em App.js) e o hex (NOTES_HIGHLIGHT_COLOR), por robustez entre navegadores.
+   Casar pela cor exata também evita pegar o "transparent" que o próprio
+   toggleHighlight grava ao REMOVER o destaque. */
+.notes-editor [style*="background-color: rgb(255, 224, 102)"],
+.notes-editor [style*="#ffe066" i] {
+  color: #1a1a1a;
 }
 
 .notes-editor:empty::before {
@@ -5360,10 +5483,28 @@ body {
      entrar/sair do modo de edicao. */
   font-size: 1.2rem;
   font-family: inherit;
+  /* MESMO bug do .flashcard-spell-input, achado pelo dono em 2026-08-29 no
+     campo de significado: sem `background` o input fica com o branco PADRAO
+     DO NAVEGADOR, que nao acompanha tema nenhum, enquanto --text-primary vira
+     claro no escuro — letra branca sobre caixa branca, o texto some enquanto
+     se digita.
+     Ao corrigir o outro campo eu afirmei que ele era o unico assim; estava
+     errado, a varredura da primeira vez foi rasa. A checagem que vale parte
+     dos <input>/<textarea>/<select> realmente renderizados no JSX e agrega
+     TODAS as regras de cada classe (background pode estar numa regra separada
+     da que define color) — ver o script no fim deste comentario historico. */
+  background: var(--surface-0);
   color: var(--text-primary);
   border: 2px solid var(--purple-500);
   border-radius: 8px;
   box-sizing: border-box;
+}
+
+/* O texto-guia nao herda cor: sem isto ele fica no cinza padrao do navegador,
+   calibrado pra fundo claro, e some sobre o fundo escuro que a regra acima
+   passou a dar ao campo. --text-muted e o token ja designado pra placeholder. */
+.flashcard .flashcard-meaning-input::placeholder {
+  color: var(--text-muted);
 }
 
 .flashcard .flashcard-meaning-input:focus {
@@ -5436,6 +5577,13 @@ body {
   border: 1px solid var(--border-strong);
   font-family: inherit;
   font-size: 1rem;
+  /* O `background` é OBRIGATÓRIO aqui, não decoração (bug achado pelo dono,
+     2026-08-29: no tema escuro a palavra digitada sumia). Sem ele o input
+     fica com o branco PADRÃO DO NAVEGADOR, que não acompanha tema nenhum —
+     enquanto --text-primary vira claro no escuro. Resultado: letra clara
+     sobre campo branco, invisível. Era o único campo do app sem background
+     declarado; todos os outros já traziam o seu. */
+  background: var(--surface-0);
   color: var(--text-primary);
   box-sizing: border-box;
 }

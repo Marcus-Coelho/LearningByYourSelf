@@ -135,30 +135,42 @@ pra checar direto o localStorage (fonte de verdade, sempre atual) em vez do stat
 teste depois da correção grava `reviews:true`; reavaliação de conteúdo NUNCA vencido continua
 corretamente não contando (sem regressão).
 
-## 4. [ ] Speaking (shadowing com reconhecimento de voz do Edge/Chrome)
+## 4. [x] Speaking (shadowing com reconhecimento de voz do Edge/Chrome) — 2026-07-20, commit `65a7093`
 
-Nova tela "Speaking" usando a `SpeechRecognition` API nativa do navegador (Edge/Chrome —
-fala → texto, grátis, sem chave de API), reaproveitando os mesmos tracks/áudio do
-Listening/Dictation (`LISTENING_SOURCES`).
+Tela "Speaking" usando a `SpeechRecognition` API nativa do navegador (Edge/Chrome — fala →
+texto, grátis, sem chave de API), reaproveitando os mesmos tracks/áudio do Listening/Dictation
+(`LISTENING_SOURCES`). A fase 1 (shadowing) saiu inteira, como planejado:
 
-- Fluxo planejado (fase 1 — shadowing):
-  1. Mesma estrutura de 3 telas do Listening/Dictation (hub → fonte → exercício); o item
-     "Speaking" do menu lateral já existe como placeholder (`IconMic`, link morto `#link-3`).
-  2. O app toca uma frase do áudio (frase↔áudio já mapeados nas `sentences` dos tracks).
-  3. Usuário clica no microfone e **repete a frase** (`recognition.lang = 'en-US'`).
-  4. Comparação transcrição × frase original palavra a palavra (mesma normalização/LCS já
-     usada no Dictation — `scoreDictationAnswer` é o modelo) com destaque verde/vermelho.
-  5. Score % por track em namespace próprio (`u:<nome>:speaking:<trackId>:stats`), seguindo
-     o mesmo isolamento Listening/Dictation — nunca misturar os namespaces.
+1. Mesma estrutura de 3 telas do Listening/Dictation (hub → fonte → exercício). O item
+   "Speaking" do menu lateral deixou de ser placeholder — o link morto `#link-3` não existe
+   mais em `App.js`.
+2. O app toca uma frase do áudio (frase↔áudio já mapeados nas `sentences` dos tracks).
+3. Usuário clica no microfone e repete a frase (`recognition.lang = 'en-US'`).
+4. Comparação transcrição × frase original palavra a palavra reaproveitando o
+   `scoreDictationAnswer` do Dictation (`handleSpeechResult`, `App.js`), com o mesmo
+   `stripDictationSpeakerLabel` — nenhuma lógica de correção duplicada.
+5. Score % por track em `u:<nome>:speaking:<trackId>:stats` (`speakingStatsKey`), namespace
+   próprio, isolado de `listening:`/`dictation:` como exigido.
+
+Além do planejado, duas correções de scoring específicas da fala (não existiam no plano
+original): `expandSpokenNumberShorthand` (o reconhecedor devolve "5" onde o texto diz "five")
+e `neutralizeUnscorableSpeakingWords` (tira da nota o que não dá pra cobrar de quem está
+falando). O Speaking também entrou nos pontos de integração dos irmãos: conta no
+"Practice Listening or Dictation" da meta diária, no `findUnpracticedListeningTrack` do
+Today's Plan e no tile de exercícios praticados do Progress Dashboard.
+
+Guarda de navegador implementada como pedido — `window.SpeechRecognition ||
+window.webkitSpeechRecognition`, com aviso em vez de quebrar onde a API não existe
+(Firefox/Safari antigo).
+
+**Não implementado do plano original** (não é pendência aberta, só não foi feito):
 - **Complemento barato**: gravar a voz do usuário com `MediaRecorder` e oferecer "ouvir
-  nativo" / "ouvir você" — autoavaliação por comparação.
-- Limitações conhecidas (aceitas): o reconhecimento do Chrome/Edge roda em nuvem (precisa de
-  internet), e o reconhecedor às vezes "corrige" pronúncia ruim pelo contexto — o feedback é
-  aproximado, não fonético. Avaliação fonética de verdade (Azure Speech etc.) fica para uma
-  eventual fase 2, só se a fase 1 se provar útil no dia a dia.
-- A API não existe no Firefox/Safari antigo — a tela deve detectar
-  (`window.SpeechRecognition || window.webkitSpeechRecognition`) e mostrar um aviso claro em
-  vez de quebrar.
+  nativo" / "ouvir você". Não há nenhuma referência a `MediaRecorder` em `App.js` — se ainda
+  interessar, é um item novo a decidir.
+- **Fase 2** (avaliação fonética de verdade, Azure Speech etc.) segue fora de escopo, como
+  combinado: só se a fase 1 se provar útil no dia a dia. Limitações aceitas continuam valendo
+  — o reconhecimento roda em nuvem (precisa de internet) e às vezes "corrige" pronúncia ruim
+  pelo contexto, então o feedback é aproximado, não fonético.
 
 ## 5. [~] 4º curso: American Accent (livro "Mastering the American Accent") — 2026-07-23, EM ANDAMENTO
 

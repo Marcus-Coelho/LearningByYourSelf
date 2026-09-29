@@ -1081,7 +1081,7 @@ feliz também dá sincronização em nuvem de graça, sem o app precisar saber d
   fechar/reabrir o navegador. `queryPermission` (sem gesto do usuário, pode rodar sozinho ao
   carregar a página) confere se a permissão ainda vale; se não valer mais, UI mostra
   "Reconnect folder" (que usa `requestPermission`, esse sim exige clique).
-- **Escrita automática a cada 10 min** enquanto a pasta estiver linkada e com permissão válida
+- **Escrita automática a cada 5 min** enquanto a pasta estiver linkada e com permissão válida
   (`useEffect` com `setInterval`, silencioso — não interrompe o usuário por um save em segundo
   plano) + botão manual "Save backup now" (esse sim avisa com um alert). "Restore from
   folder" lê de volta o arquivo daquele usuário específico dentro da pasta.
@@ -1351,6 +1351,242 @@ separado:
   (`wordbook-entry-edit`) nunca ganhou esse mesmo tratamento — era um `<div>` sem `onPaste`
   nenhum, então colar simplesmente não fazia nada ali. Corrigido com um handler próprio
   (`handleEditFormPaste`, grava em `editDraft.image`) no mesmo padrão.
+
+## Agosto de 2026 — design system, conteúdo em massa e movimento
+
+Bloco escrito em 2026-08-29 a partir dos commits, para fechar o buraco entre 2026-07-27 e
+2026-08-29 que este resumo não cobria (o `CLAUDE.md` já documentava a parte de arquitetura até
+2026-08-09; aqui fica o histórico narrativo, incluindo o que veio depois dessa data). O padrão
+da fase é diferente do resto do projeto: quase nada de feature nova estrutural, e muito
+**unificação do que já existia** — cor, fonte, contraste e tema deixaram de ser decididos regra
+a regra e passaram a vir de token.
+
+### Tela de exercícios e players do Listening/Dictation (2026-08-06)
+
+`5b7088e` (+7.120 linhas) e `ce405f8` — a tela Grammar & Vocabulary Exercises e um retrabalho
+de layout dos players do Listening/Dictation. Os dois commits não têm corpo de mensagem; a
+arquitetura resultante está documentada em detalhe no `CLAUDE.md` (seção "Grammar & Vocabulary
+Exercises"), inclusive o motivo de ela ser a **única** tela em arquivo próprio
+(`GrammarVocabExercises.js`/`.css`) e de `userKey` ter virado o único named export de `App.js`.
+
+### Paleta de 4 cores (2026-08-07)
+
+`63db3ab` — o tema roxo+azul-marinho original saiu inteiro. Paleta definida pelo dono: `#4c45de`
+índigo escuro (primária), `#6067f0` índigo claro (hover/ativo), `#232b3a` azul-marinho, `#e2e3e7`
+cinza claro. Declaradas no `:root` como `--brand-600`/`--brand-500`/`--navy-900`/`--gray-200`.
+
+Os nomes `--purple-*` **continuam existindo** por estarem em ~700 lugares, mas hoje guardam os
+índigos — o nome mente, o valor não. Os 7 botões de referência do American1, que usavam 7
+matizes avulsos, viraram 7 tons dos dois matizes da paleta. O `theme-color` do `index.html`
+deixou de ser o `#000000` padrão do CRA.
+
+Ficaram fora **de propósito** (não é esquecimento): verde/vermelho de acerto e erro, onde a cor
+É a informação; o marca-texto do My Notes; e o amarelo dos players ancorados nos PDFs, por
+pedido explícito — é por isso que `.ap-btn-ab.is-armed/.is-looping` usam roxo literal em vez de
+`var(--purple-700)`, senão virariam índigo junto com o resto. A mascote Adele também ficou
+intacta (ilustração de personagem, não cor de interface).
+
+### Quicksand global + bug de gravação do My Words (2026-08-08)
+
+`9ff94d5` — a Quicksand era aplicada seletor a seletor, tela por tela, então tudo que nunca
+ganhou regra própria (botões, tela Progress) caía no sans-serif do sistema. O padrão passou pro
+`body` em `src/index.css`, mais a regra `button, input, select, textarea { font-family: inherit }`
+— esses elementos **não herdam** fonte por padrão do navegador, e era exatamente a causa dos
+botões continuarem em Segoe UI. O peso 400 entrou na URL do Google Fonts na mesma leva: peso
+ausente faz o navegador sintetizar em cima do mais próximo, borrando o traço arredondado que é a
+graça da fonte.
+
+No mesmo commit, um bug de dados sério: **toda gravação do My Words reescreve o array inteiro de
+palavras**, e os handlers montavam esse array a partir do state do render
+(`persistWordbook(wordbookEntries.map(...))`). Um handler rodando com snapshot defasado levava
+junto a versão VELHA das outras palavras, desfazendo uma edição anterior **sem erro nenhum** — a
+tela seguia mostrando o state novo até o próximo reload. Sintoma relatado pelo dono: "editei essa
+palavra umas dez vezes e sempre volta o texto original ao reiniciar o servidor". `persistWordbook`
+passou a receber uma FUNÇÃO `(lista atual) => lista nova` e a reler o `localStorage` antes de
+aplicar. **A lição vale para qualquer coleção futura guardada numa chave só: o state pode ficar
+desatualizado por tempo indeterminado, o localStorage nunca.**
+
+### Texto secundário legível (2026-08-08)
+
+`72d3047` — cada regra escrevia o próprio cinza (`rgba(35, 43, 58, α)` com α de 0.45 a 0.75).
+Sobre as superfícies claras do app isso dava ~3:1 a 4.4:1 de contraste — **abaixo do mínimo
+legível de 4.5:1** — e ainda em 11-13px, cada tela com um tamanho diferente. Relatado pelo dono
+como "cinza quase não perceptível".
+
+Viraram 3 tokens no `:root`: `--text-secondary` (`#4a5163`, ~7.7:1) como padrão,
+`--text-muted` (`#6b7385`, ~4.6:1) só onde o apagado é intencional e carrega significado
+(auto-pause "off", campo desabilitado, `::placeholder`, botão de ícone em repouso), e
+`--text-secondary-size` (13.5px). 62 regras convertidas (55 em `App.css`, 7 em
+`GrammarVocabExercises.css`), 20 tamanhos padronizados. Os dois tons continuam visivelmente
+diferentes entre si — só deixaram de ser ilegíveis.
+
+### Repetição espaçada do My Words, reescrita (2026-08-08)
+
+`76859ca` — o motor já filtrava por vencidas, mas três coisas o mascaravam e faziam a revisão
+"parecer que mostra todos os cards": palavra nova nascia vencida (`due: Date.now()`), não havia
+teto de sessão, e nada mostrava o que o usuário tinha respondido antes.
+
+- **Intervalos fixos por grau** (`FLASHCARD_GRADE_DAYS`): `again` 1, `good` 3, `easy` 7,
+  `known` 30. Substituiu a escada progressiva `FLASHCARD_STEPS_DAYS = [1,3,7,14,30,60]`, em que
+  o mesmo botão dava intervalos diferentes conforme o `step`. O número escrito no botão passou a
+  ser o que acontece. **Consequência aceita conscientemente:** sem progressão o intervalo máximo
+  é 30 dias, então o volume diário estabiliza em vez de diminuir — o 4º grau "Known" existe
+  justamente pra isso, e quem gradua a palavra é o usuário declarando, não o algoritmo inferindo.
+- **Palavra nova não nasce vencida** — `due` = início do dia LOCAL seguinte
+  (`startOfNextLocalDay`, nunca `toISOString`). Era a causa principal do "mostra tudo": adicionar
+  20 palavras jogava as 20 na sessão do mesmo dia.
+- `isWordDue` substituiu o `(entry.due ?? 0) <= agora`, que tratava entrada SEM `due` como
+  eternamente vencida (todo valor é > 0), grudando na fila qualquer dado antigo ou importado.
+- Sessão ordena por vencida-há-mais-tempo, joga as `again` pro FIM (chegar nas difíceis depois de
+  aquecer) e corta em 25 cards.
+
+### Conteúdo e ajustes (2026-08-09)
+
+Quatro commits no mesmo dia, todos já descritos no `CLAUDE.md`: os exercícios escritos do
+Vocabulary B em três procedências (`d0c28a4` units 5-20 à mão, `b139ef0` units 21-100 por script
+do próprio livro, `40c26a2` as 24 units que o extrator não lia, transcritas à mão) — no total
+148 blocos e 971 itens; a 3ª página do Sound Bank vinda do American Accent (`4c9787a`, **o único
+lugar do app onde uma tela mistura PDF de dois cursos**); o botão "Hide N solved exercises"
+(`ccfce30`); e o "Import progress file" no Progress (`3a1a3be`), que oferecia como TIRAR o
+progresso mas não como trazer de volta.
+
+### Tema escuro (2026-08-14)
+
+`48d8822` (+752 linhas, 5 arquivos) — botão de sol/lua no header. A preferência fica em
+`localStorage.theme` **sem namespace de usuário**: é do aparelho, precisa valer na tela de
+cadastro e não deve mudar ao trocar de nome. Na 1ª visita segue o `prefers-color-scheme`.
+
+A paleta escura é o próprio azul-marinho da marca escurecido, não um cinza neutro — a ideia é
+parecer o mesmo app com a luz baixa. Superfícies em 3 degraus: painel `#1b2130` < card `#232b3a`
+< campos `#2a3446`.
+
+**O método importou mais que as cores**: os ~200 literais espalhados pelo CSS viraram tokens
+semânticos, classificados pela PROPRIEDADE em que a cor aparecia — `background: #fff` é
+superfície (virou token), `color: #fff` é texto sobre botão colorido e **continua branco** no
+escuro. Assim o tema redefine variáveis num lugar só, com zero regra de componente duplicada.
+
+Duas separações que só apareceram ao medir contraste, e que não podem ser desfeitas:
+- **`--brand-text` separado de `--brand-600`/`--brand-500`**: o índigo tem dois papéis opostos no
+  escuro (fundo de botão precisa ser ESCURO pro texto branco se ler; texto colorido precisa ser
+  CLARO). Clarear os dois juntos derrubou os botões pra 2,5:1.
+- **`--danger-text`/`--success-text`** em vez de listar seletores no bloco do tema: a lista
+  quebraria em silêncio no dia em que alguém criasse um texto vermelho novo.
+
+Causa raiz da maior parte dos textos invisíveis relatados: `--purple-900`/`--purple-950` são
+apelidos do azul-marinho e do quase-preto, e eram cor de TEXTO em 11 regras (players, "Show
+answers", títulos do Listening/Dictation, "+ Add Words"...). Também escaparam da 1ª conversão os
+degradês claros (painel My Notes e barra de botões: painel claro com texto claro em cima) — **degradê
+também precisa de token**.
+
+No mesmo lote: header de 81px → 63px, com a altura virando o token `--app-header-h` (estava
+escrita à mão como "81px" em 3 lugares); fim dos halos índigo; e **hover destacando pela BORDA,
+não pelo fundo** — fundo claro fixo no hover sobrevivia ao tema escuro e apagava o texto do card.
+
+Ficaram fora do tema de propósito: o leitor de PDF (a página branca é o material do livro, pedido
+explícito) e as pílulas amarelas de áudio, cujo texto marrom escuro está correto sobre amarelo
+nos dois temas.
+
+### Três bugs relatados pelo dono (2026-08-14)
+
+`322fa50` — os três encontrados usando o app de verdade:
+
+1. **My Words entrava em LOOP infinito depois do "Again"**, só saindo pelo "Stop Review". A
+   reciclagem devolvia o card pro fim da fila em TODO "Again" — e como a única forma de encerrar
+   era parar de clicar nele, quem realmente não lembrava a palavra ficava preso; com 1 card
+   vencido, o mesmo card voltava na hora, indefinidamente. Passou a valer **teto de UMA
+   reciclagem por palavra**, contado pelas ocorrências do id na própria fila, sem estado novo. De
+   quebra, o contador mostrava "Card 3 of 2" durante as repetições.
+2. **Exercícios de múltipla escolha só tinham o "Reset" do topo**, que zera a seção inteira —
+   refazer UMA pergunta custava perder as outras 199. Ganharam "Try again" por exercício
+   (`bc60464` completou o ajuste).
+3. **My Notes colava a primeira linha na segunda**: `noteHtmlToText` anexava o `\n` ao FIM de cada
+   bloco, mas o `contentEditable` do Chrome deixa a primeira linha como texto solto e só embrulha
+   as seguintes em `<div>` — a linha 1 nunca ganhava separador. O separador passou a ser inserido
+   ANTES do bloco, que é onde a quebra existe de verdade.
+
+### Home com vida — animações de entrada, contadores e foto ao fundo (2026-08-15)
+
+`50b6427` (+373 linhas). Pedido do dono depois de olhar um site de referência: "algo que dê vida,
+movimento", sem espetáculo. **O critério adotado é a parte que precisa sobreviver**, porque isto
+é ferramenta de estudo aberta todo dia: *movimento acontece UMA VEZ por entrada na tela, nunca em
+loop, e nada nas 9 telas de leitura.*
+
+1. **Entrada escalonada** na Home e no cadastro: fade + subida de 10px em sequência (imagem,
+   tagline, botões, cards), CSS puro. Anima só as FOLHAS, nunca um container e os filhos juntos —
+   duas opacidades encaixadas dão um fade duplo que borra.
+2. **Contadores que sobem de 0 até o valor** (Progress e o "You've mastered X%" da Home). Não é
+   enfeite: é o app encenando o progresso de quem estuda. Dois bugs só apareceram medindo — o
+   hook nascia no valor final (`from === alvo`, saía sem animar) e, pior, **no modo estrito do
+   React a limpeza gravava o ALVO na referência e o número congelava em 0**. Passou a guardar o
+   valor JÁ EXIBIDO, então a segunda passada continua de onde parou.
+3. **A foto do hero se espalha pelo fundo conforme a página rola.** Camada separada em vez de
+   tirar a `<img>` do fluxo: mover de "no fluxo" para "fixo" exigiria medir e reposicionar a cada
+   quadro; aqui só opacidade e escala mudam, que o navegador compõe na GPU. **O progresso vai numa
+   variável CSS, não em estado do React** — estado a cada quadro re-renderizaria a Home inteira
+   durante a rolagem.
+
+Para o item 3 existir foi preciso **dar ALTURA à Home**: ela tinha ~200px de rolagem num monitor
+1080p e o efeito inteiro aconteceria num piscar. Entrou o bloco "Progress by course / level", e a
+rolagem foi a ~850px. É o MESMO componente do Progress (`CourseProgressList`), não uma cópia.
+
+Ajustes pedidos na avaliação, com uma armadilha de CSS que vale registrar: a largura do bloco novo
+precisou de `width: calc(100% + 50px)` porque aqueles cards **não usam `border-box`** e transbordam
+o pai em 25px de cada lado — `max-width` sozinho não resolvia, porque limita e nunca expande. A
+Home tinha 8 tamanhos de texto distintos, hoje 6. A foto ficou mais presente (0.16 → 0.28 → 0.38
+no claro; 0.13 → 0.22 → 0.30 no escuro, menor porque ali a foto é clara sobre fundo escuro).
+
+### Barras de progresso animam ao entrar na tela (2026-08-16)
+
+`3e87602` — o preenchimento dispara quando cada barra **ENTRA na tela**, via
+`IntersectionObserver`, não na montagem: nas duas telas (Home e Progress) essas barras ficam
+abaixo da dobra, então animar na montagem seria animar fora do campo de visão, e quem rolasse até
+lá encontraria a barra já parada e cheia. Cada barra anima **uma vez só** (`unobserve`), senão
+reiniciaria a cada ida e volta de rolagem, virando distração.
+
+O problema técnico central: a largura de cada segmento é `style` inline (a porcentagem real do
+curso), e **CSS normal perde para estilo inline**. Duas escolhas resolvem isso sem nenhum
+`!important`:
+
+- **o `to` do keyframe é OMITIDO**, então o navegador usa como destino o valor especificado do
+  próprio elemento — a porcentagem inline. Uma regra só serve a todos os segmentos de todos os
+  cursos, sem o CSS conhecer largura nenhuma;
+- **a animação nasce `paused`**, e parada no quadro 0 segura a barra vazia (animação vence
+  inline). A classe `is-filled` apenas a põe pra rodar. Sem isso a barra apareceria cheia,
+  esvaziaria na frente do usuário e encheria de novo.
+
+**Rede de segurança**: com `prefers-reduced-motion` ou sem `IntersectionObserver`, as barras
+recebem `is-filled` na hora. Sem isso, qualquer falha na marcação as deixaria vazias PARA SEMPRE
+— um enfeite quebrado escondendo dado real. Na Progress quem rola é um container interno
+(`.landing-page.dashboard-mode`) e funciona igual, porque o observer considera o recorte dos
+ancestrais, não só a janela.
+
+### Legibilidade do tema escuro — a dívida que sobrou (2026-08-29)
+
+Duas semanas depois do tema escuro, `b329845` e `a564c92` ainda estão caçando texto invisível,
+**todos reportados pelo dono a partir de prints do app rodando**. Vale registrar porque é uma
+classe de bug que a auditoria de contraste não pega:
+
+- **Campo que declara `color` mas nenhum `background`** fica com o branco PADRÃO DO NAVEGADOR,
+  que não acompanha tema nenhum, enquanto `--text-primary` vira claro no escuro: letra clara
+  sobre campo branco. Atingiu `.flashcard-spell-input` e depois `.flashcard-meaning-input`.
+- **`<button>` não herda `color` do pai** — o navegador impõe o preto dele. Foi o que deixou as
+  velocidades do menu do player pretas no escuro; só o "1x" se lia, porque `.active` declara cor
+  própria, o que fazia o defeito parecer coisa do estado ativo e não da regra base. Resolvido com
+  `color: inherit`. É a mesma pegadinha que já obrigou a regra
+  `button, input, select, textarea { font-family: inherit }` do `index.css`.
+
+**Lição de método registrada no próprio commit**: ao corrigir o primeiro campo, a varredura
+afirmou que ele era o único assim — e estava errada, porque lia o CSS de forma ingênua, bloco a
+bloco. `background` pode estar numa regra separada da que define `color`, então checar bloco a
+bloco gera falso negativo. A varredura que vale parte dos `<input>`/`<textarea>`/`<select>`
+realmente renderizados no JSX e **agrega TODAS as regras de cada classe**. O editor do My Notes
+(`.notes-editor`) é `contentEditable` e por isso não entra nessa varredura de campos de
+formulário — foi conferido à parte.
+
+Também nesse lote: "Continue where you left off" estava apagado no tema CLARO (o índigo da marca
+media 5,5:1 — passa no mínimo, e por isso nenhuma auditoria reclamou, mas cor de marca em 12,5px
+lê como enfeite). O literal `#3a34b8` virou o token `--brand-text-strong` (`#2f2a9e`, ~9:1). A
+segunda linha do botão passou a `--text-primary`, porque ela é INFORMAÇÃO, não a ação.
 
 ## Observações para outra IA
 

@@ -266,7 +266,12 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
   refazer). Errar nunca esconde nada. **Só filtra a EXIBIÇÃO** — placar, "N answered" e o
   `solvedCount` do próprio botão contam sempre a seção inteira, mesma regra do `blockFilter`.
   Um estado só pras 3 seções (ligar numa e achar a outra cheia pareceria o botão ter falhado),
-  e o botão nem aparece com `solvedCount === 0`. Lista vazia tem mensagem PRÓPRIA por causa:
+  e o botão nem aparece com `solvedCount === 0`.
+  **Esconde uma FOTO, não o estado ao vivo** (`snapshotSolvedIds`, 2026-09-13): o que já
+  estava 100% no clique some; o que for acertado DEPOIS continua na tela, verde, até o aluno
+  clicar em "Hide N more solved". Com o filtro ao vivo, o card sumia no próprio "Check
+  Answer" — o erro ficava vermelho, mas o acerto desaparecia e o aluno não sabia se tinha
+  acertado. Não voltar ao filtro ao vivo. Lista vazia tem mensagem PRÓPRIA por causa:
   dizer "nada casa com o filtro" quando foi o Hide solved que esvaziou mandaria o usuário
   caçar erro de digitação à toa.
 - Precisa de `app-shell--allow-grow` (já na lista em `App.js`) — a lista de exercícios cresce
@@ -423,6 +428,10 @@ Todas as chaves por usuário: `u:<nome>:<chave-base>` (`userKey(name, base)`)
 # Vocabulary
 u:<nome>:visitedUnits              — array de unit numbers
 u:<nome>:notes:<unit>              — string, notas da unit
+                                      (salva SOZINHA ~1s depois de parar de digitar, ao trocar
+                                      de unit e no pagehide, SEM piscar "Saved" — tirava o foco
+                                      do estudo; só a falha aparece. O botão Save grava na hora e
+                                      mostra "Saved"/"Couldn't save" de verdade; ver UnitNotes)
 u:<nome>:answers:<exerciseId>      — string, resposta do user
 u:<nome>:rating:<exerciseId>       — número 1-5, autoavaliação por EXERCÍCIO (tela "exercises")
 u:<nome>:unit-rating:<unit>        — número 1-5, autoavaliação da UNIT inteira (tela de leitura,
@@ -448,6 +457,12 @@ u:<nome>:notes:americanAccent:<screenId> — string, notas da tela
 
 # Revisão espaçada / My Words (compartilhado entre os 4 cursos)
 u:<nome>:review:<curso>:<id>       — JSON {rating, ratedAt, due}
+                                      Só unit/seção/tela — NUNCA exercício (decisão do dono,
+                                      2026-09-13: enchia a fila com "Exercise 9.1…9.4").
+                                      Avaliar exercício não agenda mais; chaves antigas
+                                      "review:vocabulary:<exercício>" são ignoradas por
+                                      loadDueReviews (EXERCISE_REVIEW_COURSE), não apagadas.
+                                      "review:vocabulary-unit:" é a unit e continua valendo
 u:<nome>:wordbook                  — array JSON de palavras + flashcards ({id, word, meaning,
                                       example, context, image, createdAt, step, due,
                                       lastGrade, lastGradedAt, lastIntervalDays}).
@@ -718,7 +733,11 @@ Estes arquivos **não devem ser editados manualmente** (todos gerados por script
   (`FORCE_CONTINUE_PRINTED_PAGES`/`FORCE_FRESH_PRINTED_PAGES`/`EXCLUDED_PRINTED_PAGES`/
   `EXTRA_TRACKS_BY_PRINTED_PAGE` no gerador) pra casos que o heurístico não pega sozinho —
   regenerar do zero SEM essas exceções reintroduziria bugs já corrigidos por revisão visual do
-  dono; se for regenerar, portar a lista de exceções do histórico do git primeiro
+  dono; se for regenerar, portar a lista de exceções do histórico do git primeiro.
+  **Uma correção feita À MÃO no JSON** (2026-09-13, pedido do dono): `page-11` (p. 3) tinha
+  `topic` "Main Vowel Sounds of" — o heading quebra em 2 linhas no PDF e o gerador só pegou a
+  1ª. Corrigido pra "Main Vowel Sounds of American English". Era o único dos 90 `topic`
+  terminando em palavra de ligação; uma regeneração precisa repetir essa correção
 
 Se os PDFs/áudios de origem mudarem, os índices precisam ser regenerados.
 
@@ -821,6 +840,30 @@ Se os PDFs/áudios de origem mudarem, os índices precisam ser regenerados.
       dono pediu explicitamente pra não mexer) e as pílulas amarelas de áudio, cujo texto marrom
       escuro está correto sobre amarelo nos dois temas.
     - **Como verificar:** medir contraste, não olhar. Ver "Testing & Verification".
+
+12. **Movimento acontece UMA VEZ por entrada na tela, nunca em loop, e nunca nas 9 telas de
+    leitura** (2026-08-15/16). Critério definido ao animar a Home, e a razão dele é o uso: isto é
+    ferramenta de estudo aberta todo dia — animação que repete vira distração na segunda semana,
+    e movimento em cima do PDF atrapalha quem está lendo. Onde existe hoje: entrada escalonada da
+    Home e do cadastro (fade + 10px), contadores que sobem de 0 até o valor (Home e Progress),
+    foto do hero se espalhando pelo fundo conforme rola, e as barras de progresso por curso.
+    Quatro regras que não podem ser desfeitas:
+    - **Animar só as FOLHAS, nunca um container e os filhos juntos** — duas opacidades encaixadas
+      dão um fade duplo que borra.
+    - **`prefers-reduced-motion` sempre com rede de segurança**, e a rede é mostrar o conteúdo
+      COMPLETO na hora, não pular a animação e deixar o elemento no estado inicial. Uma barra que
+      depende de animação pra ter largura fica vazia PARA SEMPRE se a marcação falhar — enfeite
+      quebrado escondendo dado real.
+    - **Progresso de rolagem vai em variável CSS, nunca em estado do React** — estado a cada
+      quadro re-renderiza a Home inteira durante a rolagem.
+    - **Barra de progresso: animação `paused` + keyframe sem `to`.** A largura de cada segmento é
+      `style` inline (a porcentagem real), e CSS normal perde pra inline — mas animação vence.
+      Omitir o `to` faz o navegador usar como destino o valor especificado do próprio elemento (a
+      porcentagem inline), então uma regra só serve a todos os cursos sem o CSS conhecer largura
+      nenhuma; e nascer pausada no quadro 0 segura a barra vazia sem `!important` em lugar
+      nenhum. A classe `is-filled` só LIBERA a animação. Ver `CourseProgressList` (`App.js`) —
+      a regra CSS não é escopada por tela de propósito, e isso é seguro porque toda barra do app
+      nasce dentro desse componente.
 
 ### ❌ Não Faça
 
@@ -973,6 +1016,36 @@ Não há testes unitários automatizados (`npm test` funciona mas CRA cria um es
   redundante E some o handle de redimensionamento. A tela `american1-reference` (Grammar/
   Vocabulary Bank) implementou esse painel do zero com uma barra de título própria em vez de
   copiar o padrão das units — corrigido copiando exatamente a estrutura de `american1-unit`.
+
+### Tema escuro — o que a auditoria de contraste NÃO pega (2026-08-29)
+
+Duas semanas depois do tema escuro entrar (ver "Decisões Imutáveis" item 11), o dono ainda
+reportava texto invisível a partir de prints do app rodando. Não era falha da auditoria: são
+casos em que o elemento **não declara** a cor que quebra, então não há regra pra medir.
+
+- **Campo que declara `color` mas nenhum `background`** fica com o branco PADRÃO DO NAVEGADOR,
+  que não acompanha tema nenhum, enquanto `--text-primary` vira claro no escuro — letra clara
+  sobre campo branco. Atingiu `.flashcard-spell-input` e, depois, `.flashcard-meaning-input`.
+  Campo novo declara SEMPRE os dois, e trata o `::placeholder` junto (sem cor própria ele usa o
+  cinza padrão do navegador, calibrado pra fundo claro; usar `--text-muted`, o token já
+  designado pra isso).
+- **`<button>` não herda `color` do pai** — o navegador impõe o preto dele. Foi o que deixou as
+  velocidades do menu do player pretas no escuro, mesmo com `.ap-menu` acertando fundo e cor por
+  token: só o "1x" se lia, porque `.active` declara cor própria, o que fazia o defeito parecer
+  coisa do estado ativo e não da regra base. Corrigir com `color: inherit`, pro item seguir o
+  menu em vez de virar uma segunda fonte da verdade. É a mesma pegadinha que já obrigou a regra
+  `button, input, select, textarea { font-family: inherit }` do `index.css`.
+- **Como varrer isso sem falso negativo** (a 1ª varredura errou e declarou "é o único caso",
+  quando não era): partir dos `<input>`/`<textarea>`/`<select>` realmente renderizados no JSX e
+  **agregar TODAS as regras de cada classe** antes de julgar. `background` pode estar numa regra
+  separada da que define `color` — checar bloco a bloco dá falso negativo. O editor do My Notes
+  (`.notes-editor`) é `contentEditable` e não entra nessa varredura de campos de formulário;
+  conferir à parte.
+- **Passar no mínimo de 4.5:1 não é o mesmo que estar legível.** O "Continue where you left off"
+  media 5,5:1 com o índigo da marca — nenhuma auditoria reclamou, mas cor de marca em 12,5px lê
+  como enfeite, e o dono reclamou duas vezes. Virou o token `--brand-text-strong` (`#2f2a9e`,
+  ~9:1). Regra prática: texto pequeno que é INFORMAÇÃO usa token de papel
+  (`--text-primary`/`--text-secondary`), não cor de marca.
 
 ---
 
