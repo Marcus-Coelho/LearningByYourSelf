@@ -189,6 +189,28 @@ const startOfNextLocalDay = () => {
 // campo; agora ela simplesmente espera a virada do dia, igual a uma nova.
 const isWordDue = (entry, at) => typeof entry?.due === 'number' && entry.due <= at;
 
+// "A mesma palavra" pro My Words não aceitar duplicata (ver handleAddWord).
+// Ignora só o que NÃO é uma diferença de vocabulário: caixa, espaço sobrando,
+// pontuação nas pontas e o tipo de apóstrofo (o teclado digita ' reto, o PDF
+// do livro usa ’ curvo) — mesma normalização de apóstrofo que o
+// normalizeWrittenAnswer do GrammarVocabExercises.js já faz.
+//
+// NÃO reduz plural/flexão de propósito: "glass" e "glasses", "shower" e "take
+// a shower" são entradas diferentes, com significado próprio. Juntá-las
+// recusaria palavra legítima EM SILÊNCIO, que é erro pior que deixar passar
+// uma repetida.
+//
+// Também NÃO dá pra reaproveitar o normalizeListeningAnswer (lá embaixo): ele
+// apaga o apóstrofo INTERNO ("don't" -> "dont"), o que faria "we're" casar com
+// "were".
+const normalizeWordbookWord = (text) => String(text || '')
+  .replace(/[‘’ʼ]/g, "'")
+  .replace(/\s+/g, ' ')
+  .trim()
+  .replace(/^[.,;:!?"“”()[\]]+|[.,;:!?"“”()[\]]+$/g, '')
+  .trim()
+  .toLowerCase();
+
 // Imagem de mnemônica do "My Words": redimensionada no navegador (maior lado
 // até 640px, JPEG 72%) antes de virar data URL e ir pro localStorage — sem
 // isso, uma foto de celular direto do clipboard/upload (vários MB) esgotaria
@@ -443,12 +465,22 @@ const loadDueReviews = (name) => {
         continue;
       }
       if (entry && typeof entry.due === 'number' && entry.due <= now) {
-        due.push({
-          course: remainder.slice(0, separator),
-          id: remainder.slice(separator + 1),
-          rating: entry.rating,
-          due: entry.due,
-        });
+        const course = remainder.slice(0, separator);
+        const id = remainder.slice(separator + 1);
+        const item = { course, id, rating: entry.rating, due: entry.due };
+        // Seção do American1 gravada só pra rótulo (ver handleRateAmerican1Unit):
+        // a fila dizia "Unit 4" sem contar se era a 4A, a 4C ou o Practical
+        // English. Lida aqui, não no reviewItemLabel, porque aquele é uma função
+        // de módulo que não conhece o usuário ativo.
+        if (course === 'american1') {
+          try {
+            const section = window.localStorage.getItem(userKey(name, `american1-review-section:${id}`));
+            if (section) item.section = section;
+          } catch (error) {
+            // Sem seção gravada — o rótulo cai no "Unit N" de sempre.
+          }
+        }
+        due.push(item);
       }
     }
   } catch (error) {
@@ -2085,6 +2117,18 @@ function App() {
     setAmerican1UnitRatings((prev) => ({ ...prev, [unit]: value }));
     try {
       window.localStorage.setItem(userKey(userName, `american1-rating:${unit}`), String(value));
+      // Qual SEÇÃO estava aberta quando a nota foi dada. Chave separada e
+      // só pra EXIBIÇÃO (pedido do dono, 2026-09-29: "unidade 4" na fila de
+      // revisão não diz se é a 4A, a 4C ou o Practical English). O
+      // agendamento continua exatamente como era — mesma chave
+      // "review:american1:<unit>", mesma nota, mesmo intervalo: esta chave
+      // não entra em nenhum cálculo, só no rótulo do item.
+      if (selectedAmerican1Section) {
+        window.localStorage.setItem(
+          userKey(userName, `american1-review-section:${unit}`),
+          String(selectedAmerican1Section),
+        );
+      }
     } catch (error) {
       // Armazenamento indisponível — a nota fica só nesta sessão.
     }
@@ -2283,9 +2327,17 @@ function App() {
   // por tempo indeterminado, o localStorage nunca. Lendo a base do disco a
   // cada gravação, uma edição perdida deixa de ser possível mesmo que algum
   // handler futuro segure um snapshot antigo.
+  //
+  // Devolver do updater a MESMA lista que ele recebeu cancela a gravação (o
+  // handleAddWord faz isso quando a palavra já existe) — sem isso, recusar uma
+  // duplicata ainda reescreveria o array inteiro e re-renderizaria a lista à
+  // toa. Mesma convenção do updater do useState, que também desiste quando o
+  // valor devolvido é o mesmo.
   const persistWordbook = (updater) => {
     if (!userName) return;
-    const next = updater(readStoredWordbook());
+    const current = readStoredWordbook();
+    const next = updater(current);
+    if (next === current) return;
     setWordbookEntries(next);
     try {
       window.localStorage.setItem(userKey(userName, 'wordbook'), JSON.stringify(next));
@@ -2304,9 +2356,25 @@ function App() {
   // sessão de hoje — a causa principal da revisão "parecer que mostra todos os
   // cards" quando se adicionava um lote de palavras de uma vez.
   // `image` é opcional (data URL já redimensionada — ver resizeImageFileToDataUrl).
-  const handleAddWord = ({ word, meaning, example, context, image }) => {
+  //
+  // NÃO adiciona palavra que já está na lista (pedido do dono, 2026-09-29).
+  // O caso que motivou: o Listening manda toda palavra errada pra cá sozinho,
+  // então refazer o MESMO exercício — que é o que se faz pra treinar —
+  // reinseria as mesmas palavras, inflando o caderno e fazendo o mesmo termo
+  // ocupar várias vagas da fila diária de revisão (teto de 25 cards).
+  //
+  // A checagem mora aqui, e não em cada tela, porque esta função é o funil por
+  // onde as 3 portas passam (Listening automático, "+ Word" das telas de
+  // leitura e o formulário do My Words) e tem a única linha de inserção —
+  // qualquer porta nova já nasce protegida.
+  //
+  // Devolve true se gravou, false se era repetida (as telas manuais usam isso
+  // pra avisar em vez de fingir que salvou). `silent` é usado só pelo lote do
+  // Listening, que dá o próprio aviso somado na linha verde — um toast por
+  // palavra ali viraria spam.
+  const handleAddWord = ({ word, meaning, example, context, image }, { silent = false } = {}) => {
     const trimmedWord = (word || '').trim();
-    if (!trimmedWord || !userName) return;
+    if (!trimmedWord || !userName) return false;
     const entry = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       word: trimmedWord,
@@ -2318,11 +2386,28 @@ function App() {
       step: 0,
       due: startOfNextLocalDay(),
     };
-    persistWordbook((list) => [entry, ...list]);
+    // A comparação é contra a lista que o persistWordbook acabou de ler do
+    // localStorage, NUNCA contra o state `wordbookEntries` (mesma regra do
+    // resto do wordbook, ver o comentário do persistWordbook): o state pode
+    // estar defasado por tempo indeterminado, e é isso que faz o lote do
+    // Listening funcionar — cada chamada enxerga o que a anterior gravou.
+    const wordKey = normalizeWordbookWord(trimmedWord);
+    let added = false;
+    persistWordbook((list) => {
+      if (list.some((item) => normalizeWordbookWord(item.word) === wordKey)) return list;
+      added = true;
+      return [entry, ...list];
+    });
+    if (!added) {
+      if (!silent) showToast(`"${trimmedWord}" is already in My Words.`, 'info');
+      return false;
+    }
     // Aquece o cache de pronúncia (ver pronunciationTts.js) em segundo
     // plano, pra o áudio já estar pronto quando o usuário clicar no 🔊 —
     // silenciosamente ignorado se falhar (o clique manual tenta de novo).
+    // Só pra palavra nova: repetida já teve o áudio aquecido quando entrou.
     fetch(`/pronunciation-audio/${encodeURIComponent(trimmedWord)}`).catch(() => {});
+    return true;
   };
 
   const handleDeleteWord = async (id) => {
@@ -3222,7 +3307,11 @@ function App() {
       const sections = american1SectionsByUnit[unit] || [];
       if (sections.length === 0) return;
       setSelectedAmerican1Unit(unit);
-      setSelectedAmerican1Section(sections[0]?.section ?? null);
+      // Abre a MESMA seção que o rótulo promete (ver reviewItemLabel) — mandar
+      // pra seção A depois de dizer "Unit 4C" abriria no lugar errado. Sem
+      // seção gravada, mantém o comportamento antigo (a primeira).
+      const wanted = sections.find((s) => s.section === item.section);
+      setSelectedAmerican1Section(wanted?.section ?? sections[0]?.section ?? null);
       setShowAmerican1Answers(false);
       setActiveCourseId('american1');
       setActivePage('american1-unit');
@@ -4037,6 +4126,10 @@ function App() {
     }
     setAmerican1UnitRatings({});
     removeLocalStorageKeysWithPrefix('american1-rating:');
+    // Prefixo PROPRIO: "american1-review-section:" nao casa com
+    // "american1-rating:", entao sem esta linha o reset deixaria para tras o
+    // rotulo de secao de notas que ja nao existem.
+    removeLocalStorageKeysWithPrefix('american1-review-section:');
     removeLocalStorageKeysWithPrefix('review:american1:');
   };
 
@@ -4060,6 +4153,10 @@ function App() {
       // Armazenamento indisponível.
     }
     removeLocalStorageKeysWithPrefix('american1-rating:');
+    // Prefixo PROPRIO: "american1-review-section:" nao casa com
+    // "american1-rating:", entao sem esta linha o reset deixaria para tras o
+    // rotulo de secao de notas que ja nao existem.
+    removeLocalStorageKeysWithPrefix('american1-review-section:');
     removeLocalStorageKeysWithPrefix('review:american1:');
     removeLocalStorageKeysWithPrefix('notes:american1');
   };
@@ -5217,8 +5314,14 @@ function App() {
                 </div>
               )}
 
+              {/* defaultScale 1.5 = zoom 150% (pedido do dono, 2026-09-29) — só
+                  no American Accent. Os outros cursos seguem em 1.3, e mexer
+                  neles NÃO é de graça: a âncora do Sound Bank é calculada em
+                  cima do scale do leitor do American1 (ver CLAUDE.md). Aqui não
+                  há player ancorado sobre o PDF (o do American Accent fica fixo
+                  no topo), então o zoom não desalinha nada. */}
               {screen ? (
-                <PdfWorkspace key={screen.id} fileUrl={americanAccentScreenPdfUrl(screen)} defaultScale={1.3} />
+                <PdfWorkspace key={screen.id} fileUrl={americanAccentScreenPdfUrl(screen)} defaultScale={1.5} />
               ) : (
                 <div className="pdf-empty-state">
                   <p className="eyebrow">No page</p>
@@ -7161,6 +7264,73 @@ function Toast({ toast }) {
   );
 }
 
+// Escolha de quais palavras erradas vão pro My Words (pedido do dono,
+// 2026-09-29). Antes o Listening mandava TODAS sozinho, e um deslize de
+// digitação ("wad" no lugar de "was") virava palavra de vocabulário — ruído
+// numa lista que ele revisa todo dia.
+//
+// Por isso cada linha mostra o que ELE digitou ao lado da resposta certa: é o
+// que deixa o erro de digitação óbvio num relance, sem precisar reabrir o
+// exercício. Tudo começa MARCADO — o caso comum é querer quase todas, então
+// desmarcar o deslize é mais rápido do que marcar as outras uma a uma.
+function WordPickerDialog({ words, sourceLabel, onConfirm, onCancel }) {
+  const [chosen, setChosen] = useState(() => new Set(words.map((w) => w.word)));
+
+  if (!words.length) return null;
+  const toggle = (word) => setChosen((prev) => {
+    const next = new Set(prev);
+    if (next.has(word)) next.delete(word); else next.add(word);
+    return next;
+  });
+  const allOn = chosen.size === words.length;
+
+  return (
+    <div className="app-confirm-overlay" role="presentation">
+      <div className="app-confirm-dialog word-picker" role="dialog" aria-modal="true" aria-label="Choose words to save">
+        <p className="app-confirm-message">
+          {words.length === 1
+            ? 'You missed 1 word. Save it to My Words?'
+            : `You missed ${words.length} words. Which ones do you want in My Words?`}
+        </p>
+        <button
+          type="button"
+          className="word-picker-toggle-all"
+          onClick={() => setChosen(allOn ? new Set() : new Set(words.map((w) => w.word)))}
+        >
+          {allOn ? 'Clear all' : 'Select all'}
+        </button>
+        <ul className="word-picker-list">
+          {words.map((w) => (
+            <li key={w.word}>
+              <label className="word-picker-item">
+                <input type="checkbox" checked={chosen.has(w.word)} onChange={() => toggle(w.word)} />
+                <span className="word-picker-word">{w.word}</span>
+                {w.typed ? (
+                  <span className="word-picker-typed">you wrote “{w.typed}”</span>
+                ) : null}
+              </label>
+            </li>
+          ))}
+        </ul>
+        {sourceLabel ? <span className="word-picker-source">from {sourceLabel}</span> : null}
+        <div className="app-confirm-actions">
+          <button type="button" className="app-confirm-btn app-confirm-btn--cancel" onClick={onCancel}>
+            Skip
+          </button>
+          <button
+            type="button"
+            className="app-confirm-btn app-confirm-btn--confirm"
+            disabled={chosen.size === 0}
+            onClick={() => onConfirm(words.filter((w) => chosen.has(w.word)))}
+          >
+            {chosen.size === 0 ? 'Save none' : `Save ${chosen.size} word${chosen.size === 1 ? '' : 's'}`}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ConfirmDialog({ dialog, onChoice }) {
   if (!dialog) return null;
   return (
@@ -7521,7 +7691,18 @@ function DailyGoalCard({ items, completedCount, allItems, onTogglePref, overallM
 // Título/subtítulo de um item da fila "Today's Review", conforme o curso.
 const reviewItemLabel = (item) => {
   if (item.course === 'american1') {
-    return { title: `Unit ${item.id}`, subtitle: 'American English A1' };
+    // "Unit 4A" quando a seção é A/B/C (é assim que o livro chama), e
+    // "Unit 4 · Practical English" quando a seção tem nome próprio — juntar
+    // daria "Unit 4Practical English". Sem seção gravada (nota anterior a
+    // 2026-09-29), cai no "Unit 4" de antes.
+    const section = item.section;
+    const letter = section && /^[A-C]$/.test(section);
+    const entry = (american1SectionsByUnit[Number(item.id)] || [])
+      .find((s) => s.section === section);
+    return {
+      title: letter ? `Unit ${item.id}${section}` : (section ? `Unit ${item.id} · ${section}` : `Unit ${item.id}`),
+      subtitle: entry?.title ? `American English A1 — ${entry.title}` : 'American English A1',
+    };
   }
   if (item.course === 'grammarElem') {
     return { title: `Unit ${item.id}`, subtitle: 'Grammar English A1' };
@@ -8264,10 +8445,13 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
     })
     .slice(0, WORDBOOK_DAILY_REVIEW_CAP);
 
+  // Campos só são limpos quando a palavra REALMENTE entrou: se ela já estava
+  // na lista, o handleAddWord recusa e avisa por toast, e esvaziar o
+  // formulário aí pareceria que tinha salvo (ver handleAddWord).
   const handleSubmit = (event) => {
     event.preventDefault();
     if (!word.trim()) return;
-    onAdd({ word, meaning, example, context: '', image });
+    if (!onAdd({ word, meaning, example, context: '', image })) return;
     setWord('');
     setMeaning('');
     setExample('');
@@ -8988,10 +9172,13 @@ function WordQuickAdd({ contextLabel, onAdd }) {
     }
   };
 
+  // Mesma regra do formulário do My Words: só limpa (e só pisca "Added ✓") se
+  // a palavra entrou de verdade — repetida é recusada com toast pelo
+  // handleAddWord, e o texto fica pra o usuário ver qual foi.
   const handleSubmit = (event) => {
     event.preventDefault();
     if (!word.trim()) return;
-    onAdd({ word, meaning, example, context: contextLabel, image });
+    if (!onAdd({ word, meaning, example, context: contextLabel, image })) return;
     setWord('');
     setMeaning('');
     setExample('');
@@ -10700,7 +10887,12 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBac
   const [answers, setAnswers] = useState({});
   const [checked, setChecked] = useState(false);
   const [showAnswers, setShowAnswers] = useState(false);
-  const [addedWordsCount, setAddedWordsCount] = useState(0);
+  // Resultado do envio pro My Words: quantas entraram e quantas já estavam lá.
+  // Um state só (não dois) pra o setTimeout que limpa a mensagem depois de 4s
+  // continuar sendo um só.
+  const [wordsAdded, setWordsAdded] = useState({ added: 0, duplicates: 0 });
+  // Palavras erradas esperando a escolha do usuário (ver WordPickerDialog).
+  const [wordPool, setWordPool] = useState([]);
   const audioBarRef = useRef(null);
   // Auto-pause (mesma feature do Dictation, ver useAudioAutoPause) — pedido
   // do dono, 2026-07-26.
@@ -10756,7 +10948,9 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBac
           // Usuário respondeu algo, mas errou — capturar pro caderno de erros
           // (não pra lacunas 100% numéricas, ver isNumericOnlyToken acima)
           const sentenceFull = model.label + model.parts.map((p) => (p.type === 'blank' ? p.word : p.value)).join('');
-          missedWords.push({ word: part.word, example: sentenceFull });
+          // `typed` só existe pro diálogo de escolha (ver WordPickerDialog):
+          // é o que torna o erro de digitação reconhecível na hora de decidir.
+          missedWords.push({ word: part.word, example: sentenceFull, typed: value.trim() });
         }
       });
     });
@@ -10764,20 +10958,33 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBac
       saveListeningAttempt(userName, track.id, Math.round((correct / total) * 100));
       if (onPracticed) onPracticed();
     }
-    // Adicionar palavras erradas ao My Words. A frase vai em `example` (não
-    // em `context`, como ia antes): `context` é o rótulo curto de PROCEDÊNCIA
-    // ("American Accent p. 6") e é renderizado a 12,5px, então a frase inteira
-    // caía lá minúscula e ilegível no flashcard — bug real reportado pelo dono
-    // (2026-07-26), 4 das 18 entradas do caderno dele estavam assim.
+    // As palavras erradas NÃO vão mais direto pro My Words: viram uma lista
+    // pra o usuário escolher (ver WordPickerDialog). Um "wad" no lugar de
+    // "was" é deslize de digitação, não vocabulário desconhecido, e entrava
+    // no caderno do mesmo jeito.
     if (missedWords.length > 0 && onAddWord) {
-      const uniqueMissed = Array.from(new Map(missedWords.map((w) => [normalizeListeningAnswer(w.word), w])).values());
-      const origem = `Listening — ${listeningTrackLabel(track)}`;
-      uniqueMissed.forEach(({ word, example }) => {
-        onAddWord({ word, meaning: '', example, context: origem });
-      });
-      setAddedWordsCount(uniqueMissed.length);
-      setTimeout(() => setAddedWordsCount(0), 4000);
+      setWordPool(Array.from(new Map(missedWords.map((w) => [normalizeListeningAnswer(w.word), w])).values()));
     }
+  };
+
+  // Grava só o que foi escolhido no diálogo. A frase vai em `example` (não em
+  // `context`, como ia antes): `context` é o rótulo curto de PROCEDÊNCIA
+  // ("American Accent p. 6") e é renderizado a 12,5px, então a frase inteira
+  // caía lá minúscula e ilegível no flashcard — bug real reportado pelo dono
+  // (2026-07-26), 4 das 18 entradas do caderno dele estavam assim.
+  //
+  // Quem recusa o que já está no caderno é o handleAddWord (ver lá). Os dois
+  // números aparecem juntos porque refazer um exercício — o uso normal — não
+  // adiciona nada, e sem aviso nenhum isso pareceria defeito.
+  const handleSaveChosenWords = (chosen) => {
+    const origem = `Listening — ${listeningTrackLabel(track)}`;
+    let added = 0;
+    chosen.forEach(({ word, example }) => {
+      if (onAddWord({ word, meaning: '', example, context: origem }, { silent: true })) added += 1;
+    });
+    setWordPool([]);
+    setWordsAdded({ added, duplicates: chosen.length - added });
+    setTimeout(() => setWordsAdded({ added: 0, duplicates: 0 }), 4000);
   };
 
   let totalBlanks = 0;
@@ -10920,8 +11127,23 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBac
             {correctBlanks} / {totalBlanks} correct
           </span>
         )}
-        {addedWordsCount > 0 && (
-          <span className="listening-words-added">✓ Added {addedWordsCount} word{addedWordsCount !== 1 ? 's' : ''} to My Words</span>
+        {wordPool.length > 0 && (
+          <WordPickerDialog
+            words={wordPool}
+            sourceLabel={listeningTrackLabel(track)}
+            onConfirm={handleSaveChosenWords}
+            onCancel={() => setWordPool([])}
+          />
+        )}
+        {(wordsAdded.added > 0 || wordsAdded.duplicates > 0) && (
+          <span className="listening-words-added">
+            {wordsAdded.added > 0
+              ? `✓ Added ${wordsAdded.added} word${wordsAdded.added !== 1 ? 's' : ''} to My Words`
+              : `✓ All ${wordsAdded.duplicates} word${wordsAdded.duplicates !== 1 ? 's are' : ' is'} already in My Words`}
+            {wordsAdded.added > 0 && wordsAdded.duplicates > 0
+              ? ` · ${wordsAdded.duplicates} already there`
+              : ''}
+          </span>
         )}
       </div>
     </div>
