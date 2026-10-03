@@ -118,6 +118,9 @@ pras 4 telas acima pegarem sozinhas.
   página impressa — ver "Dados Gerados" abaixo pra como isso é detectado e a lista de exceções
   manuais conhecidas. Progresso é por **página real do livro** (não por tela nem por unit
   inexistente) — visitar uma tela de 2 páginas marca as 2 pro cálculo de "Your Progress"
+- Leitor em **150%** (`defaultScale={1.5}`, 2026-09-29) — só este curso; os outros seguem em
+  1.3. Aqui é seguro porque não há player ancorado sobre o PDF (ver abaixo); no American1 o
+  scale entra no cálculo da âncora do Sound Bank
 - Player **fixo no topo**, não ancorado sobre o PDF (diferente do Vocabulary/American1) — uma
   página pode ter 2-3 faixas, então um botão por coordenada não escalava; mesmo padrão do
   Grammar Elem (link simples ao lado do conteúdo, não um selo posicionado em cima da página)
@@ -125,6 +128,16 @@ pras 4 telas acima pegarem sozinhas.
   rodapé corrido do livro) e página+subtítulo entre parênteses (`screen.topic`, o heading real
   tamanho 18 daquela tela, "se houver") — ex. "Chapter Eight (Sound Like A True Native
   Speaker) · p. 115–117 (Linking Words for Smoother Speech Flow)"
+- **Wave 2 (2026-09-29): +67 faixas, total 120** — 33 "Word Pairs for Practice" e 34
+  "Practice Dialogue(s)" (inclui as variantes "for Silent t", "for tr and dr", "for -ed
+  Verbs", "More Practice Dialogues", "Dialogue(s) for Practice"). O TIPO de cada faixa está
+  no NOME DO ARQUIVO de áudio ("006 Word Pairs For Practice-deep sea.mp3") — foi por aí que
+  as candidatas foram levantadas, não pelo PDF. Extração com as regras abaixo; **4 faixas
+  ficaram de fora de propósito**: 193 e 320 (nada extraível), 313 (o `h` mudo some do texto,
+  vira "I know er") e 319 (marcas `//` de thought groups). Falantes normalizados pro formato
+  que o app já entende (`A:`/`B:`, ver stripDictationSpeakerLabel) — o livro usa "a."/"b.".
+  Essas faixas **não têm pontos de auto-pause** (`dictation_pause_points.json` cobre só as 53
+  da Wave 1), então no Dictation o toggle de auto-pause não aparece nelas.
 - **Dictation/Listening/Speaking Wave 1** (53 faixas, `listening_american_accent.json`, dentro
   de `LISTENING_SOURCES` — aparece nos 3 automaticamente): texto das "Practice Sentences"/
   "Sentence Pairs for Practice"/"Sentences for Practice" extraído do PDF (âncora do selo
@@ -442,6 +455,15 @@ u:<nome>:unit-rating:<unit>        — número 1-5, autoavaliação da UNIT inte
 # American English A1
 u:<nome>:american1-visitedUnits    — array de "<unit>|<section>"
 u:<nome>:american1-rating:<id>     — número 1-5
+u:<nome>:american1-review-section:<unit> — "A"/"B"/"C"/"Practical English"/"Review and Check":
+                                      qual SEÇÃO estava aberta quando a unit foi avaliada.
+                                      SÓ PRA RÓTULO (2026-09-29): a fila dizia "Unit 4" sem
+                                      contar se era a 4A, a 4C ou o Practical English. O
+                                      agendamento é o mesmo de sempre (review:american1:<unit>,
+                                      uma entrada por unit) — esta chave não entra em cálculo
+                                      nenhum, só no texto do item e em qual seção ele abre.
+                                      Prefixo próprio, então precisa ser apagada à parte nos
+                                      dois resets do curso
 u:<nome>:notes:american1:<unit>    — string
 
 # Grammar English A1
@@ -478,6 +500,16 @@ u:<nome>:wordbook                  — array JSON de palavras + flashcards ({id,
                                       montado a partir do state `wordbookEntries` do render
                                       (era o que fazia edição de palavra sumir no reload, ver
                                       "Quirks & Gotchas")
+                                      NÃO aceita palavra REPETIDA (2026-09-29): handleAddWord
+                                      compara por normalizeWordbookWord (caixa, espaço,
+                                      pontuação das pontas e apóstrofo curvo/reto — sem
+                                      plural/flexão, "glass" ≠ "glasses") contra a lista lida
+                                      do localStorage, e devolve true/false. O lote do
+                                      Listening passa {silent:true} e soma o resultado na
+                                      linha verde; as 2 telas manuais avisam por toast e NÃO
+                                      limpam o formulário. Updater que devolve a MESMA lista
+                                      cancela a gravação (é como a recusa evita reescrever
+                                      tudo à toa)
 
 # Grammar & Vocabulary Exercises (tela própria, ver seção acima)
 u:<nome>:grammarVocabAnswers:<sourceId> — JSON com as respostas dadas, uma chave por seção
@@ -488,6 +520,12 @@ u:<nome>:grammarVocabAnswers:<sourceId> — JSON com as respostas dadas, uma cha
                                       usuário e de propósito fora do localStorage
 
 # Listening / Dictation (por track, namespaces separados um do outro)
+                                      As palavras erradas NÃO vão mais sozinhas pro My Words
+                                      (2026-09-29): viram uma lista pra o usuário escolher
+                                      (WordPickerDialog), com o que ele DIGITOU ao lado da
+                                      resposta certa — um "wad" no lugar de "was" é deslize de
+                                      digitação, não vocabulário. Tudo nasce marcado: o caso
+                                      comum é querer quase todas
 u:<nome>:listening:<trackId>:stats — JSON {attempts, lastScorePercent, lastAttemptAt}
 u:<nome>:dictation:<trackId>:stats — JSON {attempts, lastScorePercent, lastAttemptAt}
 
@@ -949,6 +987,35 @@ Não há testes unitários automatizados (`npm test` funciona mas CRA cria um es
   amostragem continua necessária mesmo depois dos fixes estruturais acima (ver
   PROJECT_SUMMARY pra lista completa de faixas corrigidas)
 - 3 páginas realmente em branco (38, 88, 140) — excluídas da lista de telas, não geram merge
+- **Armadilhas achadas ao extrair a Wave 2 (2026-09-29)** — quem reconstruir precisa repetir:
+  1. o selo "Track N" fica na margem **EXTERNA**: esquerda nas páginas ímpares, direita nas
+     pares (x≈509 numa página de 563). Olhar só a esquerda perde METADE das faixas;
+  2. o **rodapé** corrido ("Chapter Eight: ... 119", y≈728) gruda no ÚLTIMO item da lista —
+     cortar a faixa y > altura − 70;
+  3. "Word Pairs" vem em 2+ **COLUNAS**: ordenar por Y dá 1, 6, 2, 7… — ordenar pelo número
+     impresso do item;
+  4. as marcas do livro viram linhas/ glifos soltos: símbolo fonético acima da fala (`/ou/`),
+     parênteses de ligação ("Can I come in? ( ("), letra muda sobrescrita. Parêntese e
+     fonético dá pra limpar (a palavra no texto está COMPLETA); letra muda **não** — aí a
+     letra some do texto de verdade;
+  5. glosa entre parênteses que o áudio não lê ("Turn it off. (stop, extinguish") — cortar do
+     "(" até o fim.
+- **Limpeza de 2026-09-29 (20 frases falsas em 10 faixas)**, achada pelo dono num print do
+  Listening ("/I/ AS IN SIT" como frase 6 da faixa 7). O que tinha vazado pro
+  `listening_american_accent.json`: título da seção SEGUINTE (`/X/ AS IN Y` nas faixas 7, 49,
+  57, 60, 63; "Practice Paragraph" na 73), cabeçalho de COLUNA de par mínimo ("voiceless"/
+  "voiced" na 116; "stressed nouns:"/"reduced pronouns:" na 296), o ENUNCIADO do exercício
+  quebrado em 2 linhas (245), um fragmento de texto corrido ("reduced." na 294) e, na 329,
+  **7 × `\u0001`** — a seta de entonação do livro, um glifo que vira caractere de CONTROLE
+  invisível na extração (não dá pra achar lendo o JSON a olho, só por regex de `[\u0000-\u001F]`).
+- **Como conferir isso sem depender de heurística de texto**: comparar, por faixa, o número de
+  frases com o número de pontos de `dictation_pause_points.json` (segmentos de silêncio do
+  áudio REAL). Frase a mais que o áudio não tem é forte indício de lixo — antes da limpeza,
+  7 faixas tinham mais frases que segmentos, exatamente as que estavam sujas; depois, nenhuma.
+  O contrário (mais pontos que frases) é normal: o locutor repete cada frase. Heurísticas de
+  texto que valeram a pena: começar com minúscula, não terminar em pontuação, caixa alta
+  inteira, e as duas acima. Nenhuma delas sozinha pega tudo — o enunciado da 245 começa com
+  maiúscula, e só apareceu ao ler a faixa inteira.
 - Ordem das faixas dentro de cada tela: sempre ordenar numericamente (`tracks.sort()`) — a
   ordem de aparição no texto corrido não é a ordem numérica
 

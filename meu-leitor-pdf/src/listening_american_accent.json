@@ -4,6 +4,27 @@
   "description": "Dictation practice built from real Practice Sentences and Sentence Pairs audio.",
   "tracks": [
     {
+      "id": "accent-6",
+      "title": "Chapter One — Word Pairs for Practice (p. 4–5)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/006 Word Pairs For Practice-deep sea.mp3",
+      "audioLabel": "p. 4–5",
+      "sentences": [
+        "deep sea",
+        "beans and cheese",
+        "severe heat",
+        "breathe deep",
+        "three meals",
+        "green leaves",
+        "extremely easy",
+        "sweet dreams",
+        "peaches and cream",
+        "speak Chinese"
+      ],
+      "number": 1,
+      "trackNumber": 6
+    },
+    {
       "id": "accent-7",
       "title": "Chapter One — Practice Sentences (p. 4–5)",
       "heading": "Practice Sentences",
@@ -14,11 +35,31 @@
         "Don’t keep the TV near the heater.",
         "It’s extremely easy to cheat when the teacher isn’t here.",
         "Please speak to Peter about the employee meeting.",
-        "Steve will reread the email before he leaves.",
-        "/I/ AS IN SIT"
+        "Steve will reread the email before he leaves."
       ],
-      "number": 1,
+      "number": 2,
       "trackNumber": 7
+    },
+    {
+      "id": "accent-9",
+      "title": "Chapter One — Word Pairs for Practice (p. 4–5)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/009 Word Pairs For Practice-big city.mp3",
+      "audioLabel": "p. 4–5",
+      "sentences": [
+        "big city",
+        "innocent victim",
+        "drink milk",
+        "children’s film",
+        "simple living",
+        "fish and chips",
+        "trip to Italy",
+        "spring picnic",
+        "this thing",
+        "winter wind"
+      ],
+      "number": 3,
+      "trackNumber": 9
     },
     {
       "id": "accent-10",
@@ -33,8 +74,50 @@
         "This city has an interesting history.",
         "When did Bill Clinton visit the Middle East?"
       ],
-      "number": 2,
+      "number": 4,
       "trackNumber": 10
+    },
+    {
+      "id": "accent-12",
+      "title": "Chapter One — Word Pairs for Practice (p. 6)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/012 Word Pairs For Practice-stil sleepy.mp3",
+      "audioLabel": "p. 6",
+      "sentences": [
+        "still sleepy",
+        "very interesting",
+        "feeling ill",
+        "it’s easy",
+        "is he?",
+        "big deal",
+        "these things",
+        "Middle East",
+        "little meal",
+        "green pill"
+      ],
+      "number": 5,
+      "trackNumber": 12
+    },
+    {
+      "id": "accent-14",
+      "title": "Chapter One — Word Pairs for Practice (p. 6)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/014 Word Pairs For Practice-the same day.mp3",
+      "audioLabel": "p. 6",
+      "sentences": [
+        "the same day",
+        "stay away",
+        "escape from jail",
+        "take a break",
+        "stay the same",
+        "explain the situation",
+        "play baseball",
+        "eighty-eight",
+        "bake a cake",
+        "save the whales"
+      ],
+      "number": 6,
+      "trackNumber": 14
     },
     {
       "id": "accent-15",
@@ -49,8 +132,29 @@
         "I will stay in the game even though it’s late.",
         "My neighbor from Spain moved away today."
       ],
-      "number": 3,
+      "number": 7,
       "trackNumber": 15
+    },
+    {
+      "id": "accent-17",
+      "title": "Chapter One — Word Pairs for Practice (p. 7)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/017 Word Pairs For Practice-presidential election.mp3",
+      "audioLabel": "p. 7",
+      "sentences": [
+        "presidential election",
+        "bend your legs",
+        "plenty of energy",
+        "remember the pledge",
+        "better friend",
+        "heavy metal",
+        "get better",
+        "elegant dress",
+        "next Wednesday",
+        "well read"
+      ],
+      "number": 8,
+      "trackNumber": 17
     },
     {
       "id": "accent-18",
@@ -65,8 +169,48 @@
         "On the seventh of February, the weather was wet.",
         "I see my best friend Fred every seven days."
       ],
-      "number": 4,
+      "number": 9,
       "trackNumber": 18
+    },
+    {
+      "id": "accent-20",
+      "title": "Chapter One — Word Pairs for Practice (p. 8)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/020 Word Pairs For Practice-less rain.mp3",
+      "audioLabel": "p. 8",
+      "sentences": [
+        "less rain",
+        "taste test",
+        "neck pain",
+        "fell away",
+        "wet day",
+        "main men",
+        "great dress",
+        "headache"
+      ],
+      "number": 10,
+      "trackNumber": 20
+    },
+    {
+      "id": "accent-22",
+      "title": "Chapter One — Word Pairs for Practice (p. 8)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/022 Word Pairs For Practice-bad example.mp3",
+      "audioLabel": "p. 8",
+      "sentences": [
+        "bad example",
+        "national anthem",
+        "back at the ranch",
+        "accurate answer",
+        "bad habit",
+        "practical plan",
+        "annual gathering",
+        "last chance",
+        "handsome actor",
+        "angry man"
+      ],
+      "number": 11,
+      "trackNumber": 22
     },
     {
       "id": "accent-23",
@@ -81,8 +225,46 @@
         "Nancy has a bad attitude in her Spanish class.",
         "Kathy would rather study acting at the national academy."
       ],
-      "number": 5,
+      "number": 12,
       "trackNumber": 23
+    },
+    {
+      "id": "accent-25",
+      "title": "Chapter One — Word Pairs for Practice (p. 9)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/025 Word Pairs For Practice-sad endings.mp3",
+      "audioLabel": "p. 9",
+      "sentences": [
+        "sad endings",
+        "less land",
+        "angry men",
+        "ten gallons",
+        "last exit",
+        "bad friend"
+      ],
+      "number": 13,
+      "trackNumber": 25
+    },
+    {
+      "id": "accent-27",
+      "title": "Chapter One — Word Pairs for Practice (p. 9)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/027 Word Pairs For Practice-common problem.mp3",
+      "audioLabel": "p. 9",
+      "sentences": [
+        "common problem",
+        "body shop",
+        "occupy the office",
+        "office politics",
+        "top to bottom",
+        "logical response",
+        "hot topic",
+        "modern hospital",
+        "nonstop",
+        "sloppy job"
+      ],
+      "number": 14,
+      "trackNumber": 27
     },
     {
       "id": "accent-28",
@@ -97,8 +279,46 @@
         "Bob will probably lock the office.",
         "He’s got a lot of dollars in his pocket."
       ],
-      "number": 6,
+      "number": 15,
       "trackNumber": 28
+    },
+    {
+      "id": "accent-30",
+      "title": "Chapter One — Word Pairs for Practice (p. 10)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/030 Word Pairs For Practice-hot pan.mp3",
+      "audioLabel": "p. 10",
+      "sentences": [
+        "hot pan",
+        "man’s job",
+        "top answer",
+        "got back",
+        "bad dog",
+        "back pocket"
+      ],
+      "number": 16,
+      "trackNumber": 30
+    },
+    {
+      "id": "accent-33",
+      "title": "Chapter One — Word Pairs for Practice (p. 11–12)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/033 Word Pairs For Practice-young son.mp3",
+      "audioLabel": "p. 11–12",
+      "sentences": [
+        "young son",
+        "jump up",
+        "fun in the sun",
+        "another subject",
+        "wonderful mother",
+        "under the rug",
+        "number one",
+        "undercover",
+        "enough money",
+        "Sunday brunch"
+      ],
+      "number": 17,
+      "trackNumber": 33
     },
     {
       "id": "accent-34",
@@ -113,8 +333,48 @@
         "I don’t have much stuff in the trunk of my truck.",
         "I love the sunny summer months."
       ],
-      "number": 7,
+      "number": 18,
       "trackNumber": 34
+    },
+    {
+      "id": "accent-36",
+      "title": "Chapter One — Word Pairs for Practice (p. 11–12)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/036 Word Pairs For Practice-come on.mp3",
+      "audioLabel": "p. 11–12",
+      "sentences": [
+        "come on",
+        "got lucky",
+        "not enough",
+        "cost much",
+        "fun job",
+        "stop running",
+        "jump on",
+        "gunshot"
+      ],
+      "number": 19,
+      "trackNumber": 36
+    },
+    {
+      "id": "accent-38",
+      "title": "Chapter One — Word Pairs for Practice (p. 11–12)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/038 Word Pairs For Practice-pause in the hall.mp3",
+      "audioLabel": "p. 11–12",
+      "sentences": [
+        "pause in the hall",
+        "awful thought",
+        "water the lawn",
+        "talk until dawn",
+        "autumn in Austria",
+        "walk the dog",
+        "small talk",
+        "already exhausted",
+        "tall wall",
+        "caught the ball"
+      ],
+      "number": 20,
+      "trackNumber": 38
     },
     {
       "id": "accent-39",
@@ -129,8 +389,46 @@
         "He bought an automobile at the auction last fall.",
         "This sauce is awesome, Paula!"
       ],
-      "number": 8,
+      "number": 21,
       "trackNumber": 39
+    },
+    {
+      "id": "accent-41",
+      "title": "Chapter One — Word Pairs for Practice (p. 11–12)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/041 Word Pairs For Practice-another dog.mp3",
+      "audioLabel": "p. 11–12",
+      "sentences": [
+        "another dog",
+        "long month",
+        "much talk",
+        "bought lunch",
+        "coffee cup",
+        "small club"
+      ],
+      "number": 22,
+      "trackNumber": 41
+    },
+    {
+      "id": "accent-43",
+      "title": "Chapter One — Word Pairs for Practice (p. 13)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/043 Word Pairs For Practice-phone home.mp3",
+      "audioLabel": "p. 13",
+      "sentences": [
+        "phone home",
+        "own a home",
+        "almost over",
+        "open road",
+        "drove slowly",
+        "don’t smoke",
+        "low profile",
+        "slow motion",
+        "old poem",
+        "golden bowl"
+      ],
+      "number": 23,
+      "trackNumber": 43
     },
     {
       "id": "accent-44",
@@ -145,8 +443,46 @@
         "I chose a bowl of soup, potatoes, roast beef, and a soda.",
         "I don’t know if Joan smokes."
       ],
-      "number": 9,
+      "number": 24,
       "trackNumber": 44
+    },
+    {
+      "id": "accent-46",
+      "title": "Chapter One — Word Pairs for Practice (p. 14–15)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/046 Word Pairs For Practice-old law.mp3",
+      "audioLabel": "p. 14–15",
+      "sentences": [
+        "old law",
+        "not home",
+        "those dogs",
+        "odd boat",
+        "walk slowly",
+        "only daughter"
+      ],
+      "number": 25,
+      "trackNumber": 46
+    },
+    {
+      "id": "accent-48",
+      "title": "Chapter One — Word Pairs for Practice (p. 14–15)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/048 Word Pairs For Practice-good book.mp3",
+      "audioLabel": "p. 14–15",
+      "sentences": [
+        "good book",
+        "took a look",
+        "good looking",
+        "fully cooked",
+        "shook his foot",
+        "sugar cookie",
+        "push and pull",
+        "wool pullover",
+        "wooden hook",
+        "good childhood"
+      ],
+      "number": 26,
+      "trackNumber": 48
     },
     {
       "id": "accent-49",
@@ -159,11 +495,31 @@
         "The sugar cookies taste good.",
         "The butcher is a good cook.",
         "He would read the book if he could.",
-        "Butch visited his old neighborhood in Brooklyn.",
-        "/u/ AS IN TOO"
+        "Butch visited his old neighborhood in Brooklyn."
       ],
-      "number": 10,
+      "number": 27,
       "trackNumber": 49
+    },
+    {
+      "id": "accent-51",
+      "title": "Chapter One — Word Pairs for Practice (p. 14–15)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/051 Word Pairs For Practice-too few.mp3",
+      "audioLabel": "p. 14–15",
+      "sentences": [
+        "too few",
+        "fruit juice",
+        "soup spoon",
+        "new suit",
+        "true value",
+        "blue shoes",
+        "new moon",
+        "suitable suitcase",
+        "two rooms",
+        "super cool"
+      ],
+      "number": 28,
+      "trackNumber": 51
     },
     {
       "id": "accent-52",
@@ -178,8 +534,46 @@
         "I need proof that you’re telling the truth.",
         "The statue on the avenue is truly beautiful."
       ],
-      "number": 11,
+      "number": 29,
       "trackNumber": 52
+    },
+    {
+      "id": "accent-54",
+      "title": "Chapter One — Word Pairs for Practice (p. 14–15)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/054 Word Pairs For Practice-good food.mp3",
+      "audioLabel": "p. 14–15",
+      "sentences": [
+        "good food",
+        "full room",
+        "cook stew",
+        "blue book",
+        "two cookies",
+        "too full"
+      ],
+      "number": 30,
+      "trackNumber": 54
+    },
+    {
+      "id": "accent-56",
+      "title": "Chapter One — Word Pairs for Practice (p. 16–17)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/056 Word Pairs For Practice-first person.mp3",
+      "audioLabel": "p. 16–17",
+      "sentences": [
+        "first person",
+        "purple shirt",
+        "learn German",
+        "other world",
+        "serve dinner",
+        "third term",
+        "firm words",
+        "early bird",
+        "nervous girl",
+        "thirty-third"
+      ],
+      "number": 31,
+      "trackNumber": 56
     },
     {
       "id": "accent-57",
@@ -192,11 +586,31 @@
         "They served turkey for dinner.",
         "Her purple shirt is dirty.",
         "She gave birth to a third girl.",
-        "It’s not worth worrying about another birthday.",
-        "/aɪ/ AS IN TIME"
+        "It’s not worth worrying about another birthday."
       ],
-      "number": 12,
+      "number": 32,
       "trackNumber": 57
+    },
+    {
+      "id": "accent-59",
+      "title": "Chapter One — Word Pairs for Practice (p. 16–17)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/059 Word Pairs For Practice-lime pies.mp3",
+      "audioLabel": "p. 16–17",
+      "sentences": [
+        "lime pies",
+        "white wine",
+        "fly a kite",
+        "nice try",
+        "nine lives",
+        "bright light",
+        "fly high",
+        "sign on the line",
+        "fine dining",
+        "ninety-nine"
+      ],
+      "number": 33,
+      "trackNumber": 59
     },
     {
       "id": "accent-60",
@@ -209,11 +623,31 @@
         "The wildfire started on Friday night.",
         "He was tired after hiking for five hours.",
         "It’s a nine-hour drive to Iowa.",
-        "We had lime pie and dry white wine.",
-        "/aʊ/ AS IN HOUSE"
+        "We had lime pie and dry white wine."
       ],
-      "number": 13,
+      "number": 34,
       "trackNumber": 60
+    },
+    {
+      "id": "accent-62",
+      "title": "Chapter One — Word Pairs for Practice (p. 18)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/062 Word Pairs For Practice-about an hour.mp3",
+      "audioLabel": "p. 18",
+      "sentences": [
+        "about an hour",
+        "crowded house",
+        "downtown",
+        "loud announcement",
+        "countdown",
+        "around the mountain",
+        "brown couch",
+        "found out",
+        "down and out",
+        "pronounce the vowel"
+      ],
+      "number": 35,
+      "trackNumber": 62
     },
     {
       "id": "accent-63",
@@ -226,11 +660,31 @@
         "There are flowers all around the house.",
         "Is that your spouse in the brown blouse?",
         "The clouds behind the mountain will bring showers.",
-        "The brown cow is near the fountain.",
-        "/ɔɪ/ AS IN BOY"
+        "The brown cow is near the fountain."
       ],
-      "number": 14,
+      "number": 36,
       "trackNumber": 63
+    },
+    {
+      "id": "accent-65",
+      "title": "Chapter One — Word Pairs for Practice (p. 18)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/065 Word Pairs For Practice-enjoy the toy.mp3",
+      "audioLabel": "p. 18",
+      "sentences": [
+        "enjoy the toy",
+        "spoiled boy",
+        "appointment in Detroit",
+        "broiled oysters",
+        "boiling point",
+        "annoying noise",
+        "destroy the poison",
+        "loyal employee",
+        "moist soil",
+        "avoid the moisture"
+      ],
+      "number": 37,
+      "trackNumber": 65
     },
     {
       "id": "accent-66",
@@ -245,8 +699,33 @@
         "I was disappointed with Joy’s choice.",
         "Why is Floyd avoiding Roy?"
       ],
-      "number": 15,
+      "number": 38,
       "trackNumber": 66
+    },
+    {
+      "id": "accent-69",
+      "title": "Chapter Two — Practice Dialogues (p. 19–20)",
+      "heading": "Practice Dialogues",
+      "audio": "/american-accent-audio/069 Practice Dialogues-Is it difficult.mp3",
+      "audioLabel": "p. 19–20",
+      "sentences": [
+        "A: Is it difficult?",
+        "B: No, it’s unbelievably easy.",
+        "A: I feel ill.",
+        "B: Drink some green tea.",
+        "A: Please meet me for dinner.",
+        "B: I will be there at six.",
+        "A: Is it expensive?",
+        "B: No, it isn’t. It’s really cheap.",
+        "A: I need a refill of these pills.",
+        "B: Speak with your physician.",
+        "A: Is he still really sick?",
+        "B: No, he’s just feeling a little weak.",
+        "A: This is completely different.",
+        "B: But it is interesting, isn’t it?"
+      ],
+      "number": 39,
+      "trackNumber": 69
     },
     {
       "id": "accent-71",
@@ -268,7 +747,7 @@
         "Do you need to beg?",
         "Do you need a bag?"
       ],
-      "number": 16,
+      "number": 40,
       "trackNumber": 71,
       "targetWords": [
         "pest",
@@ -297,11 +776,60 @@
         "Kenny’s bad headache lasted several days.",
         "Glen drank ten glasses of fresh lemonade.",
         "Everyone was happy that he was elected president.",
-        "Don’t forget to thank Dan for his generous present.",
-        "Practice Paragraph"
+        "Don’t forget to thank Dan for his generous present."
       ],
-      "number": 17,
+      "number": 41,
       "trackNumber": 73
+    },
+    {
+      "id": "accent-76",
+      "title": "Chapter Two — Practice Dialogue (p. 21–23)",
+      "heading": "Practice Dialogue",
+      "audio": "/american-accent-audio/076 Practice Dialogue-Coffee Tomorrow.mp3",
+      "audioLabel": "p. 21–23",
+      "sentences": [
+        "John: Hi Nicole. Can you talk?",
+        "Nicole: Oh, hi, John. Can you hold on? I’m on another call. I’m talking to my boss.",
+        "John: No problem. I’ll wait ‘til you’re done.",
+        "Nicole: Okay, now I can talk. I am sorry it took so long. What’s going on?",
+        "John: Nothing much. I just wanted to know if we can meet for lunch or coffee tomorrow.",
+        "Nicole: Oh, that sounds like fun. I’ve been working nonstop, and I’d love to get out of the office."
+      ],
+      "number": 42,
+      "trackNumber": 76
+    },
+    {
+      "id": "accent-79",
+      "title": "Chapter Two — Dialogues for Practice (p. 24–25)",
+      "heading": "Dialogues for Practice",
+      "audio": "/american-accent-audio/079 Dialogues Uh sound-Let's go out for lunch.mp3",
+      "audioLabel": "p. 24–25",
+      "sentences": [
+        "A: Let’s go out for lunch.",
+        "B: I would love to, but I don’t have enough money.",
+        "A: I have some money.",
+        "B: Oh thanks so much. I’ll pay you back next month.",
+        "A: Don’t worry about it. Lunch doesn’t cost so much.",
+        "A: What a lovely rug! How much is it?",
+        "B: Two hundred dollars.",
+        "A: Do you have another color?",
+        "B: I’m sorry. It doesn’t come in other colors.",
+        "A: What country is she from?",
+        "B: She comes from Russia.",
+        "A: I wonder if her husband, Doug, speaks Russian too.",
+        "B: No, he doesn’t. He’s from London. He just speaks English.",
+        "A: I was in Russia once, and I loved it.",
+        "A: What are you doing on Sunday?",
+        "B: Nothing much. I’m just going for a run.",
+        "A: I’m having brunch with my mother. Would you like to come with us?",
+        "B: That sounds wonderful.",
+        "A: How’s your younger brother?",
+        "B: Great. He’s visiting us with his son.",
+        "A: Are they staying for the whole summer?",
+        "B: No, just until next Monday."
+      ],
+      "number": 43,
+      "trackNumber": 79
     },
     {
       "id": "accent-80",
@@ -321,7 +849,7 @@
         "This is Don.",
         "This is done."
       ],
-      "number": 18,
+      "number": 44,
       "trackNumber": 80,
       "targetWords": [
         "lock",
@@ -354,7 +882,7 @@
         "I have a big lawn.",
         "I have a big loan."
       ],
-      "number": 19,
+      "number": 45,
       "trackNumber": 88,
       "targetWords": [
         "bald",
@@ -383,7 +911,7 @@
         "We’re going for a walk even though it’s cold.",
         "The author wrote his autobiography."
       ],
-      "number": 20,
+      "number": 46,
       "trackNumber": 90
     },
     {
@@ -406,7 +934,7 @@
         "Where is the shoe?",
         "Where is the sugar?"
       ],
-      "number": 21,
+      "number": 47,
       "trackNumber": 100,
       "targetWords": [
         "fool",
@@ -424,6 +952,34 @@
       ]
     },
     {
+      "id": "accent-101",
+      "title": "Chapter Two — Practice Dialogues (p. 30)",
+      "heading": "Practice Dialogues",
+      "audio": "/american-accent-audio/101 Practice Dialogues-Will you start to.mp3",
+      "audioLabel": "p. 30",
+      "sentences": [
+        "A: Will you start to cook soon?",
+        "B: No, I am still too full to think of food.",
+        "A: Who took my cookie?",
+        "B: Don’t look at me.",
+        "A: You should have had some soup. It’s so good.",
+        "B: No, thanks, I’m really full.",
+        "A: He’s foolish to walk in the woods by himself.",
+        "B: Yes. There are a lot of wolves in those woods.",
+        "B: Is that really true?",
+        "A: I think that wolves howl when the moon is full.",
+        "A: Do you like my new boots?",
+        "B: Yes, they’re cool.",
+        "A: And take a look at my blue suit. It’s made of wool.",
+        "B: To tell you the truth, I wouldn’t wear the blue suit if I were you.",
+        "A: Don’t you think it looks good on me?",
+        "B: I think you should return it.",
+        "A: And I think you shouldn’t be so rude!"
+      ],
+      "number": 48,
+      "trackNumber": 101
+    },
+    {
       "id": "accent-104",
       "title": "Chapter Two — Practice Sentences (p. 31)",
       "heading": "Practice Sentences",
@@ -437,7 +993,7 @@
         "I assume that it’s due on Tuesday.",
         "That’s a stupid attitude, Stewart."
       ],
-      "number": 22,
+      "number": 49,
       "trackNumber": 104
     },
     {
@@ -455,7 +1011,7 @@
         "I heard some curse words at work.",
         "They weren’t certain that the Earth circles the sun."
       ],
-      "number": 23,
+      "number": 50,
       "trackNumber": 107
     },
     {
@@ -472,7 +1028,7 @@
         "I am near the cashier by the stairs.",
         "How far is Ireland from here?"
       ],
-      "number": 24,
+      "number": 51,
       "trackNumber": 110
     },
     {
@@ -482,8 +1038,6 @@
       "audio": "/american-accent-audio/116 Practice Sentences-My wallet.mp3",
       "audioLabel": "p. 34–36",
       "sentences": [
-        "voiceless",
-        "voiced",
         "My wallet is in the back.",
         "My wallet is in the bag.",
         "I saw five bucks on the floor.",
@@ -493,8 +1047,27 @@
         "I heard about the lice.",
         "I heard about the lies."
       ],
-      "number": 25,
+      "number": 52,
       "trackNumber": 116
+    },
+    {
+      "id": "accent-122",
+      "title": "Chapter Three — Word Pairs for Practice (p. 37)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/122 Word Pairs For Practice-help him.mp3",
+      "audioLabel": "p. 37",
+      "sentences": [
+        "help him",
+        "keep talking",
+        "did that",
+        "could go",
+        "stop that",
+        "job market",
+        "big park",
+        "cup cake"
+      ],
+      "number": 53,
+      "trackNumber": 122
     },
     {
       "id": "accent-126",
@@ -512,7 +1085,7 @@
         "That apartment felt quite hot.",
         "If you eat out every night you'll get fat."
       ],
-      "number": 26,
+      "number": 54,
       "trackNumber": 126
     },
     {
@@ -529,8 +1102,23 @@
         "That cotton blouse has buttons.",
         "Martin Luther King and Bill Clinton are famous Americans."
       ],
-      "number": 27,
+      "number": 55,
       "trackNumber": 129
+    },
+    {
+      "id": "accent-132",
+      "title": "Chapter Four — Practice Dialogue for Silent t (p. 42)",
+      "heading": "Practice Dialogue for Silent t",
+      "audio": "/american-accent-audio/132 Practice Dialogue For Silent T.mp3",
+      "audioLabel": "p. 42",
+      "sentences": [
+        "A: There are many advantages to working for that international company.",
+        "B: I’ll be disappointed if they don’t call me for an interview.",
+        "A: I hear they’re looking for someone with interpersonal skills and plenty of energy.",
+        "B: It’s only twenty minutes from Santa Monica."
+      ],
+      "number": 56,
+      "trackNumber": 132
     },
     {
       "id": "accent-137",
@@ -541,8 +1129,8 @@
       "sentences": [
         "I’ll eat it a little later.",
         "I bought an auto battery for forty dollars.",
-        "Peter wrote  a better letter.",
-        "I’d better go  to the meeting at eleven.",
+        "Peter wrote a better letter.",
+        "I’d better go to the meeting at eleven.",
         "He met her at a computer store in Seattle.",
         "It’s a pity that he’s getting fatter and fatter.",
         "Tell the waiter to bring it a little later.",
@@ -550,8 +1138,44 @@
         "Betty’s knitting a little sweater for her daughter.",
         "It’ll be better if you heat it before you eat it."
       ],
-      "number": 28,
+      "number": 57,
       "trackNumber": 137
+    },
+    {
+      "id": "accent-139",
+      "title": "Chapter Four — Word Pairs for Practice (p. 43)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/139 Word Pairs For Practice-medal metal.mp3",
+      "audioLabel": "p. 43",
+      "sentences": [
+        "He won a gold medal in the Olympics.",
+        "My car is made out of metal.",
+        "His first name is Adam.",
+        "An atom is the smallest unit of an element.",
+        "My hand hurts because I hit it hard.",
+        "You can’t find it because I hid it.",
+        "The president is the leader of the country.",
+        "How much is a liter of gasoline?",
+        "There was a feudal system in the Middle Ages.",
+        "My effort was totally futile."
+      ],
+      "number": 58,
+      "trackNumber": 139
+    },
+    {
+      "id": "accent-141",
+      "title": "Chapter Four — Word Pairs for Practice (p. 44)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/141 Word Pairs For Practice-add on.mp3",
+      "audioLabel": "p. 44",
+      "sentences": [
+        "add on",
+        "made it",
+        "hid it",
+        "fed up"
+      ],
+      "number": 59,
+      "trackNumber": 141
     },
     {
       "id": "accent-142",
@@ -566,8 +1190,28 @@
         "She had on a Prada dress.",
         "I’m fed up with the crowded elevator."
       ],
-      "number": 29,
+      "number": 60,
       "trackNumber": 142
+    },
+    {
+      "id": "accent-147",
+      "title": "Chapter Four — Practice Dialogues for tr and dr (p. 45)",
+      "heading": "Practice Dialogues for tr and dr",
+      "audio": "/american-accent-audio/147 Practice Dialogues For Tr And Dr.mp3",
+      "audioLabel": "p. 45",
+      "sentences": [
+        "A: Why do you travel by train?",
+        "B: Because the traffic is so dreadful.",
+        "A: What did Sandra tell the attorney?",
+        "B: She told him the truth about the drugs.",
+        "A: Have you traveled to Turkey?",
+        "B: Yes, that country has some interesting traditions.",
+        "A: I told him a hundred times not to drink and drive.",
+        "B: I’m sure he’ll try to stay out of trouble.",
+        "A: To tell you the truth, I am drained from all this drama."
+      ],
+      "number": 61,
+      "trackNumber": 147
     },
     {
       "id": "accent-151",
@@ -585,8 +1229,101 @@
         "Why won’t you do it gradually?",
         "Can’t you change your schedule?"
       ],
-      "number": 30,
+      "number": 62,
       "trackNumber": 151
+    },
+    {
+      "id": "accent-156",
+      "title": "Chapter Four — Practice Dialogues for -ed Verbs (p. 48–49)",
+      "heading": "Practice Dialogues for -ed Verbs",
+      "audio": "/american-accent-audio/156 Practice Dialogues For Ed Verbs-What did you think.mp3",
+      "audioLabel": "p. 48–49",
+      "sentences": [
+        "A: What did you think of the movie?",
+        "B: I liked it a lot.",
+        "A: What did you do with the money?",
+        "B: I deposited it in the bank.",
+        "A: How did you cook the chicken?",
+        "B: I fried it in oil.",
+        "A: Is the heater on?",
+        "B: No, I turned it off.",
+        "A: When did you paint the room?",
+        "B: I painted it last week."
+      ],
+      "number": 63,
+      "trackNumber": 156
+    },
+    {
+      "id": "accent-175",
+      "title": "Chapter Four — Word Pairs for Practice (p. 55)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/175 Word Pairs For Practice-important information.mp3",
+      "audioLabel": "p. 55",
+      "sentences": [
+        "important information",
+        "first person",
+        "hard to understand",
+        "Northern California",
+        "early in the morning",
+        "survive divorce",
+        "learn German",
+        "undergoing surgery",
+        "thirty percent",
+        "modern furniture",
+        "March bargain",
+        "perfect performance"
+      ],
+      "number": 64,
+      "trackNumber": 175
+    },
+    {
+      "id": "accent-181",
+      "title": "Chapter Four — Word Pairs for Practice (p. 56)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/181 Word Pairs For Practice-tall girl.mp3",
+      "audioLabel": "p. 56",
+      "sentences": [
+        "tall girl",
+        "felt guilty",
+        "old school",
+        "tall wall",
+        "cold milk",
+        "gold medal",
+        "little children",
+        "twelve soldiers"
+      ],
+      "number": 65,
+      "trackNumber": 181
+    },
+    {
+      "id": "accent-187",
+      "title": "Chapter Four — Practice Dialogues (p. 58)",
+      "heading": "Practice Dialogues",
+      "audio": "/american-accent-audio/187 Prac Dialog Uh before L-He stole.mp3",
+      "audioLabel": "p. 58",
+      "sentences": [
+        "A: He stole the money and broke the rules.",
+        "B: It’s no big deal. He’s just a child.",
+        "A: Don’t be a fool. He knows it’s wrong to steal.",
+        "A: Did you say Kyle went to jail?",
+        "B: No, I said he went to Yale.",
+        "A: Oh, that’s a good school!",
+        "A: Have you read your email?",
+        "B: No, I’ll do it in a little while.",
+        "A: Did you see that whale?",
+        "B: It’s huge. I can’t believe it’s real.",
+        "A: What’s wrong with the wheel?",
+        "B: I think it needs some oil.",
+        "A: What do you think of the style of these shoes?",
+        "B: I love the high heels.",
+        "A: I bought them on sale.",
+        "A: I’m so tired. We’ve been driving for miles and miles.",
+        "B: Relax. It’ll help if you inhale and exhale slowly.",
+        "A: I heard your dog had five puppies.",
+        "B: Yes, she had three males and two females."
+      ],
+      "number": 66,
+      "trackNumber": 187
     },
     {
       "id": "accent-199",
@@ -606,7 +1343,7 @@
         "I would’ve invited you over, but I had a fever.",
         "They’ve never believed my viewpoint."
       ],
-      "number": 31,
+      "number": 67,
       "trackNumber": 199
     },
     {
@@ -625,8 +1362,70 @@
         "Cucumber and broccoli are Ben’s favorite vegetables.",
         "Gabriel was overwhelmed when he won the Nobel Prize for the novel."
       ],
-      "number": 32,
+      "number": 68,
       "trackNumber": 203
+    },
+    {
+      "id": "accent-207",
+      "title": "Chapter Four — Word Pairs for Practice (p. 63–64)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/207 Word Pairs For Practice-white wine.mp3",
+      "audioLabel": "p. 63–64",
+      "sentences": [
+        "white wine",
+        "always working",
+        "quick wedding",
+        "powerful wind",
+        "weak witness",
+        "wonderful weekend",
+        "anywhere you wish",
+        "twenty flowers",
+        "windshield wiper",
+        "frequent question"
+      ],
+      "number": 69,
+      "trackNumber": 207
+    },
+    {
+      "id": "accent-208",
+      "title": "Chapter Four — Practice Dialogue (p. 63–64)",
+      "heading": "Practice Dialogue",
+      "audio": "/american-accent-audio/208 Dialogue-Winter Weather.mp3",
+      "audioLabel": "p. 63–64",
+      "sentences": [
+        "A: I wonder when the weather will get warmer.",
+        "B: Why are you always whining about the weather?",
+        "A: It’s always so wet and windy. I would love to go for a quick swim or a walk in the woods.",
+        "B: Well, wait a few weeks, and it won’t be so wet and windy.",
+        "A: I wish you were right, but in a few weeks, it will still be winter.",
+        "B: OK then, we’ll have to move west. Maybe to Hollywood, where the weather is warmer.",
+        "A: Wow, what a wonderful idea. But wait! Where will we work?",
+        "B: We won’t have to worry about work once we get there. Hollywood will welcome us. We’ll become wealthy movie stars.",
+        "A: Wake up and stop your wishful thinking."
+      ],
+      "number": 70,
+      "trackNumber": 208
+    },
+    {
+      "id": "accent-210",
+      "title": "Chapter Four — Word Pairs for Practice (p. 65–66)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/210 Word Pairs For Practice-every week.mp3",
+      "audioLabel": "p. 65–66",
+      "sentences": [
+        "every week",
+        "very well",
+        "wise investment",
+        "weigh the vegetables",
+        "west Virginia",
+        "wonderful voice",
+        "white van",
+        "valuable watch",
+        "wear the vest",
+        "weird video"
+      ],
+      "number": 71,
+      "trackNumber": 210
     },
     {
       "id": "accent-211",
@@ -642,8 +1441,32 @@
         "Were you involved in Vivian’s wedding plans?",
         "Will we view the video on Wednesday?"
       ],
-      "number": 33,
+      "number": 72,
       "trackNumber": 211
+    },
+    {
+      "id": "accent-216",
+      "title": "Chapter Four — Dialogues for Practice (p. 67–68)",
+      "heading": "Dialogues for Practice",
+      "audio": "/american-accent-audio/216 Dialogues For Practice-Do you still use.mp3",
+      "audioLabel": "p. 67–68",
+      "sentences": [
+        "/z/",
+        "A: Do you still use this? /s/",
+        "B: No, I have no use for it any more. /z/",
+        "A: Where will they house their guests? /s/",
+        "B: They have a guest house. /z/",
+        "A: Does he abuse drugs? /s/",
+        "B: Yes, he’s getting help for his drug abuse. /z/",
+        "A: Please excuse me. /s/",
+        "B: I don’t accept your excuse. /z/",
+        "A: Would you close the door? /s/",
+        "B: You do it. You’re close to it. /z/",
+        "A: Can you advise me on this? /s/",
+        "B: Sure, I can give you some advice."
+      ],
+      "number": 73,
+      "trackNumber": 216
     },
     {
       "id": "accent-217",
@@ -659,8 +1482,25 @@
         "A watchmaker makes watches.",
         "A real estate agent sells houses."
       ],
-      "number": 34,
+      "number": 74,
       "trackNumber": 217
+    },
+    {
+      "id": "accent-221",
+      "title": "Chapter Four — Word Pairs for Practice (p. 69)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/221 Word Pairs For Practice-doing nothing.mp3",
+      "audioLabel": "p. 69",
+      "sentences": [
+        "doing nothing",
+        "something wrong",
+        "looking young",
+        "wedding ring",
+        "bring everything",
+        "feeling strong"
+      ],
+      "number": 75,
+      "trackNumber": 221
     },
     {
       "id": "accent-222",
@@ -674,8 +1514,25 @@
         "He’s looking young and feeling strong.",
         "They sell anything and everything in that clothing store."
       ],
-      "number": 35,
+      "number": 76,
       "trackNumber": 222
+    },
+    {
+      "id": "accent-229",
+      "title": "Chapter Four — Practice Dialogue (p. 71)",
+      "heading": "Practice Dialogue",
+      "audio": "/american-accent-audio/229 Dialogues-Cons Clusters-How did you do.mp3",
+      "audioLabel": "p. 71",
+      "sentences": [
+        "A: How did you do on the entrance exam?",
+        "B: I wasn’t so successful. I expected to pass, but it was extra difficult.",
+        "A: Did you study all the sections of the textbook?",
+        "B: Yes, but I have to study harder on the next test and hopefully I will be successful.",
+        "A: When do you expect to take the next test?",
+        "B: I will attempt it in September. I’ll be ecstatic if I get accepted at the best school."
+      ],
+      "number": 77,
+      "trackNumber": 229
     },
     {
       "id": "accent-245",
@@ -684,8 +1541,6 @@
       "audio": "/american-accent-audio/245 Practice Sentences-The singer wants.mp3",
       "audioLabel": "p. 80–83",
       "sentences": [
-        "Underline the stressed syllables in the verbs and nouns in bold letters. To check your answers,",
-        "listen to the audio.",
         "The singer wants to record a new record.",
         "The drug addict is addicted to heroin.",
         "He insulted me with a rude insult.",
@@ -697,8 +1552,27 @@
         "I suspect that they caught the suspect.",
         "They are going to contest the results of the contest."
       ],
-      "number": 36,
+      "number": 78,
       "trackNumber": 245
+    },
+    {
+      "id": "accent-246",
+      "title": "Chapter Five — Practice Dialogue (p. 80–83)",
+      "heading": "Practice Dialogue",
+      "audio": "/american-accent-audio/246 Practice Dialogue-Have you heard.mp3",
+      "audioLabel": "p. 80–83",
+      "sentences": [
+        "A: Have you heard? The police caught the suspect!",
+        "B: Do you mean the one who is suspected of robbing the bank?",
+        "A: Yes, I heard that he had a criminal record.",
+        "B: Oh really? What crime was he convicted of?",
+        "A: He’s a drug addict who has been robbing banks to support his addiction.",
+        "B: How many years do you think he will spend in prison?",
+        "A: A maximum of ten years. But he might be released early on good conduct.",
+        "B: If he conducts himself badly and insults the prison guards, I wonder if his sentence will be increased. c. I don’t know. I haven’t heard of a prison term increase for insults and bad conduct."
+      ],
+      "number": 79,
+      "trackNumber": 246
     },
     {
       "id": "accent-255",
@@ -730,7 +1604,7 @@
         "He likes to compete.",
         "He’s always been very competitive."
       ],
-      "number": 37,
+      "number": 80,
       "trackNumber": 255,
       "targetWords": [
         "politics",
@@ -758,6 +1632,33 @@
       ]
     },
     {
+      "id": "accent-268",
+      "title": "Chapter Six — Dialogue for Practice (p. 90)",
+      "heading": "Dialogue for Practice",
+      "audio": "/american-accent-audio/268 Dialogue-Business Trip.mp3",
+      "audioLabel": "p. 90",
+      "sentences": [
+        "A: I’m getting ready for my business trip.",
+        "B: Have you bought your airline ticket?",
+        "A: Yes, I got a window seat.",
+        "B: Have you made hotel reservations?",
+        "A: Yes, I got a hotel room with a nice view.",
+        "B: Have you packed your suitcase?",
+        "A: I still need to pack my bathing suit and running shoes.",
+        "B: Why are you taking a bathing suit and running shoes on a business trip?",
+        "A: Because the hotel has a swimming pool and a workout room.",
+        "B: Don’t forget your laptop.",
+        "A: It’s on my checklist.",
+        "B: And your smartphone.",
+        "A: Oh, I won’t. I don’t go anywhere without my smartphone. Stressing a word means that the stressed syllable of the word is:",
+        "louder – Have a nice WEEKend.",
+        "longer – Have a nice weeeeekend.",
+        "higher in pitch – Have a nice weekend."
+      ],
+      "number": 81,
+      "trackNumber": 268
+    },
+    {
       "id": "accent-272",
       "title": "Chapter Six — Practice Sentences (p. 91)",
       "heading": "Practice Sentences",
@@ -769,8 +1670,41 @@
         "The big blue bus passed the little white car.",
         "The rich young man bought that big old house."
       ],
-      "number": 38,
+      "number": 82,
       "trackNumber": 272
+    },
+    {
+      "id": "accent-274",
+      "title": "Chapter Six — Word Pairs for Practice (p. 92)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/274 Word Pairs For Practice-swimming pool.mp3",
+      "audioLabel": "p. 92",
+      "sentences": [
+        "swimming pool",
+        "deep pool",
+        "drug store",
+        "large store",
+        "newspaper",
+        "new paper",
+        "credit card",
+        "plastic card",
+        "sunglasses",
+        "nice glasses",
+        "postman",
+        "tall man",
+        "bus driver",
+        "fast driver",
+        "textbook",
+        "good book",
+        "palm tree",
+        "tall tree",
+        "fingernails",
+        "long nails",
+        "girlfriend",
+        "great friend"
+      ],
+      "number": 83,
+      "trackNumber": 274
     },
     {
       "id": "accent-275",
@@ -788,8 +1722,35 @@
         "I left my cell phone in the front seat of my friend’s car.",
         "Let’s go see the new film at the movie theater."
       ],
-      "number": 39,
+      "number": 84,
       "trackNumber": 275
+    },
+    {
+      "id": "accent-278",
+      "title": "Chapter Six — Practice Dialogues (p. 94)",
+      "heading": "Practice Dialogues",
+      "audio": "/american-accent-audio/278 Practice Dialogues-turn.mp3",
+      "audioLabel": "p. 94",
+      "sentences": [
+        "A: We don’t need the heater.",
+        "B: Turn it off.",
+        "A: The music sounds good.",
+        "B: Turn it up.",
+        "A: Let’s watch TV.",
+        "B: Turn it on.",
+        "A: He’s impolite.",
+        "B: That turns me off.",
+        "A: The music is too loud.",
+        "B: Turn it down.",
+        "A: Did he ask her out?",
+        "B: She turned him down.",
+        "A: He told me he’d be at the party.",
+        "B: He didn’t turn up.",
+        "A: Did you ask for help?",
+        "B: They turned me away."
+      ],
+      "number": 85,
+      "trackNumber": 278
     },
     {
       "id": "accent-280",
@@ -819,7 +1780,7 @@
         "I need to sign up for the class.",
         "Where is the sign-up sheet?"
       ],
-      "number": 40,
+      "number": 86,
       "trackNumber": 280,
       "targetWords": [
         "tuned",
@@ -857,7 +1818,7 @@
         "We arrived in the USA in 2007.",
         "My class starts at 9:15 and ends at 10:45."
       ],
-      "number": 41,
+      "number": 87,
       "trackNumber": 284
     },
     {
@@ -889,7 +1850,7 @@
         "He drove the car he bought yesterday.",
         "He drove the car that he bought from his friend."
       ],
-      "number": 42,
+      "number": 88,
       "trackNumber": 292
     },
     {
@@ -899,14 +1860,13 @@
       "audio": "/american-accent-audio/294 Practice Sentences-I'll call you.mp3",
       "audioLabel": "p. 98–99",
       "sentences": [
-        "reduced.",
         "I’ll call you.",
         "I saw him.",
         "I’ll wait for you.",
         "I have to go.",
         "It’s nice to meet you."
       ],
-      "number": 43,
+      "number": 89,
       "trackNumber": 294
     },
     {
@@ -916,8 +1876,6 @@
       "audio": "/american-accent-audio/296 Practice Sentences-He told John.mp3",
       "audioLabel": "p. 98–99",
       "sentences": [
-        "stressed nouns:",
-        "reduced pronouns:",
         "He told John.",
         "He told him.",
         "I like that car.",
@@ -925,7 +1883,7 @@
         "I need a job.",
         "I need it."
       ],
-      "number": 44,
+      "number": 90,
       "trackNumber": 296
     },
     {
@@ -971,8 +1929,164 @@
         "He might have lost the money that I gave him.",
         "I think he might have lost the money that I gave him."
       ],
-      "number": 45,
+      "number": 91,
       "trackNumber": 298
+    },
+    {
+      "id": "accent-303",
+      "title": "Chapter Six — Practice Dialogues (p. 100–103)",
+      "heading": "Practice Dialogues",
+      "audio": "/american-accent-audio/303 Dialogues Unstressed-HAVE.mp3",
+      "audioLabel": "p. 100–103",
+      "sentences": [
+        "A: What’ve you been doing?",
+        "B: I’ve been studying.",
+        "A: What’ve you been studying?",
+        "B: I’ve been studying English.",
+        "A: How long’ve you been studying it?",
+        "B: I’ve been studying it tonight for two hours."
+      ],
+      "number": 92,
+      "trackNumber": 303
+    },
+    {
+      "id": "accent-304",
+      "title": "Chapter Six — Practice Dialogue (p. 100–103)",
+      "heading": "Practice Dialogue",
+      "audio": "/american-accent-audio/304 Dialogue 2 Reducing HAS.mp3",
+      "audioLabel": "p. 100–103",
+      "sentences": [
+        "A: What has she been doing?",
+        "B: She’s been watching TV.",
+        "A: What has she been watching?",
+        "B: She’s been watching a film.",
+        "A: How long has she been watching it?",
+        "B: She’s been watching it for an hour."
+      ],
+      "number": 93,
+      "trackNumber": 304
+    },
+    {
+      "id": "accent-305",
+      "title": "Chapter Six — Practice Dialogue (p. 100–103)",
+      "heading": "Practice Dialogue",
+      "audio": "/american-accent-audio/305 Dialogue 3 Reducing TOO.mp3",
+      "audioLabel": "p. 100–103",
+      "sentences": [
+        "A: I have to go to the store.",
+        "B: What do you need to get?",
+        "A: I need to get some milk.",
+        "B: I’d like to come with you.",
+        "A: OK, but we need to hurry. The store’s about to close."
+      ],
+      "number": 94,
+      "trackNumber": 305
+    },
+    {
+      "id": "accent-306",
+      "title": "Chapter Six — Practice Dialogue (p. 100–103)",
+      "heading": "Practice Dialogue",
+      "audio": "/american-accent-audio/306 Dialogue 4 Reducing CAN.mp3",
+      "audioLabel": "p. 100–103",
+      "sentences": [
+        "A: When can you do it?",
+        "B: I can do it next week.",
+        "A: Can you do it sooner?",
+        "B: I can try."
+      ],
+      "number": 95,
+      "trackNumber": 306
+    },
+    {
+      "id": "accent-307",
+      "title": "Chapter Six — Practice Dialogue (p. 100–103)",
+      "heading": "Practice Dialogue",
+      "audio": "/american-accent-audio/307 Dialogue 5 Reducing SOME.mp3",
+      "audioLabel": "p. 100–103",
+      "sentences": [
+        "A: I’m hungry.",
+        "B: Would you like some chicken.",
+        "A: I’d love some.",
+        "B: How about some rice?",
+        "A: Some rice would be good.",
+        "B: And some ice cream and some cake for dessert?",
+        "A: No, thanks. I need to lose some weight."
+      ],
+      "number": 96,
+      "trackNumber": 307
+    },
+    {
+      "id": "accent-308",
+      "title": "Chapter Six — Practice Dialogue (p. 100–103)",
+      "heading": "Practice Dialogue",
+      "audio": "/american-accent-audio/308 Dialogue 6 Reducing OUR.mp3",
+      "audioLabel": "p. 100–103",
+      "sentences": [
+        "A: Do you like our new apartment?",
+        "B: Our old apartment was bigger.",
+        "A: But our new one is cheaper.",
+        "B: That’s true. We need to save our money to pay off our debts."
+      ],
+      "number": 97,
+      "trackNumber": 308
+    },
+    {
+      "id": "accent-309",
+      "title": "Chapter Six — Practice Dialogue (p. 100–103)",
+      "heading": "Practice Dialogue",
+      "audio": "/american-accent-audio/309 Dialogue 7 Reducing FOR.mp3",
+      "audioLabel": "p. 100–103",
+      "sentences": [
+        "A: I’ve been waiting for you for over an hour.",
+        "B: I’m sorry for making you wait.",
+        "A: You have excuses for everything.",
+        "B: I was shopping for a present for your birthday.",
+        "A: Is that for me? I forgive you for everything."
+      ],
+      "number": 98,
+      "trackNumber": 309
+    },
+    {
+      "id": "accent-310",
+      "title": "Chapter Six — Practice Dialogue (p. 100–103)",
+      "heading": "Practice Dialogue",
+      "audio": "/american-accent-audio/310 Dialogue 8 Reducing MYSELF.mp3",
+      "audioLabel": "p. 100–103",
+      "sentences": [
+        "A: I’m really ashamed of myself.",
+        "B: You need to forgive yourself and tell yourself that everyone makes mistakes. You’re driving yourself crazy. Why do you doubt yourself so much?",
+        "A: I guess I can’t help myself."
+      ],
+      "number": 99,
+      "trackNumber": 310
+    },
+    {
+      "id": "accent-312",
+      "title": "Chapter Six — Practice Dialogues (p. 104–105)",
+      "heading": "Practice Dialogues",
+      "audio": "/american-accent-audio/312 Practice Dialogue-The New Boyfriend.mp3",
+      "audioLabel": "p. 104–105",
+      "sentences": [
+        "Answer: He said that e thinks my friends ask too many questions!"
+      ],
+      "number": 100,
+      "trackNumber": 312
+    },
+    {
+      "id": "accent-314",
+      "title": "Chapter Six — Practice Dialogue (p. 104–105)",
+      "heading": "Practice Dialogue",
+      "audio": "/american-accent-audio/314 Practice Dialogue-All About Eggs.mp3",
+      "audioLabel": "p. 104–105",
+      "sentences": [
+        "A: I love eggs.",
+        "B: How do you cook t em?",
+        "A: All sorts of ways. I boil t em, I fry t em, I scramble t em, and I poach t em.",
+        "B: Do you just eat t em for breakfast?",
+        "A: No, I have t em for dinner too. I cut t em up and put t em in salads."
+      ],
+      "number": 101,
+      "trackNumber": 314
     },
     {
       "id": "accent-329",
@@ -981,22 +2095,15 @@
       "audio": "/american-accent-audio/329 Practice Sentences-Did he work yesterday.mp3",
       "audioLabel": "p. 109–110",
       "sentences": [
-        "\u0001",
         "Did he work yesterday?",
-        "\u0001",
         "Does he know about it?",
-        "\u0001",
         "Can you call me at five?",
-        "\u0001",
         "Is it good?",
-        "\u0001",
         "Is that it?",
-        "\u0001",
         "Excuse me?",
-        "\u0001",
         "Really?"
       ],
-      "number": 46,
+      "number": 102,
       "trackNumber": 329
     },
     {
@@ -1017,7 +2124,7 @@
         "Do you work there?",
         "Why do you work there?"
       ],
-      "number": 47,
+      "number": 103,
       "trackNumber": 331
     },
     {
@@ -1036,7 +2143,7 @@
         "I’m going inside.",
         "I’m going inside, to get something to drink."
       ],
-      "number": 48,
+      "number": 104,
       "trackNumber": 333
     },
     {
@@ -1053,7 +2160,7 @@
         "If you don’t mind, I’d like to close the window.",
         "By the way, how did you know that?"
       ],
-      "number": 49,
+      "number": 105,
       "trackNumber": 335
     },
     {
@@ -1069,8 +2176,118 @@
         "I need milk, apples, eggs, and sugar.",
         "“I learned law so well, the day I graduated I sued the college, won the case, and got my tuition back.”"
       ],
-      "number": 50,
+      "number": 106,
       "trackNumber": 337
+    },
+    {
+      "id": "accent-341",
+      "title": "Chapter Seven — Practice Dialogues (p. 114)",
+      "heading": "Practice Dialogues",
+      "audio": "/american-accent-audio/341 Practice Dialogue-Angry Friends.mp3",
+      "audioLabel": "p. 114",
+      "sentences": [
+        "A: Did you do it? curious",
+        "B: No. normal",
+        "A: No? very surprised",
+        "B: No! angry",
+        "A: Why not? surprised",
+        "B: I don’t know. hesitant",
+        "A: You don’t know? angry",
+        "B: I don’t know. angry",
+        "A: Oh really? sarcastic",
+        "B: Yeah, really. angry"
+      ],
+      "number": 107,
+      "trackNumber": 341
+    },
+    {
+      "id": "accent-342",
+      "title": "Chapter Seven — Practice Dialogue (p. 114)",
+      "heading": "Practice Dialogue",
+      "audio": "/american-accent-audio/342 Practice Dialogue-Losing Weight.mp3",
+      "audioLabel": "p. 114",
+      "sentences": [
+        "Rachel: Hi Emily. Emily: I didn’t recognize you at first. Did you lose weight?",
+        "Rachel: As a matter of fact, I lost twenty pounds. Emily: Really? How did you do it?",
+        "Rachel: Well, I stopped eating cake, ice cream, potato chips, and candy bars, and I started eating healthier foods like salads, fruit, nuts, and vegetables. Emily: Wow! I have to say, you look amazing.",
+        "Rachel: Do you really think so? Emily: Absolutely!"
+      ],
+      "number": 108,
+      "trackNumber": 342
+    },
+    {
+      "id": "accent-350",
+      "title": "Chapter Eight — Practice Dialogues (p. 118–119)",
+      "heading": "Practice Dialogues",
+      "audio": "/american-accent-audio/350 Dialogues-What are you planning.mp3",
+      "audioLabel": "p. 118–119",
+      "sentences": [
+        "A: What are you planning on doing tonight?",
+        "B: Nothing special. Just hanging out with some friends. Are you going out?",
+        "A: No, I think I’ll be staying in and watching a movie.",
+        "A: I’m shopping around for a car.",
+        "B: Are you planning on buying a new car or a used car?",
+        "A: I’m thinking about getting a used car.",
+        "A: Why did you hang up on me?",
+        "B: I hung up because you were yelling at me.",
+        "A: I’m breaking up with my boyfriend.",
+        "B: You’re kidding! Are you really doing it? Why?",
+        "A: Well, it’s just not working out between us.",
+        "B: But you’ve been dating im* a long time. I thought you were planning on getting engaged.",
+        "A: We’re not getting along any more. We’ve been arguing a lot.",
+        "B: How long has this been going on?",
+        "A: As long as I can remember."
+      ],
+      "number": 109,
+      "trackNumber": 350
+    },
+    {
+      "id": "accent-351",
+      "title": "Chapter Eight — Practice Dialogues (p. 118–119)",
+      "heading": "Practice Dialogues",
+      "audio": "/american-accent-audio/351 Practice Dialogues-Can I come in.mp3",
+      "audioLabel": "p. 118–119",
+      "sentences": [
+        "A: Can I come in?",
+        "B: Yes, come on in. The door is open.",
+        "A: Should I leave it on?",
+        "B: No, turn it off.",
+        "A: What time is it?",
+        "B: It’s already five o’clock.",
+        "A: Let’s take a walk.",
+        "B: That’s a good idea.",
+        "A: How far is it?",
+        "B: Four and a half hours away.",
+        "A: This is a good film.",
+        "B: Too bad it’s sold out.",
+        "A: I have an awful headache.",
+        "B: Take an aspirin.",
+        "A: This is my brother-in-law.",
+        "B: We’ve already met."
+      ],
+      "number": 110,
+      "trackNumber": 351
+    },
+    {
+      "id": "accent-353",
+      "title": "Chapter Eight — Word Pairs for Practice (p. 118–119)",
+      "heading": "Word Pairs for Practice",
+      "audio": "/american-accent-audio/353 Word Pairs For Practice-big game.mp3",
+      "audioLabel": "p. 118–119",
+      "sentences": [
+        "big game",
+        "well lit",
+        "can never",
+        "good day",
+        "this Saturday",
+        "far right",
+        "stop playing",
+        "Tom might",
+        "book club",
+        "what time"
+      ],
+      "number": 111,
+      "trackNumber": 353
     },
     {
       "id": "accent-354",
@@ -1085,7 +2302,7 @@
         "I’m married, and I’m miserable.",
         "It was so nice to meet Tom."
       ],
-      "number": 51,
+      "number": 112,
       "trackNumber": 354
     },
     {
@@ -1104,8 +2321,105 @@
         "I’ll buy it.",
         "He ate out."
       ],
-      "number": 52,
+      "number": 113,
       "trackNumber": 361
+    },
+    {
+      "id": "accent-362",
+      "title": "Chapter Eight — Practice Dialogues (p. 122–125)",
+      "heading": "Practice Dialogues",
+      "audio": "/american-accent-audio/362 Practice Dialogues-Why so upset.mp3",
+      "audioLabel": "p. 122–125",
+      "sentences": [
+        "A: Why yare you so wupset?",
+        "B: I yam not!",
+        "A: Who wis he?",
+        "B: He yis the yannouncer.",
+        "A: How wis the weather?",
+        "B: Go woutside and find out.",
+        "Do wI need to do wit? No, I yalready did it."
+      ],
+      "number": 114,
+      "trackNumber": 362
+    },
+    {
+      "id": "accent-366",
+      "title": "Chapter Eight — Practice Dialogue (p. 122–125)",
+      "heading": "Practice Dialogue",
+      "audio": "/american-accent-audio/366 Practice Dialogue-In the Department Store.mp3",
+      "audioLabel": "p. 122–125",
+      "sentences": [
+        "A: Can I help you?",
+        "B: I’m looking for a pair of sunglasses.",
+        "A: The sunglasses are on the other side of the make up counter.",
+        "B: Oh these are nice. Can I try them on?",
+        "A: The mirror is over here.",
+        "B: How much are these?",
+        "A: They’re on sale for one hundred and eighty dollars.",
+        "B: That’s a lot of money. I don’t think I can afford that.",
+        "A: The style is amazing. We’re almost all sold out.",
+        "B: Do you have any that are cheaper?",
+        "A: No, I am afraid I don’t. Is there anything else I can help you find?",
+        "B: As a matter of fact, yes. Help me find a rich husband!"
+      ],
+      "number": 115,
+      "trackNumber": 366
+    },
+    {
+      "id": "accent-367",
+      "title": "Chapter Eight — More Practice Dialogues (p. 122–125)",
+      "heading": "More Practice Dialogues",
+      "audio": "/american-accent-audio/367 More Practice Dialogues-I believe Veronica.mp3",
+      "audioLabel": "p. 122–125",
+      "sentences": [
+        "A: I believe Veronica speaks Spanish.",
+        "B: Of course she does. She’s from Mexico.",
+        "A: That makes sense.",
+        "A: When’s the big game?",
+        "B: Either this Saturday or this Sunday.",
+        "A: Do you think they’ll lose?",
+        "B: I hope not.",
+        "A: Keep practicing.",
+        "B: You’re right, I need to.",
+        "A: You’ll love it.",
+        "B: I suppose so.",
+        "A: It was a fun night but I need to go.",
+        "B: Let’s stay a little longer.",
+        "A: You stay, I’ll leave with them.",
+        "B: Okay then, I’ll leave too."
+      ],
+      "number": 116,
+      "trackNumber": 367
+    },
+    {
+      "id": "accent-376",
+      "title": "Chapter Eight — Practice Dialogues (p. 129–130)",
+      "heading": "Practice Dialogues",
+      "audio": "/american-accent-audio/376 Dialogues-Employee Meeting-Restaurant-Birthday.mp3",
+      "audioLabel": "p. 129–130",
+      "sentences": [
+        "A: Hi Tom. I’ve got a question. What time’s our meeting?",
+        "B: It’ll start at five.",
+        "A: Oh great. I’m glad I’ll be able to make it. Who’s coming?",
+        "B: Let’s see… Bob’ll be there, John’ll be there, and I’ll be there, but Mary won’t make it. She’s out of town.",
+        "A: How about Nick?",
+        "B: He can’t make it. He said he would’ve come if he’d known about it earlier.",
+        "A: Is Vivian coming?",
+        "B: She said she’d like to make it, but she’s got a lot of work to do.",
+        "A: It’ll only last an hour, won’t it?",
+        "B: Yes, we’d better keep it short. Everybody’ll want to go home by six o’clock.",
+        "A: I’ve been looking forward to eating here.",
+        "B: Me too. Everyone’s been talking about this place.",
+        "A: What’re you gonna order?",
+        "B: I’m hungry. I think I’d like some meat tonight. c. Hi folks. I’ll be your waitress. Ready to order?",
+        "B: Yes, we’re ready. c. Great. What’ll it be?",
+        "B: She’ll have chicken and I’ll have steak. And we’ll both have a glass of red wine. c. Is that it?",
+        "B: That’ll be all. c. Got it. Your food’ll be ready in a few minutes.",
+        "A: It was my birthday two weeks ago.",
+        "B: Oh, I must’ve been too busy to look at my calendar. You should’ve told me. We could’ve celebrated together. I would’ve taken you out to dinner. Or I could’ve at least baked you a cake."
+      ],
+      "number": 117,
+      "trackNumber": 376
     },
     {
       "id": "accent-380",
@@ -1125,8 +2439,39 @@
         "If they’d come on time, they would not have missed their flight.",
         "She would not have known if you hadn’t told her."
       ],
-      "number": 53,
+      "number": 118,
       "trackNumber": 380
+    },
+    {
+      "id": "accent-381",
+      "title": "Chapter Eight — Practice Dialogue (p. 131)",
+      "heading": "Practice Dialogue",
+      "audio": "/american-accent-audio/381 Practice Dialogue-What would you have done.mp3",
+      "audioLabel": "p. 131",
+      "sentences": [
+        "B: If I hadn’t come to the U.S., I would’ve lived with my family, and I wouldn’ve had to study English. I wouldn’ve met my wife. I would’ve married someone else."
+      ],
+      "number": 119,
+      "trackNumber": 381
+    },
+    {
+      "id": "accent-385",
+      "title": "Chapter Eight — Practice Dialogues (p. 133–134)",
+      "heading": "Practice Dialogues",
+      "audio": "/american-accent-audio/385 Practice Dialogues-Invitation to a movie.mp3",
+      "audioLabel": "p. 133–134",
+      "sentences": [
+        "A: Whadda you doin’ tonight?",
+        "B: I dunno yet. I think I’m gonna just stay home.",
+        "A: Wanna go to a movie?",
+        "B: I’m kinda tired. I gotta get up early tomorrow.",
+        "A: Joo go out last night?",
+        "B: Yeah, I shoudna gone to bed so late. I woulda had a lot more energy today.",
+        "A: Why don cha just take it easy then, and we’ll go out some other time.",
+        "B: Okay, lemme know when you’re free again. See ya."
+      ],
+      "number": 120,
+      "trackNumber": 385
     }
   ]
 }

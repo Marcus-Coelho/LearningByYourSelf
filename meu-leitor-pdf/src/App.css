@@ -6049,3 +6049,69 @@ body {
   color: var(--danger-text);
   background: rgba(192, 57, 43, 0.08);
 }
+
+/* Diálogo de escolha das palavras erradas (WordPickerDialog, 2026-09-29).
+   Reusa a moldura do .app-confirm-dialog — só acrescenta a lista. Cores por
+   TOKEN, nunca literal, senão some no tema escuro (ver Decisões Imutáveis 11). */
+.app-confirm-dialog.word-picker {
+  max-width: 460px;
+}
+
+.word-picker-toggle-all {
+  border: none;
+  background: none;
+  padding: 0 0 8px;
+  color: var(--brand-text-strong);
+  font-family: inherit;
+  font-size: var(--text-secondary-size);
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.word-picker-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  /* A lista pode passar da altura da tela num exercício com muitos erros —
+     rola só ela, pra os botões de ação continuarem visíveis. */
+  max-height: 46vh;
+  overflow-y: auto;
+}
+
+.word-picker-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.word-picker-item:hover {
+  background: var(--surface-2);
+}
+
+.word-picker-word {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* O que o aluno digitou, ao lado da resposta certa: é isso que deixa o erro
+   de digitação óbvio na hora de decidir se a palavra merece entrar. */
+.word-picker-typed {
+  color: var(--text-secondary);
+  font-size: var(--text-secondary-size);
+}
+
+.word-picker-source {
+  display: block;
+  margin-bottom: 14px;
+  color: var(--text-secondary);
+  font-size: var(--text-secondary-size);
+}
+
+.app-confirm-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
