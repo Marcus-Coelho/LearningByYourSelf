@@ -101,6 +101,18 @@ pras 4 telas acima pegarem sozinhas.
 - Sound Bank, Vocabulary/Grammar Bank (referências), Practical English (vídeos), transcrições —
   ver `american1_references.json`/`american1_videos.json`/`american1_reference_audio_anchors.json`
 - Índice principal: `american1_audio_anchors.json`
+- **Página do curso por SEÇÃO** (2026-10-12): em vez de 12 cartões de unit, são 12 blocos e
+  uma linha por seção (1A, 1B, 1C, Practical English Episode 1 / Review and Check 1&2 — 48
+  no total), cada uma com o PRÓPRIO selo. Só a apresentação e a contagem mudaram: clicar numa
+  linha abre a MESMA tela de leitura de sempre (abas A/B/C/especial, Previous/Next Unit, All
+  Units — o dono pediu pra não mexer nisso). **Visita E nota são por seção**: o selo, o
+  Progress, o "% overall mastery" e o "Your Score" (My Profile) leem a nota do item de revisão
+  DA SEÇÃO (`readAmerican1SectionRating`), não a da unit. Antes toda seção herdava a nota da
+  unit: nos dados do dono isso dava 20 seções "mastered"; contadas pela nota própria são 6
+  (e o Score foi de 100% pra 87%). Os resultados da BUSCA em Courses continuam por unit, com
+  selo agregado (`american1UnitAggregateStatus`). A nota da UNIT (`american1-rating:<unit>`)
+  segue gravada por compatibilidade com backups, mas não é mais lida pra nada — o state
+  `american1UnitRatings` só existe pelo setter, que força o re-render das estrelas
 
 ### 3. Grammar English A1 (115 units + Appendixes + Additional Exercises)
 - "Essential Grammar in Use, unit by unit" — leitura + exercícios + áudio curto por unit
@@ -116,8 +128,22 @@ pras 4 telas acima pegarem sozinhas.
 - **Leitura por "tela"**, não por página fixa 1:1: `american_accent_index.json` agrupa 1+
   páginas do PDF numa tela sempre que o conteúdo de uma faixa de áudio atravessa a quebra de
   página impressa — ver "Dados Gerados" abaixo pra como isso é detectado e a lista de exceções
-  manuais conhecidas. Progresso é por **página real do livro** (não por tela nem por unit
-  inexistente) — visitar uma tela de 2 páginas marca as 2 pro cálculo de "Your Progress"
+  manuais conhecidas. Progresso é por **TELA** (as 90, não as 140 páginas do livro — decisão do
+  dono, 2026-10-12, pra a lista e o número concordarem; antes era por página). Tela
+  visitada = alguma página dela foi vista (abrir a tela marca todas de uma vez); o
+  `americanAccent-visitedPages` segue gravado por página
+- **Legenda dos selos (Not visited/Visited/Rated/Mastered + botão "i") nas 4 páginas de
+  curso** (`UnitBadgeLegend`, 2026-10-12 — o Accent era o único sem). O texto de ajuda troca
+  "unit" por "section" (American1) e "screen" (Accent) via `itemLabel`.
+- **Página do curso por TELA** (2026-10-12): 9 capítulos RECOLHÍVEIS, cada um com uma linha
+  por tela do leitor — as mesmas que juntam páginas ("p. 115–117") e usam o mesmo rótulo do
+  título do leitor. Todos recolhidos exceto o da primeira tela SEM nota (`accentDefaultOpenChapter`,
+  recalculado a cada render; só o que o usuário clicou fica em `accentChapterOverrides`). O
+  cabeçalho mostra "avaliadas/total" porque recolhido não mostra os selos. Selo da linha =
+  visita + nota da PRÓPRIA tela (`americanAccentScreenStatus`), a mesma conta do Progress e da
+  busca. Antes o selo do capítulo ficava verde ("mastered") com todas as páginas só ABERTAS.
+  25 das 90 telas não têm subtítulo no índice (rótulo = só "p. 14–15"); não dá pra resolver sem
+  regenerar o índice
 - Leitor em **150%** (`defaultScale={1.5}`, 2026-09-29) — só este curso; os outros seguem em
   1.3. Aqui é seguro porque não há player ancorado sobre o PDF (ver abaixo); no American1 o
   scale entra no cálculo da âncora do Sound Bank
@@ -363,8 +389,26 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
 
 ### Trilha de estudo (Home — `TodayPlanCard` + `DailyGoalCard`)
 - **`TodayPlanCard`**: "Learn something new" aponta pro curso mais ATRASADO em % de units
-  visitadas (`findNextUnvisitedByCourse`, ordena por `courseId` cruzando os 4 cursos — não é
-  mais sempre Vocabulary primeiro); "Practice listening" é uma faixa de Listening/Dictation de
+  visitadas (`findNextUnratedByCourse`, ordena por `courseId` cruzando os 4 cursos — não é
+  mais sempre Vocabulary primeiro). **O ponteiro DENTRO de cada curso é o primeiro item SEM
+  NOTA em estrelas, não o primeiro não visitado** (2026-10-12): visitar não prova nada, dá pra
+  passar por uma unit sem atenção e seguir adiante — a nota garante que ele passou ali. Caso
+  real: Grammar visitado até a 21, avaliado até a 18; a sugestão apontava a 22 e a certa é a
+  19. "Tem nota" por curso: Vocabulary = nota da unit OU de qualquer exercício dela;
+  American1 = nota da SEÇÃO (item de revisão dela, `readAmerican1SectionRating`), nunca a da
+  unit (herdada por todas as seções); Grammar = nota da unit; American Accent = nota da TELA.
+  A ORDEM ENTRE cursos continua por % VISITADO (só o ponteiro interno mudou); trocar por "%
+  avaliado" faria o American Accent passar à frente do Grammar com os dados atuais, e não foi
+  pedido. **A meta diária "Learn a new unit" (`newUnit`) fecha SÓ na PRIMEIRA AVALIAÇÃO** de
+  uma unit/seção/tela (`isFirstRating` em scheduleReview = item sem entrada de revisão
+  nenhuma) — **visitar NÃO conta** (decisão do dono, 2026-10-12: dá pra passar por uma unit
+  sem atenção, então abrir não prova que ele estudou). Os 4 efeitos de visita
+  (Vocabulary/American1/Grammar/Accent) só registram "visitado"; não chamam
+  markDailyGoalDone('newUnit'). Assim a meta e a sugestão acima medem a mesma coisa. Reavaliar
+  algo que já tinha nota NÃO conta (isso é a meta "reviews"), e no Vocabulary vale a nota da
+  UNIT — nota de exercício solto não passa por scheduleReview. O texto do botão "i"
+  (`DAILY_GOAL_EXPLANATIONS.newUnit`) tem que continuar batendo.
+  "Practice listening" é uma faixa de Listening/Dictation de
   verdade nunca tentada em nenhum dos 2 modos (`findUnpracticedListeningTrack`, varre os 359
   tracks dos 2 cursos), não mais o 2º curso da lista de units. **"Review words" (My Words) é
   sempre o ÚLTIMO item** (pedido do dono, 2026-08-08) — mesma posição do "Practice N words" no
@@ -391,7 +435,7 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
   permanência na tela (ex. N × 4s) — proxy que erra pros dois lados (marca sozinho com a aba
   aberta e esquecida; deixa de marcar quem revisa rápido) e ainda exigiria pausar em
   `visibilitychange`/blur, tudo pra aproximar algo que o fim da sessão já mede exato; os outros 2 via `markDailyGoalDone`
-  (visitar unit nunca visitada / terminar Listening ou Dictation, `onPracticed` prop em
+  (1ª avaliação de uma unit / terminar Listening ou Dictation, `onPracticed` prop em
   `ListeningClozeExercise`/`DictationExercise`). Progresso do dia em `dailyGoal:<YYYY-MM-DD>`
   (data LOCAL, nunca `toISOString`), nunca desmarcado — dia novo já nasce zerado porque a
   chave muda sozinha
@@ -407,6 +451,23 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
   American1 e Grammar Elem são A1 de verdade, o Vocabulary (English Vocabulary B) é
   Pre-Intermediate/Intermediate e entra na mesma soma (rótulo já foi "A1 level" e corrigido
   pra "overall mastery" depois que o dono notou a inconsistência)
+
+### Upcoming reviews (menu lateral, grupo "Learn", abaixo de Courses — 2026-10-12)
+
+Agenda só-leitura de TUDO o que ainda vai voltar à fila de revisão, na ordem em que vai aparecer,
+com a nota em estrelas e a data da próxima aparição, agrupada por dia ("Today"/"Tomorrow"/"In N
+days" + "Thu 15/10"). `activePage: 'upcoming-reviews'`, `UpcomingReviewsPage` + `handleOpenUpcomingReviews`
+(`App.js`), reaproveita o contêiner do Progress (`dashboard-mode`) e CSS `.upcoming-*` no fim de `App.css`.
+Clicar numa linha abre o item (`handleOpenReviewItem`, o mesmo da fila de hoje).
+- **A ordem NÃO é só por `due`.** A fila mostra no máximo `REVIEW_DAILY_CAP` (8) por dia, menor nota
+  primeiro, e o que sobra desliza pro dia seguinte. `buildUpcomingReviewSchedule` simula dia a dia (pool =
+  tudo que já venceu naquele dia, ordena por prioridade, tira 8) — 10 itens vencendo juntos saem 8 + 2.
+  É uma **previsão**: supõe que o dono revisa o que aparece; se pular um dia, o que sobrou volta no seguinte.
+- **Uma ordem de prioridade só** (`compareReviewPriority`, nota asc depois `due` asc), usada pela fila de
+  hoje (`loadDueReviews`) E pela agenda — se divergissem, a agenda mentiria. Ambas partem de
+  `loadActiveReviewEntries` (ignora `review:vocabulary:*` por exercício e `retired`).
+- Não inclui as palavras do My Words (agendamento próprio, por card) — a tela avisa.
+- Dia seguinte por `setDate(+1)`, nunca `+24h` (horário de verão); "In N days" usa `Math.round`.
 
 ### Progress Dashboard ("Progress", menu principal)
 - Tela só-leitura: cartões de estatística (palavras aprendidas/devidas, revisões pendentes,
@@ -454,7 +515,8 @@ u:<nome>:unit-rating:<unit>        — número 1-5, autoavaliação da UNIT inte
 
 # American English A1
 u:<nome>:american1-visitedUnits    — array de "<unit>|<section>"
-u:<nome>:american1-rating:<id>     — número 1-5
+u:<nome>:american1-rating:<id>     — número 1-5, por UNIT. LEGADO desde 2026-10-12: ainda é gravada,
+                                      mas nada lê; a nota que vale é a por seção (item de revisão)
                                       (`american1-review-section:<unit>` existiu entre
                                       2026-09-29 e 2026-10-12 como rótulo; foi SUBSTITUÍDA pela
                                       revisão por seção — ver abaixo — e é apagada pela
@@ -488,6 +550,43 @@ u:<nome>:review:<curso>:<id>       — JSON {rating, ratedAt, due, streak, retir
                                       CONTINUA por unit (`american1-rating:<unit>`, que o badge
                                       da grade e o "Your Score" leem); o que virou por seção é
                                       só o agendamento
+                                      **Seção estudada mas fora da fila** (2026-10-12): o item
+                                      só nasce quando se clica numa estrela DENTRO da seção, e
+                                      a nota da unit é herdada — a 4B abre com as estrelas
+                                      preenchidas e parece avaliada sem ter item. Nos dados do
+                                      dono: 20 seções estudadas, 6 na fila. Migração única
+                                      `seedAmerican1ReviewSections` deu 4★ (7 dias, não "hoje")
+                                      às 11 seções já visitadas das units 1-4, a pedido dele; a
+                                      unit 5 ficou de fora de propósito. Só toca no agendamento
+                                      — `american1-rating:<unit>` não mudou. A marca
+                                      `migrated:american1-seed-sections-2026-10-12` mora no
+                                      namespace do usuário e viaja no backup, então outro
+                                      aparelho que o importe não repete. Pode ser apagada depois
+                                      que PC, tablet e pendrive rodarem uma vez.
+                                      **As ESTRELAS de cada seção mostram a nota DAQUELA seção**
+                                      (readAmerican1SectionRating, lida do item de revisão), e
+                                      ficam vazias se ela não tem item — não mais a nota da unit.
+                                      Antes toda seção abria com as estrelas da unit preenchidas:
+                                      parecia avaliada sem ter item, e depois da migração acima a
+                                      4B/4C seguiam mostrando 5★ com o item gravado em 4★. A nota
+                                      da UNIT continua existindo e é a que o selo da grade e o
+                                      "Your Score" leem; só deixou de aparecer como se fosse da
+                                      seção. O rótulo diz "for this section" (UnitNotes ganhou
+                                      `ratingScope`).
+                                      **Item SEMEADO (`seeded: true`) não é "avaliado hoje"**
+                                      (bug achado pelo dono na 4B, 2026-10-12): a semeadura
+                                      grava `ratedAt = agora`, e a trava de 1 avaliação por dia
+                                      barrava a 1ª avaliação REAL de 11 seções que ele nunca
+                                      tinha tocado. Hoje (a) a semeadura grava `seeded: true`,
+                                      (b) isRatedTodayAlready ignora item semeado, (c) a 1ª
+                                      avaliação real de um semeado conta como `isFirstRating`
+                                      (fecha "Learn a new unit") e o grava SEM o marcador, e (d)
+                                      `repairSeededReviewEntries` marca os já gravados — reconhece
+                                      pelo `ratedAt` idêntico ao timestamp da marca da migração
+                                      (mesmo `now` nos dois, igualdade exata). Regra geral:
+                                      QUALQUER entrada de revisão criada por código, e não por um
+                                      toque do usuário, tem que carregar um marcador assim —
+                                      senão ela herda a data de uma avaliação que não houve
                                       `streak` = acertos SEGUIDOS com 5★ e `retired` = passou
                                       dos 4 degraus (2026-10-12). Entrada antiga não tem os
                                       dois campos: entra no 1º degrau, sem migração
@@ -505,13 +604,35 @@ u:<nome>:review:<curso>:<id>       — JSON {rating, ratedAt, due, streak, retir
                                       (`rating:<exercício>`, outro prefixo) fica intacta — é
                                       ela que alimenta o "Your Score".
                                       "review:vocabulary-unit:" é a unit e continua valendo
+                                      **Intervalo por NOTA** (REVIEW_INTERVALS_BY_RATING,
+                                      números do dono, 2026-10-12): 1★=2 dias, 2★=7, 3★=15,
+                                      4★=25, 5★=30. Antes era 1/2/3/7/30.
+                                      **REAGENDAMENTO RETROATIVO ÚNICO** (2026-10-12,
+                                      `rescheduleReviewsUnderNewRules`, a pedido do dono: as
+                                      regras antigas o fizeram revisar quase todas as seções
+                                      mais de 3 vezes): TODO item já avaliado recomeça —
+                                      `due` = AGORA + intervalo da nota (5★ 30 dias, 4★ 25...;
+                                      contado de agora, não da avaliação antiga, senão o que foi
+                                      avaliado há +30 dias venceria na hora), `streak` = 1 pra
+                                      5★ (o próximo 5★ vai pra 45) e 0 pras outras, `retired`
+                                      volta a false. NÃO mexe em `ratedAt` (a trava de 1
+                                      avaliação/dia segue valendo) nem em `seeded`. As seções
+                                      semeadas com 4★ foram de 7 pra 25 dias. Efeito: a fila
+                                      ficou vazia até ~06/11 (4★) e ~11/11 (5★). A marca
+                                      `migrated:review-reschedule-new-rules-2026-10-12` viaja
+                                      no backup, então outro aparelho que o importe não refaz;
+                                      pode ser apagada depois que PC, tablet e pendrive
+                                      rodarem uma vez.
                                       **Intervalo CRESCE com acerto seguido**
-                                      (REVIEW_STREAK_LADDER_DAYS = [30, 45, 90, 180], números
-                                      escolhidos pelo dono em 2026-10-12): 5★ sobe um degrau,
+                                      (REVIEW_STREAK_LADDER_DAYS = [30, 45, 60, 95],
+                                      REVIEW_RETIRE_AT_STREAK = 5): 5★ sobe um degrau,
                                       qualquer nota abaixo ZERA e volta pro intervalo curto de
-                                      REVIEW_INTERVALS_BY_RATING. Passar do último degrau
-                                      APOSENTA (`retired`), e loadDueReviews ignora — são 4
-                                      aparições em ~11 meses e nunca mais. Motivo: nota 5 era
+                                      REVIEW_INTERVALS_BY_RATING. 1º 5★ -> 30 dias, 2º -> 45,
+                                      3º -> 60, 4º -> 95, e o 5º APOSENTA (`retired`) —
+                                      loadDueReviews ignora. A fala original do dono ("45, 60,
+                                      95 ... 4 x cinco estrelas") não fechava os números com a
+                                      contagem; ele decidiu depois: aposentar no 5º 5★, então
+                                      os 4 degraus são usados. Motivo: nota 5 era
                                       sempre 30 dias, na 1ª e na 10ª vez, e como a carga é
                                       "itens ÷ intervalo" com o total só crescendo, as revisões
                                       comiam o tempo de avançar (medido no backup do dono: 51
@@ -521,15 +642,20 @@ u:<nome>:review:<curso>:<id>       — JSON {rating, ratedAt, due, streak, retir
                                       NÃO fazer o inverso (deixar de inscrever o item na
                                       rotação): o dono foi explícito que todo curso precisa ser
                                       revisto; o que muda é só o ritmo de saída.
-                                      **Teto de 6 por dia** (REVIEW_DAILY_CAP) é só de
+                                      **Teto de 8 por dia** (REVIEW_DAILY_CAP; era 6 até 2026-10-12) é só de
                                       EXIBIÇÃO, no ReviewCard — `reviewQueue.length` segue
                                       sendo o total pro Progress Dashboard (mesma separação do
                                       My Words entre sessionQueue e dueEntries). O que não for
-                                      revisado continua vencido e volta amanhã; a ordem é por
-                                      mais atrasado primeiro, então o atraso nunca fura a fila.
+                                      revisado continua vencido e volta amanhã. **A ORDEM é por
+                                      NOTA (menor primeiro) e, dentro da mesma nota, pelo mais
+                                      atrasado** (pedido do dono, 2026-10-12): um 1★ vencido hoje
+                                      passa na frente de um 5★ vencido hoje, e até de um 5★
+                                      vencido há 40 dias. Efeito a saber: com o teto de 8/dia,
+                                      itens de nota alta só aparecem quando sobra vaga depois dos
+                                      de nota baixa.
                                       O card NÃO mostra o total da fila nem quantos ficaram de
                                       fora (pedido do dono, 2026-10-12): anunciar "14 items"
-                                      com teto de 6 só devolvia o peso que o teto existe pra
+                                      com teto só devolvia o peso que o teto existe pra
                                       tirar. `.review-card-count` e `.review-more` foram
                                       removidos do JSX e do CSS — não recriar.
                                       Toda nota de curso passa por scheduleReview, que agora
@@ -547,6 +673,22 @@ u:<nome>:review:<curso>:<id>       — JSON {rating, ratedAt, due, streak, retir
                                       nos 4,5s de antes de propósito — erro de gravação, backup
                                       importado e "já está no My Words" precisam ser lidos, e
                                       em 1s ficariam ilegíveis
+                                      **Só o 1º toque do dia vale** (isRatedTodayAlready,
+                                      2026-10-12): toque duplo acidental em 5★ subia DOIS
+                                      degraus da escada (30 -> 45 dias) sem o usuário notar.
+                                      O 2º toque no mesmo item/dia é ignorado por inteiro e
+                                      mostra "Already rated today — the first rating counts."
+                                      A trava fica na PRIMEIRA linha dos 4 handlers de nota,
+                                      antes de gravar a estrela — travar só no scheduleReview
+                                      deixaria o 2º toque trocar a nota na tela e no score sem
+                                      reagendar (a estrela diria uma coisa e a agenda outra).
+                                      Lê o `ratedAt` do localStorage, nunca de state: dois
+                                      toques rápidos chegam antes do re-render. "Mesmo dia" é a
+                                      data LOCAL (localDayKeyOf), então a meia-noite libera.
+                                      No American1 a trava é por SEÇÃO (mesmo id do
+                                      agendamento): avaliar a 1B depois da 1A hoje continua
+                                      valendo. Consequência aceita: errar a estrela no 1º
+                                      toque só se corrige no dia seguinte
 u:<nome>:wordbook                  — array JSON de palavras + flashcards ({id, word, meaning,
                                       example, context, image, createdAt, step, due,
                                       lastGrade, lastGradedAt, lastIntervalDays}).
@@ -912,7 +1054,13 @@ Se os PDFs/áudios de origem mudarem, os índices precisam ser regenerados.
       tamanho fixo e aumentar estouraria o controle.
     Vale também no `GrammarVocabExercises.css`, que importa os tokens do `App.css` via `:root`.
 
-11. **Tema claro/escuro por TOKEN, nunca por cor literal** (2026-08-09). O botão de sol/lua no
+11. **Tema claro/escuro por TOKEN, nunca por cor literal** (2026-08-09). **Cores do progresso
+    por unit/seção** (selo da grade, legenda e barras do Progress/Home) são tokens
+    `--badge-visited`/`--badge-rated`/`--badge-mastered` (2026-10-12): visited = âmbar,
+    rated = índigo, mastered = verde, com tons próprios no escuro. Antes `visited` e `rated`
+    eram QUASE A MESMA cor (#6067f0 x #5a60ee, dE 4,2 claro / 1,2 escuro — abaixo de ~5 o
+    olho não separa). Medir a distância (CIE76) ao mexer, não olhar: hoje qualquer par fica
+    >= 84. O botão de sol/lua no
     header põe `data-theme="dark"` no `<html>`; o CSS do tema redefine só variáveis em
     `:root[data-theme='dark']` — **zero regra de componente duplicada**. A preferência fica em
     `localStorage.theme` SEM namespace de usuário (é do aparelho, precisa valer na tela de

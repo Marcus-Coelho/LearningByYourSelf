@@ -137,8 +137,14 @@ const AUDIO_SPEEDS = [0.5, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 2];
 // à fila de revisão, conforme a nota dada — nota baixa volta logo, nota alta
 // volta bem depois. O item sai da fila quando é reavaliado (qualquer nota),
 // o que agenda a próxima repetição.
+//
+// Números do dono (2026-10-12): 1★=2 dias, 2★=7, 3★=15, 4★=25, 5★=30 — e o 5★
+// ainda sobe a escada abaixo (REVIEW_STREAK_LADDER_DAYS). Antes era 1/2/3/7/30.
+// Reagendar não mexe nos itens JÁ gravados: o `due` deles segue o que foi
+// calculado quando foram avaliados, e a tabela nova vale a partir da próxima
+// avaliação de cada um.
 const DAY_MS = 24 * 60 * 60 * 1000;
-const REVIEW_INTERVALS_BY_RATING = { 1: 1, 2: 2, 3: 3, 4: 7, 5: 30 };
+const REVIEW_INTERVALS_BY_RATING = { 1: 2, 2: 7, 3: 15, 4: 25, 5: 30 };
 
 // Escada de acertos SEGUIDOS com 5★ (números escolhidos pelo dono, 2026-10-12).
 //
@@ -148,22 +154,31 @@ const REVIEW_INTERVALS_BY_RATING = { 1: 1, 2: 2, 3: 3, 4: 7, 5: 30 };
 // backup dele, 51 itens davam ~2,6/dia, e avaliar o material todo (317) daria
 // ~10,6/dia PARA SEMPRE. Agora o que ele acerta seguidamente se afasta sozinho.
 //
-// Passar do último degrau APOSENTA o item (ver `retired`): são 4 aparições ao
-// longo de ~11 meses e nunca mais. Qualquer nota abaixo de 5 significa que não
-// lembrou bem — zera a escada e o item volta à rotação normal.
+// O item é APOSENTADO (ver `retired`) quando junta REVIEW_RETIRE_AT_STREAK
+// avaliações 5★ seguidas e nunca mais aparece na fila. Qualquer nota abaixo de 5
+// significa que não lembrou bem: zera a escada e o item volta à rotação normal.
+//
+// Degraus pedidos pelo dono em 2026-10-12: 30, 45, 60, 95. A fala original ("45,
+// 60, 95 até não aparecer mais após a terceira reavaliação... ou seja, 4 x cinco
+// estrelas") não fechava os números com a contagem; ele decidiu depois: aposentar
+// no 5º 5★. Então: 1º 5★ -> 30 dias, 2º -> 45, 3º -> 60, 4º -> 95, 5º -> sai da
+// fila. Os 4 degraus são usados.
 //
 // NÃO confundir com "não inscrever o item" (a ideia (f) da discussão): o dono
 // foi explícito que todo curso precisa entrar na rotação; o que muda é só o
 // ritmo com que sai dela.
-const REVIEW_STREAK_LADDER_DAYS = [30, 45, 90, 180];
+const REVIEW_STREAK_LADDER_DAYS = [30, 45, 60, 95];
+const REVIEW_RETIRE_AT_STREAK = 5;
 
-// Teto do que a fila MOSTRA por dia (pedido do dono: "no máximo 6"). O que não
-// for revisado hoje continua vencido e reaparece amanhã, e como a ordenação é
-// por mais atrasado primeiro (ver loadDueReviews), o atraso nunca fura a fila.
+// Teto do que a fila MOSTRA por dia (pedido do dono; era 6, passou pra 8 em
+// 2026-10-12). O que não
+// for revisado hoje continua vencido e reaparece amanhã; a ordem é por NOTA
+// (menor primeiro) e, dentro da mesma nota, por mais atrasado (ver
+// loadDueReviews).
 // O teto é só de EXIBIÇÃO — `reviewQueue.length` segue sendo o total de verdade
 // pro Dashboard e pro contador do card, mesma separação que o My Words já faz
 // entre `sessionQueue` (25) e `dueEntries`.
-const REVIEW_DAILY_CAP = 6;
+const REVIEW_DAILY_CAP = 8;
 
 // Quanto tempo a confirmação de nota ("Rated 5★…") fica na tela. Máximo de 1s,
 // pedido do dono (2026-10-12) — vale pras duas variantes da mensagem.
@@ -173,11 +188,12 @@ const RATING_TOAST_MS = 1000;
 // demais dependendo do fuso) usada pra "Today's Goal" (ver DailyGoalCard) —
 // cada dia novo já nasce com a chave `dailyGoal:<data>` inexistente, ou seja,
 // nenhuma meta marcada como feita, sem precisar resetar nada manualmente.
-const todayDateKey = () => {
-  const now = new Date();
+const localDayKeyOf = (timestamp) => {
+  const date = new Date(timestamp);
   const pad = (n) => String(n).padStart(2, '0');
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 };
+const todayDateKey = () => localDayKeyOf(Date.now());
 
 const DEFAULT_DAILY_GOAL_PREFS = { newUnit: true, reviews: true, listening: true };
 
@@ -543,11 +559,161 @@ const migrateAmerican1ReviewSections = (name) => {
   }
 };
 
-const loadDueReviews = (name) => {
-  const due = [];
+// Migração ÚNICA pedida pelo dono (2026-10-12): as seções do American English
+// A1 que ele JÁ ESTUDOU nas units 1 a 4 mas que nunca entraram na fila ganham
+// nota 4★ e passam a ser revisadas. A unit 5 fica de fora, de propósito.
+//
+// Por que existiam seções de fora: o item de revisão só nasce quando se clica
+// numa estrela DENTRO daquela seção, e a nota da unit (5★) é herdada por todas
+// as seções — então a 4B abre com as estrelas preenchidas e parece avaliada,
+// sem ter item nenhum. Nos dados dele: 20 seções estudadas, 6 na fila.
+//
+// 4★ é o que o app faz ao clicar em 4 (REVIEW_INTERVALS_BY_RATING[4], hoje 25 dias),
+// então os itens entram na rotação e aparecem em 7 dias — NÃO hoje. Só mexe no
+// AGENDAMENTO: a nota da unit (`american1-rating:<unit>`, que o badge da grade
+// e o "Your Score" leem) continua como estava.
+//
+// Seção que já tem item de revisão nunca é tocada, e só entra o que ele de fato
+// visitou. A marca em `migrated:` mora no namespace do usuário, então viaja no
+// backup e não repete em outro aparelho que o importe. Depois que PC, tablet e
+// pendrive rodarem uma vez, esta função pode ser apagada.
+const AMERICAN1_SEED_MAX_UNIT = 4;
+const AMERICAN1_SEED_RATING = 4;
+const AMERICAN1_SEED_FLAG = 'migrated:american1-seed-sections-2026-10-12';
+const seedAmerican1ReviewSections = (name) => {
   try {
+    const flagKey = userKey(name, AMERICAN1_SEED_FLAG);
+    if (window.localStorage.getItem(flagKey) !== null) return;
+    let visited = [];
+    try {
+      const parsed = JSON.parse(window.localStorage.getItem(userKey(name, 'american1-visitedUnits')) || '[]');
+      if (Array.isArray(parsed)) visited = parsed;
+    } catch (error) {
+      // Lista de visitadas ilegível — nada a semear, mas marca como feito pra
+      // não ficar tentando a cada carregamento.
+    }
+    const now = Date.now();
+    visited.forEach((entry) => {
+      const [unitPart, section] = String(entry).split('|');
+      const unit = Number(unitPart);
+      if (!unit || unit > AMERICAN1_SEED_MAX_UNIT || !section) return;
+      const key = userKey(name, `review:american1:${unit}|${section}`);
+      if (window.localStorage.getItem(key) !== null) return;
+      window.localStorage.setItem(key, JSON.stringify({
+        rating: AMERICAN1_SEED_RATING,
+        ratedAt: now,
+        due: now + REVIEW_INTERVALS_BY_RATING[AMERICAN1_SEED_RATING] * DAY_MS,
+        streak: 0,
+        retired: false,
+        // Quem avaliou foi a MIGRAÇÃO, não o usuário. Sem este marcador a trava de
+        // "1 avaliação por dia" tratava o item como "avaliado hoje" e barrava a
+        // primeira avaliação de verdade (bug achado pelo dono na 4B, 2026-10-12).
+        seeded: true,
+      }));
+    });
+    window.localStorage.setItem(flagKey, String(now));
+  } catch (error) {
+    // Armazenamento indisponível — tenta de novo no próximo carregamento.
+  }
+};
+
+// Marca como `seeded` os itens que a semeadura acima gravou ANTES de ela passar a
+// gravar o marcador. Reconhece pelo `ratedAt` idêntico ao timestamp guardado na
+// marca da migração: a semeadura usa o MESMO `now` nos dois, então a igualdade é
+// exata e não há como confundir com uma avaliação real. Idempotente.
+const repairSeededReviewEntries = (name) => {
+  try {
+    const stamp = window.localStorage.getItem(userKey(name, AMERICAN1_SEED_FLAG));
+    if (stamp === null) return;
+    const prefix = userKey(name, 'review:american1:');
+    const keys = [];
+    for (let i = 0; i < window.localStorage.length; i += 1) {
+      const key = window.localStorage.key(i);
+      if (key && key.startsWith(prefix)) keys.push(key);
+    }
+    keys.forEach((key) => {
+      const entry = JSON.parse(window.localStorage.getItem(key));
+      if (entry && !entry.seeded && String(entry.ratedAt) === stamp) {
+        window.localStorage.setItem(key, JSON.stringify({ ...entry, seeded: true }));
+      }
+    });
+  } catch (error) {
+    // Armazenamento indisponível ou entrada ilegível — tenta no próximo carregamento.
+  }
+};
+
+// Migração ÚNICA (pedido do dono, 2026-10-12): a regra nova de revisão (tabela por
+// nota + escada do 5★) passa a valer pra TODOS os itens JÁ avaliados, recomeçando do
+// zero. As regras antigas o fizeram revisar quase todas as seções mais de 3 vezes;
+// o que ele já revisou NÃO conta pra escada.
+//
+//   - o próximo vencimento é AGORA + o intervalo da nota (REVIEW_INTERVALS_BY_RATING):
+//     5★ -> 30 dias, 4★ -> 25, 3★ -> 15, 2★ -> 7, 1★ -> 2. Contado a partir de agora, e
+//     não da data da avaliação antiga — senão o que foi avaliado há mais de 30 dias
+//     venceria na hora e o "recomeço" não recomeçaria nada;
+//   - `streak` = 1 pra 5★ (a avaliação atual é o 1º 5★ da escada, então o próximo 5★
+//     vai pra 45 dias) e 0 pras outras notas;
+//   - `retired` volta a false: quem foi aposentado pela escada antiga reentra.
+//
+// NÃO mexe em `ratedAt` (a trava de 1 avaliação por dia continua olhando a avaliação
+// de verdade) nem em `seeded`. Não toca nas chaves por exercício do Vocabulary
+// ("review:vocabulary:", já apagadas por cleanupExerciseReviewKeys).
+//
+// A marca em `migrated:` mora no namespace do usuário: viaja no backup, então outro
+// aparelho que o importe não refaz. Depois que PC, tablet e pendrive rodarem uma vez,
+// esta função pode ser apagada.
+const REVIEW_RESCHEDULE_FLAG = 'migrated:review-reschedule-new-rules-2026-10-12';
+const rescheduleReviewsUnderNewRules = (name) => {
+  try {
+    const flagKey = userKey(name, REVIEW_RESCHEDULE_FLAG);
+    if (window.localStorage.getItem(flagKey) !== null) return;
     const prefix = userKey(name, 'review:');
     const now = Date.now();
+    const keys = [];
+    for (let i = 0; i < window.localStorage.length; i += 1) {
+      const key = window.localStorage.key(i);
+      if (key && key.startsWith(prefix)) keys.push(key);
+    }
+    keys.forEach((key) => {
+      const course = key.slice(prefix.length).split(':')[0];
+      if (course === EXERCISE_REVIEW_COURSE) return;
+      let entry;
+      try {
+        entry = JSON.parse(window.localStorage.getItem(key));
+      } catch (error) {
+        return;
+      }
+      const days = entry && REVIEW_INTERVALS_BY_RATING[entry.rating];
+      if (!days) return;
+      window.localStorage.setItem(key, JSON.stringify({
+        ...entry,
+        due: now + days * DAY_MS,
+        streak: entry.rating === 5 ? 1 : 0,
+        retired: false,
+      }));
+    });
+    window.localStorage.setItem(flagKey, String(now));
+  } catch (error) {
+    // Armazenamento indisponível — tenta de novo no próximo carregamento.
+  }
+};
+
+// Ordem de PRIORIDADE da fila (pedido do dono, 2026-10-12): quem lembrou pior volta
+// antes. Um item de 1★ vencido hoje passa na frente de um 5★ vencido hoje — o que
+// "adormeceu" 30 dias pode esperar. Dentro da MESMA nota vale o que o dono pediu
+// antes: o mais atrasado primeiro, então o que ficou de ontem vem na frente.
+// Efeito a saber: com o teto diário, itens de nota alta só aparecem quando há vaga
+// depois dos de nota baixa. UMA função só, usada pela fila de hoje E pela agenda
+// da página "Upcoming reviews" — se a ordem divergisse, a agenda mentiria.
+const compareReviewPriority = (a, b) => (a.rating - b.rating) || (a.due - b.due);
+
+// TODOS os itens de revisão ativos (vencidos ou não), sem ordenar. Varre
+// "u:<nome>:review:<curso>:<id>"; ignora as chaves por EXERCÍCIO do Vocabulary
+// (ver EXERCISE_REVIEW_COURSE) e os aposentados.
+const loadActiveReviewEntries = (name) => {
+  const entries = [];
+  try {
+    const prefix = userKey(name, 'review:');
     for (let i = 0; i < window.localStorage.length; i += 1) {
       const key = window.localStorage.key(i);
       if (!key || !key.startsWith(prefix)) continue;
@@ -561,23 +727,72 @@ const loadDueReviews = (name) => {
       } catch (error) {
         continue;
       }
-      // `retired`: passou os 4 degraus da REVIEW_STREAK_LADDER_DAYS acertando
-      // 5★ seguidas. Sai da fila pra sempre, até ser reavaliado na mão.
-      if (entry && entry.retired) continue;
-      if (entry && typeof entry.due === 'number' && entry.due <= now) {
-        const course = remainder.slice(0, separator);
-        const id = remainder.slice(separator + 1);
-        // A seção do American1 vem DENTRO do id ("<unit>|<seção>"), então não
-        // há mais chave companheira pra consultar aqui (ver
-        // migrateAmerican1ReviewSections).
-        due.push({ course, id, rating: entry.rating, due: entry.due });
-      }
+      // `retired`: juntou REVIEW_RETIRE_AT_STREAK avaliações 5★ seguidas. Sai da
+      // fila pra sempre, até ser reavaliado na mão.
+      if (!entry || entry.retired || typeof entry.due !== 'number') continue;
+      // A seção do American1 vem DENTRO do id ("<unit>|<seção>"), então não há
+      // mais chave companheira pra consultar aqui (ver
+      // migrateAmerican1ReviewSections).
+      entries.push({
+        course: remainder.slice(0, separator),
+        id: remainder.slice(separator + 1),
+        rating: entry.rating,
+        due: entry.due,
+      });
     }
   } catch (error) {
     // Armazenamento indisponível — sem fila de revisão nesta sessão.
   }
-  due.sort((a, b) => a.due - b.due);
-  return due;
+  return entries;
+};
+
+// Fila de HOJE: só o que já venceu, em ordem de prioridade.
+const loadDueReviews = (name) => {
+  const now = Date.now();
+  return loadActiveReviewEntries(name)
+    .filter((entry) => entry.due <= now)
+    .sort(compareReviewPriority);
+};
+
+const startOfLocalDayMs = (timestamp) => {
+  const date = new Date(timestamp);
+  date.setHours(0, 0, 0, 0);
+  return date.getTime();
+};
+
+// Agenda FUTURA, na ordem em que os itens vão aparecer (página "Upcoming reviews").
+//
+// Não basta ordenar por `due`: a fila mostra no máximo REVIEW_DAILY_CAP por dia, na
+// ordem de compareReviewPriority, e o que sobra vai pro dia seguinte. Dia a dia:
+// entra no "pool" tudo o que já venceu naquele dia, ordena por prioridade e tira os
+// primeiros REVIEW_DAILY_CAP — assim 50 itens que vencem juntos aparecem espalhados
+// em vários dias, que é o que o usuário vai ver de verdade, e não 50 itens "no dia 11".
+//
+// É uma PREVISÃO: supõe que o usuário revisa o que aparece em cada dia. Se pular um
+// dia, o que ficou volta no seguinte (e o resto desliza). Cada item sai com
+// `appearsOn` (início do dia local, em ms) e a lista já vem na ordem de aparição.
+const buildUpcomingReviewSchedule = (entries, now = Date.now(), cap = REVIEW_DAILY_CAP) => {
+  const today = startOfLocalDayMs(now);
+  let remaining = entries.map((entry) => ({ ...entry, availableDay: Math.max(today, startOfLocalDayMs(entry.due)) }));
+  const schedule = [];
+  let day = today;
+  while (remaining.length > 0) {
+    const currentDay = day;
+    const available = remaining.filter((entry) => entry.availableDay <= currentDay).sort(compareReviewPriority);
+    if (available.length === 0) {
+      // Nada disponível neste dia: pula direto pro próximo dia com algo vencendo.
+      day = Math.min(...remaining.map((entry) => entry.availableDay));
+      continue;
+    }
+    const taken = available.slice(0, cap);
+    taken.forEach((entry) => schedule.push({ ...entry, appearsOn: currentDay }));
+    const takenSet = new Set(taken);
+    remaining = remaining.filter((entry) => !takenSet.has(entry));
+    const next = new Date(day);
+    next.setDate(next.getDate() + 1);   // setDate, não +24h: dia de horário de verão tem 23/25h
+    day = next.getTime();
+  }
+  return schedule;
 };
 
 // Exercícios agrupados por unidade, em ordem numérica (N.1, N.2, ...).
@@ -607,12 +822,18 @@ const getUnitBadgeStatus = (visited, rating) => {
 // exercício, ver exerciseRatings) — "mastered" exige ter avaliado TODOS os
 // exercícios da unit com a nota máxima; qualquer outra avaliação já conta
 // como "rated". Units sem exercício indexado nunca passam de "visited".
-const getVocabularyUnitBadgeStatus = (unitNumber, visited, exerciseRatings) => {
+const getVocabularyUnitBadgeStatus = (unitNumber, visited, exerciseRatings, unitRating = 0) => {
   if (!visited) return 'unvisited';
   const ids = exercisesByUnit[unitNumber] || [];
   const given = ids.map((id) => exerciseRatings[id] || 0);
   const ratedCount = given.filter((value) => value > 0).length;
-  if (ratedCount === 0) return 'visited';
+  // Sem nota de exercício nenhuma, vale a nota da UNIT (a da tela de leitura, que é a
+  // que a revisão e o "Learn something new" usam). Antes o selo a ignorava e a unit
+  // aparecia como só "visited" mesmo avaliada (2026-10-12).
+  if (ratedCount === 0) {
+    if (!unitRating) return 'visited';
+    return unitRating >= UNIT_BADGE_MASTERED_RATING ? 'mastered' : 'rated';
+  }
   const allMastered = given.length === ratedCount
     && given.every((value) => value >= UNIT_BADGE_MASTERED_RATING);
   return allMastered ? 'mastered' : 'rated';
@@ -1362,6 +1583,15 @@ const IconNotes = () => (
 
 // Ícone do menu "Progress" (Dashboard de progresso) — barras de um gráfico
 // simples, mesmo estilo de traço dos outros ícones do drawer.
+const IconCalendar = () => (
+  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" />
+    <path d="M3.5 10h17" />
+    <path d="M8 3v4" />
+    <path d="M16 3v4" />
+  </svg>
+);
+
 const IconDashboard = () => (
   <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M4 20V11" />
@@ -1666,7 +1896,12 @@ function App() {
   // de "Your Score" (que é só a média das notas de exercício).
   const [vocabularyUnitRatings, setVocabularyUnitRatings] = useState({});
   const [visitedUnits, setVisitedUnits] = useState({});
-  const [american1UnitRatings, setAmerican1UnitRatings] = useState({});
+  // O VALOR não é mais lido (2026-10-12): selo, Progress e "Your Score" usam a nota
+  // da SEÇÃO, lida do item de revisão (readAmerican1SectionRating). O setter
+  // continua porque chamá-lo em handleRateAmerican1Unit é o que força o
+  // re-render que atualiza as estrelas, e a chave `american1-rating:<unit>`
+  // segue sendo gravada (backups antigos / import).
+  const [, setAmerican1UnitRatings] = useState({});
   const [american1VisitedSections, setAmerican1VisitedSections] = useState({});
   const [grammarElemUnitRatings, setGrammarElemUnitRatings] = useState({});
   const [grammarElemVisitedUnits, setGrammarElemVisitedUnits] = useState({});
@@ -1678,6 +1913,11 @@ function App() {
   // outros 3 cursos (1-5 estrelas), só que por tela de leitura em vez de
   // unit, já que esse livro não tem unit nenhuma.
   const [americanAccentPageRatings, setAmericanAccentPageRatings] = useState({});
+  // Capítulos abertos/fechados na página do curso, SÓ o que o usuário mexeu
+  // ({ [chapterId]: boolean }). O que ele não mexeu segue o padrão calculado a
+  // cada render (ver accentDefaultOpenChapter), então o padrão nunca fica velho
+  // por causa de nota que chegou depois do 1º render.
+  const [accentChapterOverrides, setAccentChapterOverrides] = useState({});
   // Última unit/seção aberta EM CADA curso — alimenta o botão "Continue
   // where you left off", um por curso na tela Courses e um só (o mais
   // recente dos 3, por timestamp) na Home. Chave = id do curso
@@ -2082,11 +2322,53 @@ function App() {
     // (por unit) em entradas por seção. É idempotente — depois da 1ª vez não
     // encontra mais nenhuma chave sem "|" e não faz nada.
     migrateAmerican1ReviewSections(userName);
+    // Depois da migração acima, nunca antes: as entradas antigas (por unit)
+    // precisam já ter virado "<unit>|<seção>", senão a seção "A" pareceria sem
+    // item e ganharia um duplicado.
+    seedAmerican1ReviewSections(userName);
+    repairSeededReviewEntries(userName);
+    // Por último entre as migrações: precisa enxergar os itens já migrados por seção e
+    // os semeados (que passam a 25 dias, o intervalo de 4★ da regra nova).
+    rescheduleReviewsUnderNewRules(userName);
     // Também idempotente: na 1ª vez apaga os agendamentos por exercício que
     // sobraram de 2026-09-13, depois não acha mais nada.
     cleanupExerciseReviewKeys(userName);
     setReviewQueue(loadDueReviews(userName));
   }, [userName, activePage]);
+
+  // Só o PRIMEIRO toque do dia numa nota de curso vale (pedido do dono,
+  // 2026-10-12). O problema: toques acidentais nas estrelas durante a revisão —
+  // um toque duplo em 5★ subia DOIS degraus da escada (30 -> 45 dias) sem o
+  // usuário perceber, afastando o item antes da hora.
+  //
+  // Devolve true se o toque deve ser IGNORADO (já avaliou este item hoje), e
+  // nesse caso já mostra o aviso. Os 4 handlers de nota chamam isto na PRIMEIRA
+  // linha, antes de gravar a estrela: travar só dentro do scheduleReview deixaria
+  // o segundo toque trocar a nota na tela e no score sem reagendar nada — a
+  // estrela diria uma coisa e a agenda outra.
+  //
+  // Lê o `ratedAt` direto do localStorage, nunca de state: dois toques rápidos
+  // chegam antes do React re-renderizar, e o state ainda não teria a avaliação
+  // que o 1º toque acabou de gravar (mesma lição do `wasDue` abaixo). "Mesmo
+  // dia" é pela data LOCAL (localDayKeyOf), então virar a meia-noite libera.
+  //
+  // Item nunca avaliado não tem entrada, então o 1º toque sempre passa.
+  const isRatedTodayAlready = (course, id) => {
+    if (!userName) return false;
+    try {
+      const raw = window.localStorage.getItem(userKey(userName, `review:${course}:${id}`));
+      if (!raw) return false;
+      const { ratedAt, seeded } = JSON.parse(raw);
+      // Item semeado pela migração não foi avaliado pelo USUÁRIO: não trava.
+      if (seeded) return false;
+      if (typeof ratedAt !== 'number' || localDayKeyOf(ratedAt) !== todayDateKey()) return false;
+    } catch (error) {
+      // Armazenamento ilegível — não trava a nota por causa disso.
+      return false;
+    }
+    showToast('Already rated today — the first rating counts.', 'info', RATING_TOAST_MS);
+    return true;
+  };
 
   // Agenda (ou reagenda) a revisão espaçada de um item autoavaliado — a
   // próxima data depende só da última nota dada (ver
@@ -2108,10 +2390,17 @@ function App() {
     // item certo (bug real, reportado pelo dono, 2026-07-24).
     let wasDue = false;
     let prevStreak = 0;
+    // Item SEM entrada nenhuma = é a PRIMEIRA vez que ele é avaliado (ver o uso
+    // em `newUnit` mais abaixo).
+    let isFirstRating = false;
     try {
       const raw = window.localStorage.getItem(storageKey);
+      isFirstRating = !raw;
       if (raw) {
         const existing = JSON.parse(raw);
+        // Item semeado ainda não foi avaliado pelo usuário: a 1ª avaliação real dele
+        // é, sim, a primeira (conta pra meta "Learn a new unit").
+        if (existing.seeded) isFirstRating = true;
         wasDue = typeof existing.due === 'number' && existing.due <= Date.now();
         // Item gravado antes de 2026-10-12 não tem `streak` — entra no 1º
         // degrau, sem migração. Nada se perde: ele só demora 4 acertos a mais
@@ -2125,9 +2414,9 @@ function App() {
     // Só 5★ sobe a escada; qualquer nota abaixo disso zera (não lembrou bem,
     // volta pro intervalo curto de REVIEW_INTERVALS_BY_RATING).
     const streak = rating === 5 ? prevStreak + 1 : 0;
-    const retired = streak > REVIEW_STREAK_LADDER_DAYS.length;
+    const retired = streak >= REVIEW_RETIRE_AT_STREAK;
     const days = rating === 5
-      ? (REVIEW_STREAK_LADDER_DAYS[streak - 1] || REVIEW_STREAK_LADDER_DAYS[REVIEW_STREAK_LADDER_DAYS.length - 1])
+      ? REVIEW_STREAK_LADDER_DAYS[Math.min(streak, REVIEW_STREAK_LADDER_DAYS.length) - 1]
       : (REVIEW_INTERVALS_BY_RATING[rating] || 7);
     let saved = false;
     try {
@@ -2180,6 +2469,18 @@ function App() {
     if (wasDue) {
       markDailyGoalDone('reviews');
     }
+    // "Learn a new unit" fecha SÓ na PRIMEIRA avaliação de uma unit/seção/tela
+    // (pedido do dono, 2026-10-12) — a visita sozinha NÃO conta mais (ver o
+    // comentário nos efeitos de visita). "Learn something new" sugere o primeiro
+    // item SEM NOTA, que costuma já ter sido visitado (Grammar: visitado até a
+    // 21, avaliado até a 18, sugestão = 19), então a meta e a sugestão passam a
+    // medir a mesma coisa: ter dado nota é o que prova que ele passou por ali.
+    //
+    // No Vocabulary vale a nota da UNIT (tela de leitura); nota de exercício
+    // solto não passa por aqui.
+    if (isFirstRating) {
+      markDailyGoalDone('newUnit');
+    }
   };
 
   // Autoavaliação é voluntária: só entra na média o exercício em que o
@@ -2201,6 +2502,7 @@ function App() {
   // gravadas (ver EXERCISE_REVIEW_COURSE).
   const handleRateVocabularyUnit = (unit, value) => {
     if (!unit || !userName) return;
+    if (isRatedTodayAlready('vocabulary-unit', unit)) return;
     setVocabularyUnitRatings((prev) => ({ ...prev, [unit]: value }));
     try {
       window.localStorage.setItem(userKey(userName, `unit-rating:${unit}`), String(value));
@@ -2266,8 +2568,33 @@ function App() {
     }
   }, [userName]);
 
+  // Nota que o American1 mostra nas ESTRELAS de cada seção: a do item de revisão
+  // DAQUELA seção, e 0 (vazias) se ela ainda não tem item. Antes as estrelas
+  // liam a nota da UNIT (`american1UnitRatings`), então toda seção abria com as
+  // estrelas da unit preenchidas e parecia avaliada sem ter item de revisão — e
+  // depois de dar 4★ a uma seção a tela seguia mostrando os 5★ da unit.
+  //
+  // A nota da unit continua existindo e continua alimentando o selo da grade e o
+  // "Your Score" (ver american1Statuses); só deixou de aparecer como se fosse da
+  // seção. Lê do localStorage, não de state, pelo mesmo motivo do resto da
+  // revisão: o state da fila só guarda o que está vencido.
+  const readAmerican1SectionRating = (unit, section) => {
+    if (!userName || !unit || !section) return 0;
+    try {
+      const raw = window.localStorage.getItem(userKey(userName, `review:american1:${unit}|${section}`));
+      const rating = raw ? Number(JSON.parse(raw).rating) : 0;
+      return Number.isFinite(rating) ? rating : 0;
+    } catch (error) {
+      return 0;
+    }
+  };
+
   const handleRateAmerican1Unit = (unit, value) => {
     if (!unit || !userName) return;
+    // A trava é por SEÇÃO, igual ao agendamento: avaliar a 2B depois de a 2A
+    // hoje é um item de revisão diferente e continua valendo.
+    const reviewId = `${unit}|${selectedAmerican1Section || 'A'}`;
+    if (isRatedTodayAlready('american1', reviewId)) return;
     setAmerican1UnitRatings((prev) => ({ ...prev, [unit]: value }));
     try {
       window.localStorage.setItem(userKey(userName, `american1-rating:${unit}`), String(value));
@@ -2286,10 +2613,16 @@ function App() {
     // que o badge da grade e o "Your Score" leem, e toda seção da unit herda
     // a mesma (ver american1Statuses). O que passou a ser por seção é o
     // AGENDAMENTO.
-    scheduleReview('american1', `${unit}|${selectedAmerican1Section || 'A'}`, value);
+    scheduleReview('american1', reviewId, value);
   };
 
-  const american1RatingValues = Object.values(american1UnitRatings);
+  // Nota do curso por SEÇÃO (2026-10-12): cada uma das 48 seções vale uma nota
+  // própria, lida do item de revisão dela (readAmerican1SectionRating). Antes
+  // era a média das notas por UNIT, e toda seção de uma unit herdava a mesma —
+  // o que fazia seção nunca avaliada contar como avaliada no Progress e no selo.
+  const american1RatingValues = american1Index
+    .map((entry) => readAmerican1SectionRating(entry.unit, entry.section))
+    .filter((value) => value > 0);
   const american1ScorePercent = american1RatingValues.length > 0
     ? Math.round((american1RatingValues.reduce((sum, value) => sum + value, 0) / american1RatingValues.length / 5) * 100)
     : null;
@@ -2397,6 +2730,7 @@ function App() {
 
   const handleRateGrammarElemUnit = (unit, value) => {
     if (!unit || !userName) return;
+    if (isRatedTodayAlready('grammarElem', unit)) return;
     setGrammarElemUnitRatings((prev) => ({ ...prev, [unit]: value }));
     try {
       window.localStorage.setItem(userKey(userName, `grammarElem-rating:${unit}`), String(value));
@@ -2408,6 +2742,7 @@ function App() {
 
   const handleRateAmericanAccentPage = (screenId, value) => {
     if (!screenId || !userName) return;
+    if (isRatedTodayAlready('americanAccent', screenId)) return;
     setAmericanAccentPageRatings((prev) => ({ ...prev, [screenId]: value }));
     try {
       window.localStorage.setItem(userKey(userName, `americanAccent-rating:${screenId}`), String(value));
@@ -2430,9 +2765,13 @@ function App() {
   const americanAccentScorePercent = americanAccentRatingValues.length > 0
     ? Math.round((americanAccentRatingValues.reduce((sum, value) => sum + value, 0) / americanAccentRatingValues.length / 5) * 100)
     : null;
-  const americanAccentVisitedPagesCount = Object.keys(visitedAmericanAccentPages).length;
-  const americanAccentProgressPercent = AMERICAN_ACCENT_ALL_PDF_PAGES.length > 0
-    ? Math.round((americanAccentVisitedPagesCount / AMERICAN_ACCENT_ALL_PDF_PAGES.length) * 100)
+  // Progresso por TELA (90), não por página do livro (140) — decisão do dono,
+  // 2026-10-12: a página do curso lista 90 telas, e "20/140" ao lado de 90 linhas
+  // não fecha. Tela visitada = alguma das páginas dela foi vista.
+  const americanAccentVisitedScreensCount = AMERICAN_ACCENT_SCREENS
+    .filter((screen) => screen.pdfPages.some((page) => visitedAmericanAccentPages[page])).length;
+  const americanAccentProgressPercent = AMERICAN_ACCENT_SCREENS.length > 0
+    ? Math.round((americanAccentVisitedScreensCount / AMERICAN_ACCENT_SCREENS.length) * 100)
     : 0;
 
   // Caderno de vocabulário ("My Words"): um único array JSON por usuário
@@ -2674,6 +3013,11 @@ function App() {
 
   // Marca a unit como visitada assim que a tela de leitura dela é aberta —
   // é isso que conta pro "Your Progress" no cabeçalho, não o número da unit.
+  // VISITAR NÃO MARCA a meta "Learn a new unit" (decisão do dono, 2026-10-12): dá
+  // pra passar por uma unit sem atenção nenhuma, então abrir não prova que ele
+  // estudou. Os 4 efeitos de visita abaixo (Vocabulary, American1, Grammar,
+  // American Accent) só registram "visitado" — quem fecha a meta é a 1ª
+  // AVALIAÇÃO do item (ver `isFirstRating` em scheduleReview).
   useEffect(() => {
     if (activePage !== 'unit' || !selectedUnit || !userName) {
       return;
@@ -2688,7 +3032,6 @@ function App() {
       } catch (error) {
         // Armazenamento indisponível — progresso não sobrevive a recarregar.
       }
-      markDailyGoalDone('newUnit');
       return next;
     });
   }, [selectedUnit, activePage, userName]);
@@ -2715,7 +3058,6 @@ function App() {
       } catch (error) {
         // Armazenamento indisponível — progresso não sobrevive a recarregar.
       }
-      markDailyGoalDone('newUnit');
       return next;
     });
   }, [selectedAmerican1Unit, selectedAmerican1Section, activePage, userName]);
@@ -2738,7 +3080,6 @@ function App() {
       } catch (error) {
         // Armazenamento indisponível — progresso não sobrevive a recarregar.
       }
-      markDailyGoalDone('newUnit');
       return next;
     });
   }, [selectedGrammarElemUnit, activePage, userName]);
@@ -2766,7 +3107,6 @@ function App() {
       } catch (error) {
         // Armazenamento indisponível — progresso não sobrevive a recarregar.
       }
-      markDailyGoalDone('newUnit');
       return next;
     });
   }, [selectedAmericanAccentScreenId, activePage, userName]);
@@ -3018,15 +3358,6 @@ function App() {
     setSelectedAmerican1Section(null);
     setActiveCourseId('american1');
     setUnitSearchQuery('');
-  };
-
-  const handleAmerican1UnitSelect = (event, unit) => {
-    event.preventDefault();
-    const sections = american1SectionsByUnit[unit] || [];
-    setActivePage('american1-unit');
-    setSelectedAmerican1Unit(unit);
-    setSelectedAmerican1Section(sections[0]?.section ?? null);
-    setShowAmerican1Answers(false);
   };
 
   const handlePreviousAmerican1Unit = () => {
@@ -3493,7 +3824,7 @@ function App() {
   };
 
   // Navegação direta pro "Today's Plan" (Home) — pula a tela de lista do
-  // curso, então (diferente de handleUnitSelect/handleAmerican1UnitSelect/
+  // curso, então (diferente de handleUnitSelect/
   // handleGrammarElemUnitSelect, que dependem da lista já ter marcado
   // activeCourseId um passo antes) precisam marcar activeCourseId elas
   // mesmas, senão o cabeçalho ("You are in the... Course") e o link
@@ -3627,6 +3958,23 @@ function App() {
   // mesma trava de acesso e mesma limpeza de seleção que Wordbook/Profile
   // (não é uma tela "dentro" de um curso, então nunca deixa insideCourse
   // preso em true por causa de uma unit/section aberta antes).
+  // "Upcoming reviews": agenda de tudo o que ainda vai voltar à fila de revisão.
+  const handleOpenUpcomingReviews = (event) => {
+    event.preventDefault();
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
+    setActivePage('upcoming-reviews');
+    setSelectedUnit(null);
+    setSelectedAmerican1Unit(null);
+    setSelectedAmerican1Section(null);
+    setSelectedGrammarElemUnit(null);
+    setSelectedGrammarElemAppendix(null);
+    setSelectedGrammarElemAdditional(null);
+    setActiveCourseId(null);
+  };
+
   const handleOpenDashboard = (event) => {
     event.preventDefault();
     if (!userName) {
@@ -4184,7 +4532,7 @@ function App() {
   // Autosave também ao trocar de unit/seção (não só no timer) — pedido do
   // dono, pra não depender só dos 5 minutos se o navegador fechar logo
   // depois de uma sessão curta de estudo. Dispara em QUALQUER troca (não só
-  // a 1ª visita, ao contrário de markDailyGoalDone('newUnit')) porque o que
+  // a 1ª visita) porque o que
   // importa aqui é capturar o que o usuário acabou de fazer (nota, resposta,
   // avaliação...) antes de sair da tela, mesmo numa unit já visitada antes.
   // Dependências de propósito só nos seletores de unit/seção — os outros 3
@@ -4548,7 +4896,7 @@ function App() {
   // Status por unit dos 3 cursos (mesma lógica das 3 grades de unit e do
   // Progress Dashboard — getUnitBadgeStatus/getVocabularyUnitBadgeStatus,
   // somados por tallyUnitStatuses) computado uma vez aqui, ANTES de
-  // findNextUnvisitedByCourse, pra alimentar tanto a ordem "cruzando os 3
+  // findNextUnratedByCourse, pra alimentar tanto a ordem "cruzando os 3
   // cursos" da trilha sugerida (ROADMAP item 3) quanto o "% de domínio
   // geral" (Dashboard e o resumo em DailyGoalCard) — sem duplicar o cálculo
   // em cada lugar que precisa dele. NÃO chamar isso de "% do A1": só
@@ -4557,36 +4905,48 @@ function App() {
   // origem "Pre Intermediate and Intermediate"), e ele entra nessa soma
   // também.
   const vocabularyStatuses = unitItems.map((unit) => (
-    getVocabularyUnitBadgeStatus(unit.number, Boolean(visitedUnits[unit.number]), exerciseRatings)
+    getVocabularyUnitBadgeStatus(unit.number, Boolean(visitedUnits[unit.number]), exerciseRatings, vocabularyUnitRatings[unit.number] || 0)
   ));
   // Por SEÇÃO (A/B/C/Practical English/Review and Check), não por unit —
   // pedido do dono: "1/12 units started" era enganoso, já que uma unit conta
-  // como "started" com só 1 das várias seções visitadas. A avaliação em
-  // estrelas continua por UNIT (não existe rating por seção — ver
-  // UnitNotes/american1UnitRatings), então toda seção de uma unit herda a
-  // MESMA rating pra decidir "rated"/"mastered"; só o "visited" é granular
-  // por seção (american1VisitedSections já é por seção). american1SectionsTotal
-  // (== american1Index.length) é a soma de sections por unit, não o número
-  // de units.
-  const american1Statuses = american1UnitNumbers.flatMap((unit) => {
-    const sections = american1SectionsByUnit[unit] || [];
-    const rating = american1UnitRatings[unit] || 0;
-    return sections.map((section) => (
-      getUnitBadgeStatus(Boolean(american1VisitedSections[`${unit}|${section.section}`]), rating)
-    ));
-  });
+  // como "started" com só 1 das várias seções visitadas. Visita E nota são por
+  // seção (american1VisitedSections e o item de revisão dela — ver
+  // readAmerican1SectionRating); a nota da UNIT (`american1-rating:<unit>`) não
+  // entra mais aqui. american1SectionsTotal (== american1Index.length) é a soma
+  // de sections por unit, não o número de units.
+  const american1SectionStatus = (unit, section) => getUnitBadgeStatus(
+    Boolean(american1VisitedSections[`${unit}|${section}`]),
+    readAmerican1SectionRating(unit, section),
+  );
+  const american1Statuses = american1UnitNumbers.flatMap((unit) => (
+    (american1SectionsByUnit[unit] || []).map((section) => american1SectionStatus(unit, section.section))
+  ));
+  // Resumo de UMA unit, só pra onde a lista ainda é por unit (resultados da
+  // busca em Courses): nenhuma seção visitada = unvisited; todas dominadas =
+  // mastered; alguma avaliada = rated; senão visited.
+  const american1UnitAggregateStatus = (unit) => {
+    const statuses = (american1SectionsByUnit[unit] || []).map((section) => american1SectionStatus(unit, section.section));
+    if (statuses.every((status) => status === 'unvisited')) return 'unvisited';
+    if (statuses.length > 0 && statuses.every((status) => status === 'mastered')) return 'mastered';
+    if (statuses.some((status) => status === 'rated' || status === 'mastered')) return 'rated';
+    return 'visited';
+  };
   const grammarElemStatuses = grammarElemUnitNumbers.map((unit) => (
     getUnitBadgeStatus(Boolean(grammarElemVisitedUnits[unit]), grammarElemUnitRatings[unit] || 0)
   ));
-  // total/tally contam PÁGINAS REAIS (AMERICAN_ACCENT_ALL_PDF_PAGES), não
-  // telas — uma tela de 2 páginas soma 2 no progresso. Rating é por TELA
-  // (americanAccentPageRatings, chave screen.id) — toda página de uma tela
-  // herda a mesma nota, igual ao American1 (seção herda a rating da unit).
-  const americanAccentStatuses = AMERICAN_ACCENT_ALL_PDF_PAGES.map((page) => {
-    const screen = AMERICAN_ACCENT_SCREENS.find((item) => item.pdfPages.includes(page));
-    const rating = screen ? americanAccentPageRatings[screen.id] || 0 : 0;
-    return getUnitBadgeStatus(Boolean(visitedAmericanAccentPages[page]), rating);
-  });
+  // Por TELA (as 90 de AMERICAN_ACCENT_SCREENS), não mais por página do livro
+  // (decisão do dono, 2026-10-12): a página do curso passou a listar as telas, e
+  // o número do Progress tem que contar a mesma coisa que a lista. A nota já era
+  // por tela (americanAccentPageRatings, chave screen.id). Visitada = alguma
+  // página da tela foi vista (abrir a tela marca todas de uma vez).
+  const americanAccentScreenStatus = (screen) => getUnitBadgeStatus(
+    screen.pdfPages.some((page) => visitedAmericanAccentPages[page]),
+    americanAccentPageRatings[screen.id] || 0,
+  );
+  const americanAccentStatuses = AMERICAN_ACCENT_SCREENS.map(americanAccentScreenStatus);
+  // Capítulo que abre por padrão na página do curso: o da primeira tela SEM nota
+  // (a mesma que o "Learn something new" sugere).
+  const accentDefaultOpenChapter = AMERICAN_ACCENT_SCREENS.find((screen) => !americanAccentPageRatings[screen.id])?.chapter;
   // Ordem = COURSE_LEVEL_ORDER (Beginner antes de Intermediate — American1,
   // Grammar Elem, Vocabulary), não mais a ordem de implementação — o
   // Progress Dashboard lista "Progress by course" direto nessa ordem.
@@ -4596,7 +4956,7 @@ function App() {
     vocabulary: { id: 'vocabulary', title: courses.vocabulary.title, level: courses.vocabulary.level, total: unitItems.length, tally: tallyUnitStatuses(vocabularyStatuses) },
     american1: { id: 'american1', title: courses.american1.title, level: courses.american1.level, total: american1SectionsTotal, tally: tallyUnitStatuses(american1Statuses), unitLabel: 'sections' },
     grammarElem: { id: 'grammarElem', title: courses.grammarElem.title, level: courses.grammarElem.level, total: GRAMMAR_ELEM_UNIT_COUNT, tally: tallyUnitStatuses(grammarElemStatuses) },
-    americanAccent: { id: 'americanAccent', title: courses.americanAccent.title, level: courses.americanAccent.level, total: AMERICAN_ACCENT_ALL_PDF_PAGES.length, tally: tallyUnitStatuses(americanAccentStatuses), unitLabel: 'pages' },
+    americanAccent: { id: 'americanAccent', title: courses.americanAccent.title, level: courses.americanAccent.level, total: AMERICAN_ACCENT_SCREENS.length, tally: tallyUnitStatuses(americanAccentStatuses), unitLabel: 'screens' },
   };
   const courseProgress = COURSE_LEVEL_ORDER.map((id) => courseProgressById[id]);
   const overallMasteredTotal = courseProgress.reduce((sum, course) => sum + course.tally.mastered, 0);
@@ -4606,32 +4966,48 @@ function App() {
   // "Today's Plan" (Home): um empurrão de "por onde começar" pra quem senta
   // pra estudar sem saber — mistura 1 sugestão de conteúdo novo + até 2
   // revisões vencidas (mesma fonte do ReviewCard) + 1 sugestão de listening.
-  // ROADMAP item 3 ("trilha de estudo"): a sugestão de conteúdo novo não é
-  // mais "sempre Vocabulary primeiro, depois American1, depois Grammar" —
-  // os 3 candidatos (1 por curso, se houver algo não visitado) são
-  // ordenados pelo % de units VISITADAS de cada curso, do mais atrasado pro
-  // mais adiantado, cruzando o progresso dos 3 em vez de tratar cada um
-  // isoladamente. Continua pegando só o 1º candidato pra "Learn something
-  // new" — o 2º slot do plano agora é uma sugestão de Listening de verdade
-  // (ver findUnpracticedListeningTrack), não mais o 2º curso desta lista.
-  const findNextUnvisitedByCourse = () => {
-    const nextVocabUnit = unitItems.find((unit) => !visitedUnits[unit.number]);
+  //
+  // "Learn something new" aponta pro PRIMEIRO item, na ordem do curso, que ainda
+  // NÃO TEM NOTA em estrelas — não mais o primeiro "não visitado" (pedido do
+  // dono, 2026-10-12). Visitar não prova nada: dá pra passar por uma unit sem
+  // atenção e seguir adiante, e aí a sugestão pulava pra longe do que ele
+  // realmente estudou. A nota garante que ele passou por ali. Caso real dele no
+  // Grammar: visitou até a 21, avaliou até a 18 — a sugestão apontava a 22, e a
+  // certa é a 19.
+  //
+  // O que conta como "tem nota", por curso:
+  //   - Vocabulary: nota da unit (tela de leitura) OU de qualquer exercício dela;
+  //   - American1: nota da SEÇÃO (o item de revisão dela, ver
+  //     readAmerican1SectionRating), não a da unit — a da unit é herdada por todas
+  //     as seções e faria a 4B parecer avaliada;
+  //   - Grammar: nota da unit;
+  //   - American Accent: nota da TELA (screen.id).
+  //
+  // A ORDEM entre cursos continua pelo % de itens VISITADOS de cada um, do mais
+  // atrasado pro mais adiantado (ROADMAP item 3) — só o ponteiro DENTRO de cada
+  // curso mudou. Trocar esse % por "% avaliado" também faria o American Accent
+  // passar à frente do Grammar com os dados atuais; ficou fora porque não foi
+  // pedido. Continua pegando só o 1º candidato pra "Learn something new" — o 2º
+  // slot do plano é uma sugestão de Listening de verdade (ver
+  // findUnpracticedListeningTrack).
+  const findNextUnratedByCourse = () => {
+    const nextVocabUnit = unitItems.find((unit) => !(
+      vocabularyUnitRatings[unit.number]
+      || (exercisesByUnit[unit.number] || []).some((id) => exerciseRatings[id])
+    ));
     let nextAmerican1 = null;
     for (const unit of american1UnitNumbers) {
       const sections = american1SectionsByUnit[unit] || [];
-      const section = sections.find((s) => !american1VisitedSections[`${unit}|${s.section}`]);
+      const section = sections.find((s) => !readAmerican1SectionRating(unit, s.section));
       if (section) {
         nextAmerican1 = { unit, section: section.section, title: section.title };
         break;
       }
     }
-    const nextGrammarElemUnit = grammarElemUnitNumbers.find((unit) => !grammarElemVisitedUnits[unit]);
-    // Por TELA (não por página solta) — é o que dá pra abrir de fato; uma
-    // tela conta como "não visitada" se qualquer uma das páginas dela ainda
-    // não foi vista.
-    const nextAmericanAccentScreen = AMERICAN_ACCENT_SCREENS.find((screen) => (
-      screen.pdfPages.some((page) => !visitedAmericanAccentPages[page])
-    ));
+    const nextGrammarElemUnit = grammarElemUnitNumbers.find((unit) => !grammarElemUnitRatings[unit]);
+    // Por TELA (não por página solta) — é o que dá pra abrir de fato, e a nota
+    // do curso é uma por tela.
+    const nextAmericanAccentScreen = AMERICAN_ACCENT_SCREENS.find((screen) => !americanAccentPageRatings[screen.id]);
 
     const candidates = [];
     if (nextVocabUnit) {
@@ -4688,7 +5064,7 @@ function App() {
   // 2º slot do "Today's Plan": a primeira faixa de Listening/Dictation (em
   // QUALQUER dos 2 cursos que têm, na ordem de LISTENING_SOURCES) que o
   // usuário nunca tentou nem em Listening nem em Dictation — antes esse slot
-  // era só o 2º candidato de findNextUnvisitedByCourse (rotulado "Practice
+  // era só o 2º candidato de findNextUnratedByCourse (rotulado "Practice
   // listening" mas na prática podia ser outra unit de LEITURA de um curso
   // diferente, não uma faixa de áudio de verdade).
   const findUnpracticedListeningTrack = () => {
@@ -4740,8 +5116,8 @@ function App() {
     ? AMERICAN_ACCENT_SCREENS.filter((screen) => (screen.topic || '').toLowerCase().includes(unitSearchNormalized))
     : [];
 
-  const unvisitedCandidates = userName ? findNextUnvisitedByCourse() : [];
-  const planNewUnit = unvisitedCandidates[0] || null;
+  const newContentCandidates = userName ? findNextUnratedByCourse() : [];
+  const planNewUnit = newContentCandidates[0] || null;
   const planListening = userName ? findUnpracticedListeningTrack() : null;
 
   // "Today's Goal" (ROADMAP item 3): 3 componentes togglináveis
@@ -4901,6 +5277,7 @@ function App() {
             <li className="side-drawer-divider" role="separator" />
             <li className="side-drawer-group-label">Learn</li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleCourses(event); setMobileMenuOpen(false); }}><IconCourses /><span>Courses</span></a></li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenUpcomingReviews(event); setMobileMenuOpen(false); }}><IconCalendar /><span>Upcoming reviews</span></a></li>
             <li className="side-drawer-divider" role="separator" />
             <li className="side-drawer-group-label">Practice</li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenListening(event); setMobileMenuOpen(false); }}><IconHeadphones /><span>Listening</span></a></li>
@@ -5141,7 +5518,7 @@ function App() {
               <div className="vocabulary-list" role="list">
                 {filteredUnitItems.map((unit) => (
                   <a key={unit.number} className="vocabulary-link" href={`#unit-${unit.number}`} onClick={(event) => handleUnitSelect(event, unit.number)}>
-                    <UnitBadgeDot status={getVocabularyUnitBadgeStatus(unit.number, Boolean(visitedUnits[unit.number]), exerciseRatings)} />
+                    <UnitBadgeDot status={getVocabularyUnitBadgeStatus(unit.number, Boolean(visitedUnits[unit.number]), exerciseRatings, vocabularyUnitRatings[unit.number] || 0)} />
                     <span>Unit {unit.number}</span>
                     <small>{unit.label}</small>
                   </a>
@@ -5190,7 +5567,7 @@ function App() {
                               href={`#unit-${unit.number}`}
                               onClick={(event) => { event.preventDefault(); openVocabularyUnit(unit.number); }}
                             >
-                              <UnitBadgeDot status={getVocabularyUnitBadgeStatus(unit.number, Boolean(visitedUnits[unit.number]), exerciseRatings)} />
+                              <UnitBadgeDot status={getVocabularyUnitBadgeStatus(unit.number, Boolean(visitedUnits[unit.number]), exerciseRatings, vocabularyUnitRatings[unit.number] || 0)} />
                               <span>Unit {unit.number}</span>
                               <small>{unit.label}</small>
                             </a>
@@ -5205,7 +5582,6 @@ function App() {
                           {filteredAmerican1UnitNumbers.map((unit) => {
                             const sections = american1SectionsByUnit[unit] || [];
                             const theme = sections.find((section) => section.section === 'A')?.title || sections[0]?.title || '';
-                            const visited = Object.keys(american1VisitedSections).some((key) => key.startsWith(`${unit}|`));
                             return (
                               <a
                                 key={`american1-${unit}`}
@@ -5213,7 +5589,7 @@ function App() {
                                 href={`#american1-unit-${unit}`}
                                 onClick={(event) => { event.preventDefault(); openAmerican1Section(unit, sections[0]?.section ?? null); }}
                               >
-                                <UnitBadgeDot status={getUnitBadgeStatus(visited, american1UnitRatings[unit] || 0)} />
+                                <UnitBadgeDot status={american1UnitAggregateStatus(unit)} />
                                 <span>Unit {unit}</span>
                                 <small>{theme}</small>
                               </a>
@@ -5254,7 +5630,7 @@ function App() {
                                 href={`#americanAccent-${screen.id}`}
                                 onClick={(event) => { event.preventDefault(); setActiveCourseId('americanAccent'); openAmericanAccentScreen(screen.id); }}
                               >
-                                <UnitBadgeDot status={screen.pdfPages.every((page) => visitedAmericanAccentPages[page]) ? 'mastered' : screen.pdfPages.some((page) => visitedAmericanAccentPages[page]) ? 'visited' : 'unvisited'} />
+                                <UnitBadgeDot status={americanAccentScreenStatus(screen)} />
                                 <span>{americanAccentPrintedPageLabel(screen)}</span>
                                 <small>{chapter ? chapter.name : ''} — {screen.topic}</small>
                               </a>
@@ -5348,34 +5724,62 @@ function App() {
           <div className="landing-panel vocabulary-page vocabulary-grid-mode">
             <h2 className="vocabulary-title">{courses.americanAccent.title}</h2>
             <span className="american-accent-intro">
-              Mastering the American Accent — pick a chapter to start reading. Progress is tracked
-              per book page, not per chapter.
+              Mastering the American Accent — open a chapter and pick a screen. Progress is tracked
+              per screen.
             </span>
             <UnitSearchBox
               value={unitSearchQuery}
               onChange={setUnitSearchQuery}
               placeholder="Search chapters... (e.g. linking)"
             />
+            <UnitBadgeLegend itemLabel="screen" />
             {unitSearchNormalized && filteredAmericanAccentChapters.length === 0 && filteredAmericanAccentScreens.length === 0 ? (
               <p className="unit-search-empty">No chapters or pages match "{unitSearchQuery}".</p>
             ) : null}
-            <div className="vocabulary-list" role="list">
+            <div className="american-accent-chapters" role="list">
               {filteredAmericanAccentChapters.map((chapter) => {
                 const chapterScreens = AMERICAN_ACCENT_SCREENS.filter((screen) => screen.chapter === chapter.id);
-                const chapterPages = chapterScreens.flatMap((screen) => screen.pdfPages);
-                const visitedCount = chapterPages.filter((page) => visitedAmericanAccentPages[page]).length;
-                const firstScreen = chapterScreens[0];
+                const ratedCount = chapterScreens.filter((screen) => americanAccentPageRatings[screen.id]).length;
+                // Recolhido por padrão, só o capítulo da próxima tela sem nota aberto
+                // (pedido do dono, 2026-10-12): são 90 telas, e aberto tudo viraria uma
+                // rolagem de 90 linhas. Quando ele mexe num capítulo, vale o que ele fez.
+                const isOpen = accentChapterOverrides[chapter.id] ?? (chapter.id === accentDefaultOpenChapter);
                 return (
-                  <a
-                    key={chapter.id}
-                    className="vocabulary-link"
-                    href={`#american-accent-chapter-${chapter.id}`}
-                    onClick={(event) => firstScreen && handleAmericanAccentScreenSelect(event, firstScreen.id)}
-                  >
-                    <UnitBadgeDot status={visitedCount === 0 ? 'unvisited' : visitedCount >= chapterPages.length ? 'mastered' : 'visited'} />
-                    <span>{chapter.name}</span>
-                    <small>{chapter.topic ? titleCase(chapter.topic) : `p. ${chapter.startPrintedPage}–${chapter.endPrintedPage}`}</small>
-                  </a>
+                  <section key={chapter.id} className="american-accent-chapter" role="listitem">
+                    <button
+                      type="button"
+                      className="american-accent-chapter-head"
+                      aria-expanded={isOpen}
+                      onClick={() => setAccentChapterOverrides((prev) => ({ ...prev, [chapter.id]: !isOpen }))}
+                    >
+                      <span className="american-accent-chapter-chevron" aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
+                      <span className="american-accent-chapter-name">{chapter.name}</span>
+                      <small className="american-accent-chapter-topic">
+                        {chapter.topic ? titleCase(chapter.topic) : `p. ${chapter.startPrintedPage}–${chapter.endPrintedPage}`}
+                      </small>
+                      {/* "avaliadas/total": com o capítulo recolhido os selos não aparecem, e
+                          sem isto o cabeçalho não diria nada do progresso dele. */}
+                      <span className="american-accent-chapter-count" title="Screens you have rated">
+                        {ratedCount}/{chapterScreens.length}
+                      </span>
+                    </button>
+                    {isOpen && (
+                      <div className="american-accent-screen-list">
+                        {chapterScreens.map((screen) => (
+                          <a
+                            key={screen.id}
+                            className="american-accent-screen-row"
+                            href={`#american-accent-${screen.id}`}
+                            onClick={(event) => handleAmericanAccentScreenSelect(event, screen.id)}
+                          >
+                            <UnitBadgeDot status={americanAccentScreenStatus(screen)} />
+                            <span className="american-accent-screen-name">{americanAccentPrintedPageLabel(screen)}</span>
+                            {screen.topic && <small>{screen.topic}</small>}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </section>
                 );
               })}
             </div>
@@ -5392,7 +5796,7 @@ function App() {
                         href={`#american-accent-${screen.id}`}
                         onClick={(event) => handleAmericanAccentScreenSelect(event, screen.id)}
                       >
-                        <UnitBadgeDot status={screen.pdfPages.every((page) => visitedAmericanAccentPages[page]) ? 'mastered' : screen.pdfPages.some((page) => visitedAmericanAccentPages[page]) ? 'visited' : 'unvisited'} />
+                        <UnitBadgeDot status={americanAccentScreenStatus(screen)} />
                         <span>{americanAccentPrintedPageLabel(screen)}</span>
                         <small>{chapter ? chapter.name : ''} — {screen.topic}</small>
                       </a>
@@ -5516,28 +5920,38 @@ function App() {
           <div className="landing-panel vocabulary-page vocabulary-grid-mode">
             <h2 className="vocabulary-title">American English A1</h2>
             <UnitSearchBox value={unitSearchQuery} onChange={setUnitSearchQuery} placeholder="Search units... (e.g. phrasal verbs)" />
-            <UnitBadgeLegend />
+            <UnitBadgeLegend itemLabel="section" />
             {filteredAmerican1UnitNumbers.length === 0 ? (
               <p className="unit-search-empty">No units match "{unitSearchQuery}".</p>
             ) : (
-              <div className="vocabulary-list" role="list">
-                {filteredAmerican1UnitNumbers.map((unit) => {
-                  const sections = american1SectionsByUnit[unit] || [];
-                  const theme = sections.find((section) => section.section === 'A')?.title || sections[0]?.title || '';
-                  const visited = Object.keys(american1VisitedSections).some((key) => key.startsWith(`${unit}|`));
-                  return (
-                    <a
-                      key={unit}
-                      className="vocabulary-link"
-                      href={`#american1-unit-${unit}`}
-                      onClick={(event) => handleAmerican1UnitSelect(event, unit)}
-                    >
-                      <UnitBadgeDot status={getUnitBadgeStatus(visited, american1UnitRatings[unit] || 0)} />
-                      <span>Unit {unit}</span>
-                      <small>{theme}</small>
-                    </a>
-                  );
-                })}
+              <div className="american1-unit-groups" role="list">
+                {filteredAmerican1UnitNumbers.map((unit) => (
+                  <section key={unit} className="american1-unit-group" role="listitem" aria-label={`Unit ${unit}`}>
+                    <h3 className="american1-unit-group-title">Unit {unit}</h3>
+                    {/* Uma linha por SEÇÃO (1A, 1B, 1C, Practical English Episode 1...), cada
+                        uma com o próprio selo — pedido do dono, 2026-10-12. Só a APRESENTAÇÃO
+                        e a contagem mudam: clicar abre a mesma tela de leitura de sempre, com
+                        as abas A/B/C/especial. */}
+                    {(american1SectionsByUnit[unit] || []).map((section) => {
+                      // A/B/C ficam coladas no número ("2A"), igual ao resto do app; as seções
+                      // especiais já têm título próprio ("Practical English Episode 1",
+                      // "Review and Check 1&2") e colar o nome daria "2Review and Check".
+                      const isLetter = /^[A-C]$/.test(section.section);
+                      return (
+                        <a
+                          key={section.section}
+                          className="american1-section-row"
+                          href={`#american1-unit-${unit}-${section.section}`}
+                          onClick={(event) => { event.preventDefault(); openAmerican1Section(unit, section.section); }}
+                        >
+                          <UnitBadgeDot status={american1SectionStatus(unit, section.section)} />
+                          <span className="american1-section-name">{isLetter ? `${unit}${section.section}` : section.title}</span>
+                          {isLetter && <small>{section.title}</small>}
+                        </a>
+                      );
+                    })}
+                  </section>
+                ))}
               </div>
             )}
           </div>
@@ -6116,8 +6530,9 @@ function App() {
                   hasAnswers={Boolean(answersUrl)}
                   showAnswers={showAmerican1Answers}
                   onToggleAnswers={() => setShowAmerican1Answers((prev) => !prev)}
-                  rating={american1UnitRatings[selectedAmerican1Unit] || 0}
+                  rating={readAmerican1SectionRating(selectedAmerican1Unit, activeSection?.section)}
                   onRate={(value) => handleRateAmerican1Unit(selectedAmerican1Unit, value)}
+                  ratingScope="section"
                 />
               </div>
             </aside>
@@ -6938,7 +7353,7 @@ function App() {
             </div>
             <p className="landing-meta">
               Your Score: <strong>{american1ScorePercent !== null ? `${american1ScorePercent}%` : '—'}</strong>
-              {' '}({american1RatingValues.length} unit{american1RatingValues.length === 1 ? '' : 's'} self-rated)
+              {' '}({american1RatingValues.length} section{american1RatingValues.length === 1 ? '' : 's'} self-rated)
               {' '}· Progress: <strong>{american1ProgressPercent}%</strong>
             </p>
             {expandedProfileCourses.american1 && (
@@ -7026,7 +7441,7 @@ function App() {
             </div>
             <p className="landing-meta">
               Your Score: <strong>{americanAccentScorePercent !== null ? `${americanAccentScorePercent}%` : '—'}</strong>
-              {' '}({americanAccentRatingValues.length} page{americanAccentRatingValues.length === 1 ? '' : 's'} self-rated)
+              {' '}({americanAccentRatingValues.length} screen{americanAccentRatingValues.length === 1 ? '' : 's'} self-rated)
               {' '}· Progress: <strong>{americanAccentProgressPercent}%</strong>
             </p>
             {expandedProfileCourses.americanAccent && (
@@ -7156,7 +7571,7 @@ function App() {
       ) : activePage === 'dashboard' ? (() => {
         // Progress Dashboard: resumo só-leitura, lido na hora do render (não
         // memoizado) — mesmo estilo do resto do arquivo (ratingValues,
-        // unvisitedCandidates etc. também recalculam a cada render). Fica
+        // newContentCandidates etc. também recalculam a cada render). Fica
         // dentro de uma IIFE (mesmo padrão de american1-unit/listening-tracks
         // logo abaixo) só pra poder calcular essas listas locais antes do
         // JSX, sem virar mais um punhado de consts soltos no corpo de App().
@@ -7203,7 +7618,17 @@ function App() {
             />
           </main>
         );
-      })() : activePage === 'register' ? (
+      })() : activePage === 'upcoming-reviews' ? (
+        // Mesmo contêiner do Progress (fundo desfocado + painel claro opaco): é uma tela
+        // de consulta, só-leitura, e herda de graça o tema e a rolagem dele. Lida na hora
+        // do render, do localStorage, como o resto da revisão.
+        <main className="landing-page vocabulary-mode dashboard-mode">
+          <UpcomingReviewsPage
+            schedule={buildUpcomingReviewSchedule(loadActiveReviewEntries(userName))}
+            onOpenItem={handleOpenReviewItem}
+          />
+        </main>
+      ) : activePage === 'register' ? (
         <main className="landing-page">
           <div className="landing-panel register-panel">
             <p className="eyebrow">Welcome</p>
@@ -7559,7 +7984,9 @@ function UnitSearchBox({ value, onChange, placeholder }) {
   );
 }
 
-function UnitBadgeLegend() {
+// `itemLabel`: o que cada selo representa ("unit" nas grades de unit, "section" no
+// American1, "screen" no American Accent) — o texto de ajuda dizia sempre "unit".
+function UnitBadgeLegend({ itemLabel = 'unit' }) {
   const [showInfo, setShowInfo] = useState(false);
 
   return (
@@ -7582,13 +8009,17 @@ function UnitBadgeLegend() {
         </button>
         {showInfo && (
           <div className="unit-badge-legend-info-popover" role="tooltip">
-            <p><strong>Not visited</strong> — you haven't opened this unit yet.</p>
+            <p><strong>Not visited</strong> — you haven't opened this {itemLabel} yet.</p>
             <p><strong>Visited</strong> — opened, but not self-rated yet.</p>
             <p><strong>Rated</strong> — self-rated at least once, below the maximum.</p>
-            <p>
-              <strong>Mastered</strong> — rated 5★. For Vocabulary (rated per exercise, not
-              per unit), every exercise in the unit must be rated 5★.
-            </p>
+            {itemLabel === 'unit' ? (
+              <p>
+                <strong>Mastered</strong> — rated 5★. For Vocabulary (rated per exercise, not
+                per unit), every exercise in the unit must be rated 5★.
+              </p>
+            ) : (
+              <p><strong>Mastered</strong> — this {itemLabel} is rated 5★.</p>
+            )}
           </div>
         )}
       </span>
@@ -7756,9 +8187,10 @@ function TodayPlanCard({ newUnit, listening, words, reviewQueue, onOpenReviewIte
 // cumprido — texto tem que casar com a lógica real (markDailyGoalDone e o
 // hook em scheduleReview), senão a explicação engana o usuário.
 const DAILY_GOAL_EXPLANATIONS = {
-  newUnit: 'You get this the first time today that you open a unit you\'ve never visited '
-    + 'before, in any of the 3 courses (English Vocabulary B, American English A1, or '
-    + 'Grammar English A1). Reopening a unit you already visited doesn\'t count.',
+  newUnit: 'You get this the first time today that you give a star rating to a unit, '
+    + 'section or page you hadn\'t rated before, in any of the 4 courses — that\'s how you '
+    + 'finish the one Today\'s Plan suggests. Just opening it doesn\'t count, and neither does '
+    + 'rating something again later.',
   reviews: 'Two ways to get this. Either re-rate a course item that was already due for '
     + 'spaced review — find them in the "Review" line of Today\'s Plan above (Home) or in the '
     + '"Today\'s Review" card on the Courses screen, open one and give it a new star rating '
@@ -7899,6 +8331,98 @@ const reviewItemLabel = (item) => {
 // Card "Today's Review" (Home e Courses): lista os itens autoavaliados cuja
 // revisão espaçada venceu + o atalho pros flashcards vencidos do "My Words".
 // Some por completo quando não há nada a revisar — a Home continua limpa.
+const UPCOMING_WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+// "Fri 06/11" (e o ano só quando não é o corrente).
+const formatUpcomingDate = (dayMs) => {
+  const date = new Date(dayMs);
+  const pad = (n) => String(n).padStart(2, '0');
+  const year = date.getFullYear() === new Date().getFullYear() ? '' : `/${date.getFullYear()}`;
+  return `${UPCOMING_WEEKDAYS[date.getDay()]} ${pad(date.getDate())}/${pad(date.getMonth() + 1)}${year}`;
+};
+
+const formatUpcomingRelative = (dayMs, todayMs) => {
+  const diff = Math.round((dayMs - todayMs) / DAY_MS);   // round: dia de horário de verão tem 23/25h
+  if (diff <= 0) return 'Today';
+  if (diff === 1) return 'Tomorrow';
+  return `In ${diff} days`;
+};
+
+// Página "Upcoming reviews": TODOS os itens de revisão que ainda vão voltar, já na
+// ordem em que vão aparecer (ver buildUpcomingReviewSchedule), cada um com a nota em
+// estrelas e a data da próxima aparição. Só-leitura; clicar abre o item.
+function UpcomingReviewsPage({ schedule, onOpenItem }) {
+  const todayMs = startOfLocalDayMs(Date.now());
+  const days = [];
+  schedule.forEach((entry, index) => {
+    const last = days[days.length - 1];
+    const row = { ...entry, position: index + 1 };
+    if (last && last.day === entry.appearsOn) last.items.push(row);
+    else days.push({ day: entry.appearsOn, items: [row] });
+  });
+
+  return (
+    <div className="landing-panel dashboard-panel upcoming-panel">
+      <p className="eyebrow">Spaced review</p>
+      <h1>Upcoming reviews</h1>
+      <p>
+        Every unit, section and page that will come back for review, in the order it will show up.
+      </p>
+      {schedule.length === 0 ? (
+        <p className="upcoming-empty">
+          Nothing is scheduled yet. Rate a unit, section or page and it will appear here.
+        </p>
+      ) : (
+        <>
+          <p className="upcoming-summary">
+            <strong>{schedule.length}</strong> item{schedule.length === 1 ? '' : 's'} scheduled
+            {' '}· next: <strong>{formatUpcomingRelative(schedule[0].appearsOn, todayMs)}</strong>
+            {' '}({formatUpcomingDate(schedule[0].appearsOn)})
+          </p>
+          <p className="upcoming-note">
+            Estimated: at most {REVIEW_DAILY_CAP} items show up per day, lowest rating first, so items due
+            on the same day are spread over the next days. It assumes you review what appears each day.
+            My Words flashcards are scheduled separately.
+          </p>
+          {days.map((group) => (
+            <section key={group.day} className="upcoming-day">
+              <h2 className="upcoming-day-title">
+                <span className="upcoming-day-relative">{formatUpcomingRelative(group.day, todayMs)}</span>
+                <span className="upcoming-day-date">{formatUpcomingDate(group.day)}</span>
+                <span className="upcoming-day-count">
+                  {group.items.length} item{group.items.length === 1 ? '' : 's'}
+                </span>
+              </h2>
+              <ol className="upcoming-list">
+                {group.items.map((entry) => {
+                  const label = reviewItemLabel(entry);
+                  const stars = Math.max(0, Math.min(5, Number(entry.rating) || 0));
+                  return (
+                    <li key={`${entry.course}:${entry.id}`}>
+                      <button type="button" className="upcoming-row" onClick={() => onOpenItem(entry)}>
+                        <span className="upcoming-pos">{entry.position}</span>
+                        <span className="upcoming-main">
+                          <span className="upcoming-title">{label.title}</span>
+                          <span className="upcoming-sub">{label.subtitle}</span>
+                        </span>
+                        <span className="upcoming-stars" role="img" aria-label={`${stars} of 5 stars`}>
+                          {'★'.repeat(stars)}
+                          <span className="upcoming-stars-off">{'★'.repeat(5 - stars)}</span>
+                        </span>
+                        <span className="upcoming-date">{formatUpcomingDate(entry.appearsOn)}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ol>
+            </section>
+          ))}
+        </>
+      )}
+    </div>
+  );
+}
+
 function ReviewCard({ items, dueWordsCount, onOpenItem, onOpenWords, embedded }) {
   if (items.length === 0 && dueWordsCount === 0) {
     return null;
@@ -11704,6 +12228,7 @@ function UnitNotes({
   onToggleAnswers,
   rating,
   onRate,
+  ratingScope = 'unit',
 }) {
   const editorRef = useRef(null);
   // 'idle' | 'saved' (pisca depois de gravar) | 'error' (fica até a próxima
@@ -11943,8 +12468,8 @@ function UnitNotes({
 
       {onRate && (
         <div className="rating-field">
-          <span>Self-evaluation for this unit</span>
-          <div className="rating-stars" role="radiogroup" aria-label="Rate your own performance on this unit, from 1 to 5 stars">
+          <span>Self-evaluation for this {ratingScope}</span>
+          <div className="rating-stars" role="radiogroup" aria-label={`Rate your own performance on this ${ratingScope}, from 1 to 5 stars`}>
             {[1, 2, 3, 4, 5].map((value) => (
               <button
                 key={value}
