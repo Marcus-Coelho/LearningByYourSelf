@@ -455,15 +455,11 @@ u:<nome>:unit-rating:<unit>        — número 1-5, autoavaliação da UNIT inte
 # American English A1
 u:<nome>:american1-visitedUnits    — array de "<unit>|<section>"
 u:<nome>:american1-rating:<id>     — número 1-5
-u:<nome>:american1-review-section:<unit> — "A"/"B"/"C"/"Practical English"/"Review and Check":
-                                      qual SEÇÃO estava aberta quando a unit foi avaliada.
-                                      SÓ PRA RÓTULO (2026-09-29): a fila dizia "Unit 4" sem
-                                      contar se era a 4A, a 4C ou o Practical English. O
-                                      agendamento é o mesmo de sempre (review:american1:<unit>,
-                                      uma entrada por unit) — esta chave não entra em cálculo
-                                      nenhum, só no texto do item e em qual seção ele abre.
-                                      Prefixo próprio, então precisa ser apagada à parte nos
-                                      dois resets do curso
+                                      (`american1-review-section:<unit>` existiu entre
+                                      2026-09-29 e 2026-10-12 como rótulo; foi SUBSTITUÍDA pela
+                                      revisão por seção — ver abaixo — e é apagada pela
+                                      migração. Os dois resets do curso ainda limpam o prefixo,
+                                      pra quem não abriu a fila desde então)
 u:<nome>:notes:american1:<unit>    — string
 
 # Grammar English A1
@@ -478,13 +474,65 @@ u:<nome>:americanAccent-rating:<screenId> — número 1-5, autoavaliação por T
 u:<nome>:notes:americanAccent:<screenId> — string, notas da tela
 
 # Revisão espaçada / My Words (compartilhado entre os 4 cursos)
-u:<nome>:review:<curso>:<id>       — JSON {rating, ratedAt, due}
+u:<nome>:review:<curso>:<id>       — JSON {rating, ratedAt, due, streak, retired}
+                                      **American1: o id é "<unit>|<seção>"** (2026-10-12), não
+                                      o número da unit. Antes havia UMA entrada por unit, então
+                                      avaliar a 2B sobrescrevia a da 2A e a fila dizia só
+                                      "Unit 2" — nos dados do dono isso aparecia como 20 seções
+                                      estudadas e 5 itens de revisão. A tentativa de 2026-09-29
+                                      (chave de rótulo à parte) NOMEAVA mas não SEPARAVA.
+                                      `migrateAmerican1ReviewSections` converte as entradas
+                                      antigas uma única vez (usa a chave de rótulo quando
+                                      existe, senão "A") — sem ela a entrada velha ficaria
+                                      vencida pra sempre ao lado da nova. A nota em estrelas
+                                      CONTINUA por unit (`american1-rating:<unit>`, que o badge
+                                      da grade e o "Your Score" leem); o que virou por seção é
+                                      só o agendamento
+                                      `streak` = acertos SEGUIDOS com 5★ e `retired` = passou
+                                      dos 4 degraus (2026-10-12). Entrada antiga não tem os
+                                      dois campos: entra no 1º degrau, sem migração
                                       Só unit/seção/tela — NUNCA exercício (decisão do dono,
                                       2026-09-13: enchia a fila com "Exercise 9.1…9.4").
                                       Avaliar exercício não agenda mais; chaves antigas
                                       "review:vocabulary:<exercício>" são ignoradas por
                                       loadDueReviews (EXERCISE_REVIEW_COURSE), não apagadas.
                                       "review:vocabulary-unit:" é a unit e continua valendo
+                                      **Intervalo CRESCE com acerto seguido**
+                                      (REVIEW_STREAK_LADDER_DAYS = [30, 45, 90, 180], números
+                                      escolhidos pelo dono em 2026-10-12): 5★ sobe um degrau,
+                                      qualquer nota abaixo ZERA e volta pro intervalo curto de
+                                      REVIEW_INTERVALS_BY_RATING. Passar do último degrau
+                                      APOSENTA (`retired`), e loadDueReviews ignora — são 4
+                                      aparições em ~11 meses e nunca mais. Motivo: nota 5 era
+                                      sempre 30 dias, na 1ª e na 10ª vez, e como a carga é
+                                      "itens ÷ intervalo" com o total só crescendo, as revisões
+                                      comiam o tempo de avançar (medido no backup do dono: 51
+                                      itens = 2,6/dia; o material todo daria 10,6/dia PARA
+                                      SEMPRE). **Reavaliar traz de volta** — a entrada do
+                                      aposentado continua gravada.
+                                      NÃO fazer o inverso (deixar de inscrever o item na
+                                      rotação): o dono foi explícito que todo curso precisa ser
+                                      revisto; o que muda é só o ritmo de saída.
+                                      **Teto de 6 por dia** (REVIEW_DAILY_CAP) é só de
+                                      EXIBIÇÃO, no ReviewCard — `reviewQueue.length` segue
+                                      sendo o total pro Progress Dashboard (mesma separação do
+                                      My Words entre sessionQueue e dueEntries). O que não for
+                                      revisado continua vencido e volta amanhã; a ordem é por
+                                      mais atrasado primeiro, então o atraso nunca fura a fila.
+                                      O card NÃO mostra o total da fila nem quantos ficaram de
+                                      fora (pedido do dono, 2026-10-12): anunciar "14 items"
+                                      com teto de 6 só devolvia o peso que o teto existe pra
+                                      tirar. `.review-card-count` e `.review-more` foram
+                                      removidos do JSX e do CSS — não recriar.
+                                      Toda nota de curso passa por scheduleReview, que agora
+                                      CONFIRMA na tela (2026-10-12): "Rated 5★ — done for
+                                      today. Back in 30 days." quando o item estava vencido,
+                                      ou "next review in N days" quando não estava. Motivo:
+                                      clicar na estrela JÁ marcada sempre reagendou (o botão
+                                      não tem trava), mas nada mudava visualmente, então o
+                                      dono dava 4 estrelas e voltava pra 5 só pra ver algo
+                                      acontecer. O aviso reusa o `wasDue` que já existia ali
+                                      pra meta diária
 u:<nome>:wordbook                  — array JSON de palavras + flashcards ({id, word, meaning,
                                       example, context, image, createdAt, step, due,
                                       lastGrade, lastGradedAt, lastIntervalDays}).

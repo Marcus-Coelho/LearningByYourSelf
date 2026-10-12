@@ -140,6 +140,31 @@ const AUDIO_SPEEDS = [0.5, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 2];
 const DAY_MS = 24 * 60 * 60 * 1000;
 const REVIEW_INTERVALS_BY_RATING = { 1: 1, 2: 2, 3: 3, 4: 7, 5: 30 };
 
+// Escada de acertos SEGUIDOS com 5★ (números escolhidos pelo dono, 2026-10-12).
+//
+// Antes, nota 5 era sempre 30 dias — na 1ª vez e na 10ª. Como a carga diária é
+// "itens avaliados ÷ intervalo", e o total de itens só cresce conforme ele
+// estuda, as revisões comiam cada vez mais o tempo de avançar: medido no
+// backup dele, 51 itens davam ~2,6/dia, e avaliar o material todo (317) daria
+// ~10,6/dia PARA SEMPRE. Agora o que ele acerta seguidamente se afasta sozinho.
+//
+// Passar do último degrau APOSENTA o item (ver `retired`): são 4 aparições ao
+// longo de ~11 meses e nunca mais. Qualquer nota abaixo de 5 significa que não
+// lembrou bem — zera a escada e o item volta à rotação normal.
+//
+// NÃO confundir com "não inscrever o item" (a ideia (f) da discussão): o dono
+// foi explícito que todo curso precisa entrar na rotação; o que muda é só o
+// ritmo com que sai dela.
+const REVIEW_STREAK_LADDER_DAYS = [30, 45, 90, 180];
+
+// Teto do que a fila MOSTRA por dia (pedido do dono: "no máximo 6"). O que não
+// for revisado hoje continua vencido e reaparece amanhã, e como a ordenação é
+// por mais atrasado primeiro (ver loadDueReviews), o atraso nunca fura a fila.
+// O teto é só de EXIBIÇÃO — `reviewQueue.length` segue sendo o total de verdade
+// pro Dashboard e pro contador do card, mesma separação que o My Words já faz
+// entre `sessionQueue` (25) e `dueEntries`.
+const REVIEW_DAILY_CAP = 6;
+
 // Chave do dia local (não UTC — `toISOString` viraria o dia cedo demais/tarde
 // demais dependendo do fuso) usada pra "Today's Goal" (ver DailyGoalCard) —
 // cada dia novo já nasce com a chave `dailyGoal:<data>` inexistente, ou seja,
@@ -446,6 +471,47 @@ const migrateLegacyDataToUser = (name) => {
 // chaves "review:vocabulary:<exercício>" que já estavam gravadas, sem apagar
 // dado nenhum. Não confundir com 'vocabulary-unit', que é a unit inteira.
 const EXERCISE_REVIEW_COURSE = 'vocabulary';
+
+// Migração única: "review:american1:<unit>" -> "review:american1:<unit>|<seção>"
+// (2026-10-12, quando a revisão do American1 passou a ser por seção).
+//
+// Sem ela, a entrada velha da unit continuaria vencida PARA SEMPRE ao lado da
+// nova da seção: reavaliar a 2A grava em "2|A" e nunca mais toca em "2", que
+// ficaria na fila como "Unit 2" sem jeito de sair.
+//
+// Qual seção atribuir: a que a tentativa anterior gravou em
+// `american1-review-section:<unit>` (só existe pras avaliadas depois de
+// 2026-09-29) e, na falta dela, "A" — a primeira, que é pra onde o item já
+// abria quando não se sabia a seção. A nota e a data são preservadas.
+const migrateAmerican1ReviewSections = (name) => {
+  try {
+    const prefix = userKey(name, 'review:american1:');
+    const legacy = [];
+    for (let i = 0; i < window.localStorage.length; i += 1) {
+      const key = window.localStorage.key(i);
+      if (key && key.startsWith(prefix) && !key.slice(prefix.length).includes('|')) {
+        legacy.push(key);
+      }
+    }
+    legacy.forEach((key) => {
+      const unit = key.slice(prefix.length);
+      const value = window.localStorage.getItem(key);
+      if (value === null) return;
+      const section = window.localStorage.getItem(userKey(name, `american1-review-section:${unit}`)) || 'A';
+      const target = `${prefix}${unit}|${section}`;
+      // Nunca sobrescrever uma entrada por seção que já exista: ela é mais
+      // recente que a da unit inteira.
+      if (window.localStorage.getItem(target) === null) {
+        window.localStorage.setItem(target, value);
+      }
+      window.localStorage.removeItem(key);
+      window.localStorage.removeItem(userKey(name, `american1-review-section:${unit}`));
+    });
+  } catch (error) {
+    // Armazenamento indisponível — segue com as chaves como estão.
+  }
+};
+
 const loadDueReviews = (name) => {
   const due = [];
   try {
@@ -464,23 +530,16 @@ const loadDueReviews = (name) => {
       } catch (error) {
         continue;
       }
+      // `retired`: passou os 4 degraus da REVIEW_STREAK_LADDER_DAYS acertando
+      // 5★ seguidas. Sai da fila pra sempre, até ser reavaliado na mão.
+      if (entry && entry.retired) continue;
       if (entry && typeof entry.due === 'number' && entry.due <= now) {
         const course = remainder.slice(0, separator);
         const id = remainder.slice(separator + 1);
-        const item = { course, id, rating: entry.rating, due: entry.due };
-        // Seção do American1 gravada só pra rótulo (ver handleRateAmerican1Unit):
-        // a fila dizia "Unit 4" sem contar se era a 4A, a 4C ou o Practical
-        // English. Lida aqui, não no reviewItemLabel, porque aquele é uma função
-        // de módulo que não conhece o usuário ativo.
-        if (course === 'american1') {
-          try {
-            const section = window.localStorage.getItem(userKey(name, `american1-review-section:${id}`));
-            if (section) item.section = section;
-          } catch (error) {
-            // Sem seção gravada — o rótulo cai no "Unit N" de sempre.
-          }
-        }
-        due.push(item);
+        // A seção do American1 vem DENTRO do id ("<unit>|<seção>"), então não
+        // há mais chave companheira pra consultar aqui (ver
+        // migrateAmerican1ReviewSections).
+        due.push({ course, id, rating: entry.rating, due: entry.due });
       }
     }
   } catch (error) {
@@ -1983,6 +2042,10 @@ function App() {
       setReviewQueue([]);
       return;
     }
+    // Roda antes de montar a fila: converte as entradas antigas do American1
+    // (por unit) em entradas por seção. É idempotente — depois da 1ª vez não
+    // encontra mais nenhuma chave sem "|" e não faz nada.
+    migrateAmerican1ReviewSections(userName);
     setReviewQueue(loadDueReviews(userName));
   }, [userName, activePage]);
 
@@ -1991,7 +2054,6 @@ function App() {
   // REVIEW_INTERVALS_BY_RATING).
   const scheduleReview = (course, id, rating) => {
     if (!userName) return;
-    const days = REVIEW_INTERVALS_BY_RATING[rating] || 7;
     const storageKey = userKey(userName, `review:${course}:${id}`);
     // "Clear today's reviews" (DailyGoalCard) só conta quando o item
     // reavaliado JÁ estava vencido — reavaliar algo que nunca esteve vencido
@@ -2006,22 +2068,74 @@ function App() {
     // vencida, e "Clear today's reviews" nunca marcava mesmo reavaliando o
     // item certo (bug real, reportado pelo dono, 2026-07-24).
     let wasDue = false;
+    let prevStreak = 0;
     try {
       const raw = window.localStorage.getItem(storageKey);
       if (raw) {
         const existing = JSON.parse(raw);
         wasDue = typeof existing.due === 'number' && existing.due <= Date.now();
+        // Item gravado antes de 2026-10-12 não tem `streak` — entra no 1º
+        // degrau, sem migração. Nada se perde: ele só demora 4 acertos a mais
+        // pra se aposentar.
+        prevStreak = typeof existing.streak === 'number' ? existing.streak : 0;
       }
     } catch (error) {
       // Armazenamento indisponível — trata como não vencido, sem quebrar o resto.
     }
+
+    // Só 5★ sobe a escada; qualquer nota abaixo disso zera (não lembrou bem,
+    // volta pro intervalo curto de REVIEW_INTERVALS_BY_RATING).
+    const streak = rating === 5 ? prevStreak + 1 : 0;
+    const retired = streak > REVIEW_STREAK_LADDER_DAYS.length;
+    const days = rating === 5
+      ? (REVIEW_STREAK_LADDER_DAYS[streak - 1] || REVIEW_STREAK_LADDER_DAYS[REVIEW_STREAK_LADDER_DAYS.length - 1])
+      : (REVIEW_INTERVALS_BY_RATING[rating] || 7);
+    let saved = false;
     try {
       window.localStorage.setItem(
         storageKey,
-        JSON.stringify({ rating, ratedAt: Date.now(), due: Date.now() + days * DAY_MS }),
+        JSON.stringify({
+          rating,
+          ratedAt: Date.now(),
+          due: Date.now() + days * DAY_MS,
+          streak,
+          // Aposentado: loadDueReviews ignora. A entrada CONTINUA gravada (a
+          // nota alimenta o progresso do curso) e reavaliar a unit a qualquer
+          // momento a traz de volta — com nota < 5 ela volta pro começo.
+          retired,
+        }),
       );
+      saved = true;
     } catch (error) {
       // Armazenamento indisponível — sem agendamento de revisão.
+    }
+    if (!saved) {
+      showToast("Couldn't save this rating — your browser storage may be full.", 'error');
+      return;
+    }
+    // Confirmação VISÍVEL do reagendamento (pedido do dono, 2026-10-12).
+    //
+    // Clicar na estrela que já está marcada sempre funcionou — o botão não tem
+    // trava, então reavaliar com a MESMA nota reagenda igual. Só que nada na
+    // tela mudava (5 estrelas antes, 5 estrelas depois), então não dava pra
+    // saber se tinha registrado: o dono passou a dar 4 estrelas, salvar e
+    // voltar pra 5 só pra ver alguma coisa acontecer. O aviso mata esse truque.
+    //
+    // Dizer "done for today" quando o item ESTAVA vencido é o ponto principal:
+    // é a resposta pra "revisei, por que continua na lista?". Reusa o `wasDue`
+    // que já era calculado aqui pra meta diária.
+    const dayLabel = days === 1 ? '1 day' : `${days} days`;
+    if (retired) {
+      // Fim da escada: vale dizer que acabou, senão o sumiço definitivo
+      // pareceria o item ter se perdido.
+      showToast(`Rated ${rating}★ — you've got this one. It won't come back for review.`, 'success');
+    } else {
+      showToast(
+        wasDue
+          ? `Rated ${rating}★ — done for today. Back in ${dayLabel}.`
+          : `Rated ${rating}★ — next review in ${dayLabel}.`,
+        'success',
+      );
     }
     if (wasDue) {
       markDailyGoalDone('reviews');
@@ -2117,22 +2231,22 @@ function App() {
     setAmerican1UnitRatings((prev) => ({ ...prev, [unit]: value }));
     try {
       window.localStorage.setItem(userKey(userName, `american1-rating:${unit}`), String(value));
-      // Qual SEÇÃO estava aberta quando a nota foi dada. Chave separada e
-      // só pra EXIBIÇÃO (pedido do dono, 2026-09-29: "unidade 4" na fila de
-      // revisão não diz se é a 4A, a 4C ou o Practical English). O
-      // agendamento continua exatamente como era — mesma chave
-      // "review:american1:<unit>", mesma nota, mesmo intervalo: esta chave
-      // não entra em nenhum cálculo, só no rótulo do item.
-      if (selectedAmerican1Section) {
-        window.localStorage.setItem(
-          userKey(userName, `american1-review-section:${unit}`),
-          String(selectedAmerican1Section),
-        );
-      }
     } catch (error) {
       // Armazenamento indisponível — a nota fica só nesta sessão.
     }
-    scheduleReview('american1', unit, value);
+    // Revisão por SEÇÃO, não pela unit inteira (pedido do dono, 2026-10-12).
+    //
+    // Antes o id era só o número da unit, então havia UMA entrada por unit:
+    // avaliar a 2B sobrescrevia a da 2A, e a fila dizia "Unit 2" sem contar
+    // qual parte. Nos dados dele isso era visível — 20 seções estudadas e só
+    // 5 itens de revisão. A tentativa anterior (2026-09-29) gravava a seção
+    // numa chave à parte só pro rótulo, o que nomeava mas não SEPARAVA.
+    //
+    // A nota em estrelas continua por UNIT (`american1-rating:<unit>`): é o
+    // que o badge da grade e o "Your Score" leem, e toda seção da unit herda
+    // a mesma (ver american1Statuses). O que passou a ser por seção é o
+    // AGENDAMENTO.
+    scheduleReview('american1', `${unit}|${selectedAmerican1Section || 'A'}`, value);
   };
 
   const american1RatingValues = Object.values(american1UnitRatings);
@@ -3303,14 +3417,16 @@ function App() {
   // estudado (e reavaliado — é a reavaliação que agenda a próxima repetição).
   const handleOpenReviewItem = (item) => {
     if (item.course === 'american1') {
-      const unit = Number(item.id);
+      // id = "<unit>|<seção>" (ver handleRateAmerican1Unit); entrada antiga só
+      // tem o número e cai na primeira seção.
+      const [unitPart, sectionPart] = String(item.id).split('|');
+      const unit = Number(unitPart);
       const sections = american1SectionsByUnit[unit] || [];
       if (sections.length === 0) return;
       setSelectedAmerican1Unit(unit);
       // Abre a MESMA seção que o rótulo promete (ver reviewItemLabel) — mandar
-      // pra seção A depois de dizer "Unit 4C" abriria no lugar errado. Sem
-      // seção gravada, mantém o comportamento antigo (a primeira).
-      const wanted = sections.find((s) => s.section === item.section);
+      // pra seção A depois de dizer "Unit 4C" abriria no lugar errado.
+      const wanted = sections.find((s) => s.section === sectionPart);
       setSelectedAmerican1Section(wanted?.section ?? sections[0]?.section ?? null);
       setShowAmerican1Answers(false);
       setActiveCourseId('american1');
@@ -4126,9 +4242,10 @@ function App() {
     }
     setAmerican1UnitRatings({});
     removeLocalStorageKeysWithPrefix('american1-rating:');
-    // Prefixo PROPRIO: "american1-review-section:" nao casa com
-    // "american1-rating:", entao sem esta linha o reset deixaria para tras o
-    // rotulo de secao de notas que ja nao existem.
+    // LEGADO: a secao hoje mora dentro do id da revisao ("<unit>|<secao>"), mas
+    // a chave antiga pode ter sobrado em quem nao abriu a tela desde entao (a
+    // migracao so roda ao carregar a fila). Prefixo proprio, nao casa com
+    // "american1-rating:", entao precisa da linha dedicada.
     removeLocalStorageKeysWithPrefix('american1-review-section:');
     removeLocalStorageKeysWithPrefix('review:american1:');
   };
@@ -4153,9 +4270,10 @@ function App() {
       // Armazenamento indisponível.
     }
     removeLocalStorageKeysWithPrefix('american1-rating:');
-    // Prefixo PROPRIO: "american1-review-section:" nao casa com
-    // "american1-rating:", entao sem esta linha o reset deixaria para tras o
-    // rotulo de secao de notas que ja nao existem.
+    // LEGADO: a secao hoje mora dentro do id da revisao ("<unit>|<secao>"), mas
+    // a chave antiga pode ter sobrado em quem nao abriu a tela desde entao (a
+    // migracao so roda ao carregar a fila). Prefixo proprio, nao casa com
+    // "american1-rating:", entao precisa da linha dedicada.
     removeLocalStorageKeysWithPrefix('american1-review-section:');
     removeLocalStorageKeysWithPrefix('review:american1:');
     removeLocalStorageKeysWithPrefix('notes:american1');
@@ -7693,14 +7811,16 @@ const reviewItemLabel = (item) => {
   if (item.course === 'american1') {
     // "Unit 4A" quando a seção é A/B/C (é assim que o livro chama), e
     // "Unit 4 · Practical English" quando a seção tem nome próprio — juntar
-    // daria "Unit 4Practical English". Sem seção gravada (nota anterior a
-    // 2026-09-29), cai no "Unit 4" de antes.
-    const section = item.section;
-    const letter = section && /^[A-C]$/.test(section);
-    const entry = (american1SectionsByUnit[Number(item.id)] || [])
-      .find((s) => s.section === section);
+    // daria "Unit 4Practical English". O id é "<unit>|<seção>" desde
+    // 2026-10-12; entrada antiga (só o número) cai no "Unit 4" de antes.
+    const [unit, section] = String(item.id).split('|');
+    const isLetter = Boolean(section) && /^[A-C]$/.test(section);
+    const entry = (american1SectionsByUnit[Number(unit)] || []).find((s) => s.section === section);
+    let title = `Unit ${unit}`;
+    if (isLetter) title = `Unit ${unit}${section}`;
+    else if (section) title = `Unit ${unit} · ${section}`;
     return {
-      title: letter ? `Unit ${item.id}${section}` : (section ? `Unit ${item.id} · ${section}` : `Unit ${item.id}`),
+      title,
       subtitle: entry?.title ? `American English A1 — ${entry.title}` : 'American English A1',
     };
   }
@@ -7740,20 +7860,22 @@ const reviewItemLabel = (item) => {
 // revisão espaçada venceu + o atalho pros flashcards vencidos do "My Words".
 // Some por completo quando não há nada a revisar — a Home continua limpa.
 function ReviewCard({ items, dueWordsCount, onOpenItem, onOpenWords, embedded }) {
-  const MAX_SHOWN = 8;
   if (items.length === 0 && dueWordsCount === 0) {
     return null;
   }
-  const shown = items.slice(0, MAX_SHOWN);
-  const hiddenCount = items.length - shown.length;
+  // Teto de EXIBIÇÃO (ver REVIEW_DAILY_CAP): o resto não some, só espera —
+  // segue vencido e aparece amanhã, e como a fila vem ordenada por mais
+  // atrasado primeiro, o que ficou pra trás vem na frente.
+  const shown = items.slice(0, REVIEW_DAILY_CAP);
 
   return (
     <section className={`review-card${embedded ? ' review-card--embedded' : ''}`} aria-label="Today's review">
+      {/* Sem contador do TOTAL da fila (pedido do dono, 2026-10-12): com o teto
+          de 6, anunciar "14 items" só mostrava um tamanho que ele não vai
+          vencer hoje — exatamente o peso que o teto existe pra tirar. O total
+          continua no Progress Dashboard, que é tela de estatística. */}
       <div className="review-card-head">
         <h2>Today's Review</h2>
-        <span className="review-card-count">
-          {items.length + (dueWordsCount > 0 ? 1 : 0)} item{items.length + (dueWordsCount > 0 ? 1 : 0) === 1 ? '' : 's'}
-        </span>
       </div>
       <p className="review-card-hint">
         Revisit what you studied before you forget it — after reviewing, rate the item again to
@@ -7792,9 +7914,9 @@ function ReviewCard({ items, dueWordsCount, onOpenItem, onOpenWords, embedded })
           </button>
         )}
       </div>
-      {hiddenCount > 0 && (
-        <p className="review-more">…and {hiddenCount} more waiting after these.</p>
-      )}
+      {/* Nada sobre o que ficou de fora, pelo mesmo motivo do contador acima:
+          o resto não some, volta amanhã (mais atrasado primeiro), e dizer isso
+          só devolve o peso da fila que o teto tinha acabado de tirar. */}
     </section>
   );
 }
