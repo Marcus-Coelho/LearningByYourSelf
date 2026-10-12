@@ -493,9 +493,17 @@ u:<nome>:review:<curso>:<id>       — JSON {rating, ratedAt, due, streak, retir
                                       dois campos: entra no 1º degrau, sem migração
                                       Só unit/seção/tela — NUNCA exercício (decisão do dono,
                                       2026-09-13: enchia a fila com "Exercise 9.1…9.4").
-                                      Avaliar exercício não agenda mais; chaves antigas
-                                      "review:vocabulary:<exercício>" são ignoradas por
-                                      loadDueReviews (EXERCISE_REVIEW_COURSE), não apagadas.
+                                      Avaliar exercício não agenda mais, e as chaves antigas
+                                      "review:vocabulary:<exercício>" foram APAGADAS de vez em
+                                      2026-10-12 (cleanupExerciseReviewKeys, autorizado pelo
+                                      dono — eram 68 nos dados dele, inertes desde 09-13 mas
+                                      viajando em todo backup). A limpeza roda ao carregar a
+                                      fila, é idempotente, e o prefixo TEM que terminar em
+                                      dois-pontos: "review:vocabulary-unit:" não casa com
+                                      "review:vocabulary:" (o caractere seguinte é "-"), senão
+                                      levaria junto a revisão por unit. A NOTA do exercício
+                                      (`rating:<exercício>`, outro prefixo) fica intacta — é
+                                      ela que alimenta o "Your Score".
                                       "review:vocabulary-unit:" é a unit e continua valendo
                                       **Intervalo CRESCE com acerto seguido**
                                       (REVIEW_STREAK_LADDER_DAYS = [30, 45, 90, 180], números

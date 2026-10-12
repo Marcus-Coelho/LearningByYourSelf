@@ -472,6 +472,33 @@ const migrateLegacyDataToUser = (name) => {
 // dado nenhum. Não confundir com 'vocabulary-unit', que é a unit inteira.
 const EXERCISE_REVIEW_COURSE = 'vocabulary';
 
+// Apaga de vez os agendamentos por EXERCÍCIO do Vocabulary (2026-10-12,
+// autorizado pelo dono). Em 2026-09-13 eles pararam de ser criados e passaram
+// a ser ignorados pela fila, mas as entradas existentes ficaram no disco —
+// 68 no caso dele — viajando em todo backup sem ninguém ler.
+//
+// Apaga SÓ o agendamento. A NOTA do exercício mora noutra chave
+// (`rating:<exercício>`, sem o "review:") e continua intacta — é ela que
+// alimenta o "Your Score", então o score não muda.
+//
+// O prefixo tem que terminar em DOIS-PONTOS: "review:vocabulary-unit:8" (a
+// revisão por UNIT, que continua valendo) não casa com "review:vocabulary:",
+// porque o caractere seguinte é "-" e não ":". Sem esse cuidado, a limpeza
+// levaria junto as revisões de unit do curso inteiro.
+const cleanupExerciseReviewKeys = (name) => {
+  try {
+    const prefix = userKey(name, `review:${EXERCISE_REVIEW_COURSE}:`);
+    const dead = [];
+    for (let i = 0; i < window.localStorage.length; i += 1) {
+      const key = window.localStorage.key(i);
+      if (key && key.startsWith(prefix)) dead.push(key);
+    }
+    dead.forEach((key) => window.localStorage.removeItem(key));
+  } catch (error) {
+    // Armazenamento indisponível — tenta de novo no próximo carregamento.
+  }
+};
+
 // Migração única: "review:american1:<unit>" -> "review:american1:<unit>|<seção>"
 // (2026-10-12, quando a revisão do American1 passou a ser por seção).
 //
@@ -2046,6 +2073,9 @@ function App() {
     // (por unit) em entradas por seção. É idempotente — depois da 1ª vez não
     // encontra mais nenhuma chave sem "|" e não faz nada.
     migrateAmerican1ReviewSections(userName);
+    // Também idempotente: na 1ª vez apaga os agendamentos por exercício que
+    // sobraram de 2026-09-13, depois não acha mais nada.
+    cleanupExerciseReviewKeys(userName);
     setReviewQueue(loadDueReviews(userName));
   }, [userName, activePage]);
 
