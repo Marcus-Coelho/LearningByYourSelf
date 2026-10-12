@@ -165,6 +165,10 @@ const REVIEW_STREAK_LADDER_DAYS = [30, 45, 90, 180];
 // entre `sessionQueue` (25) e `dueEntries`.
 const REVIEW_DAILY_CAP = 6;
 
+// Quanto tempo a confirmação de nota ("Rated 5★…") fica na tela. Máximo de 1s,
+// pedido do dono (2026-10-12) — vale pras duas variantes da mensagem.
+const RATING_TOAST_MS = 1000;
+
 // Chave do dia local (não UTC — `toISOString` viraria o dia cedo demais/tarde
 // demais dependendo do fuso) usada pra "Today's Goal" (ver DailyGoalCard) —
 // cada dia novo já nasce com a chave `dailyGoal:<data>` inexistente, ou seja,
@@ -1701,10 +1705,15 @@ function App() {
   // valendo pra abrir showDirectoryPicker()/requestPermission() logo depois.
   const [toast, setToast] = useState(null);
   const toastTimeoutRef = useRef(null);
-  const showToast = (message, tone = 'info') => {
+  // `durationMs` é opcional: o padrão (4,5s) serve pros avisos que o usuário
+  // PRECISA ler — erro de gravação, backup importado, "já está no My Words".
+  // A confirmação de nota ("Rated 5★…") passa 1000 (pedido do dono,
+  // 2026-10-12): ela só existe pra dizer "registrou", e ficar 4,5s no meio da
+  // tela atrapalhava quem avalia vários itens seguidos.
+  const showToast = (message, tone = 'info', durationMs = 4500) => {
     if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
     setToast({ message, tone, id: Date.now() });
-    toastTimeoutRef.current = setTimeout(() => setToast(null), 4500);
+    toastTimeoutRef.current = setTimeout(() => setToast(null), durationMs);
   };
   // Tema claro/escuro (ver THEME_KEY no topo). Aplicado no <html>, não numa
   // div do app: o CSS do tema redefine tokens em :root, e o :root É o <html>.
@@ -2158,13 +2167,14 @@ function App() {
     if (retired) {
       // Fim da escada: vale dizer que acabou, senão o sumiço definitivo
       // pareceria o item ter se perdido.
-      showToast(`Rated ${rating}★ — you've got this one. It won't come back for review.`, 'success');
+      showToast(`Rated ${rating}★ — you've got this one. It won't come back for review.`, 'success', RATING_TOAST_MS);
     } else {
       showToast(
         wasDue
           ? `Rated ${rating}★ — done for today. Back in ${dayLabel}.`
           : `Rated ${rating}★ — next review in ${dayLabel}.`,
         'success',
+        RATING_TOAST_MS,
       );
     }
     if (wasDue) {

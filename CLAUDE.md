@@ -540,7 +540,13 @@ u:<nome>:review:<curso>:<id>       — JSON {rating, ratedAt, due, streak, retir
                                       não tem trava), mas nada mudava visualmente, então o
                                       dono dava 4 estrelas e voltava pra 5 só pra ver algo
                                       acontecer. O aviso reusa o `wasDue` que já existia ali
-                                      pra meta diária
+                                      pra meta diária. Fica **1 segundo** na tela
+                                      (RATING_TOAST_MS, pedido do dono, 2026-10-12): showToast
+                                      ganhou um 3º parâmetro opcional `durationMs`, e SÓ a
+                                      confirmação de nota passa 1000. Os outros avisos seguem
+                                      nos 4,5s de antes de propósito — erro de gravação, backup
+                                      importado e "já está no My Words" precisam ser lidos, e
+                                      em 1s ficariam ilegíveis
 u:<nome>:wordbook                  — array JSON de palavras + flashcards ({id, word, meaning,
                                       example, context, image, createdAt, step, due,
                                       lastGrade, lastGradedAt, lastIntervalDays}).
