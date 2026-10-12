@@ -15,6 +15,29 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$SCRIPT_DIR/meu-leitor-pdf"
 PORT=3000
 
+# Busca atualizacao antes de subir o servidor. O tablet e um clone PROPRIO: o
+# que e feito no PC so chega aqui pelo GitHub, e ate 2026-10-12 isso exigia um
+# "git pull" na mao no Termux - o app ficava numa versao velha sem avisar (foi
+# assim que o titulo antigo da aba sobreviveu no tablet depois de corrigido no
+# PC).
+#
+# Tres cuidados pra isso NUNCA impedir o app de abrir, que e o que importa
+# aqui (o "set -e" la em cima derrubaria o script num comando que falha):
+#   - "|| echo" em volta, entao falha de rede/sem internet so imprime um aviso;
+#   - "--ff-only": se o clone do tablet tiver commit proprio ou divergir, NAO
+#     tenta merge nem rebase sozinho - desiste e avisa, pra nao criar conflito
+#     no meio de uma sessao de estudo;
+#   - so roda se existir git E for mesmo um clone (.git), pra uma copia solta
+#     de arquivos continuar funcionando igual.
+#
+# Dependencia nova no package.json ainda pede "npm install" na mao - o teste
+# abaixo so cobre a primeira execucao, quando nao ha node_modules nenhum.
+if command -v git >/dev/null 2>&1 && [ -d "$SCRIPT_DIR/.git" ]; then
+  echo "Procurando atualizacoes..."
+  git -C "$SCRIPT_DIR" pull --ff-only \
+    || echo ">>> Nao deu pra atualizar agora - seguindo com a versao que ja esta aqui."
+fi
+
 cd "$PROJECT_DIR"
 
 if [ ! -d node_modules ]; then
