@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -)",
+      "Bash(sed -i 's/unvisitedCandidates etc\\\\. também recalculam/newContentCandidates etc. também recalculam/' App.js)",
+      "Bash(node -e ' *)"
+    ]
+  }
+}
