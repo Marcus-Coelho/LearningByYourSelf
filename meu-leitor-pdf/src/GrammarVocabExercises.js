@@ -286,6 +286,10 @@ function WrittenExerciseBlock({ block, index, total, savedAnswers, onCheck, onRe
     return initial;
   });
   const [showUnit, setShowUnit] = useState(false);
+  // "Hint" (pedido do dono, 2026-10-13, SÓ nos Similar Exercises — os cards de
+  // múltipla escolha não têm): revela a resposta do PRIMEIRO item do bloco
+  // antes de checar. Liga/desliga, só estado local, não conta como acerto.
+  const [showHint, setShowHint] = useState(false);
 
   const values = checked ? savedAnswers : drafts;
   const filledCount = block.items.filter((item) => (values[item.id] || '').trim()).length;
@@ -322,7 +326,7 @@ function WrittenExerciseBlock({ block, index, total, savedAnswers, onCheck, onRe
       </div>
 
       <ol className="gve-block-items">
-        {block.items.map((item) => {
+        {block.items.map((item, itemIndex) => {
           const value = values[item.id] || '';
           const isCorrect = isWrittenAnswerCorrect(item, value);
           let stateClass = '';
@@ -346,6 +350,9 @@ function WrittenExerciseBlock({ block, index, total, savedAnswers, onCheck, onRe
               {checked && !isCorrect && (
                 <span className="gve-item-answer">{item.answers.join(' / ')}</span>
               )}
+              {!checked && showHint && itemIndex === 0 && (
+                <span className="gve-item-answer">Hint: {item.answers.join(' / ')}</span>
+              )}
             </li>
           );
         })}
@@ -368,6 +375,16 @@ function WrittenExerciseBlock({ block, index, total, savedAnswers, onCheck, onRe
               Try again
             </button>
           </>
+        )}
+        {!checked && (
+          <button
+            type="button"
+            className={`gve-unit-toggle-btn${showHint ? ' is-active' : ''}`}
+            aria-pressed={showHint}
+            onClick={() => setShowHint((value) => !value)}
+          >
+            Hint
+          </button>
         )}
         <button type="button" className="gve-unit-toggle-btn" onClick={() => setShowUnit((value) => !value)}>
           {showUnit ? 'Hide unit' : 'Show unit'}

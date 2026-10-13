@@ -340,6 +340,19 @@
   color: var(--brand-text);
 }
 
+/* Botão liga/desliga (Hint): apertado fica preenchido, igual ao Hide solved. */
+.gve-unit-toggle-btn.is-active {
+  background: var(--brand-600);
+  border-color: var(--brand-600);
+  color: #fff;
+}
+
+.gve-unit-toggle-btn.is-active:hover {
+  background: var(--brand-500);
+  border-color: var(--brand-500);
+  color: #fff;
+}
+
 /* ==== Seção "Similar Exercises from Grammar Elementary" (write-in) ====
    Um bloco = um exercício inteiro do livro (instrução + 6-10 itens), não um
    card por pergunta como nas 2 seções de múltipla escolha — ver comentário

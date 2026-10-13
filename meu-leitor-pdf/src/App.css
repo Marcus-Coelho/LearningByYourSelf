@@ -2943,13 +2943,17 @@ body {
 }
 
 /* Palavra certa exibida ao lado da lacuna quando "Show answers" está ativo
-   — não mexe no que o usuário digitou, só mostra a resposta ao lado. */
+   — não mexe no que o usuário digitou, só mostra a resposta ao lado.
+   VERDE (pedido do dono, 2026-10-13): em índigo ela era a mesma cor do que o
+   usuário digitou (.listening-blank-input), então "visit visit" parecia uma
+   palavra repetida e não "o que eu escrevi" + "a resposta". Verde = resposta
+   certa, igual ao resto do app (exceção deliberada da paleta, ver item 8). */
 .listening-answer-hint {
   margin: 0 2px;
   padding: 1px 6px;
   border-radius: 6px;
-  background: rgba(96, 103, 240, 0.14);
-  color: var(--brand-text);
+  background: rgba(22, 163, 74, 0.16);
+  color: var(--success-text);
   font-size: 12px;
   font-weight: 700;
 }
