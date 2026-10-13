@@ -577,8 +577,12 @@ module.exports = function (app) {
       res.status(400).json({ error: 'Missing question' });
       return;
     }
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
+    // Aceita mais de uma chave (outro projeto do Google = cota diária própria):
+    // GEMINI_API_KEY, GEMINI_API_KEY_2, GEMINI_API_KEY_3...
+    const apiKey = ['GEMINI_API_KEY', 'GEMINI_API_KEY_2', 'GEMINI_API_KEY_3']
+      .map((name) => String(process.env[name] || '').trim())
+      .filter(Boolean);
+    if (apiKey.length === 0) {
       res.status(500).json({ error: 'GEMINI_API_KEY not set — see meu-leitor-pdf/.env.local' });
       return;
     }
@@ -592,6 +596,12 @@ module.exports = function (app) {
       const answer = await askGrammarQuestion(question, apiKey, previousExchange, image);
       res.json({ answer });
     } catch (error) {
+      // Sem este log o motivo real (chave inválida, cota, rede) sumia: o cliente só vê a frase genérica.
+      console.error('[ask-grammar]', error && error.message);
+      if (error && error.statusCode === 429) {
+        res.status(429).json({ error: 'Adele reached the free daily limit of questions. Try again tomorrow.' });
+        return;
+      }
       res.status(502).json({ error: 'Could not reach Gemini right now. Please try again.' });
     }
   });

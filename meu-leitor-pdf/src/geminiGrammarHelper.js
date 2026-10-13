@@ -14,7 +14,17 @@ const https = require('https');
 // quando uma versão fixa é descontinuada (testado: `gemini-2.5-flash`
 // parou de aceitar contas novas pouco depois de virar a recomendação nas
 // buscas, `gemini-flash-latest` continuou funcionando).
-const GEMINI_MODEL = 'gemini-flash-latest';
+//
+// O limite gratuito é por PROJETO e por MODELO ("GenerateRequestsPerDayPerProjectPerModel",
+// 20/dia no flash — medido em 2026-10-12), então cada modelo tem a própria cota.
+// Por isso é uma LISTA em ordem de preferência: estourou um (429) ou saiu do ar (404),
+// a mesma pergunta segue pro próximo. Os "lite" foram testados e respondem (200).
+// Troca/ordem por `GEMINI_MODELS` no .env.local (ids separados por vírgula).
+const DEFAULT_MODELS = ['gemini-flash-latest', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
+const getModels = () => {
+  const fromEnv = String(process.env.GEMINI_MODELS || '').split(',').map((m) => m.trim()).filter(Boolean);
+  return fromEnv.length > 0 ? fromEnv : DEFAULT_MODELS;
+};
 const MAX_QUESTION_CHARS = 500;
 const MAX_PREVIOUS_ANSWER_CHARS = 2000;
 
@@ -37,11 +47,11 @@ const SYSTEM_INSTRUCTION = [
   'Answer in English. If the question is not related to learning English, politely say you can only help with English language questions.',
 ].join(' ');
 
-const requestGemini = (payload, apiKey) => new Promise((resolve, reject) => {
+const requestGemini = (payload, apiKey, model) => new Promise((resolve, reject) => {
   const body = JSON.stringify(payload);
   const req = https.request({
     hostname: 'generativelanguage.googleapis.com',
-    path: `/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
+    path: `/v1beta/models/${model}:generateContent?key=${apiKey}`,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
   }, (res) => {
@@ -49,7 +59,9 @@ const requestGemini = (payload, apiKey) => new Promise((resolve, reject) => {
     res.on('data', (chunk) => { data += chunk; });
     res.on('end', () => {
       if (res.statusCode !== 200) {
-        reject(new Error(`Gemini request failed: ${res.statusCode} ${data.slice(0, 300)}`));
+        const failure = new Error(`Gemini request failed: ${res.statusCode} ${data.slice(0, 300)}`);
+        failure.statusCode = res.statusCode;
+        reject(failure);
         return;
       }
       try {
@@ -63,6 +75,47 @@ const requestGemini = (payload, apiKey) => new Promise((resolve, reject) => {
   req.write(body);
   req.end();
 });
+
+// O tier gratuito responde 503 ("high demand") de forma INTERMITENTE — medido em
+// 2026-10-12: a mesma pergunta dava 200, 200, 200, 503 em sequência. Sem nova
+// tentativa, qualquer pico virava "Could not get an answer".
+// Repete só o que é transitório (503/500/504 e erro de rede, que não tem
+// statusCode). NÃO repete 429: o limite do plano gratuito é de 20 pedidos POR DIA
+// por modelo, e repetir não resolve (só gasta). Chave inválida (400/403) também
+// falha na hora.
+const RETRYABLE_STATUS = new Set([500, 503, 504]);
+const MAX_ATTEMPTS = 3;
+const requestGeminiWithRetry = async (payload, apiKey, model) => {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return await requestGemini(payload, apiKey, model);
+    } catch (error) {
+      const transient = !error.statusCode || RETRYABLE_STATUS.has(error.statusCode);
+      if (!transient || attempt >= MAX_ATTEMPTS) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+    }
+  }
+};
+
+// Percorre modelo × chave (chave dentro do modelo: outro projeto tem cota própria).
+// Só 429 (cota) e 404 (modelo aposentado) passam pra próxima combinação; qualquer
+// outro erro (chave inválida, 400) para na hora, porque trocar de modelo não resolve.
+// `apiKeys` aceita string ou lista (GEMINI_API_KEY, GEMINI_API_KEY_2...).
+const requestGeminiAnyModel = async (payload, apiKeys) => {
+  const keys = [].concat(apiKeys).filter(Boolean);
+  let lastError = null;
+  for (const model of getModels()) {
+    for (const key of keys) {
+      try {
+        return await requestGeminiWithRetry(payload, key, model);
+      } catch (error) {
+        lastError = error;
+        if (error.statusCode !== 429 && error.statusCode !== 404) throw error;
+      }
+    }
+  }
+  throw lastError;
+};
 
 // Converte a data URL que o navegador manda ("data:image/jpeg;base64,...")
 // no formato inlineData que a API do Gemini espera. Devolve null se não for
@@ -100,7 +153,7 @@ async function askGrammarQuestion(question, apiKey, previousExchange, image) {
     contents,
     systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
   };
-  const data = await requestGemini(payload, apiKey);
+  const data = await requestGeminiAnyModel(payload, apiKey);
   const text = (data?.candidates?.[0]?.content?.parts || [])
     .map((part) => part.text || '')
     .join('')

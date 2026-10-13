@@ -3736,7 +3736,10 @@ function App() {
       setAskAiStatus('idle');
     } catch (error) {
       setAskAiStatus('error');
-      setAskAiErrorMessage('Could not get an answer right now. Please try again.');
+      // O servidor manda frase própria pro limite diário (429); o resto fica genérico.
+      setAskAiErrorMessage(error && /daily limit/.test(error.message)
+        ? error.message
+        : 'Could not get an answer right now. Please try again.');
     }
   };
 
