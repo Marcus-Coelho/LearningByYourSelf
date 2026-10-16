@@ -164,6 +164,52 @@ pras 4 telas acima pegarem sozinhas.
   que o app já entende (`A:`/`B:`, ver stripDictationSpeakerLabel) — o livro usa "a."/"b.".
   Essas faixas **não têm pontos de auto-pause** (`dictation_pause_points.json` cobre só as 53
   da Wave 1), então no Dictation o toggle de auto-pause não aparece nelas.
+- **Faixas 84 e 85 acrescentadas a pedido (2026-10-16), total 122**: 84 "Word Pairs for Practice" (p. 26,
+  /æ/ x /ə/: 14 pares em duas colunas) e 85 "Word Pairs in Sentences" (7 frases). **Pares em duas
+  colunas são um formato que os outros "Word Pairs" nunca tiveram** (todos são lista de frases de
+  uma coluna): o áudio lê UMA PALAVRA por trecho, com ~1,4 s de pausa, então a 84 tem 28 itens (ankle,
+  uncle, bat, but...) e não 14 pares — texto na ordem e nas pausas do áudio. A 85 usa `targetWords` (as 14
+  palavras em negrito do livro: cop/cap, stuff/staff...) pela mesma regra dos pares mínimos. As duas
+  TÊM pontos de pausa (calculados com o detector depois do cabeçalho falado), ao contrário das outras
+  da Wave 2. Os `number` das faixas seguintes subiram 2 (a 88 virou n. 47). Das 390 faixas do
+  livro só 122 estavam no Listening. **Correção (2026-10-16): isso NÃO era "decisão de escopo"** — a seleção era por NOME DE ARQUIVO
+  ("Word Pairs", "Practice Sentences"...) e deixou passar exercícios (ex. a 348 "Sentences linking AN"). Hoje são 200 faixas; as 189 restantes
+  estão classificadas na conversa de 2026-10-16: ~111 são explicação/abertura/depoimento/excluídas pelo dono, mas **78 PODEM ser exercício e não foram
+  verificadas** (listas numeradas e textos de prática).
+- **Faixas acrescentadas em 2026-10-16 (de 122 para 200) — regras que valem para elas**:
+  1. Ordem de leitura de tabelas medida por reconhecimento restrito (por linha, por coluna ou "por metades" nas de 4 colunas), nunca pela ordem do PDF.
+  2. Campos de faixa novos em `listening_american_accent.json`: `targetWords` (lacunas forçadas), `blankAllTargets` (força lacuna até em palavra curta/stopword),
+     `plainSentences` (índices de frases SEM lacuna, ex. a nota da 314), `showSpeakerLabels` (rótulo "Mike:" visível no Listening, 319 e 342).
+  3. Texto entre parênteses (ex. "A: Did you do it? (curious)", 341) fica visível no Listening, nunca vira lacuna e NÃO é cobrado no Dictation/Speaking (`stripSpokenOnlyText`).
+  4. `DICTATION_LABEL_COLON_RE` aceita apóstrofo ("Mary's Answering Machine:").
+  5. Pontos de pausa: todas as faixas têm; os das Waves antigas foram calculados pelo ritmo do áudio (silêncio >= 0,85 s, após o cabeçalho falado). Parágrafos
+     e diálogos lidos em trechos têm mais pontos que frases — é esperado.
+  6. Marcas de ligação do livro (`y`/`w` coladas: "yare", "wupset", "wI") foram removidas das faixas 361/362; não reintroduzir.
+  7. A busca do curso acha por número de página impresso e por tipo de exercício (`displayTopic`, derivado do nome do arquivo de áudio) **e pelo número da faixa** ("track 125", "t125", "faixa 125"; só "125" vale para página E faixa).
+- **Rodada de 2026-10-16 (de 200 para 262 faixas): exercícios que a seleção por nome de arquivo tinha deixado de fora.** Texto extraído do PDF
+  (itens numerados na ordem do NÚMERO; pares como "w1, w2"; tabelas "sounds like" no formato da 378 — palavras da tabela em branco, só o rótulo visível,
+  `targetWords` + `blankAllTargets`), pausas pelos silêncios do áudio com início do corpo achado por reconhecimento restrito. **Fora, de propósito:**
+  "Vowel Sound - X", "Review ...", explicações, aberturas de capítulo, depoimentos de aluno, poemas, 286/368/370-372/330/293 (a pedido do dono).
+  252, 373 e 374 entraram depois, com texto/imagens passados pelo dono, em GRUPOS por subtítulo (prefixo / "Practice with Contractions: will" etc.) com o subtítulo
+  SEMPRE visível: campo novo `visiblePrefix` (lista, uma string por frase; o início da frase fica fora das lacunas — `buildListeningSentenceModel`). 257 foi ignorada por pedido dele. **Excluídas depois, também a pedido dele: 340 (intonation, p. 113), 230 ("it's / that's…", p. 71) e 4 (gráfico das 15 vogais, p. 3) — não reintroduzir; estão excluídas a pedido dele.**
+  **Tela do leitor 127–128 unida** (`american_accent_index.json`, edição manual documentada): `page-134` virou p. 126–128 (tracks 373-375) e `page-136` deixou de existir
+  (a 374 começa na p. 127 e termina na 128); o índice agora tem 89 telas, não 90. **Depois**, a tela `page-130` (p. 122–125) foi DIVIDIDA a pedido do dono: `page-130` ficou só com a p. 122 (tracks 360-362) e nasceu `page-131` (p. 123–125, tracks 363-372, topic "Contractions") — total 90 telas de novo. As faixas 361/362/366/367 que diziam "(p. 122–125)" passaram a mostrar a página real. Formato do arquivo: indent 1 + CRLF — preservar ao regravar.
+  (A lista de conferência visual `VERIFICACAO_AMERICAN_ACCENT.txt` foi APAGADA a pedido do dono em 2026-10-16; a confiança "baixa" de uma faixa nova nunca foi erro provado — o reconhecimento de voz erra palavras soltas.)
+  Faixas com `plainSentences`/`showSpeakerLabels`/parênteses seguem as regras acima.
+- **Botão "Listening" no leitor do American Accent** (ao lado de Previous/Next Page, 2026-10-16, SÓ esse curso — o dono vai avaliar antes de levar aos outros): abre direto o exercício de Listening da PRIMEIRA faixa da página que existe no Listening (`findAccentListeningTrack`); desabilitado se a página não tem nenhuma. Na busca do curso, cada cartão mostra as faixas da tela e, numa busca numérica, "matches page N / track N".
+- **Listas de palavras acrescentadas (2026-10-16), total 177** (+55: a 82 "3 Ways to pronounce O" e as
+  demais "Word Pairs"/"Words for Practice"/"Word Contrasts"/"Practice Words"/"Word Groups"/"Quick
+  Review"; sem `targetWords`). **A ORDEM em que o áudio lê a tabela NÃO é a da leitura do PDF e varia
+  por formato** — foi medida com reconhecimento restrito (só as palavras da faixa) por trecho de
+  silêncio >= 0,30 s, comparando 5 hipóteses por LCS: (a) por LINHA (a maioria dos de 3-5 colunas,
+  258-263, 191, 240, 247, 82); (b) por COLUNA (103, 109, 120, 134, 136, 140, 185...); (c)
+  **por METADE**: tabelas de 4 colunas "palavra par" (Quick Review 11/19/24/29/35/40/45, 115, 170,
+  183, 209, 224, 234) leem primeiro as 2 colunas da esquerda linha a linha e DEPOIS as 2 da direita.
+  Cabeçalho de coluna só entra quando o áudio o fala (106 "ER, EAR..."; 120 "final p..."). Enunciados
+  falados ("Stressed o = ...") não entram no texto. **Ficaram de fora, de propósito: 152, 365, 378,
+  389, 390** (estrutura mista, ordem não resolvida). Pontos de pausa: o detector com a pausa mínima
+  reduzida até dar >= (itens - 1) pontos, mantendo os últimos (pula o cabeçalho falado) — nas listas
+  em pares falados juntos há menos pontos que itens (224, 262).
 - **Dictation/Listening/Speaking Wave 1** (53 faixas, `listening_american_accent.json`, dentro
   de `LISTENING_SOURCES` — aparece nos 3 automaticamente): texto das "Practice Sentences"/
   "Sentence Pairs for Practice"/"Sentences for Practice" extraído do PDF (âncora do selo

@@ -2867,6 +2867,7 @@ body {
 }
 
 .listening-sentence-text {
+  white-space: pre-line; /* respeita quebras de linha nas frases em grupos (ex. faixa 242) */
   flex: 1 1 320px;
   color: var(--text-primary);
   line-height: 1.5;
@@ -2956,7 +2957,8 @@ body {
   border-radius: 6px;
   background: rgba(22, 163, 74, 0.16);
   color: var(--success-text);
-  font-size: 12px;
+  /* mesmo tamanho do texto da frase e do que o aluno digita (era 12px fixo) */
+  font-size: inherit;
   font-weight: 700;
 }
 

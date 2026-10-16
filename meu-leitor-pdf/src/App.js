@@ -1231,6 +1231,33 @@ AMERICAN_ACCENT_SCREENS.forEach((screen) => {
     if (!AMERICAN_ACCENT_SCREEN_ID_BY_TRACK[trackNumber]) AMERICAN_ACCENT_SCREEN_ID_BY_TRACK[trackNumber] = screen.id;
   });
 });
+// 25 das 90 telas não têm subtítulo no índice (`topic`). Pra elas (e pra busca em TODAS) o conteúdo é
+// derivado dos NOMES dos arquivos de áudio das faixas da tela ("Sentence Pairs For Practice-He's a bald
+// man" -> "Sentence Pairs For Practice"): é o que o livro chama cada exercício. Não mexe no índice gerado.
+const accentTrackTypeFromFile = (file) => {
+  const base = String(file).replace(/\.mp3$/i, '').replace(/^\d+\s*/, '').replace(/_/g, ' ').replace(/voiced-less/i, 'Voiceless').trim();
+  const parts = base.split(/\s*-\s*/);
+  const type = /^chapter \d+$/i.test(parts[0]) && parts[1] ? parts[1] : parts[0];
+  // Erros de digitação / sobras nos nomes dos arquivos de áudio do livro.
+  return type
+    .replace(/^warning\b.*$/i, 'Warning')
+    .replace(/^practice with contractions\b.*$/i, 'Practice With Contractions')
+    .replace(/^wordpairs$/i, 'Word Pairs')
+    .replace(/^dialgogues\b/i, 'Dialogues')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+AMERICAN_ACCENT_SCREENS.forEach((screen) => {
+  const seen = new Set();
+  const types = [];
+  (screen.tracks || []).forEach((trackNumber) => {
+    const type = accentTrackTypeFromFile(AMERICAN_ACCENT_TRACK_FILES[String(trackNumber)] || '');
+    if (type && !seen.has(type.toLowerCase())) { seen.add(type.toLowerCase()); types.push(type); }
+  });
+  screen.contentSearchText = types.join(' ').toLowerCase();
+  // `topic` do índice quando existe; senão os tipos de exercício da tela (até 3, "…" se houver mais).
+  screen.displayTopic = screen.topic || (types.length > 3 ? `${types.slice(0, 3).join(' · ')} …` : types.join(' · '));
+});
 const AMERICAN_ACCENT_ALL_PDF_PAGES = AMERICAN_ACCENT_SCREENS.flatMap((screen) => screen.pdfPages);
 const americanAccentScreenAudioUrl = (trackNumber) => (
   `/american-accent-audio/${encodeURIComponent(AMERICAN_ACCENT_TRACK_FILES[String(trackNumber)] || '')}`
@@ -1240,6 +1267,12 @@ const americanAccentScreenPdfUrl = (screen) => `/american-accent-pages/${screen.
 // ("THE VOWEL SOUNDS") — convertido pra Title Case só pra exibição, sem
 // mexer no dado gerado.
 const titleCase = (text) => text.toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
+// "Track 112" / "Tracks 112–118": as faixas de áudio da tela (aparece nos resultados da busca).
+const americanAccentTracksLabel = (screen) => {
+  const tracks = (screen.tracks || []).slice().sort((x, y) => x - y);
+  if (tracks.length === 0) return '';
+  return tracks.length === 1 ? `Track ${tracks[0]}` : `Tracks ${tracks[0]}–${tracks[tracks.length - 1]}`;
+};
 const americanAccentPrintedPageLabel = (screen) => {
   const pages = screen.printedPages;
   return pages.length > 1 ? `p. ${pages[0]}–${pages[pages.length - 1]}` : `p. ${pages[0]}`;
@@ -1425,7 +1458,7 @@ function collectAllNotesEntries(userName) {
             kind: 'americanAccent-page',
             screenId,
             page: screen.pdfPages[0],
-            title: `American Accent — ${americanAccentPrintedPageLabel(screen)}${screen.topic ? ` - ${screen.topic}` : ''}`,
+            title: `American Accent — ${americanAccentPrintedPageLabel(screen)}${screen.displayTopic ? ` - ${screen.displayTopic}` : ''}`,
             html,
           });
         }
@@ -3683,6 +3716,29 @@ function App() {
     setActivePage('listening-exercise');
   };
 
+  // Botão "Listening" do leitor do American Accent: primeira faixa DA PÁGINA que existe no Listening
+  // (nem toda faixa do livro está lá). Só este curso, por enquanto (pedido do dono, 2026-10-16).
+  const findAccentListeningTrack = (screen) => {
+    const source = LISTENING_SOURCES.find((item) => item.id === 'americanAccent');
+    if (!source || !screen) return null;
+    const trackNumbers = (screen.tracks || []).slice().sort((x, y) => x - y);
+    for (const trackNumber of trackNumbers) {
+      const found = source.tracks.find((item) => item.trackNumber === trackNumber);
+      if (found) return { source, track: found };
+    }
+    return null;
+  };
+
+  const handleOpenAccentListeningFromScreen = (screen) => {
+    const target = findAccentListeningTrack(screen);
+    if (!target) return;
+    setSelectedListeningSource(target.source.id);
+    setListeningSearchQuery('');
+    setHideMasteredListening(false);
+    setSelectedListeningTrack(target.track.id);
+    setActivePage('listening-exercise');
+  };
+
   // "Next Listening": pula pro próximo exercício da MESMA fonte (a ordem de
   // `tracks` no JSON já é a ordem "number" exibida), sem passar pela lista.
   const handleNextListeningTrack = () => {
@@ -5165,7 +5221,7 @@ function App() {
     if (nextAmericanAccentScreen) {
       candidates.push({
         courseId: 'americanAccent',
-        label: `${americanAccentPrintedPageLabel(nextAmericanAccentScreen)}${nextAmericanAccentScreen.topic ? `: ${nextAmericanAccentScreen.topic}` : ''}`,
+        label: `${americanAccentPrintedPageLabel(nextAmericanAccentScreen)}${nextAmericanAccentScreen.displayTopic ? `: ${nextAmericanAccentScreen.displayTopic}` : ''}`,
         sublabel: 'American Accent',
         onOpen: () => openAmericanAccentScreen(nextAmericanAccentScreen.id),
       });
@@ -5232,8 +5288,28 @@ function App() {
       || (chapter.topic || '').toLowerCase().includes(unitSearchNormalized)
     ))
     : AMERICAN_ACCENT_CHAPTERS;
+  // Também por NÚMERO DE PÁGINA do livro ("46", "p. 46", "page 46"): a tela que
+  // contém essa página impressa (screen.printedPages) — até então só achava por conteúdo.
+  const accentPageQuery = unitSearchNormalized.match(/^(?:p(?:ag(?:e)?)?\.?\s*)?(\d{1,3})$/);
+  const accentSearchPage = accentPageQuery ? Number(accentPageQuery[1]) : null;
+  // Também pelo NÚMERO DA FAIXA ("track 125", "t125", "faixa 125"); só o número ("125") vale pra página E pra faixa.
+  const accentPageOnly = /^(?:p(?:ag(?:e)?)?\.?\s*)\d{1,3}$/.test(unitSearchNormalized);
+  const accentTrackQuery = unitSearchNormalized.match(/^(?:(?:track|trk|faixa|t)\.?\s*#?\s*|#)(\d{1,3})$/) || (accentPageOnly ? null : unitSearchNormalized.match(/^(\d{1,3})$/));
+  const accentSearchTrack = accentTrackQuery ? Number(accentTrackQuery[1]) : null;
+  // Por que a tela apareceu quando a busca é um número: "página 112" e/ou "track 112".
+  const accentMatchReason = (screen) => {
+    const why = [];
+    if (accentSearchPage !== null && (screen.printedPages || []).includes(accentSearchPage)) why.push(`page ${accentSearchPage}`);
+    if (accentSearchTrack !== null && (screen.tracks || []).includes(accentSearchTrack)) why.push(`track ${accentSearchTrack}`);
+    return why.length > 0 ? ` · matches ${why.join(' + ')}` : '';
+  };
   const filteredAmericanAccentScreens = unitSearchNormalized
-    ? AMERICAN_ACCENT_SCREENS.filter((screen) => (screen.topic || '').toLowerCase().includes(unitSearchNormalized))
+    ? AMERICAN_ACCENT_SCREENS.filter((screen) => (
+      (screen.topic || '').toLowerCase().includes(unitSearchNormalized)
+      || screen.contentSearchText.includes(unitSearchNormalized)
+      || (accentSearchPage !== null && (screen.printedPages || []).includes(accentSearchPage))
+      || (accentSearchTrack !== null && (screen.tracks || []).includes(accentSearchTrack))
+    ))
     : [];
 
   const newContentCandidates = userName ? findNextUnratedByCourse() : [];
@@ -5752,7 +5828,8 @@ function App() {
                               >
                                 <UnitBadgeDot status={americanAccentScreenStatus(screen)} />
                                 <span>{americanAccentPrintedPageLabel(screen)}</span>
-                                <small>{chapter ? chapter.name : ''} — {screen.topic}</small>
+                                <small>{chapter ? chapter.name : ''} — {screen.displayTopic}</small>
+<small className="american-accent-result-meta">{americanAccentTracksLabel(screen)}{accentMatchReason(screen)}</small>
                               </a>
                             );
                           })}
@@ -5894,7 +5971,7 @@ function App() {
                           >
                             <UnitBadgeDot status={americanAccentScreenStatus(screen)} />
                             <span className="american-accent-screen-name">{americanAccentPrintedPageLabel(screen)}</span>
-                            {screen.topic && <small>{screen.topic}</small>}
+                            {screen.displayTopic && <small>{screen.displayTopic}</small>}
                           </a>
                         ))}
                       </div>
@@ -5918,7 +5995,8 @@ function App() {
                       >
                         <UnitBadgeDot status={americanAccentScreenStatus(screen)} />
                         <span>{americanAccentPrintedPageLabel(screen)}</span>
-                        <small>{chapter ? chapter.name : ''} — {screen.topic}</small>
+                        <small>{chapter ? chapter.name : ''} — {screen.displayTopic}</small>
+<small className="american-accent-result-meta">{americanAccentTracksLabel(screen)}{accentMatchReason(screen)}</small>
                       </a>
                     );
                   })}
@@ -5964,6 +6042,15 @@ function App() {
                   >
                     Next Page
                   </button>
+                  <button
+                    type="button"
+                    className="upload-button"
+                    onClick={() => handleOpenAccentListeningFromScreen(screen)}
+                    disabled={!findAccentListeningTrack(screen)}
+                    title={findAccentListeningTrack(screen) ? 'Open the first Listening exercise of this page' : 'No Listening exercise for this page'}
+                  >
+                    Listening
+                  </button>
                 </div>
                 {/* Player fixo no topo, não ancorado sobre o PDF — diferente do
                     Vocabulary/American1 (ver decisão registrada em conversa: uma
@@ -5991,7 +6078,7 @@ function App() {
                     {chapter?.topic ? ` (${titleCase(chapter.topic)})` : ''}
                     {' · '}
                     {americanAccentPrintedPageLabel(screen)}
-                    {screen.topic ? ` (${screen.topic})` : ''}
+                    {screen.displayTopic ? ` (${screen.displayTopic})` : ''}
                   </strong>
                 </div>
               )}
@@ -8418,7 +8505,7 @@ const reviewItemLabel = (item) => {
     if (screen) {
       const chapter = AMERICAN_ACCENT_CHAPTERS.find((entry) => entry.id === screen.chapter);
       return {
-        title: `${americanAccentPrintedPageLabel(screen)}${screen.topic ? ` (${screen.topic})` : ''}`,
+        title: `${americanAccentPrintedPageLabel(screen)}${screen.displayTopic ? ` (${screen.displayTopic})` : ''}`,
         subtitle: `American Accent${chapter ? ` · ${chapter.name}${chapter.topic ? ` (${titleCase(chapter.topic)})` : ''}` : ''}`,
       };
     }
@@ -10848,7 +10935,7 @@ function DictationExercise({ track, userName, onPracticed, onBack, backLabel, on
   const [autoPauseEnabled, setAutoPauseEnabled] = useState(true);
   const { hasAutoPause, isAutoPaused, audioEnded } = useAudioAutoPause(audioBarRef, track.id, autoPauseEnabled);
 
-  const fullText = track.sentences.map(stripDictationSpeakerLabel).join(' ');
+  const fullText = track.sentences.map((sentence, index) => stripSpokenOnlyText(sentence, Boolean((track.visiblePrefix || [])[index]))).join(' ');
 
   const handleCheck = () => {
     if (!typedText.trim()) return;
@@ -11095,7 +11182,7 @@ function SpeakingExercise({ track, userName, onPracticed, onBack, backLabel, onN
   }, []);
 
   const handleSpeechResult = (sentenceIndex, transcript) => {
-    const targetText = stripDictationSpeakerLabel(track.sentences[sentenceIndex]);
+    const targetText = stripSpokenOnlyText(track.sentences[sentenceIndex], Boolean((track.visiblePrefix || [])[sentenceIndex]));
     const rawScored = scoreDictationAnswer(expandSpokenNumberShorthand(transcript), targetText);
     const scored = neutralizeUnscorableSpeakingWords(rawScored);
     setResultsBySentence((prev) => ({ ...prev, [sentenceIndex]: { ...scored, transcript } }));
@@ -11235,7 +11322,7 @@ function SpeakingExercise({ track, userName, onPracticed, onBack, backLabel, onN
           sozinho via position:sticky (ver .listening-audio-bar). */}
       <ol className="speaking-sentences">
         {track.sentences.map((sentence, index) => {
-          const text = stripDictationSpeakerLabel(sentence);
+          const text = stripSpokenOnlyText(sentence, Boolean((track.visiblePrefix || [])[index]));
           const result = resultsBySentence[index];
           const isRecording = recordingIndex === index;
           return (
@@ -11377,21 +11464,44 @@ function listeningWordMatchesTarget(word, targetWords) {
 // fala que estiver em destaque/negrito no PDF da unit (pode dar zero lacunas
 // numa fala sem nenhuma palavra-alvo, ou várias numa fala que é literalmente
 // a lista de definições da unit — ambos os casos são esperados).
-function buildListeningSentenceModel(text, targetWords = null) {
-  const { label, rest } = splitListeningSpeakerLabel(text);
+function buildListeningSentenceModel(textFull, targetWords = null, forceAllTargets = false, keepSpeakerLabel = false, visiblePrefix = '', underlinePrefix = false, keepAfterLabel = false) {
+  // visiblePrefix (track.visiblePrefix[i]): início da frase que fica SEMPRE visível (ex. o prefixo "pre–" da 252 ou
+  // "Practice with Contractions: will" da 373); as lacunas só saem do resto do texto.
+  const prefixText = visiblePrefix && textFull.startsWith(visiblePrefix) ? visiblePrefix : '';
+  const text = prefixText ? textFull.slice(prefixText.length) : textFull;
+  // keepSpeakerLabel (track.showSpeakerLabels): o rótulo ("Mike:") fica VISÍVEL no início da fala, fora das lacunas,
+  // pra identificar quem fala (pedido do dono na 319, Phone Tag). Nos outros diálogos segue removido.
+  const labelMatch = keepSpeakerLabel ? text.match(DICTATION_LABEL_COLON_RE) : null;
+  const { label, rest } = labelMatch ? { label: '', rest: text.slice(labelMatch[0].length) } : splitListeningSpeakerLabel(text);
   const tokens = tokenizeListeningText(rest);
   const wordIndices = [];
   tokens.forEach((token, i) => {
     if (!/^\s+$/.test(token)) wordIndices.push(i);
   });
 
-  let candidates = wordIndices.filter((i) => isListeningBlankCandidate(tokens[i]));
-  if (candidates.length === 0) candidates = wordIndices;
+  // palavras entre parênteses (indicações do livro, não faladas) ficam visíveis e nunca viram lacuna
+  const inParens = new Set();
+  let parenDepth = 0;
+  tokens.forEach((token, i) => {
+    if (token.includes('(')) parenDepth += 1;
+    if (parenDepth > 0) inParens.add(i);
+    if (token.includes(')')) parenDepth = Math.max(0, parenDepth - 1);
+  });
+  // keepAfterLabel (track.keepAfterLabel): tudo a partir de "sounds like" fica visível (ex. faixas 311/345/352/379),
+  // mesmo que repita uma palavra escondida na parte da esquerda.
+  if (keepAfterLabel) {
+    const labelIdx = tokens.findIndex((token, i) => stripListeningTokenPunctuation(token).toLowerCase() === 'sounds' && /^like/i.test(stripListeningTokenPunctuation(tokens[i + 2] || '')));
+    if (labelIdx >= 0) tokens.forEach((_, i) => { if (i >= labelIdx) inParens.add(i); });
+  }
+  const blankableIndices = wordIndices.filter((i) => !inParens.has(i));
+  let candidates = blankableIndices.filter((i) => isListeningBlankCandidate(tokens[i]));
+  if (candidates.length === 0) candidates = blankableIndices.length > 0 ? blankableIndices : wordIndices;
 
   let blankTokenIndices;
   if (targetWords) {
+    // forceAllTargets (track.blankAllTargets): palavra-alvo curta/"stopword" (If, I'd, had...) também vira lacuna.
     blankTokenIndices = new Set(
-      candidates.filter((i) => listeningWordMatchesTarget(stripListeningTokenPunctuation(tokens[i]).toLowerCase(), targetWords))
+      (forceAllTargets ? blankableIndices : candidates).filter((i) => listeningWordMatchesTarget(stripListeningTokenPunctuation(tokens[i]).toLowerCase(), targetWords))
     );
   } else {
     const blankCount = Math.max(
@@ -11409,7 +11519,10 @@ function buildListeningSentenceModel(text, targetWords = null) {
       : { type: 'blank', before: '', word: token, after: '' };
   });
 
-  return { label, parts };
+  const headParts = [];
+  if (prefixText) headParts.push({ type: 'text', value: prefixText, underline: underlinePrefix });
+  if (labelMatch) headParts.push({ type: 'text', value: labelMatch[0] });
+  return { label, parts: headParts.length ? [...headParts, ...parts] : parts };
 }
 
 const normalizeListeningAnswer = (text) => text.trim().toLowerCase().replace(/[.,!?"'’]/g, '');
@@ -11536,7 +11649,7 @@ function saveSpeakingAttempt(userName, trackId, scorePercent) {
 // (splitListeningSpeakerLabel reaproveita esta mesma função — antes só
 // cobria rótulo com dois-pontos, os personagens sem dois-pontos do
 // American1 ficavam soltos no meio do exercício, pedido do dono pra tirar).
-const DICTATION_LABEL_COLON_RE = /^[A-Z][A-Za-z0-9 ]{0,24}:\s*/;
+const DICTATION_LABEL_COLON_RE = /^[A-Z][A-Za-z0-9 '’]{0,24}:\s*/;
 // Rótulos sem dois-pontos (só aparecem no American English A1) — lista
 // fechada, levantada manualmente em listening_american1.json. Não trocar por
 // uma regra genérica tipo "qualquer palavra maiúscula no início": isso
@@ -11548,6 +11661,14 @@ const DICTATION_NO_COLON_LABELS = [
   'Justin', 'Naomi', 'Amanda', 'Reader', 'Jack', 'Liz', 'Contestant 1', 'Host',
   'Alan',
 ];
+
+// Dictation e Speaking só cobram o que o locutor FALA: o rótulo do falante E as indicações entre parênteses
+// (ex. "A: Did you do it? (curious)", da faixa 341 — a emoção é instrução do livro, não é dita). No Listening
+// o parêntese continua VISÍVEL na frase, só nunca vira lacuna.
+function stripSpokenOnlyText(sentence, keepLabel = false) {
+  // keepLabel: o início "Subtítulo:" é falado (track.visiblePrefix), não rótulo de falante — não remover
+  return (keepLabel ? sentence : stripDictationSpeakerLabel(sentence)).replace(/\s*\([^)]*\)/g, '').trim();
+}
 
 function stripDictationSpeakerLabel(sentence) {
   const colonMatch = sentence.match(DICTATION_LABEL_COLON_RE);
@@ -11751,16 +11872,18 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBac
   // são SEMPRE lacuna inteira (senão apareciam já escritas, sem nada a preencher).
   const wordItemSet = useMemo(() => new Set(track.wordItems || []), [track.wordItems]);
   const sentenceModels = useMemo(
-    () => track.sentences.map((text) => {
+    () => track.sentences.map((text, sentenceIndex) => {
+      // track.plainSentences: índices de frases que ficam INTEIRAS na tela, sem nenhuma lacuna (ex. a nota "The th of the pronoun them is silent..." da 314)
+      if ((track.plainSentences || []).includes(sentenceIndex)) return buildListeningSentenceModel(text, new Set());
       if (wordMode === 'unitWords' && wordItemSet.has(text)) {
         const low = text.toLowerCase();
         // palavras soltas E o token inteiro sem pontuação nas pontas ("on/off" é UM token pra lacuna)
         const all = new Set([...(low.match(/[a-z0-9]+/g) || []), ...low.split(/\s+/).map((w) => w.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, '')).filter(Boolean)]);
         return buildListeningSentenceModel(text, all);
       }
-      return buildListeningSentenceModel(text, targetWordSet);
+      return buildListeningSentenceModel(text, targetWordSet, Boolean(track.blankAllTargets), Boolean(track.showSpeakerLabels), (track.visiblePrefix || [])[sentenceIndex] || '', Boolean(track.underlinePrefix), Boolean(track.keepAfterLabel));
     }),
-    [track.id, regenerateKey, targetWordSet, wordMode, wordItemSet]
+    [track.id, track.blankAllTargets, track.showSpeakerLabels, track.plainSentences, track.visiblePrefix, track.underlinePrefix, track.keepAfterLabel, regenerateKey, targetWordSet, wordMode, wordItemSet]
   );
   const [answers, setAnswers] = useState({});
   const [checked, setChecked] = useState(false);
@@ -11931,7 +12054,7 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBac
               <span className="listening-sentence-text">
                 {model.parts.map((part, partIndex) => {
                   if (part.type === 'text') {
-                    return <span key={partIndex}>{part.value}</span>;
+                    return <span key={partIndex}>{part.underline ? <u>{part.value}</u> : part.value}</span>;
                   }
                   blankIndexInSentence += 1;
                   const key = `${sentenceIndex}:${blankIndexInSentence}`;
