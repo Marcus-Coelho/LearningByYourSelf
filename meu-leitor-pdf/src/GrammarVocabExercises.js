@@ -32,12 +32,53 @@
 // Grammar é escrito à mão porque o app não tem o texto das lições, só os
 // títulos reais das units.
 import { useEffect, useState } from 'react';
-import { userKey } from './App';
+import { userKey, buildOpenUnitHref } from './App';
 import grammarExercises from './grammar_vocab_exercises_grammar.json';
 import vocabExercises from './grammar_vocab_exercises_vocab.json';
 import similarBlocks from './grammar_vocab_exercises_similar.json';
 import vocabSimilarBlocks from './grammar_vocab_exercises_vocab_similar.json';
 import './GrammarVocabExercises.css';
+
+// Curso do material de cada exercício, pro link do "Show unit" (abre a unit em
+// OUTRA ABA, ver buildOpenUnitHref em App.js). Grammar e "Similar Exercises from
+// Grammar" são do Grammar English A1; Vocabulary e "Similar from Vocabulary" do
+// English Vocabulary B.
+const UNIT_COURSE_BY_SOURCE = {
+  grammar: 'grammarElem',
+  similar: 'grammarElem',
+  vocabulary: 'vocabulary',
+  vocabSimilar: 'vocabulary',
+};
+
+// Botão "Open unit" (pedido do dono, 2026-10-15): abre a unit do exercício em OUTRA
+// ABA sem precisar apertar "Show unit" antes — mesmo destino do texto-link que o
+// "Show unit" revela. Visual igual ao do "Show unit" (os dois são ações).
+function OpenUnitButton({ course, unit }) {
+  return (
+    <a
+      className="gve-unit-toggle-btn gve-open-unit-btn"
+      href={buildOpenUnitHref(course, unit)}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Open unit ↗
+    </a>
+  );
+}
+
+function UnitNewTabLink({ course, unit, children }) {
+  return (
+    <a
+      className="gve-unit-link"
+      href={buildOpenUnitHref(course, unit)}
+      target="_blank"
+      rel="noopener noreferrer"
+      title="Open this unit in a new tab"
+    >
+      {children}
+    </a>
+  );
+}
 
 const GRAMMAR_VOCAB_EXERCISES_POSITION_KEY = 'grammarVocabExercisesPosition';
 
@@ -218,7 +259,11 @@ function ExerciseCard({ exercise, savedChoice, onCheck, onReset }) {
   return (
     <div className="gve-card">
       {showUnit && (
-        <span className="gve-card-unit">Unit {exercise.unit}{exercise.topic ? ` · ${exercise.topic}` : ''}</span>
+        <span className="gve-card-unit">
+          <UnitNewTabLink course={UNIT_COURSE_BY_SOURCE[exercise.course]} unit={exercise.unit}>
+            Unit {exercise.unit}{exercise.topic ? ` - ${exercise.topic}` : ''}
+          </UnitNewTabLink>
+        </span>
       )}
       <p className="gve-card-prompt">{exercise.prompt}</p>
       <div className="gve-card-options">
@@ -264,6 +309,7 @@ function ExerciseCard({ exercise, savedChoice, onCheck, onReset }) {
         <button type="button" className="gve-unit-toggle-btn" onClick={() => setShowUnit((value) => !value)}>
           {showUnit ? 'Hide unit' : 'Show unit'}
         </button>
+        <OpenUnitButton course={UNIT_COURSE_BY_SOURCE[exercise.course]} unit={exercise.unit} />
       </div>
     </div>
   );
@@ -278,7 +324,7 @@ function ExerciseCard({ exercise, savedChoice, onCheck, onReset }) {
 // loadAnswers): o id do BLOCO guarda o marcador 'checked' e o id de cada
 // ITEM guarda o texto digitado — os ids nunca colidem ("similar-unit-5" vs
 // "similar-5-1").
-function WrittenExerciseBlock({ block, index, total, savedAnswers, onCheck, onReset }) {
+function WrittenExerciseBlock({ block, unitCourse, index, total, savedAnswers, onCheck, onReset }) {
   const checked = savedAnswers[block.id] === 'checked';
   const [drafts, setDrafts] = useState(() => {
     const initial = {};
@@ -307,15 +353,16 @@ function WrittenExerciseBlock({ block, index, total, savedAnswers, onCheck, onRe
       <div className="gve-block-head">
         <span className="gve-card-unit">
           Exercise {index + 1} of {total}
-          {showUnit ? ` · Unit ${block.unit} · ${block.topic}` : ''}
+          {showUnit && (
+            <>
+              {' · '}
+              <UnitNewTabLink course={unitCourse} unit={block.unit}>
+                Unit {block.unit} - {block.topic}
+              </UnitNewTabLink>
+            </>
+          )}
         </span>
         <p className="gve-block-instruction">{block.instruction}</p>
-        {/* A instrução ORIGINAL do livro (extraída do PDF da unit) fica atrás
-            do "Show unit" junto com a unit: é a prova de qual exercício este
-            aqui imita, mas entregá-la de cara às vezes daria a resposta. */}
-        {showUnit && block.bookInstruction && (
-          <p className="gve-block-source">In the book: “{block.bookInstruction}”</p>
-        )}
         {block.wordBank && (
           <div className="gve-word-bank">
             {block.wordBank.map((word) => (
@@ -389,6 +436,7 @@ function WrittenExerciseBlock({ block, index, total, savedAnswers, onCheck, onRe
         <button type="button" className="gve-unit-toggle-btn" onClick={() => setShowUnit((value) => !value)}>
           {showUnit ? 'Hide unit' : 'Show unit'}
         </button>
+        <OpenUnitButton course={unitCourse} unit={block.unit} />
       </div>
     </div>
   );
@@ -702,6 +750,7 @@ export default function GrammarVocabExercisesPage({ userName, askConfirm }) {
               <WrittenExerciseBlock
                 key={`${block.id}:${resetToken}`}
                 block={block}
+                unitCourse={UNIT_COURSE_BY_SOURCE[activeSource.id]}
                 index={index}
                 total={activeSource.blocks.length}
                 savedAnswers={answers}

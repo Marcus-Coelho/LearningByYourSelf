@@ -98,13 +98,86 @@ Object.assign(AMERICAN1_CD_TRACK_TO_UNIT, {
 // no número ("Unit 8A"), igual ao resto do app; seções especiais ("Practical
 // English"/"Review and Check") ficam separadas por espaço. Uma faixa sem
 // âncora nem override manual retorna vazio — o título só fica sem a unit.
+const american1TrackUnitInfo = (track) => {
+  if (track.unit || !track.cd || track.track == null) return null;
+  return AMERICAN1_CD_TRACK_TO_UNIT[`${track.cd.toLowerCase()}:${track.track}`] || null;
+};
+
 const american1TrackUnitLabel = (track) => {
-  if (track.unit || !track.cd || track.track == null) return '';
-  const found = AMERICAN1_CD_TRACK_TO_UNIT[`${track.cd.toLowerCase()}:${track.track}`];
+  const found = american1TrackUnitInfo(track);
   if (!found) return '';
   const isLetterSection = /^[A-C]$/.test(found.section || '');
   return isLetterSection ? `Unit ${found.unit}${found.section}` : `Unit ${found.unit} ${found.section || ''}`.trim();
 };
+
+// Link "abrir esta unit em OUTRA ABA" (pedido do dono, 2026-10-15): só no título
+// do Listening/Dictation/Speaking e no "Show unit" da tela Grammar & Vocabulary
+// Exercises — de propósito NÃO nos outros links de unit do app (abrir aba pra
+// tudo vira bagunça). Estudar o exercício numa aba e ler a unit na outra.
+// O app não tem rotas, então o endereço leva um pedido de uma vez só
+// (`?open=vocabulary&unit=4`, `?open=american1&unit=4&section=B`,
+// `?open=grammarElem&unit=21`, `?open=americanAccent&screen=page-9`) que OPEN_REQUEST_POSITION lê no carregamento e
+// transforma na posição inicial. Segundo named export de App.js (o primeiro é
+// `userKey`): é a ÚNICA fonte do formato do endereço, usada também pela tela
+// Grammar & Vocabulary Exercises — duplicar a string lá deixaria os dois lados
+// divergirem sem erro nenhum.
+export const buildOpenUnitHref = (course, unit, section) => {
+  // American Accent não tem "unit": o 2º argumento é o id da TELA do livro
+  // (ex. "page-9"), que vai em `screen`.
+  const params = new URLSearchParams({ open: course });
+  params.set(course === 'americanAccent' ? 'screen' : 'unit', String(unit));
+  if (section) params.set('section', section);
+  return `/?${params.toString()}`;
+};
+
+// Destino do link do título de um track: Vocabulary (track.unit), American1
+// (cd+track -> unit/seção) ou American Accent (trackNumber -> tela do livro).
+const trackUnitTarget = (track) => {
+  if (track.unit) return { course: 'vocabulary', unit: track.unit };
+  const found = american1TrackUnitInfo(track);
+  if (found) return { course: 'american1', unit: Number(found.unit), section: found.section || 'A' };
+  const accentScreenId = track.trackNumber && AMERICAN_ACCENT_SCREEN_ID_BY_TRACK[track.trackNumber];
+  if (accentScreenId) return { course: 'americanAccent', unit: accentScreenId };
+  return null;
+};
+
+function UnitNewTabLink({ target, children }) {
+  return (
+    <a
+      className="listening-unit-link"
+      href={buildOpenUnitHref(target.course, target.unit, target.section)}
+      target="_blank"
+      rel="noopener noreferrer"
+      title="Open this unit in a new tab"
+    >
+      {children}
+    </a>
+  );
+}
+
+// Título de uma linha do exercício (Listening/Dictation/Speaking). O "Unit 8A"
+// (American1) e o "(unit 4B)" (Vocabulary) são links pra unit, em outra aba.
+function ExerciseTrackTitle({ kind, track }) {
+  const target = trackUnitTarget(track);
+  const american1Label = american1TrackUnitLabel(track);
+  const head = `${kind} Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}`;
+  const label = listeningTrackLabel(track);
+  return (
+    <p className="listening-exercise-title">
+      {head}
+      {american1Label && (
+        <>
+          {' '}
+          {target ? <UnitNewTabLink target={target}>{american1Label}</UnitNewTabLink> : american1Label}
+        </>
+      )}
+      {track.heading ? ` ${track.heading}` : ''}
+      {' ('}
+      {target && target.course !== 'american1' ? <UnitNewTabLink target={target}>{label}</UnitNewTabLink> : label}
+      {')'}
+    </p>
+  );
+}
 
 // URL do gabarito único (multipágina), servido por src/setupProxy.js.
 const ANSWERS_KEY_URL = '/answers-key.pdf';
@@ -1148,6 +1221,16 @@ const AMERICAN_ACCENT_TRACK_FILES = americanAccentIndexData.trackFiles;
 const AMERICAN_ACCENT_SCREEN_BY_ID = Object.fromEntries(
   AMERICAN_ACCENT_SCREENS.map((screen) => [screen.id, screen]),
 );
+// Faixa (número real do livro) -> tela do leitor que a contém (`screen.tracks`).
+// O "(p. 4–5)" do título do Listening/Dictation/Speaking vira link pra essa tela
+// (ver trackUnitTarget). Precisa ficar DEPOIS de AMERICAN_ACCENT_SCREENS: definir
+// antes derruba o app inteiro na carga do módulo (TDZ).
+const AMERICAN_ACCENT_SCREEN_ID_BY_TRACK = {};
+AMERICAN_ACCENT_SCREENS.forEach((screen) => {
+  (screen.tracks || []).forEach((trackNumber) => {
+    if (!AMERICAN_ACCENT_SCREEN_ID_BY_TRACK[trackNumber]) AMERICAN_ACCENT_SCREEN_ID_BY_TRACK[trackNumber] = screen.id;
+  });
+});
 const AMERICAN_ACCENT_ALL_PDF_PAGES = AMERICAN_ACCENT_SCREENS.flatMap((screen) => screen.pdfPages);
 const americanAccentScreenAudioUrl = (trackNumber) => (
   `/american-accent-audio/${encodeURIComponent(AMERICAN_ACCENT_TRACK_FILES[String(trackNumber)] || '')}`
@@ -1712,7 +1795,41 @@ const SESSION_POSITION_KEY = 'sessionPosition';
 // alcançável nesse estado (ver handleSwitchUser) — se por algum motivo
 // ficou salva com um usuário ainda ativo, cai na Home em vez de travar ali.
 const NON_RESTORABLE_PAGES = ['register'];
-const RESTORED_POSITION = (() => {
+// Pedido "?open=<curso>&unit=N[&section=X]" vindo de buildOpenUnitHref (link que
+// abre a unit numa aba nova): vira a posição inicial, no mesmo formato da
+// restaurada do sessionStorage — o resto do app nem sabe a diferença. O
+// endereço é LIMPO na hora (um F5 ou um marcador não deve reabrir a unit sozinho).
+// Sem usuário ativo no navegador o pedido é ignorado (cairia no cadastro).
+const OPEN_UNIT_POSITIONS = {
+  vocabulary: (unit) => ({ activePage: 'unit', selectedUnit: unit, activeCourseId: 'vocabulary' }),
+  american1: (unit, section) => ({
+    activePage: 'american1-unit',
+    selectedAmerican1Unit: unit,
+    selectedAmerican1Section: section || 'A',
+    activeCourseId: 'american1',
+  }),
+  grammarElem: (unit) => ({ activePage: 'grammarElem-unit', selectedGrammarElemUnit: unit, activeCourseId: 'grammarElem' }),
+  americanAccent: (screenId) => (AMERICAN_ACCENT_SCREEN_BY_ID[screenId]
+    ? { activePage: 'american-accent-reader', selectedAmericanAccentScreenId: screenId, activeCourseId: 'americanAccent' }
+    : null),
+};
+const OPEN_REQUEST_POSITION = (() => {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const course = params.get('open');
+    if (!course) return null;
+    window.history.replaceState(null, '', window.location.pathname);
+    const build = OPEN_UNIT_POSITIONS[course];
+    if (!build || !window.localStorage.getItem(ACTIVE_USER_KEY)) return null;
+    if (course === 'americanAccent') return build(params.get('screen'));
+    const unit = Number(params.get('unit'));
+    if (!Number.isInteger(unit)) return null;
+    return build(unit, params.get('section'));
+  } catch (error) {
+    return null;
+  }
+})();
+const RESTORED_POSITION = OPEN_REQUEST_POSITION || (() => {
   try {
     const hasActiveUser = window.localStorage.getItem(ACTIVE_USER_KEY);
     if (!hasActiveUser) return null;
@@ -6835,25 +6952,7 @@ function App() {
                   esse ajuste todo veio liberar — sem ele não dá pra saber
                   qual exercício está aberto. */}
               {track && (
-                <p className="listening-exercise-title">
-                  {`Listening Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (`}
-                  {track.unit ? (
-                    <span
-                      className="listening-unit-link"
-                      role="link"
-                      tabIndex={0}
-                      onClick={() => openVocabularyUnit(track.unit)}
-                      onKeyDown={(event) => {
-                        if (event.key !== 'Enter' && event.key !== ' ') return;
-                        event.preventDefault();
-                        openVocabularyUnit(track.unit);
-                      }}
-                    >
-                      {listeningTrackLabel(track)}
-                    </span>
-                  ) : listeningTrackLabel(track)}
-                  {')'}
-                </p>
+                <ExerciseTrackTitle kind="Listening" track={track} />
               )}
               {track ? (
                 <ListeningClozeExercise
@@ -6992,9 +7091,7 @@ function App() {
               {/* Eyebrow, nav e instruções escondidos; título compacto de
                   volta — mesmo tratamento do Listening (ver comentário lá). */}
               {track && (
-                <p className="listening-exercise-title">
-                  {`Dictation Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (${listeningTrackLabel(track)})`}
-                </p>
+                <ExerciseTrackTitle kind="Dictation" track={track} />
               )}
               {track ? (
                 <DictationExercise
@@ -7235,9 +7332,7 @@ function App() {
                   e o parágrafo de instruções (flex-shrink padrão) era
                   espremido a quase zero de altura pela lista de falas. */}
               {track && (
-                <p className="listening-exercise-title">
-                  {`Speaking Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (${listeningTrackLabel(track)})`}
-                </p>
+                <ExerciseTrackTitle kind="Speaking" track={track} />
               )}
               {track ? (
                 <SpeakingExercise
@@ -10847,7 +10942,7 @@ function DictationExercise({ track, userName, onPracticed, onBack, backLabel, on
                 erros virava uma fita contínua atravessando os espaços, e o
                 texto parecia "espalhado" em vez de prosa corrida. */}
             {result.wordResults.map((wordResult, index) => [
-              index > 0 ? ' ' : null,
+              index > 0 && !wordResult.glue ? ' ' : null,
               <span
                 key={index}
                 className={
@@ -11165,7 +11260,7 @@ function SpeakingExercise({ track, userName, onPracticed, onBack, backLabel, onN
                   </p>
                   <p className="dictation-correct-text">
                     {result.wordResults.map((wordResult, wIndex) => [
-                      wIndex > 0 ? ' ' : null,
+                      wIndex > 0 && !wordResult.glue ? ' ' : null,
                       <span
                         key={wIndex}
                         className={
@@ -11475,23 +11570,95 @@ function normalizeDictationWord(word) {
 // ("Punctuation and capitalization don't matter").
 const isDictationPunctuationOnlyToken = (word) => !/[a-zA-Z0-9]/.test(word);
 
-function scoreDictationAnswer(typedText, correctText) {
-  const typedWords = typedText.trim().split(/\s+/).filter(Boolean).map(normalizeDictationWord);
-  const correctWordsAll = correctText.trim().split(/\s+/).filter(Boolean);
+// Formas que o áudio fala e o texto escreve de outro jeito (pedido do dono,
+// 2026-10-15: "se disse no áudio, vale"). O texto traz "e.g." e o áudio diz "for
+// example"; traz "etc." e o áudio diz "et cetera"/"and so on"; traz "i.e." e o
+// áudio diz "that is". Cada grupo vira UMA palavra canônica dos dois lados antes
+// de casar — quem digita qualquer forma acerta. As formas estão JÁ normalizadas
+// (normalizeDictationWord tira os pontos: "e.g." -> "eg").
+const DICTATION_EQUIVALENT_FORMS = [
+  { canon: '§eg', forms: [['for', 'example'], ['for', 'instance'], ['eg']] },
+  { canon: '§ie', forms: [['that', 'is'], ['ie']] },
+  { canon: '§etc', forms: [['and', 'so', 'forth'], ['and', 'so', 'on'], ['et', 'cetera'], ['etcetera'], ['etc']] },
+];
 
-  // Só os tokens com letra/dígito de verdade entram no casamento/na nota —
+// Junta palavras normalizadas em "unidades": uma forma equivalente (de 1 a 3
+// palavras) vira uma unidade só. `size` diz quantas palavras de entrada ela
+// consumiu — o lado do texto correto usa isso pra pintar TODAS as palavras que
+// aparecem na tela ("for" e "example,") com o mesmo resultado.
+function groupDictationEquivalents(words) {
+  const units = [];
+  let k = 0;
+  while (k < words.length) {
+    let matched = null;
+    DICTATION_EQUIVALENT_FORMS.forEach((group) => {
+      group.forms.forEach((form) => {
+        if (matched && matched.size >= form.length) return;
+        if (form.every((part, offset) => words[k + offset] === part)) {
+          matched = { canon: group.canon, size: form.length };
+        }
+      });
+    });
+    if (matched) {
+      units.push(matched);
+      k += matched.size;
+    } else {
+      units.push({ canon: words[k], size: 1 });
+      k += 1;
+    }
+  }
+  return units;
+}
+
+// "go/went" é DUAS palavras (o áudio diz "go ... went"): separa na barra quando
+// os dois lados têm letra, pro aluno poder digitar "go went" (antes virava um
+// bloco só e nenhuma palavra casava). Cada pedaço do texto correto guarda a barra
+// no fim ("go/") e `glue` = true no seguinte, pra tela remontar "go/went," sem
+// espaço no meio.
+function splitDictationSlash(token) {
+  const parts = token.split('/');
+  if (parts.length < 2 || !parts.every((part) => /[a-zA-Z]/.test(part))) {
+    return [{ word: token, glue: false }];
+  }
+  return parts.map((part, index) => ({
+    word: index < parts.length - 1 ? `${part}/` : part,
+    glue: index > 0,
+  }));
+}
+
+function scoreDictationAnswer(typedText, correctText) {
+  // O que o aluno digitou: a barra separa pela MESMA regra do texto correto
+  // ("go/went" = "go" "went", mas "1/2" continua uma palavra só).
+  const typedWords = [];
+  typedText.trim().split(/\s+/).filter(Boolean).forEach((token) => {
+    splitDictationSlash(token).forEach((piece) => {
+      const normalized = normalizeDictationWord(piece.word.replace(/\/$/, ''));
+      if (normalized) typedWords.push(normalized);
+    });
+  });
+  const typedUnits = groupDictationEquivalents(typedWords).map((unit) => unit.canon);
+
+  // O texto correto, em pedaços de TELA (palavra ou pedaço de "a/b").
+  const pieces = [];
+  correctText.trim().split(/\s+/).filter(Boolean).forEach((token) => {
+    splitDictationSlash(token).forEach((piece) => pieces.push(piece));
+  });
+
+  // Só os pedaços com letra/dígito de verdade entram no casamento/na nota —
   // os demais (pontuação solta) ficam de fora do LCS mas continuam
   // aparecendo no texto reconstruído abaixo, sem cor (nem verde nem
   // vermelho — `wordResult.correct === null` no render).
-  const scorableIndices = [];
-  const correctNormalized = [];
-  correctWordsAll.forEach((word, index) => {
-    if (isDictationPunctuationOnlyToken(word)) return;
-    scorableIndices.push(index);
-    correctNormalized.push(normalizeDictationWord(word));
+  const scorablePieceIndices = [];
+  const scorableWords = [];
+  pieces.forEach((piece, index) => {
+    if (isDictationPunctuationOnlyToken(piece.word)) return;
+    scorablePieceIndices.push(index);
+    scorableWords.push(normalizeDictationWord(piece.word.replace(/\/$/, '')));
   });
+  const correctUnitsRaw = groupDictationEquivalents(scorableWords);
+  const correctNormalized = correctUnitsRaw.map((unit) => unit.canon);
 
-  // LCS por programação dinâmica, com dp[i][j] = LCS de typedWords[i:] com
+  // LCS por programação dinâmica, com dp[i][j] = LCS de typedUnits[i:] com
   // correctNormalized[j:] (SUFIXOS, não prefixos) — permite recuperar os
   // casamentos andando PRA FRENTE, casando cada palavra digitada com a
   // ocorrência mais CEDO possível no texto correto. A versão anterior
@@ -11500,12 +11667,12 @@ function scoreDictationAnswer(typedText, correctText) {
   // vezes) "pulava" pra um trecho lá do fim em vez de ficar verde ao lado
   // das vizinhas que o usuário realmente digitou. O score é idêntico nos
   // dois casos (mesmo comprimento de LCS); só a atribuição visual muda.
-  const n = typedWords.length;
+  const n = typedUnits.length;
   const m = correctNormalized.length;
   const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
   for (let i = n - 1; i >= 0; i -= 1) {
     for (let j = m - 1; j >= 0; j -= 1) {
-      if (typedWords[i] === correctNormalized[j]) {
+      if (typedUnits[i] === correctNormalized[j]) {
         dp[i][j] = dp[i + 1][j + 1] + 1;
       } else {
         dp[i][j] = Math.max(dp[i + 1][j], dp[i][j + 1]);
@@ -11513,12 +11680,12 @@ function scoreDictationAnswer(typedText, correctText) {
     }
   }
 
-  const matchedScorable = new Array(m).fill(false);
+  const matchedUnit = new Array(m).fill(false);
   let i = 0;
   let j = 0;
   while (i < n && j < m) {
-    if (typedWords[i] === correctNormalized[j]) {
-      matchedScorable[j] = true;
+    if (typedUnits[i] === correctNormalized[j]) {
+      matchedUnit[j] = true;
       i += 1;
       j += 1;
     } else if (dp[i + 1][j] >= dp[i][j + 1]) {
@@ -11530,14 +11697,23 @@ function scoreDictationAnswer(typedText, correctText) {
     }
   }
 
-  // Remonta pro tamanho de correctWordsAll: `null` = token de pontuação,
-  // fora do casamento (nem verde nem vermelho no render).
-  const matchedByOriginalIndex = new Array(correctWordsAll.length).fill(null);
-  scorableIndices.forEach((originalIndex, k) => {
-    matchedByOriginalIndex[originalIndex] = matchedScorable[k];
+  // Remonta pro tamanho de `pieces`: cada unidade pinta TODOS os pedaços que
+  // consumiu; `null` = pontuação solta, fora do casamento (nem verde nem
+  // vermelho no render).
+  const matchedByPiece = new Array(pieces.length).fill(null);
+  let cursor = 0;
+  correctUnitsRaw.forEach((unit, unitIndex) => {
+    for (let offset = 0; offset < unit.size; offset += 1) {
+      matchedByPiece[scorablePieceIndices[cursor + offset]] = matchedUnit[unitIndex];
+    }
+    cursor += unit.size;
   });
 
-  const wordResults = correctWordsAll.map((word, index) => ({ word, correct: matchedByOriginalIndex[index] }));
+  const wordResults = pieces.map((piece, index) => ({
+    word: piece.word,
+    correct: matchedByPiece[index],
+    glue: piece.glue,
+  }));
   const scorePercent = m === 0 ? 100 : Math.round((dp[0][0] / m) * 100);
   return { scorePercent, wordResults };
 }
@@ -11558,7 +11734,8 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBac
   // representa nenhum dado real, só entra na dependência pra invalidar o
   // cache quando o usuário pede "Do it again with other words".
   const [regenerateKey, setRegenerateKey] = useState(0);
-  const [wordMode, setWordMode] = useState('random'); // 'random' | 'unitWords'
+  // Padrão "unitWords" (pedido do dono, 2026-10-15): o exercício abre escondendo as palavras da unit; "Random" fica a um clique.
+  const [wordMode, setWordMode] = useState('unitWords'); // 'random' | 'unitWords'
   // track.targetWords (só American Accent, tracks de pares mínimos — ex.
   // pest/past, letter/ladder — ver listening_american_accent.json) SEMPRE
   // vence, sem toggle nenhum: o pedido do dono foi "esconda sempre essas
@@ -11569,9 +11746,21 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBac
     const words = vocabularyTargetWords[String(track.unit)];
     return words ? new Set(words) : null;
   }, [isVocabularyTrack, wordMode, track.unit, track.targetWords]);
+  // `track.wordItems`: as frases que são PALAVRAS SOLTAS que o áudio lê ("Leaves.", "Train driver.") — não
+  // existem no texto do livro, então não estão em vocabulary_target_words.json. No "Only Unit Words" elas
+  // são SEMPRE lacuna inteira (senão apareciam já escritas, sem nada a preencher).
+  const wordItemSet = useMemo(() => new Set(track.wordItems || []), [track.wordItems]);
   const sentenceModels = useMemo(
-    () => track.sentences.map((text) => buildListeningSentenceModel(text, targetWordSet)),
-    [track.id, regenerateKey, targetWordSet]
+    () => track.sentences.map((text) => {
+      if (wordMode === 'unitWords' && wordItemSet.has(text)) {
+        const low = text.toLowerCase();
+        // palavras soltas E o token inteiro sem pontuação nas pontas ("on/off" é UM token pra lacuna)
+        const all = new Set([...(low.match(/[a-z0-9]+/g) || []), ...low.split(/\s+/).map((w) => w.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, '')).filter(Boolean)]);
+        return buildListeningSentenceModel(text, all);
+      }
+      return buildListeningSentenceModel(text, targetWordSet);
+    }),
+    [track.id, regenerateKey, targetWordSet, wordMode, wordItemSet]
   );
   const [answers, setAnswers] = useState({});
   const [checked, setChecked] = useState(false);

@@ -244,6 +244,19 @@
   letter-spacing: 0.03em;
 }
 
+/* "Unit N · tópico" (aparece no Show unit): link que abre a unit em outra aba.
+   Herda cor/caixa do rótulo — só ganha o sublinhado. */
+.gve-unit-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.gve-unit-link:hover,
+.gve-unit-link:focus-visible {
+  color: var(--brand-text);
+}
+
 .gve-card-prompt {
   margin: 0;
   font-size: 16px;
@@ -251,22 +264,46 @@
   color: var(--text-primary);
 }
 
+/* As alternativas são uma LISTA DE ESCOLHA (uma por linha, com bolinha de rádio),
+   não botões: antes eram "pílulas" do mesmo tamanho e formato dos botões de ação
+   (Check Answer / Show unit / Open unit) e o dono as confundia com eles
+   (2026-10-15). Linha larga + bolinha à esquerda = "escolha uma"; pílula pequena
+   sem bolinha = "faça algo". */
 .gve-card-options {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 8px;
+  max-width: 460px;
 }
 
 .gve-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
   border: 1px solid var(--border-strong);
   background: var(--surface-0);
   color: var(--text-primary);
   font-family: inherit;
   font-weight: 600;
-  font-size: 14.5px;
-  padding: 8px 14px;
-  border-radius: 10px;
+  font-size: 15px;
+  padding: 11px 14px;
+  border-radius: 12px;
   cursor: pointer;
+}
+
+/* A bolinha de rádio: vazia = não escolhida; cheia = escolhida (índigo) ou, depois
+   de checar, certa (verde) / errada (vermelha). */
+.gve-option::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  background: transparent;
 }
 
 .gve-option:hover:not(:disabled) {
@@ -276,6 +313,21 @@
 
 .gve-option:disabled {
   cursor: default;
+}
+
+.gve-option.is-correct::before {
+  border-color: #16a34a;
+  background: #16a34a;
+}
+
+.gve-option.is-wrong::before {
+  border-color: #dc2626;
+  background: #dc2626;
+}
+
+.gve-option.is-selected::before {
+  border-color: var(--purple-500);
+  background: radial-gradient(circle, var(--purple-500) 0 40%, transparent 45%);
 }
 
 .gve-option.is-correct {
@@ -333,6 +385,13 @@
   padding: 7px 14px;
   border-radius: 10px;
   cursor: pointer;
+}
+
+/* "Open unit" é um <a> com cara de botão. */
+.gve-open-unit-btn {
+  display: inline-block;
+  text-decoration: none;
+  line-height: normal;
 }
 
 .gve-unit-toggle-btn:hover {
@@ -467,14 +526,6 @@
   font-size: 14px;
   font-weight: 700;
   color: var(--text-primary);
-}
-
-/* Instrução original do livro, revelada junto com a unit no "Show unit". */
-.landing-panel.gve-panel .gve-block-source {
-  margin: 0;
-  font-size: var(--text-secondary-size);
-  font-style: italic;
-  color: var(--text-secondary);
 }
 
 /* Linha dos controles de EXIBIÇÃO da lista (hoje só o "Hide solved", presente

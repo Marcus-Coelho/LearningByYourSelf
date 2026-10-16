@@ -213,6 +213,19 @@ externo, mesmo espírito dos ícones do resto do app).
   cobrir do que tentar proibir via prompt, LLM não obedece restrição de formatação com 100% de
   fidelidade). Parser feito à mão, sem lib de markdown nem `dangerouslySetInnerHTML` — só monta
   elementos React de verdade a partir do texto, zero risco de XSS mesmo com resposta hostil.
+- **Modelos e chaves em FILA** (2026-10-13): o plano gratuito limita **20 pedidos/dia POR MODELO**
+  (`GenerateRequestsPerDayPerProjectPerModel`) e a Google devolve 503 "high demand" de forma
+  intermitente — a tela dava "Could not get an answer" em ambos os casos. Hoje
+  `geminiGrammarHelper.js` tenta, em ordem, `gemini-flash-latest` → `gemini-3.5-flash-lite` →
+  `gemini-3.1-flash-lite` (ajustável por `GEMINI_MODELS=id1,id2` no `.env.local`; cada modelo tem
+  cota própria, os 2 "lite" foram testados) e, dentro de cada modelo, cada chave
+  (`GEMINI_API_KEY`, `GEMINI_API_KEY_2`, `GEMINI_API_KEY_3` — outro projeto do Google = cota
+  própria). **429 (cota) e 404 (modelo aposentado) passam pra próxima combinação; 500/503/504 e
+  erro de rede repetem até 3x no MESMO modelo; qualquer outro erro (chave inválida) para na
+  hora.** Se tudo estourar, a rota responde 429 e a tela diz "Adele reached the free daily limit
+  of questions. Try again tomorrow." A rota loga o motivo real no terminal (`[ask-grammar]`) — antes
+  o catch engolia tudo. O `server.js` do pendrive NÃO lê o `.env.local`: lá a tela da Adele
+  provavelmente responde 500 (não testado, e `server.js` é intocável).
 - **Chave**: `GEMINI_API_KEY` em `meu-leitor-pdf/.env.local` (gitignored, template em
   `.env.local.example`). Nome SEM prefixo `REACT_APP_` de propósito — o CRA só expõe pro bundle
   do navegador variáveis com esse prefixo; sem ele, a chave existe só no processo Node do dev
@@ -237,9 +250,31 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
   exercícios, não um deslize. **Isso não reabre a regra**: qualquer outra tela nova continua
   indo pra dentro de `App.js`. `App.js` importa só o componente default; **zero linhas novas em
   `App.css`**.
-- Por causa disso, `userKey` é o **único named export** de `App.js` (`export const userKey`) —
-  existe pra essa tela namespacear o `localStorage` igual ao resto do app sem duplicar a função.
-  Não crescer essa lista de exports sem necessidade real.
+- Por causa disso, `App.js` tem **2 named exports** — `userKey` (essa tela namespaceia o
+  `localStorage` igual ao resto do app sem duplicar a função) e `buildOpenUnitHref` (formato
+  do endereço dos links "abrir unit em outra aba", ver Listening; única fonte do formato, usada
+  pela tela e pelos títulos). Não crescer essa lista de exports sem necessidade real.
+- **"Show unit": o TEXTO que aparece é o link** (2026-10-15) — `<a target="_blank">` pro curso
+  certo (`UNIT_COURSE_BY_SOURCE`: grammar/similar → Grammar English A1, vocabulary/vocabSimilar →
+  English Vocabulary B), pra estudar o exercício numa aba e ler a unit na outra. **E há também um botão "Open unit ↗"** (`OpenUnitButton`, ao lado do "Show unit", em todos os cards e
+  blocos) que abre a MESMA unit em outra aba sem precisar revelar nada antes — o dono recusou
+  esse botão em 2026-10-15 de manhã e pediu de volta no mesmo dia, então os dois ficam.
+- **As alternativas da múltipla escolha são uma LISTA de rádio** (uma por linha, bolinha à
+  esquerda, `.gve-option::before`; cheia em índigo = escolhida, verde/vermelha = certa/errada
+  depois de checar), de propósito NÃO pílulas: as pílulas eram do mesmo formato dos botões de ação
+  (Check Answer / Show unit / Open unit) e o dono as confundia com eles.
+- **O rótulo da unit tem sempre o TÍTULO, no formato "Unit 24 - Food"** (2026-10-15, em todas as
+  4 seções). Grammar/Similar/Vocabulary-Similar já traziam `topic`; os 200 exercícios de múltipla
+  escolha do Vocabulary (`grammar_vocab_exercises_vocab.json`) ganharam o campo `topic`, copiado
+  de `unitTable` (App.js, os títulos reais das 100 units) por script — se `unitTable` mudar, o
+  campo não acompanha. A linha "In the book: “...”" que o "Show unit" mostrava nos blocos
+  escritos FOI REMOVIDA a pedido do dono (o campo `bookInstruction` continua nos dados, sem uso).
+- **"Hint" SÓ nos "Similar Exercises"** (blocos escritos, `showHint` em `WrittenExerciseBlock`,
+  2026-10-13): botão liga/desliga (`aria-pressed`, preenchido quando ligado) que revela a
+  resposta do **primeiro item** do bloco antes de checar (`.gve-item-answer`, "Hint: ..."). Some
+  depois de checar; só estado local, não conta como acerto. Foi implementado também nos cards de
+  múltipla escolha e RETIRADO a pedido do dono — não recolocar lá. Não confundir com
+  `item.hint` (a pista impressa no enunciado, ex. o verbo entre parênteses).
 - **4 seções, 2 mecânicas diferentes** (`SOURCES`, `kind`). Nada mais pode ser escopado no
   literal `'similar'`: desde que existe mais de uma seção `written`, `handleCheckBlock`/
   `handleResetBlock` usam `activeSourceId` — com o literal, responder na Vocabulary gravava por
@@ -322,10 +357,26 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
   `listening_american1.json`, agrupados em `LISTENING_SOURCES`)
 - Exercício de "fill in the blank": mostra o texto com lacunas sorteadas, ouve e completa
 - **"Only Unit Words" / "Random Words"** (toggle, só no Vocabulary — `isVocabularyTrack =
-  Boolean(track.unit)`, American1 não tem esse campo nem palavras-alvo extraídas): "Only Unit
+  Boolean(track.unit)`, American1 não tem esse campo nem palavras-alvo extraídas). **"Only Unit
+  Words" é o PADRÃO ao abrir o exercício** (2026-10-15; antes era "Random"). "Only Unit
   Words" blanka toda ocorrência das palavras em destaque/negrito da unit
   (`vocabulary_target_words.json`, extraído dos `_L.pdf` via PyMuPDF); "Random Words" é o
   sorteio original, inalterado. Ver ROADMAP item 2
+- **"Show answers": a palavra-resposta é VERDE** (`.listening-answer-hint`, 2026-10-13). Em
+  índigo ela tinha a cor do que o aluno digitou na lacuna e "visit visit" parecia palavra
+  repetida. (O Dictation não tem "Show answers": o texto corrigido já mostra o original, verde
+  = acertou, vermelho = errou/faltou.)
+- **Título do exercício tem LINK pra unit, em OUTRA ABA** (2026-10-15, só Listening, Dictation e
+  Speaking — `ExerciseTrackTitle`; o dono NÃO quer isso nos outros links de unit do app, "vira
+  um inferno" abrir aba pra tudo): "(unit 4B)" no Vocabulary e "Unit 8A" no American1 , e
+  no American Accent o "(p. 4–5)" liga à TELA do livro que contém a faixa
+  (`AMERICAN_ACCENT_SCREEN_ID_BY_TRACK`, via `screen.tracks`). Como o app não tem rotas, o link leva um pedido de uma vez só
+  (`buildOpenUnitHref` → `/?open=vocabulary&unit=4`, `open=american1&unit=4&section=B`,
+  `open=grammarElem&unit=21`, `open=americanAccent&screen=page-9`) que `OPEN_REQUEST_POSITION` (topo de `App.js`) lê no
+  carregamento, transforma na posição inicial (mesmo formato do `RESTORED_POSITION`, que ele
+  precede) e **limpa do endereço na hora** (F5 não reabre sozinho). Sem usuário ativo no
+  navegador o pedido é ignorado. `rel="noopener"` de propósito: a aba nova nasce com
+  `sessionStorage` vazio e não herda a posição da aba de origem.
 - Player: `WideAudioPlayer` (largura total — play/pause, ±5s, stop, A-B, loop do áudio
   inteiro, velocidades 0.5x-2x, barra de progresso). Usado SÓ aqui e no Dictation; o resto
   do app continua com os players compactos (pílula amarela)
@@ -374,6 +425,22 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
   início", isso apagaria começos de frase legítimos como "JetBlue flight...".
   `splitListeningSpeakerLabel` (Listening) reaproveita a mesma `stripDictationSpeakerLabel` —
   nunca duplicar essa lista/regex em dois lugares
+- **A correção entende "a/b" e formas equivalentes** (2026-10-15, `scoreDictationAnswer`):
+  1. **Barra entre palavras = DUAS palavras** (`splitDictationSlash`): "go/went" no texto vira
+     "go/" + "went," (o `glue` do 2º pedaço faz a tela remontar sem espaço) e quem digita "go
+     went" ou "go/went" acerta. Só separa quando os dois lados têm letra — "1/2" continua uma
+     palavra. A MESMA regra vale pro que o aluno digita (senão "1/2" digitado quebrava). São 28
+     casos no Vocabulary (go/went, take/took, ask/say...). Se o áudio disser "or" entre elas, o
+     "or" digitado é só palavra extra (o LCS ignora extras, sem penalidade).
+  2. **Formas que o áudio fala e o texto escreve de outro jeito valem igual**
+     (`DICTATION_EQUIVALENT_FORMS`, "se disse no áudio, vale" — dono): `e.g.` = `for example` =
+     `for instance`; `i.e.` = `that is`; `etc.` = `et cetera` = `and so on` = `and so forth`. Cada
+     grupo vira UMA palavra canônica dos dois lados antes do LCS (`groupDictationEquivalents`); o
+     texto mostrado continua o original e todas as palavras do grupo pintam juntas. Efeito
+     colateral aceito: "that is" no meio de uma frase comum também vira unidade (idêntico nos
+     dois lados, então só afrouxa um pouco quem digita "i.e." num lugar de "that is"). O Speaking
+     usa a mesma função, então "for example" reconhecido pela voz também casa com "e.g.". O
+     texto das faixas NÃO foi editado (não dá pra ouvir o áudio daqui).
 - **Token sem nenhuma letra/dígito (ex.: um "—" solto entre frases) não conta pro score** —
   fica de fora do casamento LCS e renderiza sem cor (`dictation-word-neutral`, nem verde nem
   vermelho) na correção, mas continua aparecendo no texto reconstruído. Antes disso, um "—"
@@ -964,9 +1031,92 @@ Estes arquivos **não devem ser editados manualmente** (todos gerados por script
   tempo — o do American Accent especialmente, com bastante revisão manual pontual por track
   reportada pelo dono, ver PROJECT_SUMMARY — mas continuam sendo dados, não lógica; tratar como
   fonte de verdade, editar com cuidado)
+  **Texto de CAIXA do livro que o áudio NÃO lê** (varredura de 2026-10-15, achada pelo dono no
+  Listening n. 35, unit 14C): os `_L.pdf` do Vocabulary têm caixas "Language help" (71) e "Common
+  mistakes" (38), identificáveis pela fonte `LetterGothicStd-Bold` do título (texto branco) — o
+  áudio nunca as lê, mas a extração antiga as tinha deixado no fim (ou no começo) de algumas
+  faixas. Removidas só as frases que (1) aparecem SÓ na caixa e não no corpo da seção do PDF,
+  (2) formam uma corrida no começo/fim da faixa e (3) o reconhecimento de voz offline do Windows
+  (`System.Speech`, ~15x mais rápido que o tempo real) confirmou como não faladas: 14C (12-16),
+  64A (15-16), 81A (1-2), 85C (12-16), 88A (10-13), 89A (12-13) e, no American Accent, a 268
+  (explicação "Stressing a word means..." + 3 itens de lista). A 49B tinha SÓ o texto da caixa; o
+  áudio lê os rótulos das fotos, então virou os 10 rótulos impressos no livro. **A transcrição
+  serve só pra DETECTAR o que não é falado — nunca vira o texto do exercício** (o texto é sempre o
+  do livro; o reconhecedor ouve "mummy" onde o livro diz "mum"). Faixas com 100% no Listening/
+  Dictation do dono não foram tocadas (exceto a 14C, pedida por ele). Frases soltas no meio de
+  uma faixa que casam com texto de caixa (71A, 71B, 64B) são falso positivo, ficam. Não é
+  confiável pra American1 (a transcrição trunca em áudio longo) — não usar lá.
 - `dictation_pause_points.json` — pontos de auto-pause do Dictation (segundos, por trackId),
   gerados por detecção de silêncio (Python `soundfile`+`numpy`; parâmetros documentados no
   ROADMAP item 1 e no PROJECT_SUMMARY) — regenerar rodando o detector, nunca editar à mão
+  **Revisão de 2026-10-15 (Vocabulary, 121 faixas)**: os áudios começam com uma INTRODUÇÃO falada
+  — letra ("B"), título ("Different homes") e, às vezes, a definição de uma palavra ("D,
+  accommodation, places where you live or stay" na 19D) ou até uma LISTA de palavras (28B lê 31
+  antes da 1ª frase). O detector antigo descartava "até 2 pausas iniciais", então a 19D mantinha
+  um ponto espúrio no fim da definição e várias unidades perdiam o ponto depois da 1ª frase
+  (22 faixas, ex. 6B/7B/16B). Agora o 1º ponto é SEMPRE o fim da 1ª frase do texto: cada trecho
+  entre pontos foi transcrito (reconhecimento de voz offline do Windows, `System.Speech`) e
+  alinhado com as frases pra achar onde o texto começa; os dois 1ºs trechos (cabeçalho) nunca
+  contam como texto. Os pontos antigos foram reaproveitados — só mudaram os da introdução.
+  **Reconhecimento RESTRITO é o que presta pra palavra solta**: ditado livre erra ("Cow, beef" →
+  "Cano / The meat"); escolher entre as frases do texto + as palavras impressas na unit
+  (PDF) acerta quase tudo. A transcrição nunca vira texto de exercício.
+  **Palavras soltas lidas DEPOIS do texto** (18A: microwave, tap, kettle...): acrescentadas como uma
+  frase cada ("Microwave."), na ordem do áudio, SÓ na grafia do livro, em 4 faixas (17B, 18A, 21A,
+  27B). Só vale para uma SÉRIE de ≥ 2 palavras curtas, a maioria reconhecida direto — sobras
+  isoladas costumam ser fim de frase mal reconhecido. Ficaram de fora, por serem incertas: 21A
+  (scarf, jacket, jumper), 27B (hill), 17A, 26C, 30A, 61B, 79B/C etc. A 6B (compass points) tem
+  100% e não foi alterada. **Listas lidas ANTES da 1ª frase** (28B lê "bus, journey, train..." antes de "I go to work by bus"):
+  o dono quer no exercício o que é DITO, na ordem e nas pausas em que é dito, então entram como
+  frases ("Bus.", "Train driver.") e o 1º ponto de pausa passa a ser o fim da 1ª palavra. Segunda
+  rodada (2026-10-15): trechos finos (silêncio ≥ 0,3 s) transcritos com reconhecimento restrito (frases do
+  texto + partes entre vírgulas + palavras da unit) e transcrição livre, alinhados por LCS com as frases.
+  **Palavras soltas só entram** antes da 1ª frase ancorada ou depois da última (lista de ≥ 3 itens), ou
+  isoladas por silêncios ≥ 0,9 s (série ≥ 3); a frase do texto sempre tem precedência (nunca duplica
+  "Cow, beef." com "Cow." + "Beef."), e faixas em que > 10% das frases não casam com o áudio não
+  são tocadas. Entraram em 14 faixas (6B, 7A, 7C, 9A, 23A, 27A, 28B, 31A, 41A/B, 47A, 51A, 60C,
+  91A); 46C (texto de e-mail) e 79B (fragmentos) foram descartadas à mão. **O TÍTULO da seção também é falado, às vezes em vários trechos, e NÃO é exercício**: o título
+  é o texto na cor `#00a3ad` (negrito ~17 pt, ao lado da letra da seção; 314 títulos extraídos
+  dos PDFs — a letra e o título trocam de tamanho em algumas unidades, 16,6 x 17,3, então a
+  detecção da letra tem que aceitar os dois). "Approximate periods of time – past, present and
+  future" (60C) é lido em 4 trechos e "Adverbs of frequency: how often" (91A) em 2; as palavras
+  desses trechos tinham entrado como itens ("Past.", "Present.", "Future.", "Often.") e foram
+  retiradas, e o 1º ponto de pausa passou pro fim da 1ª frase/palavra DEPOIS do título. Regra:
+  palavra solta só entra DEPOIS do último trecho que completa o título (`titlehdr.json`
+  no scratchpad: cobertura cumulativa das palavras do título contra o reconhecimento).
+  **Vocabulário da SEÇÃO, não da unit, é o que reconhece palavra solta** (2026-10-15): com o léxico da
+  unit inteira o reconhecedor trocava "rabbit" por "lion" e "frog" por "fly" (8A); restrito às palavras
+  impressas na seção da faixa (legendas das figuras, negritos) ele acerta as 10 legendas. Lição geral: quanto
+  menor a gramática, melhor — escolher entre 10 palavras bate com o áudio, escolher entre 500 não.
+  **Frase-lista lida palavra a palavra vira itens** (9A: "Forehead, cheek, lips, ... ankle." tem 11 itens e o
+  áudio tem 11 trechos; usa a grafia do PRÓPRIO livro, dividida na vírgula, sem reconhecimento). Em 8A as
+  10 legendas ficam NA ORDEM EM QUE SÃO DITAS (cage, parrot, rabbit, mouse, donkey, snake, frog, bull,
+  spider, goat) e a última frase do texto ("Farms in the UK may have sheep...") vem DEPOIS delas, como no
+  áudio. Armadilhas achadas: (1) os candidatos S/P gerados pelo `fine_prep` ficam com índice velho depois que
+  palavras são acrescentadas — ignorar rótulo >= nº de frases do texto sem as palavras; (2) o span de uma
+  frase NÃO pode ser min..max dos trechos casados (palavra de lista que repete palavra da frase o alarga e
+  engole a lista) — usar o melhor AGRUPAMENTO de trechos (lacunas <= 2); (3) pedaço que continua a frase tem
+  silêncio curto E só palavras da própria frase, senão é item de lista. Aplicado só onde a lista nova é
+  SUPERSET da anterior (6B, 8A, 9A, 17B, 21A, 27B, 31A, 41B, 47A, 51A, 91A); 28B, 41A, 7A, 27A ficaram como
+  estavam (a nova trazia ruído como "On/off." x3 ou perdia itens).
+  **Toda frase do Vocabulary tem pelo menos UMA lacuna no "Only Unit Words"** (2026-10-15, pedido do
+  dono: "fica esquisito uma linha sem nada para preencher", ex. 16C linha 4): 379 frases não
+  tinham nenhuma palavra da unit, então um substantivo/adjetivo delas (heurística: palavra depois de
+  artigo/possessivo, ou adjetivo por sufixo/intensificador; evita verbo, nome próprio no meio da
+  frase e -ing/-ed; sem opção clara, a palavra mais longa) foi ACRESCENTADO a
+  `vocabulary_target_words.json` — 330 palavras em ~75 units. A lista é por UNIT, não por frase: a
+  palavra nova também some das outras frases da unit onde aparece. O script (no scratchpad) usa as
+  mesmas regras de `isListeningBlankCandidate`/`listeningWordMatchesTarget` e é idempotente: rodar de
+  novo depois de mexer em frases só completa o que faltar.
+  **Cada palavra solta acrescentada fica registrada em `track.wordItems`** (campo de dados em
+  `listening_vocabulary.json`, 18 faixas) e vira SEMPRE lacuna inteira no "Only Unit Words" — elas não
+  estão em `vocabulary_target_words.json` (não são negrito do texto), então sem isso apareciam
+  escritas, sem nada a preencher (bug visto pelo dono na 27A). Em "Random Words" valem como frase
+  curta normal. O token inteiro ("on/off") conta, não só as partes. Gerar palavras novas na lista
+  exige acrescentar a frase TAMBÉM em `wordItems`. **Limites conhecidos**:
+  listas parciais (a 28B tem lacunas), tabelas lidas célula a célula (24D) e frases curtas coladas
+  no mesmo trecho continuam sem reconstrução exata — decidir ouvindo; a transcrição NUNCA escolhe a
+  grafia (vem do lexicon.json extraído do PDF)
 - `american_accent_index.json` — capítulos, "telas" de leitura (agrupamento de páginas) e mapa
   track→arquivo de áudio do American Accent. Gerado via PyMuPDF cruzando: TOC embutido do PDF
   (capítulos), posição Y do texto (não a ordem de leitura simples do PyMuPDF, que não é a

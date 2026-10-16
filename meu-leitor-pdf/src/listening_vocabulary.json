@@ -174,9 +174,27 @@
         "Switzerland is a land of contrasts, with completely different landscapes.",
         "The climate can also change within a very short distance.",
         "For example, Ascona in the south has an almost Mediterranean climate, but the Dufour Peak in Valais has a very cold climate.",
-        "The distance between the two is just 70 kilometres."
+        "The distance between the two is just 70 kilometres.",
+        "North.",
+        "North-east.",
+        "East.",
+        "South-east.",
+        "South.",
+        "South-west.",
+        "West.",
+        "North-west."
       ],
-      "number": 10
+      "number": 10,
+      "wordItems": [
+        "North.",
+        "North-east.",
+        "East.",
+        "South-east.",
+        "South.",
+        "South-west.",
+        "West.",
+        "North-west."
+      ]
     },
     {
       "id": "unit7-a",
@@ -187,11 +205,19 @@
       "audioLabel": "7A",
       "sentences": [
         "Notice that it is very common to form adjectives by adding -y.",
+        "Adjective.",
+        "Foggy.",
+        "Cloud.",
+        "Cloudy.",
+        "Cold.",
+        "Cold.",
+        "Ice.",
+        "Icy.",
         "Fog, foggy, sun, sunny, the sun is shining.",
         "Cloud, cloudy, wind, windy, the wind is blowing.",
         "The cold, cold, snow, snowy, it’s snowing.",
-        "Ice, icy, rain, wet, it’s raining.",
         "There are common word partners to describe weather conditions.",
+        "Ice, icy, rain, wet, it’s raining.",
         "It was very cloudy this morning, but the sun came out after lunch.",
         "The accident happened in thick fog.",
         "We had some heavy rain at the weekend.",
@@ -200,7 +226,17 @@
         "It rained in the morning, but the sky was clear by lunchtime.",
         "It’s been extremely cold today."
       ],
-      "number": 11
+      "number": 11,
+      "wordItems": [
+        "Adjective.",
+        "Foggy.",
+        "Cloud.",
+        "Cloudy.",
+        "Cold.",
+        "Cold.",
+        "Ice.",
+        "Icy."
+      ]
     },
     {
       "id": "unit7-b",
@@ -231,9 +267,17 @@
       "sentences": [
         "40 degrees Celsius.",
         "10 degrees below zero.",
-        "Boiling, hot, warm, not very warm (also cool), cold (also chilly), freezing."
+        "Boiling, hot, warm, not very warm (also cool), cold (also chilly), freezing.",
+        "Cold.",
+        "Also chilly.",
+        "Freezing."
       ],
-      "number": 13
+      "number": 13,
+      "wordItems": [
+        "Cold.",
+        "Also chilly.",
+        "Freezing."
+      ]
     },
     {
       "id": "unit8-a",
@@ -247,18 +291,31 @@
         "The most common are dogs and cats, but people also keep birds, e.g. parrots, that are usually in a cage.",
         "Children sometimes keep mice and rabbits.",
         "Some people keep more unusual animals as pets, e.g. frogs, snakes and spiders.",
-        "Farms in the UK may have sheep, pigs, cows, horses, donkeys, chickens, goats and a bull.",
+        "Cage.",
         "Parrot.",
         "Rabbit.",
-        "Donkey.",
-        "Frog.",
-        "Spider.",
         "Mouse.",
+        "Donkey.",
         "Snake.",
+        "Frog.",
         "Bull.",
-        "Goat."
+        "Spider.",
+        "Goat.",
+        "Farms in the UK may have sheep, pigs, cows, horses, donkeys, chickens, goats and a bull."
       ],
-      "number": 14
+      "number": 14,
+      "wordItems": [
+        "Cage.",
+        "Parrot.",
+        "Rabbit.",
+        "Mouse.",
+        "Donkey.",
+        "Snake.",
+        "Frog.",
+        "Bull.",
+        "Spider.",
+        "Goat."
+      ]
     },
     {
       "id": "unit8-b",
@@ -292,12 +349,16 @@
         "Ant.",
         "Mosquito.",
         "Fly.",
-        "Butterfly."
+        "Butterfly.",
+        "Wings."
       ],
       "id": "unit8-c",
       "audio": "/audio/unit_8/U_008.C.mp3",
       "audioLabel": "8C",
-      "number": 16
+      "number": 16,
+      "wordItems": [
+        "Wings."
+      ]
     },
     {
       "id": "unit8-d",
@@ -325,10 +386,46 @@
       "sentences": [
         "The outer part of the body is covered in skin.",
         "Too much sun is bad for your skin.",
-        "Forehead, cheek, lips, neck, chest, elbow, waist, bottom, hip, knee, ankle.",
-        "Chin, shoulder, breast, wrist, thumb, heel, toe."
+        "Forehead.",
+        "Cheek.",
+        "Lips.",
+        "Neck.",
+        "Chest.",
+        "Elbow.",
+        "Waist.",
+        "Bottom.",
+        "Hip.",
+        "Knee.",
+        "Ankle.",
+        "Chin.",
+        "Shoulder.",
+        "Breast.",
+        "Wrist.",
+        "Thumb.",
+        "Heel.",
+        "Toe."
       ],
-      "number": 18
+      "number": 18,
+      "wordItems": [
+        "Forehead.",
+        "Cheek.",
+        "Lips.",
+        "Neck.",
+        "Chest.",
+        "Elbow.",
+        "Waist.",
+        "Bottom.",
+        "Hip.",
+        "Knee.",
+        "Ankle.",
+        "Chin.",
+        "Shoulder.",
+        "Breast.",
+        "Wrist.",
+        "Thumb.",
+        "Heel.",
+        "Toe."
+      ]
     },
     {
       "id": "unit9-b",
@@ -407,7 +504,7 @@
       "letter": "C",
       "title": "Unit 10C - Hair",
       "sentences": [
-        "Blonde, or blond.",
+        "Blonde.",
         "Fair.",
         "Brown.",
         "Dark.",
@@ -432,7 +529,7 @@
         "What does Sophia’s boyfriend look like?",
         "He’s blond, and quite good-looking.",
         "Is he tall?",
-        "He’s got broad shoulders.",
+        "EHHH, tallish, but he’s got broad shoulders.",
         "He looks very athletic.",
         "I think he does a lot of sport.",
         "Is he quite smart?",
@@ -448,7 +545,7 @@
       "audio": "/audio/unit_11/U_011.A.mp3",
       "audioLabel": "11A",
       "sentences": [
-        "Choose the number that describes you.",
+        "Describe your character. Choose the number that describes you. For example, in the first line 1 means very positive, 3 means not very positive or negative, 5 means very negative.",
         "I think I’m very positive.",
         "I’m quite a negative person.",
         "I’m usually reliable.",
@@ -472,8 +569,8 @@
       "audio": "/audio/unit_11/U_011.B.mp3",
       "audioLabel": "11B",
       "sentences": [
-        "Positive, negative.",
-        "Generous, mean.",
+        "Positive, generous.",
+        "Negative, mean.",
         "Honest, dishonest.",
         "Clever, intelligent, stupid.",
         "Calm, nervous, anxious."
@@ -632,12 +729,7 @@
         "My mother was born four years later.",
         "She had a very different childhood.",
         "She grew up in the city, she was allowed to go to parties, and when she was in her teens, her parents let her stay out late.",
-        "My mum is the same with me.",
-        "Let and allow have the same meaning.",
-        "Let is slightly more informal, and allow is often used in the passive.",
-        "My dad let me drive his car.",
-        "I was allowed to drive my dad’s car.",
-        "You’re not allowed to smoke in that room."
+        "My mum is the same with me."
       ],
       "number": 35
     },
@@ -800,9 +892,25 @@
         "This is where we live.",
         "We rent a flat on the second floor.",
         "There's a family in the flat downstairs, and a young French couple upstairs, on the top floor.",
-        "It's a modern block of flats, and it's quite good, although the lift is small, and there's no air conditioning."
+        "It's a modern block of flats, and it's quite good, although the lift is small, and there's no air conditioning.",
+        "Top floor.",
+        "Second floor.",
+        "Balcony.",
+        "Ground floor.",
+        "Steps.",
+        "Front.",
+        "First floor."
       ],
-      "number": 46
+      "number": 46,
+      "wordItems": [
+        "Top floor.",
+        "Second floor.",
+        "Balcony.",
+        "Ground floor.",
+        "Steps.",
+        "Front.",
+        "First floor."
+      ]
     },
     {
       "id": "unit17-c",
@@ -831,9 +939,31 @@
         "Our bedroom has an en-suite bathroom, our two teenage children have their own rooms, we have a spare room for guests, and another bathroom.",
         "Downstairs, there's a living room, a dining room and a study.",
         "We've also got a lovely big kitchen with a fridge-freezer, a cooker with two ovens and a dishwasher.",
-        "Next to it, there's a small utility room where we keep the washing machine."
+        "Next to it, there's a small utility room where we keep the washing machine.",
+        "Microwave.",
+        "Tap.",
+        "Kettle.",
+        "Tiles.",
+        "Freezer.",
+        "Cupboards.",
+        "Sink.",
+        "Oven.",
+        "Cooker.",
+        "Fridge."
       ],
-      "number": 48
+      "number": 48,
+      "wordItems": [
+        "Microwave.",
+        "Tap.",
+        "Kettle.",
+        "Tiles.",
+        "Freezer.",
+        "Cupboards.",
+        "Sink.",
+        "Oven.",
+        "Cooker.",
+        "Fridge."
+      ]
     },
     {
       "id": "unit18-b",
@@ -980,9 +1110,47 @@
       "sentences": [
         "I think the woman looks stylish.",
         "The man is smartly dressed.",
-        "The boy's clothes are more casual."
+        "The boy's clothes are more casual.",
+        "Earring.",
+        "Top.",
+        "Necklace.",
+        "Bracelet.",
+        "Skirt.",
+        "Tights.",
+        "Boots.",
+        "Tie.",
+        "Sleeve.",
+        "Button.",
+        "Suit.",
+        "Pocket.",
+        "Cap.",
+        "T-shirt.",
+        "Zip.",
+        "Jacket.",
+        "Jeans.",
+        "Trainers."
       ],
-      "number": 57
+      "number": 57,
+      "wordItems": [
+        "Earring.",
+        "Top.",
+        "Necklace.",
+        "Bracelet.",
+        "Skirt.",
+        "Tights.",
+        "Boots.",
+        "Tie.",
+        "Sleeve.",
+        "Button.",
+        "Suit.",
+        "Pocket.",
+        "Cap.",
+        "T-shirt.",
+        "Zip.",
+        "Jacket.",
+        "Jeans.",
+        "Trainers."
+      ]
     },
     {
       "id": "unit21-b",
@@ -1055,6 +1223,11 @@
       "audio": "/audio/unit_23/U_023.A.mp3",
       "audioLabel": "23A",
       "sentences": [
+        "Sweets.",
+        "Basket.",
+        "Shelves.",
+        "Checkout.",
+        "Trolley.",
         "How do supermarkets make us spend more money?",
         "They put fresh bread, as it smells lovely, near the entrance to make us feel hungry – and hungry shoppers spend more.",
         "They also rearrange things and put them in different places; this makes us spend more time in the store and that means spending more money.",
@@ -1063,7 +1236,14 @@
         "And be careful of special offers, e.g. three for the price of two.",
         "People often buy more than they need and throw away half of it."
       ],
-      "number": 61
+      "number": 61,
+      "wordItems": [
+        "Sweets.",
+        "Basket.",
+        "Shelves.",
+        "Checkout.",
+        "Trolley."
+      ]
     },
     {
       "id": "unit23-b",
@@ -1277,13 +1457,25 @@
       "audio": "/audio/unit_27/U_027.A.mp3",
       "audioLabel": "27A",
       "sentences": [
+        "Leaves.",
+        "Branches.",
+        "Grass.",
+        "Branches.",
+        "Ground.",
         "I grew up in the countryside where I was surrounded by nature.",
         "As children, we used to play on the banks of the river and in the woods.",
         "In the summer we picked apples and blackberries; in the autumn we often picked mushrooms.",
         "The seasons were all different, and I loved the scenery, the open spaces, and the fresh air.",
         "I still do."
       ],
-      "number": 74
+      "number": 74,
+      "wordItems": [
+        "Leaves.",
+        "Branches.",
+        "Grass.",
+        "Branches.",
+        "Ground."
+      ]
     },
     {
       "id": "unit27-b",
@@ -1295,9 +1487,29 @@
       "sentences": [
         "My uncle owns a farm.",
         "He keeps a few animals, but mostly he grows crops like barley, wheat and potatoes.",
-        "Farming is a hard life: my uncle is usually up at five in the morning, and sometimes his work isn't finished until sunset."
+        "Farming is a hard life: my uncle is usually up at five in the morning, and sometimes his work isn't finished until sunset.",
+        "Hill.",
+        "Valley.",
+        "Woods.",
+        "Farmhouse.",
+        "Fence.",
+        "Gate.",
+        "Field.",
+        "Footpath.",
+        "Tractor."
       ],
-      "number": 75
+      "number": 75,
+      "wordItems": [
+        "Hill.",
+        "Valley.",
+        "Woods.",
+        "Farmhouse.",
+        "Fence.",
+        "Gate.",
+        "Field.",
+        "Footpath.",
+        "Tractor."
+      ]
     },
     {
       "id": "unit27-c",
@@ -1339,6 +1551,31 @@
       "audio": "/audio/unit_28/U_028.B.mp3",
       "audioLabel": "28B",
       "sentences": [
+        "Bus.",
+        "Bus.",
+        "Go by.",
+        "Get on/off.",
+        "Journey.",
+        "Train.",
+        "Train driver.",
+        "Train fare.",
+        "Get on/off.",
+        "Platform.",
+        "Journey.",
+        "Plane.",
+        "Pilot.",
+        "Airfare.",
+        "Fly.",
+        "Airport.",
+        "Flight.",
+        "Taxi.",
+        "Taxi driver.",
+        "Fare.",
+        "Get/take.",
+        "Taxi rank.",
+        "Bicycle.",
+        "Cyclist.",
+        "Get on/off.",
         "I go to work by bus.",
         "It's only three stops.",
         "We got the train to Cardiff, but the journey was terrible.",
@@ -1347,7 +1584,34 @@
         "If there are more flights, airfares should be cheaper.",
         "We were going to get the train to Paris, but in the end we decided to fly."
       ],
-      "number": 78
+      "number": 78,
+      "wordItems": [
+        "Bus.",
+        "Bus.",
+        "Go by.",
+        "Get on/off.",
+        "Journey.",
+        "Train.",
+        "Train driver.",
+        "Train fare.",
+        "Get on/off.",
+        "Platform.",
+        "Journey.",
+        "Plane.",
+        "Pilot.",
+        "Airfare.",
+        "Fly.",
+        "Airport.",
+        "Flight.",
+        "Taxi.",
+        "Taxi driver.",
+        "Fare.",
+        "Get/take.",
+        "Taxi rank.",
+        "Bicycle.",
+        "Cyclist.",
+        "Get on/off."
+      ]
     },
     {
       "id": "unit28-c",
@@ -1488,12 +1752,28 @@
       "audio": "/audio/unit_31/U_031.A.mp3",
       "audioLabel": "31A",
       "sentences": [
+        "DVD.",
+        "DVD player.",
+        "Socket.",
+        "Plug.",
         "You use a rubber to rub something out, e.g. writing.",
+        "Rubber.",
+        "Ruler.",
+        "A highlighter pen.",
         "You use a ruler to measure something.",
         "You use a pencil sharpener to sharpen pencils.",
         "You use a highlighter pen to highlight a word."
       ],
-      "number": 87
+      "number": 87,
+      "wordItems": [
+        "DVD.",
+        "DVD player.",
+        "Socket.",
+        "Plug.",
+        "Rubber.",
+        "Ruler.",
+        "A highlighter pen."
+      ]
     },
     {
       "id": "unit31-b",
@@ -2028,10 +2308,17 @@
       "audio": "/audio/unit_41/U_041.A.mp3",
       "audioLabel": "41A",
       "sentences": [
+        "Goalkeeper.",
+        "Net.",
+        "Skis.",
+        "Stick.",
         "Athletics, athlete, run, jump, throw, etc., track (in a stadium).",
         "Motor racing, racing driver, drive/race, track.",
         "Swimming, swimmer, swim/race, pool.",
         "Boxing, boxer, box/fight, boxing ring.",
+        "Skiing.",
+        "Skier.",
+        "Ski.",
         "Skiing, skier, ski, ski slopes.",
         "Ice hockey, ice hockey player, play, ice hockey rink.",
         "Football, footballer, play, pitch (in a stadium).",
@@ -2039,7 +2326,16 @@
         "Basketball, basketball player, play, basketball court.",
         "Sailing, sailor, sail, on the sea or a lake."
       ],
-      "number": 118
+      "number": 118,
+      "wordItems": [
+        "Goalkeeper.",
+        "Net.",
+        "Skis.",
+        "Stick.",
+        "Skiing.",
+        "Skier.",
+        "Ski."
+      ]
     },
     {
       "id": "unit41-b",
@@ -2049,6 +2345,12 @@
       "audio": "/audio/unit_41/U_041.B.mp3",
       "audioLabel": "41B",
       "sentences": [
+        "Tent.",
+        "Camping.",
+        "Rock climbing.",
+        "Jogging.",
+        "Yoga.",
+        "Going to the gym.",
         "We often go camping in the summer, and we usually do a bit of rock climbing as well.",
         "My best friend does a lot of yoga.",
         "She works out in the gym two or three times a week as well.",
@@ -2056,7 +2358,15 @@
         "My mum does a bit of jogging as well – just for fun.",
         "I’m afraid I don’t do any exercise at all."
       ],
-      "number": 119
+      "number": 119,
+      "wordItems": [
+        "Tent.",
+        "Camping.",
+        "Rock climbing.",
+        "Jogging.",
+        "Yoga.",
+        "Going to the gym."
+      ]
     },
     {
       "id": "unit42-a",
@@ -2338,9 +2648,14 @@
       "audio": "/audio/unit_47/U_047.A.mp3",
       "audioLabel": "47A",
       "sentences": [
+        "Passenger.",
+        "Hand.",
+        "Luggage.",
+        "Trolley.",
+        "Suitcase.",
         "When you arrive at an airport, the departures board will show you the flight numbers, for example BA735, departure times, for example 08.40, and destinations.",
-        "At check-in / the check-in desk, someone will check your ticket and weigh your luggage.",
         "If it is more than, for example, 20 kilograms, you will have to pay excess baggage.",
+        "At check-in / the check-in desk, someone will check your ticket and weigh your luggage.",
         "You can take your hand luggage with you on the aircraft.",
         "You also get your boarding card and then you can go through passport control, where someone checks your passport, and into the departure lounge, where you can buy things in the duty-free shop, e.g. cigarettes and perfume.",
         "Shortly before take-off, you go to the place where you get on the plane, e.g. Gate 3 or Gate 5.",
@@ -2348,7 +2663,14 @@
         "You then have to fasten your seat belt.",
         "If there are no delays, the plane moves slowly to the runway, then it takes off."
       ],
-      "number": 135
+      "number": 135,
+      "wordItems": [
+        "Passenger.",
+        "Hand.",
+        "Luggage.",
+        "Trolley.",
+        "Suitcase."
+      ]
     },
     {
       "id": "unit47-b",
@@ -2454,9 +2776,16 @@
       "audio": "/audio/unit_49/U_049.B.mp3",
       "audioLabel": "49B",
       "sentences": [
-        "In the UK, chips or fries mean French fries.",
-        "Crisps are thin slices of fried potatoes sold in bags.",
-        "In the USA, chips refer to thin pieces of fried potatoes sold in bags."
+        "Waffle.",
+        "Toastie.",
+        "Panini.",
+        "Bagel.",
+        "Wrap.",
+        "Crisps.",
+        "Baguette.",
+        "Muffin.",
+        "Cupcake.",
+        "Croissant."
       ],
       "number": 142
     },
@@ -2551,11 +2880,23 @@
       "audio": "/audio/unit_51/U_051.A.mp3",
       "audioLabel": "51A",
       "sentences": [
+        "Cliff.",
+        "Beach.",
+        "Rocks.",
+        "Waves.",
+        "Sand.",
         "Many people spend their holiday at the coast, where there are a lot of seaside resorts and they can go to the beach every day.",
         "Generally people prefer beaches that are sandy, where you can go for a stroll along the shore in the sunshine.",
         "On the beach, you also sometimes get a breeze that blows off the sea."
       ],
-      "number": 147
+      "number": 147,
+      "wordItems": [
+        "Cliff.",
+        "Beach.",
+        "Rocks.",
+        "Waves.",
+        "Sand."
+      ]
     },
     {
       "id": "unit51-b",
@@ -3335,9 +3676,7 @@
         "A tube of toothpaste.",
         "A vase of flowers.",
         "A tin of fruit.",
-        "A bar of chocolate.",
-        "A tin usually has something we eat inside it.",
-        "A can has something we drink."
+        "A bar of chocolate."
       ],
       "number": 188
     },
@@ -4460,8 +4799,6 @@
       "audio": "/audio/unit_81/U_081.A.mp3",
       "audioLabel": "81A",
       "sentences": [
-        "We use all three of these common verbs with particular nouns.",
-        "These word partners (collocations) are often different in other languages, so look at them carefully.",
         "I've made a mistake.",
         "I'm afraid I haven't done my homework.",
         "She took a photo of me this morning.",
@@ -4771,12 +5108,7 @@
         "Don't you think this material feels like silk?",
         "That boy looks as if he's trying to get over the wall.",
         "I spoke to Isobel.",
-        "It sounded as though they had a good time on holiday.",
-        "We also use seem and appear to describe a sense or feeling about someone or something, after we have seen them, talked to them, etc.",
-        "Before like + noun, we usually use seem.",
-        "I saw Will and he seemed/appeared quite happy.",
-        "The shop appears/seems to be very busy.",
-        "Amelia said she wanted to travel a bit, which seems like a good idea."
+        "It sounded as though they had a good time on holiday."
       ],
       "number": 256
     },
@@ -4939,11 +5271,7 @@
         "He didn't try and persuade me not to go, but he warned me that it would be hard work, and reminded me that it was only three months, then I'd be out of a job.",
         "I realised that my girlfriend wasn't happy about it either, but I promised her that I would phone every day, and suggested that she could come out to Italy for a holiday while I was there.",
         "I didn't mention that I was part of a small team with three other women.",
-        "Anyway, I'm going.",
-        "Some verbs can be followed by different constructions.",
-        "I suggested going there.",
-        "She warned me not to go.",
-        "He reminded me to post the letter."
+        "Anyway, I'm going."
       ],
       "number": 264
     },
@@ -4992,9 +5320,7 @@
         "Everyone was really exhausted by the end of the day.",
         "Bungee jumping is the most terrifying thing I've ever done.",
         "Computers are an essential part of modern life.",
-        "The food was delicious.",
-        "The food was absolutely marvellous.",
-        "We can use absolutely or really before extreme adjectives, e.g. absolutely awful, really terrific, but we can't use very."
+        "The food was delicious."
       ],
       "number": 266
     },
@@ -5082,6 +5408,16 @@
       "audio": "/audio/unit_91/U_091.A.mp3",
       "audioLabel": "91A",
       "sentences": [
+        "Always.",
+        "Often.",
+        "Frequently.",
+        "Quite often.",
+        "Sometimes.",
+        "Occasionally.",
+        "Hardly ever.",
+        "Rarely.",
+        "Seldom.",
+        "Never.",
         "She hardly ever plays tennis now.",
         "I am often late.",
         "I occasionally go to the theatre.",
@@ -5089,7 +5425,19 @@
         "We see them quite frequently.",
         "I have never been to America."
       ],
-      "number": 271
+      "number": 271,
+      "wordItems": [
+        "Always.",
+        "Often.",
+        "Frequently.",
+        "Quite often.",
+        "Sometimes.",
+        "Occasionally.",
+        "Hardly ever.",
+        "Rarely.",
+        "Seldom.",
+        "Never."
+      ]
     },
     {
       "id": "unit91-b",

@@ -3,6 +3,7 @@
     "id": "vocab-4",
     "course": "vocabulary",
     "unit": 4,
+    "topic": "English language words",
     "type": "multipleChoice",
     "prompt": "It is important to know which syllable to _____, for example on before it is the second syllable, on cinema it is the first syllable.",
     "options": [
@@ -17,6 +18,7 @@
     "id": "vocab-5",
     "course": "vocabulary",
     "unit": 5,
+    "topic": "Country, nationality and language",
     "type": "multipleChoice",
     "prompt": "I come from Argentina, so I'm Argentinian and my _____ language is Spanish.",
     "options": [
@@ -31,6 +33,7 @@
     "id": "vocab-6",
     "course": "vocabulary",
     "unit": 6,
+    "topic": "The physical world",
     "type": "multipleChoice",
     "prompt": "Two thirds of the _____ of the Earth is covered in water.",
     "options": [
@@ -45,6 +48,7 @@
     "id": "vocab-7",
     "course": "vocabulary",
     "unit": 7,
+    "topic": "Weather",
     "type": "multipleChoice",
     "prompt": "It was very cloudy this morning, but the sun _____ out after lunch.",
     "options": [
@@ -59,6 +63,7 @@
     "id": "vocab-8",
     "course": "vocabulary",
     "unit": 8,
+    "topic": "Animals and insects",
     "type": "multipleChoice",
     "prompt": "The pictures show a number of wild _____.",
     "options": [
@@ -73,6 +78,7 @@
     "id": "vocab-9",
     "course": "vocabulary",
     "unit": 9,
+    "topic": "The body and movement",
     "type": "multipleChoice",
     "prompt": "The outer part of the body is covered in _____.",
     "options": [
@@ -87,6 +93,7 @@
     "id": "vocab-10",
     "course": "vocabulary",
     "unit": 10,
+    "topic": "Describing appearance",
     "type": "multipleChoice",
     "prompt": "We can talk about a person’s height and their weight, e.g. I’m roughly one metre eighty tall, and I _____ just under eighty kilograms.",
     "options": [
@@ -101,6 +108,7 @@
     "id": "vocab-11",
     "course": "vocabulary",
     "unit": 11,
+    "topic": "Describing character",
     "type": "multipleChoice",
     "prompt": "I’m usually quite _____.",
     "options": [
@@ -115,6 +123,7 @@
     "id": "vocab-12",
     "course": "vocabulary",
     "unit": 12,
+    "topic": "Feelings",
     "type": "multipleChoice",
     "prompt": "_____ is relaxing and helps us to be creative, but too much dark blue can make us depressed.",
     "options": [
@@ -129,6 +138,7 @@
     "id": "vocab-13",
     "course": "vocabulary",
     "unit": 13,
+    "topic": "Family and friends",
     "type": "multipleChoice",
     "prompt": "We got to know _____ other when we were in the same class at school.",
     "options": [
@@ -143,6 +153,7 @@
     "id": "vocab-14",
     "course": "vocabulary",
     "unit": 14,
+    "topic": "Growing up",
     "type": "multipleChoice",
     "prompt": "_____ is the moment a baby is born.",
     "options": [
@@ -157,6 +168,7 @@
     "id": "vocab-15",
     "course": "vocabulary",
     "unit": 15,
+    "topic": "Romance, marriage and divorce",
     "type": "multipleChoice",
     "prompt": "At first we were just friends, then we started going out with each other, and after a few months we realised we were in _____.",
     "options": [
@@ -171,6 +183,7 @@
     "id": "vocab-16",
     "course": "vocabulary",
     "unit": 16,
+    "topic": "Daily routines",
     "type": "multipleChoice",
     "prompt": "But I still have to make my bed and do some of my _____, and I sometimes do the shopping with Mum.",
     "options": [
@@ -185,6 +198,7 @@
     "id": "vocab-17",
     "course": "vocabulary",
     "unit": 17,
+    "topic": "The place where you live",
     "type": "multipleChoice",
     "prompt": "We rent a _____ on the second floor.",
     "options": [
@@ -199,6 +213,7 @@
     "id": "vocab-18",
     "course": "vocabulary",
     "unit": 18,
+    "topic": "Around the home",
     "type": "multipleChoice",
     "prompt": "Do you like a wooden _____ with a rug, or a carpet?",
     "options": [
@@ -213,6 +228,7 @@
     "id": "vocab-19",
     "course": "vocabulary",
     "unit": 19,
+    "topic": "Money",
     "type": "multipleChoice",
     "prompt": "One good thing is that I don't have to pay it back until I get a job and I'm earning a reasonable _____ of money.",
     "options": [
@@ -227,6 +243,7 @@
     "id": "vocab-20",
     "course": "vocabulary",
     "unit": 20,
+    "topic": "Health",
     "type": "multipleChoice",
     "prompt": "Take some _____ for the pain.",
     "options": [
@@ -241,6 +258,7 @@
     "id": "vocab-21",
     "course": "vocabulary",
     "unit": 21,
+    "topic": "Clothes",
     "type": "multipleChoice",
     "prompt": "I think I look good in _____ because dark colours suit me.",
     "options": [
@@ -255,6 +273,7 @@
     "id": "vocab-22",
     "course": "vocabulary",
     "unit": 22,
+    "topic": "Fashion and buying clothes",
     "type": "multipleChoice",
     "prompt": "I like to buy designer _____, even though they're more expensive.",
     "options": [
@@ -269,6 +288,7 @@
     "id": "vocab-23",
     "course": "vocabulary",
     "unit": 23,
+    "topic": "Shopping",
     "type": "multipleChoice",
     "prompt": "How do supermarkets make us spend more _____?",
     "options": [
@@ -283,6 +303,7 @@
     "id": "vocab-24",
     "course": "vocabulary",
     "unit": 24,
+    "topic": "Food",
     "type": "multipleChoice",
     "prompt": "We often put salad _____ (usually oil and vinegar, or perhaps oil and lemon) on salad.",
     "options": [
@@ -297,6 +318,7 @@
     "id": "vocab-25",
     "course": "vocabulary",
     "unit": 25,
+    "topic": "Cooking",
     "type": "multipleChoice",
     "prompt": "_____ the potatoes and boil them.",
     "options": [
@@ -311,6 +333,7 @@
     "id": "vocab-26",
     "course": "vocabulary",
     "unit": 26,
+    "topic": "City life",
     "type": "multipleChoice",
     "prompt": "I usually drive to work, but sometimes I get stuck in traffic jams, and when I get to work I find there's _____ to park because the car park is already full.",
     "options": [
@@ -325,6 +348,7 @@
     "id": "vocab-27",
     "course": "vocabulary",
     "unit": 27,
+    "topic": "Life in the country",
     "type": "multipleChoice",
     "prompt": "The nearest town is eight miles away, and _____ transport is hopeless.",
     "options": [
@@ -339,6 +363,7 @@
     "id": "vocab-28",
     "course": "vocabulary",
     "unit": 28,
+    "topic": "Transport",
     "type": "multipleChoice",
     "prompt": "I _____ the train to work.",
     "options": [
@@ -353,6 +378,7 @@
     "id": "vocab-29",
     "course": "vocabulary",
     "unit": 29,
+    "topic": "On the road",
     "type": "multipleChoice",
     "prompt": "Yesterday, I got _____ on my way to the airport.",
     "options": [
@@ -367,6 +393,7 @@
     "id": "vocab-30",
     "course": "vocabulary",
     "unit": 30,
+    "topic": "Notices and warnings",
     "type": "multipleChoice",
     "prompt": "Be careful, this _____ will break easily.",
     "options": [
@@ -381,6 +408,7 @@
     "id": "vocab-31",
     "course": "vocabulary",
     "unit": 31,
+    "topic": "Classroom language",
     "type": "multipleChoice",
     "prompt": "Could you explain the _____ between lend and give?",
     "options": [
@@ -395,6 +423,7 @@
     "id": "vocab-32",
     "course": "vocabulary",
     "unit": 32,
+    "topic": "School education",
     "type": "multipleChoice",
     "prompt": "In the _____ schools generally had more rules, and if you broke the rules, you were punished.",
     "options": [
@@ -409,6 +438,7 @@
     "id": "vocab-33",
     "course": "vocabulary",
     "unit": 33,
+    "topic": "Studying English and taking exams",
     "type": "multipleChoice",
     "prompt": "Most of them still find it difficult to write accurately, so I need to _____ on that with them.",
     "options": [
@@ -423,6 +453,7 @@
     "id": "vocab-34",
     "course": "vocabulary",
     "unit": 34,
+    "topic": "University education",
     "type": "multipleChoice",
     "prompt": "These are called _____ degrees.",
     "options": [
@@ -437,6 +468,7 @@
     "id": "vocab-35",
     "course": "vocabulary",
     "unit": 35,
+    "topic": "Jobs",
     "type": "multipleChoice",
     "prompt": "A builder builds or _____ homes.",
     "options": [
@@ -451,6 +483,7 @@
     "id": "vocab-36",
     "course": "vocabulary",
     "unit": 36,
+    "topic": "Talking about your work",
     "type": "multipleChoice",
     "prompt": "I earn or make about 25,000 pounds a _____.",
     "options": [
@@ -465,6 +498,7 @@
     "id": "vocab-37",
     "course": "vocabulary",
     "unit": 37,
+    "topic": "Making a career",
     "type": "multipleChoice",
     "prompt": "I didn't earn a lot, but the company gave me _____ training, which was good.",
     "options": [
@@ -479,6 +513,7 @@
     "id": "vocab-38",
     "course": "vocabulary",
     "unit": 38,
+    "topic": "Working in an office",
     "type": "multipleChoice",
     "prompt": "The photocopier has broken down, the computer isn't working and the printer has _____ out of paper.",
     "options": [
@@ -493,6 +528,7 @@
     "id": "vocab-39",
     "course": "vocabulary",
     "unit": 39,
+    "topic": "Running a company",
     "type": "multipleChoice",
     "prompt": "The company was set up in 1991 with the aim of producing a _____ of bread of the highest quality.",
     "options": [
@@ -507,6 +543,7 @@
     "id": "vocab-40",
     "course": "vocabulary",
     "unit": 40,
+    "topic": "Business and finance",
     "type": "multipleChoice",
     "prompt": "We’ve seen a slight _____ in profit.",
     "options": [
@@ -521,6 +558,7 @@
     "id": "vocab-41",
     "course": "vocabulary",
     "unit": 41,
+    "topic": "Sport and leisure",
     "type": "multipleChoice",
     "prompt": "We often go camping in the summer, and we usually do a bit of rock _____ as well.",
     "options": [
@@ -535,6 +573,7 @@
     "id": "vocab-42",
     "course": "vocabulary",
     "unit": 42,
+    "topic": "Competitive sport",
     "type": "multipleChoice",
     "prompt": "Many teams also play in _____ competitions, e.g. the FA Cup or the World Cup, which ends with two teams playing against each other in a final.",
     "options": [
@@ -549,6 +588,7 @@
     "id": "vocab-43",
     "course": "vocabulary",
     "unit": 43,
+    "topic": "Books and films",
     "type": "multipleChoice",
     "prompt": "I used to hate _____ at school, but now I read a lot.",
     "options": [
@@ -563,6 +603,7 @@
     "id": "vocab-44",
     "course": "vocabulary",
     "unit": 44,
+    "topic": "Music",
     "type": "multipleChoice",
     "prompt": "Violin, _____.",
     "options": [
@@ -577,6 +618,7 @@
     "id": "vocab-45",
     "course": "vocabulary",
     "unit": 45,
+    "topic": "Special events",
     "type": "multipleChoice",
     "prompt": "It consists of at least six different festivals which _____ place in the city and last for almost six weeks during August and early September.",
     "options": [
@@ -591,6 +633,7 @@
     "id": "vocab-46",
     "course": "vocabulary",
     "unit": 46,
+    "topic": "Travel bookings",
     "type": "multipleChoice",
     "prompt": "Where do we _____ it on?",
     "options": [
@@ -605,6 +648,7 @@
     "id": "vocab-47",
     "course": "vocabulary",
     "unit": 47,
+    "topic": "Air travel",
     "type": "multipleChoice",
     "prompt": "At check-in / the check-in desk, someone will check your ticket and _____ your luggage.",
     "options": [
@@ -619,6 +663,7 @@
     "id": "vocab-48",
     "course": "vocabulary",
     "unit": 48,
+    "topic": "Hotels and restaurants",
     "type": "multipleChoice",
     "prompt": "Many restaurants offer three-course meals which include a starter, main course and _____.",
     "options": [
@@ -633,6 +678,7 @@
     "id": "vocab-49",
     "course": "vocabulary",
     "unit": 49,
+    "topic": "Cafés",
     "type": "multipleChoice",
     "prompt": "To have in or _____ away?",
     "options": [
@@ -647,6 +693,7 @@
     "id": "vocab-50",
     "course": "vocabulary",
     "unit": 50,
+    "topic": "Sightseeing holidays",
     "type": "multipleChoice",
     "prompt": "We _____ the flower market.",
     "options": [
@@ -661,6 +708,7 @@
     "id": "vocab-51",
     "course": "vocabulary",
     "unit": 51,
+    "topic": "Holidays by the sea",
     "type": "multipleChoice",
     "prompt": "Doctors now recommend that people do not sit in the sun without using _____.",
     "options": [
@@ -675,6 +723,7 @@
     "id": "vocab-52",
     "course": "vocabulary",
     "unit": 52,
+    "topic": "Newspapers and television",
     "type": "multipleChoice",
     "prompt": "It _____ in The Times that the plane crashed in the sea.",
     "options": [
@@ -689,6 +738,7 @@
     "id": "vocab-53",
     "course": "vocabulary",
     "unit": 53,
+    "topic": "Phoning and texting",
     "type": "multipleChoice",
     "prompt": "Many people use their mobile mostly or _____ for texting.",
     "options": [
@@ -703,6 +753,7 @@
     "id": "vocab-54",
     "course": "vocabulary",
     "unit": 54,
+    "topic": "Computers",
     "type": "multipleChoice",
     "prompt": "Hard drive, the part inside the computer that stores large amounts of information, also called a hard _____.",
     "options": [
@@ -717,6 +768,7 @@
     "id": "vocab-55",
     "course": "vocabulary",
     "unit": 55,
+    "topic": "Email and the Internet",
     "type": "multipleChoice",
     "prompt": "Do you get much _____?",
     "options": [
@@ -731,6 +783,7 @@
     "id": "vocab-56",
     "course": "vocabulary",
     "unit": 56,
+    "topic": "Crime",
     "type": "multipleChoice",
     "prompt": "Murder, killing someone, _____, murder.",
     "options": [
@@ -745,6 +798,7 @@
     "id": "vocab-57",
     "course": "vocabulary",
     "unit": 57,
+    "topic": "Politics",
     "type": "multipleChoice",
     "prompt": "Above all, we will treat people as _____.",
     "options": [
@@ -759,6 +813,7 @@
     "id": "vocab-58",
     "course": "vocabulary",
     "unit": 58,
+    "topic": "Climate change",
     "type": "multipleChoice",
     "prompt": "To _____ global warming, the nations of the world will have to act together.",
     "options": [
@@ -773,6 +828,7 @@
     "id": "vocab-59",
     "course": "vocabulary",
     "unit": 59,
+    "topic": "War and violence",
     "type": "multipleChoice",
     "prompt": "They are members of an army, and part of the responsibility of an army is to defend their country from attack and to _____ the people.",
     "options": [
@@ -787,6 +843,7 @@
     "id": "vocab-60",
     "course": "vocabulary",
     "unit": 60,
+    "topic": "Time",
     "type": "multipleChoice",
     "prompt": "How long does the film _____?",
     "options": [
@@ -801,6 +858,7 @@
     "id": "vocab-61",
     "course": "vocabulary",
     "unit": 61,
+    "topic": "Numbers",
     "type": "multipleChoice",
     "prompt": "One _____ five.",
     "options": [
@@ -815,6 +873,7 @@
     "id": "vocab-62",
     "course": "vocabulary",
     "unit": 62,
+    "topic": "Distance, dimensions and size",
     "type": "multipleChoice",
     "prompt": "About ten minutes' _____.",
     "options": [
@@ -829,6 +888,7 @@
     "id": "vocab-63",
     "course": "vocabulary",
     "unit": 63,
+    "topic": "Objects, materials, shapes and colour",
     "type": "multipleChoice",
     "prompt": "A purple _____.",
     "options": [
@@ -843,6 +903,7 @@
     "id": "vocab-64",
     "course": "vocabulary",
     "unit": 64,
+    "topic": "Containers and quantities",
     "type": "multipleChoice",
     "prompt": "Two _____ of paper.",
     "options": [
@@ -857,6 +918,7 @@
     "id": "vocab-65",
     "course": "vocabulary",
     "unit": 65,
+    "topic": "Apologies, excuses and thanks",
     "type": "multipleChoice",
     "prompt": "These are some common ways of _____ people, with typical replies.",
     "options": [
@@ -871,6 +933,7 @@
     "id": "vocab-66",
     "course": "vocabulary",
     "unit": 66,
+    "topic": "Requests, permission and suggestions",
     "type": "multipleChoice",
     "prompt": "Could you _____ help me?",
     "options": [
@@ -885,6 +948,7 @@
     "id": "vocab-67",
     "course": "vocabulary",
     "unit": 67,
+    "topic": "Opinions, agreeing and disagreeing",
     "type": "multipleChoice",
     "prompt": "I disagree _____.",
     "options": [
@@ -899,6 +963,7 @@
     "id": "vocab-68",
     "course": "vocabulary",
     "unit": 68,
+    "topic": "Likes, dislikes, attitudes and preferences",
     "type": "multipleChoice",
     "prompt": "I'm really _____ dance music.",
     "options": [
@@ -913,6 +978,7 @@
     "id": "vocab-69",
     "course": "vocabulary",
     "unit": 69,
+    "topic": "Greetings, farewells and special expressions",
     "type": "multipleChoice",
     "prompt": "With friends we can say _____, cheers, take care, or see you soon.",
     "options": [
@@ -927,6 +993,7 @@
     "id": "vocab-70",
     "course": "vocabulary",
     "unit": 70,
+    "topic": "Prefixes: changing meaning",
     "type": "multipleChoice",
     "prompt": "I couldn't _____ the door this morning.",
     "options": [
@@ -941,6 +1008,7 @@
     "id": "vocab-71",
     "course": "vocabulary",
     "unit": 71,
+    "topic": "Suffixes: forming nouns",
     "type": "multipleChoice",
     "prompt": "Stupid, _____.",
     "options": [
@@ -955,6 +1023,7 @@
     "id": "vocab-72",
     "course": "vocabulary",
     "unit": 72,
+    "topic": "Suffixes: forming adjectives",
     "type": "multipleChoice",
     "prompt": "An _____ experience.",
     "options": [
@@ -969,6 +1038,7 @@
     "id": "vocab-73",
     "course": "vocabulary",
     "unit": 73,
+    "topic": "Compound nouns",
     "type": "multipleChoice",
     "prompt": "_____ lights.",
     "options": [
@@ -983,6 +1053,7 @@
     "id": "vocab-74",
     "course": "vocabulary",
     "unit": 74,
+    "topic": "Word partners",
     "type": "multipleChoice",
     "prompt": "My neighbour's _____ went off in the middle of the night.",
     "options": [
@@ -997,6 +1068,7 @@
     "id": "vocab-75",
     "course": "vocabulary",
     "unit": 75,
+    "topic": "Fixed phrases",
     "type": "multipleChoice",
     "prompt": "Does the name Merchant _____ a bell?",
     "options": [
@@ -1011,6 +1083,7 @@
     "id": "vocab-76",
     "course": "vocabulary",
     "unit": 76,
+    "topic": "Fixed phrases in conversation",
     "type": "multipleChoice",
     "prompt": "Well, if you change your _____, come and see me again, and I'll arrange for one of them to be moved to another class.",
     "options": [
@@ -1025,6 +1098,7 @@
     "id": "vocab-77",
     "course": "vocabulary",
     "unit": 77,
+    "topic": "Verb or adjective + preposition",
     "type": "multipleChoice",
     "prompt": "She's similar to her sister, but very different _____ her brother.",
     "options": [
@@ -1039,6 +1113,7 @@
     "id": "vocab-78",
     "course": "vocabulary",
     "unit": 78,
+    "topic": "Prepositional phrases",
     "type": "multipleChoice",
     "prompt": "I took his pen by _____.",
     "options": [
@@ -1053,6 +1128,7 @@
     "id": "vocab-79",
     "course": "vocabulary",
     "unit": 79,
+    "topic": "Phrasal verbs 1: form and meaning",
     "type": "multipleChoice",
     "prompt": "I _____ up most of the rubbish.",
     "options": [
@@ -1067,6 +1143,7 @@
     "id": "vocab-80",
     "course": "vocabulary",
     "unit": 80,
+    "topic": "Phrasal verbs 2: grammar and style",
     "type": "multipleChoice",
     "prompt": "We _____ off about 7.30.",
     "options": [
@@ -1081,6 +1158,7 @@
     "id": "vocab-81",
     "course": "vocabulary",
     "unit": 81,
+    "topic": "Make, do and take: uses and phrases",
     "type": "multipleChoice",
     "prompt": "I've _____ a mistake.",
     "options": [
@@ -1095,6 +1173,7 @@
     "id": "vocab-82",
     "course": "vocabulary",
     "unit": 82,
+    "topic": "Key verbs: give, keep and miss",
     "type": "multipleChoice",
     "prompt": "When I went to work in Hungary, I really missed my _____.",
     "options": [
@@ -1109,6 +1188,7 @@
     "id": "vocab-83",
     "course": "vocabulary",
     "unit": 83,
+    "topic": "Get: uses, phrases and phrasal verbs",
     "type": "multipleChoice",
     "prompt": "I _____ my watch repaired today.",
     "options": [
@@ -1123,6 +1203,7 @@
     "id": "vocab-84",
     "course": "vocabulary",
     "unit": 84,
+    "topic": "Go: meanings and expressions",
     "type": "multipleChoice",
     "prompt": "Go and _____ means fetch.",
     "options": [
@@ -1137,6 +1218,7 @@
     "id": "vocab-85",
     "course": "vocabulary",
     "unit": 85,
+    "topic": "The senses",
     "type": "multipleChoice",
     "prompt": "Have you ever had a _____?",
     "options": [
@@ -1151,6 +1233,7 @@
     "id": "vocab-86",
     "course": "vocabulary",
     "unit": 86,
+    "topic": "Uncountable nouns",
     "type": "multipleChoice",
     "prompt": "She's got a lot of _____ of working with children.",
     "options": [
@@ -1165,6 +1248,7 @@
     "id": "vocab-87",
     "course": "vocabulary",
     "unit": 87,
+    "topic": "Verb constructions 1",
     "type": "multipleChoice",
     "prompt": "I _____ to cook the dinner, but it was terrible.",
     "options": [
@@ -1179,6 +1263,7 @@
     "id": "vocab-88",
     "course": "vocabulary",
     "unit": 88,
+    "topic": "Verb constructions 2",
     "type": "multipleChoice",
     "prompt": "I didn't _____ that I was part of a small team with three other women.",
     "options": [
@@ -1193,6 +1278,7 @@
     "id": "vocab-89",
     "course": "vocabulary",
     "unit": 89,
+    "topic": "Adjectives",
     "type": "multipleChoice",
     "prompt": "The food was _____ marvellous.",
     "options": [
@@ -1207,6 +1293,7 @@
     "id": "vocab-90",
     "course": "vocabulary",
     "unit": 90,
+    "topic": "Prepositions: place and movement",
     "type": "multipleChoice",
     "prompt": "We came over the bridge, then through the tunnel and _____ the lake.",
     "options": [
@@ -1221,6 +1308,7 @@
     "id": "vocab-91",
     "course": "vocabulary",
     "unit": 91,
+    "topic": "Adverbs",
     "type": "multipleChoice",
     "prompt": "The restaurant was _____ empty.",
     "options": [
@@ -1235,6 +1323,7 @@
     "id": "vocab-92",
     "course": "vocabulary",
     "unit": 92,
+    "topic": "Time and sequence",
     "type": "multipleChoice",
     "prompt": "_____ my visit to New York, I decided to have a rest.",
     "options": [
@@ -1249,6 +1338,7 @@
     "id": "vocab-93",
     "course": "vocabulary",
     "unit": 93,
+    "topic": "Addition and contrast",
     "type": "multipleChoice",
     "prompt": "In _____, companies can afford to employ them.",
     "options": [
@@ -1263,6 +1353,7 @@
     "id": "vocab-94",
     "course": "vocabulary",
     "unit": 94,
+    "topic": "Reason, purpose, result, condition",
     "type": "multipleChoice",
     "prompt": "The plane was late _____ to bad weather.",
     "options": [
@@ -1277,6 +1368,7 @@
     "id": "vocab-95",
     "course": "vocabulary",
     "unit": 95,
+    "topic": "Formal and informal English",
     "type": "multipleChoice",
     "prompt": "Yeah, I see him _____ a bit; he's a nice bloke.",
     "options": [
@@ -1291,6 +1383,7 @@
     "id": "vocab-96",
     "course": "vocabulary",
     "unit": 96,
+    "topic": "Completing forms and CVs",
     "type": "multipleChoice",
     "prompt": "Career _____, what you want to do in your future working life.",
     "options": [
@@ -1305,6 +1398,7 @@
     "id": "vocab-97",
     "course": "vocabulary",
     "unit": 97,
+    "topic": "Writing an essay",
     "type": "multipleChoice",
     "prompt": "Teenagers tend to have more freedom than in the _____.",
     "options": [
@@ -1319,6 +1413,7 @@
     "id": "vocab-98",
     "course": "vocabulary",
     "unit": 98,
+    "topic": "Formal letters and emails",
     "type": "multipleChoice",
     "prompt": "We would like to apologise for the _____.",
     "options": [
@@ -1333,6 +1428,7 @@
     "id": "vocab-99",
     "course": "vocabulary",
     "unit": 99,
+    "topic": "Informal emails and messages",
     "type": "multipleChoice",
     "prompt": "_____, better get back to work.",
     "options": [
@@ -1347,6 +1443,7 @@
     "id": "vocab-100",
     "course": "vocabulary",
     "unit": 100,
+    "topic": "Abbreviations",
     "type": "multipleChoice",
     "prompt": "_____, aeroplane.",
     "options": [
@@ -1361,6 +1458,7 @@
     "id": "vocab-4-2",
     "course": "vocabulary",
     "unit": 4,
+    "topic": "English language words",
     "type": "multipleChoice",
     "prompt": "Every sentence must begin with a capital letter and end with a full _____.",
     "options": [
@@ -1375,6 +1473,7 @@
     "id": "vocab-5-2",
     "course": "vocabulary",
     "unit": 5,
+    "topic": "Country, nationality and language",
     "type": "multipleChoice",
     "prompt": "The continents in the world are Europe, _____, Asia, North America, South America, Australia and Antarctica.",
     "options": [
@@ -1389,6 +1488,7 @@
     "id": "vocab-6-2",
     "course": "vocabulary",
     "unit": 6,
+    "topic": "The physical world",
     "type": "multipleChoice",
     "prompt": "Switzerland consists of three main geographical _____: The Swiss Plateau, The Jura, and The Alps.",
     "options": [
@@ -1403,6 +1503,7 @@
     "id": "vocab-7-2",
     "course": "vocabulary",
     "unit": 7,
+    "topic": "Weather",
     "type": "multipleChoice",
     "prompt": "It’s been extremely _____ today.",
     "options": [
@@ -1417,6 +1518,7 @@
     "id": "vocab-8-2",
     "course": "vocabulary",
     "unit": 8,
+    "topic": "Animals and insects",
     "type": "multipleChoice",
     "prompt": "Some people keep more unusual animals as pets, e.g. frogs, _____ and spiders.",
     "options": [
@@ -1431,6 +1533,7 @@
     "id": "vocab-9-2",
     "course": "vocabulary",
     "unit": 9,
+    "topic": "The body and movement",
     "type": "multipleChoice",
     "prompt": "People often _____ when they’re tired, and sometimes when they’re bored.",
     "options": [
@@ -1445,6 +1548,7 @@
     "id": "vocab-10-2",
     "course": "vocabulary",
     "unit": 10,
+    "topic": "Describing appearance",
     "type": "multipleChoice",
     "prompt": "Your _____ is the way you look, and we sometimes use different words to talk about beauty in men and women.",
     "options": [
@@ -1459,6 +1563,7 @@
     "id": "vocab-11-2",
     "course": "vocabulary",
     "unit": 11,
+    "topic": "Describing character",
     "type": "multipleChoice",
     "prompt": "_____, negative.",
     "options": [
@@ -1473,6 +1578,7 @@
     "id": "vocab-12-2",
     "course": "vocabulary",
     "unit": 12,
+    "topic": "Feelings",
     "type": "multipleChoice",
     "prompt": "Colour can have an effect on our mood, but how do specific colours relate to our _____?",
     "options": [
@@ -1487,6 +1593,7 @@
     "id": "vocab-13-2",
     "course": "vocabulary",
     "unit": 13,
+    "topic": "Family and friends",
     "type": "multipleChoice",
     "prompt": "My best _____ is Florian, an old school friend.",
     "options": [
@@ -1501,6 +1608,7 @@
     "id": "vocab-14-2",
     "course": "vocabulary",
     "unit": 14,
+    "topic": "Growing up",
     "type": "multipleChoice",
     "prompt": "She grew up in the city, she was allowed to go to parties, and when she was in her teens, her parents let her stay _____ late.",
     "options": [
@@ -1515,6 +1623,7 @@
     "id": "vocab-15-2",
     "course": "vocabulary",
     "unit": 15,
+    "topic": "Romance, marriage and divorce",
     "type": "multipleChoice",
     "prompt": "We got _____ the following year.",
     "options": [
@@ -1529,6 +1638,7 @@
     "id": "vocab-16-2",
     "course": "vocabulary",
     "unit": 16,
+    "topic": "Daily routines",
     "type": "multipleChoice",
     "prompt": "Fortunately we've got a cleaner who does a lot of the housework, and that includes doing my _____.",
     "options": [
@@ -1543,6 +1653,7 @@
     "id": "vocab-17-2",
     "course": "vocabulary",
     "unit": 17,
+    "topic": "The place where you live",
     "type": "multipleChoice",
     "prompt": "We _____ a flat on the second floor.",
     "options": [
@@ -1557,6 +1668,7 @@
     "id": "vocab-18-2",
     "course": "vocabulary",
     "unit": 18,
+    "topic": "Around the home",
     "type": "multipleChoice",
     "prompt": "Some people like big soft sofas with lots of cushions, some people like firm (opp soft) _____.",
     "options": [
@@ -1571,6 +1683,7 @@
     "id": "vocab-19-2",
     "course": "vocabulary",
     "unit": 19,
+    "topic": "Money",
     "type": "multipleChoice",
     "prompt": "We had to pay one month's _____ as a deposit, but it's a nice place, quite good value for money, and the landlord isn't charging us to use his garage.",
     "options": [
@@ -1585,6 +1698,7 @@
     "id": "vocab-20-2",
     "course": "vocabulary",
     "unit": 20,
+    "topic": "Health",
     "type": "multipleChoice",
     "prompt": "I've got a _____.",
     "options": [
@@ -1599,6 +1713,7 @@
     "id": "vocab-21-2",
     "course": "vocabulary",
     "unit": 21,
+    "topic": "Clothes",
     "type": "multipleChoice",
     "prompt": "When I get home from work, I usually change _____ a pair of jeans.",
     "options": [
@@ -1613,6 +1728,7 @@
     "id": "vocab-22-2",
     "course": "vocabulary",
     "unit": 22,
+    "topic": "Fashion and buying clothes",
     "type": "multipleChoice",
     "prompt": "Yes, I've just tried on this jacket in a size 12, and it didn't really fit me; it's a bit _____.",
     "options": [
@@ -1627,6 +1743,7 @@
     "id": "vocab-23-2",
     "course": "vocabulary",
     "unit": 23,
+    "topic": "Shopping",
     "type": "multipleChoice",
     "prompt": "Some people like modern _____ centres because everything is under one roof and it is convenient.",
     "options": [
@@ -1641,6 +1758,7 @@
     "id": "vocab-24-2",
     "course": "vocabulary",
     "unit": 24,
+    "topic": "Food",
     "type": "multipleChoice",
     "prompt": "We often put salad dressing (usually oil and vinegar, or perhaps oil and _____) on salad.",
     "options": [
@@ -1655,6 +1773,7 @@
     "id": "vocab-25-2",
     "course": "vocabulary",
     "unit": 25,
+    "topic": "Cooking",
     "type": "multipleChoice",
     "prompt": "You roast meat in the _____.",
     "options": [
@@ -1669,6 +1788,7 @@
     "id": "vocab-26-2",
     "course": "vocabulary",
     "unit": 26,
+    "topic": "City life",
     "type": "multipleChoice",
     "prompt": "I usually drive to work, but sometimes I get stuck in _____ jams, and when I get to work I find there's nowhere to park because the car park is already full.",
     "options": [
@@ -1683,6 +1803,7 @@
     "id": "vocab-27-2",
     "course": "vocabulary",
     "unit": 27,
+    "topic": "Life in the country",
     "type": "multipleChoice",
     "prompt": "my uncle is usually up at five in the morning, and sometimes his work isn't finished until _____.",
     "options": [
@@ -1697,6 +1818,7 @@
     "id": "vocab-28-2",
     "course": "vocabulary",
     "unit": 28,
+    "topic": "Transport",
     "type": "multipleChoice",
     "prompt": "I got out of the taxi and almost walked _____ without paying the fare.",
     "options": [
@@ -1711,6 +1833,7 @@
     "id": "vocab-29-2",
     "course": "vocabulary",
     "unit": 29,
+    "topic": "On the road",
     "type": "multipleChoice",
     "prompt": "I saw an accident this morning on the _____ road into town.",
     "options": [
@@ -1725,6 +1848,7 @@
     "id": "vocab-31-2",
     "course": "vocabulary",
     "unit": 31,
+    "topic": "Classroom language",
     "type": "multipleChoice",
     "prompt": "How do you use the word _____?",
     "options": [
@@ -1739,6 +1863,7 @@
     "id": "vocab-32-2",
     "course": "vocabulary",
     "unit": 32,
+    "topic": "School education",
     "type": "multipleChoice",
     "prompt": "Pupils take or do GCSE _____, in up to ten subjects.",
     "options": [
@@ -1753,6 +1878,7 @@
     "id": "vocab-33-2",
     "course": "vocabulary",
     "unit": 33,
+    "topic": "Studying English and taking exams",
     "type": "multipleChoice",
     "prompt": "Angel is quite fluent, but his _____ is not very good.",
     "options": [
@@ -1767,6 +1893,7 @@
     "id": "vocab-34-2",
     "course": "vocabulary",
     "unit": 34,
+    "topic": "University education",
     "type": "multipleChoice",
     "prompt": "When students are doing their first degree, they are called _____.",
     "options": [
@@ -1781,6 +1908,7 @@
     "id": "vocab-35-2",
     "course": "vocabulary",
     "unit": 35,
+    "topic": "Jobs",
     "type": "multipleChoice",
     "prompt": "A carpenter makes things using _____.",
     "options": [
@@ -1795,6 +1923,7 @@
     "id": "vocab-36-2",
     "course": "vocabulary",
     "unit": 36,
+    "topic": "Talking about your work",
     "type": "multipleChoice",
     "prompt": "Some of that income you can keep, but some goes to the government; in the UK this is called income _____, e.g. I lose 20% of my income in income tax.",
     "options": [
@@ -1809,6 +1938,7 @@
     "id": "vocab-37-2",
     "course": "vocabulary",
     "unit": 37,
+    "topic": "Making a career",
     "type": "multipleChoice",
     "prompt": "I didn't earn a lot, but the company gave me some _____, which was good.",
     "options": [
@@ -1823,6 +1953,7 @@
     "id": "vocab-38-2",
     "course": "vocabulary",
     "unit": 38,
+    "topic": "Working in an office",
     "type": "multipleChoice",
     "prompt": "He types letters to different companies, sends _____ invoices to customers and sends emails.",
     "options": [
@@ -1837,6 +1968,7 @@
     "id": "vocab-39-2",
     "course": "vocabulary",
     "unit": 39,
+    "topic": "Running a company",
     "type": "multipleChoice",
     "prompt": "Last year the company attracted a lot of attention when it became the first firm of accountants to advertise on _____ TV and radio.",
     "options": [
@@ -1851,6 +1983,7 @@
     "id": "vocab-40-2",
     "course": "vocabulary",
     "unit": 40,
+    "topic": "Business and finance",
     "type": "multipleChoice",
     "prompt": "_____ published yesterday show that trade between the two countries has now risen for the fifth year in a row.",
     "options": [
@@ -1865,6 +1998,7 @@
     "id": "vocab-41-2",
     "course": "vocabulary",
     "unit": 41,
+    "topic": "Sport and leisure",
     "type": "multipleChoice",
     "prompt": "_____ hockey, ice hockey player, play, ice hockey rink.",
     "options": [
@@ -1879,6 +2013,7 @@
     "id": "vocab-42-2",
     "course": "vocabulary",
     "unit": 42,
+    "topic": "Competitive sport",
     "type": "multipleChoice",
     "prompt": "Spain _____ Poland (2–0).",
     "options": [
@@ -1893,6 +2028,7 @@
     "id": "vocab-43-2",
     "course": "vocabulary",
     "unit": 43,
+    "topic": "Books and films",
     "type": "multipleChoice",
     "prompt": "They both wrote _____ in the early 20th century.",
     "options": [
@@ -1907,6 +2043,7 @@
     "id": "vocab-44-2",
     "course": "vocabulary",
     "unit": 44,
+    "topic": "Music",
     "type": "multipleChoice",
     "prompt": "_____, saxophonist.",
     "options": [
@@ -1921,6 +2058,7 @@
     "id": "vocab-45-2",
     "course": "vocabulary",
     "unit": 45,
+    "topic": "Special events",
     "type": "multipleChoice",
     "prompt": "Another popular _____ is to put two-line poems on the gates outside each home.",
     "options": [
@@ -1935,6 +2073,7 @@
     "id": "vocab-46-2",
     "course": "vocabulary",
     "unit": 46,
+    "topic": "Travel bookings",
     "type": "multipleChoice",
     "prompt": "We _____ up the keys from the neighbours without any problems.",
     "options": [
@@ -1949,6 +2088,7 @@
     "id": "vocab-47-2",
     "course": "vocabulary",
     "unit": 47,
+    "topic": "Air travel",
     "type": "multipleChoice",
     "prompt": "You can take your hand _____ with you on the aircraft.",
     "options": [
@@ -1963,6 +2103,7 @@
     "id": "vocab-48-2",
     "course": "vocabulary",
     "unit": 48,
+    "topic": "Hotels and restaurants",
     "type": "multipleChoice",
     "prompt": "It’s often a good idea to _____ a table / make a reservation if you go to a restaurant at the weekend.",
     "options": [
@@ -1977,6 +2118,7 @@
     "id": "vocab-49-2",
     "course": "vocabulary",
     "unit": 49,
+    "topic": "Cafés",
     "type": "multipleChoice",
     "prompt": "Where are the _____?",
     "options": [
@@ -1991,6 +2133,7 @@
     "id": "vocab-50-2",
     "course": "vocabulary",
     "unit": 50,
+    "topic": "Sightseeing holidays",
     "type": "multipleChoice",
     "prompt": "The _____ say the Alhambra in Granada is magnificent, but it’s always packed with tourists in the summer.",
     "options": [
@@ -2005,6 +2148,7 @@
     "id": "vocab-51-2",
     "course": "vocabulary",
     "unit": 51,
+    "topic": "Holidays by the sea",
     "type": "multipleChoice",
     "prompt": "On the _____, you also sometimes get a breeze that blows off the sea.",
     "options": [
@@ -2019,6 +2163,7 @@
     "id": "vocab-52-2",
     "course": "vocabulary",
     "unit": 52,
+    "topic": "Newspapers and television",
     "type": "multipleChoice",
     "prompt": "The _____, information about world events.",
     "options": [
@@ -2033,6 +2178,7 @@
     "id": "vocab-53-2",
     "course": "vocabulary",
     "unit": 53,
+    "topic": "Phoning and texting",
     "type": "multipleChoice",
     "prompt": "These are common text _____.",
     "options": [
@@ -2047,6 +2193,7 @@
     "id": "vocab-54-2",
     "course": "vocabulary",
     "unit": 54,
+    "topic": "Computers",
     "type": "multipleChoice",
     "prompt": "Press the Escape _____ to exit.",
     "options": [
@@ -2061,6 +2208,7 @@
     "id": "vocab-55-2",
     "course": "vocabulary",
     "unit": 55,
+    "topic": "Email and the Internet",
     "type": "multipleChoice",
     "prompt": "People go to a website, select the item they want and click add to basket or _____.",
     "options": [
@@ -2075,6 +2223,7 @@
     "id": "vocab-56-2",
     "course": "vocabulary",
     "unit": 56,
+    "topic": "Crime",
     "type": "multipleChoice",
     "prompt": "A person who commits a crime is a _____.",
     "options": [
@@ -2089,6 +2238,7 @@
     "id": "vocab-57-2",
     "course": "vocabulary",
     "unit": 57,
+    "topic": "Politics",
     "type": "multipleChoice",
     "prompt": "The leader of the party in _____ is the Prime Minister.",
     "options": [
@@ -2103,6 +2253,7 @@
     "id": "vocab-58-2",
     "course": "vocabulary",
     "unit": 58,
+    "topic": "Climate change",
     "type": "multipleChoice",
     "prompt": "Of the 15 warmest years on record, 14 have _____ since 2000.",
     "options": [
@@ -2117,6 +2268,7 @@
     "id": "vocab-59-2",
     "course": "vocabulary",
     "unit": 59,
+    "topic": "War and violence",
     "type": "multipleChoice",
     "prompt": "Ten people were killed and many more were injured when a bomb _____ in the heart of the city.",
     "options": [
@@ -2131,6 +2283,7 @@
     "id": "vocab-60-2",
     "course": "vocabulary",
     "unit": 60,
+    "topic": "Time",
     "type": "multipleChoice",
     "prompt": "I'm sure I'll go to America _____ day.",
     "options": [
@@ -2145,6 +2298,7 @@
     "id": "vocab-61-2",
     "course": "vocabulary",
     "unit": 61,
+    "topic": "Numbers",
     "type": "multipleChoice",
     "prompt": "We can write 21 May or May 21st, but say the _____ of May or May the twenty-first.",
     "options": [
@@ -2159,6 +2313,7 @@
     "id": "vocab-62-2",
     "course": "vocabulary",
     "unit": 62,
+    "topic": "Distance, dimensions and size",
     "type": "multipleChoice",
     "prompt": "We caught a _____ crab.",
     "options": [
@@ -2173,6 +2328,7 @@
     "id": "vocab-63-2",
     "course": "vocabulary",
     "unit": 63,
+    "topic": "Objects, materials, shapes and colour",
     "type": "multipleChoice",
     "prompt": "A shirt, cotton, it has red _____.",
     "options": [
@@ -2187,6 +2343,7 @@
     "id": "vocab-64-2",
     "course": "vocabulary",
     "unit": 64,
+    "topic": "Containers and quantities",
     "type": "multipleChoice",
     "prompt": "A _____ of chocolate.",
     "options": [
@@ -2201,6 +2358,7 @@
     "id": "vocab-65-2",
     "course": "vocabulary",
     "unit": 65,
+    "topic": "Apologies, excuses and thanks",
     "type": "multipleChoice",
     "prompt": "I'm sorry I'm late for class – I _____.",
     "options": [
@@ -2215,6 +2373,7 @@
     "id": "vocab-66-2",
     "course": "vocabulary",
     "unit": 66,
+    "topic": "Requests, permission and suggestions",
     "type": "multipleChoice",
     "prompt": "Sure, go _____.",
     "options": [
@@ -2229,6 +2388,7 @@
     "id": "vocab-67-2",
     "course": "vocabulary",
     "unit": 67,
+    "topic": "Opinions, agreeing and disagreeing",
     "type": "multipleChoice",
     "prompt": "_____, I think Helena was probably right.",
     "options": [
@@ -2243,6 +2403,7 @@
     "id": "vocab-68-2",
     "course": "vocabulary",
     "unit": 68,
+    "topic": "Likes, dislikes, attitudes and preferences",
     "type": "multipleChoice",
     "prompt": "I don't _____ jazz.",
     "options": [
@@ -2257,6 +2418,7 @@
     "id": "vocab-69-2",
     "course": "vocabulary",
     "unit": 69,
+    "topic": "Greetings, farewells and special expressions",
     "type": "multipleChoice",
     "prompt": "Women may kiss male friends and female friends once, _____, or not at all.",
     "options": [
@@ -2271,6 +2433,7 @@
     "id": "vocab-70-2",
     "course": "vocabulary",
     "unit": 70,
+    "topic": "Prefixes: changing meaning",
     "type": "multipleChoice",
     "prompt": "They're _____ to get here before midday.",
     "options": [
@@ -2285,6 +2448,7 @@
     "id": "vocab-71-2",
     "course": "vocabulary",
     "unit": 71,
+    "topic": "Suffixes: forming nouns",
     "type": "multipleChoice",
     "prompt": "_____, similarity.",
     "options": [
@@ -2299,6 +2463,7 @@
     "id": "vocab-72-2",
     "course": "vocabulary",
     "unit": 72,
+    "topic": "Suffixes: forming adjectives",
     "type": "multipleChoice",
     "prompt": "A _____ place is calm and quiet.",
     "options": [
@@ -2313,6 +2478,7 @@
     "id": "vocab-73-2",
     "course": "vocabulary",
     "unit": 73,
+    "topic": "Compound nouns",
     "type": "multipleChoice",
     "prompt": "A _____ is the act of cutting someone's hair, for example that boy needs a haircut.",
     "options": [
@@ -2327,6 +2493,7 @@
     "id": "vocab-74-2",
     "course": "vocabulary",
     "unit": 74,
+    "topic": "Word partners",
     "type": "multipleChoice",
     "prompt": "I will need a _____ amount of money.",
     "options": [
@@ -2341,6 +2508,7 @@
     "id": "vocab-75-2",
     "course": "vocabulary",
     "unit": 75,
+    "topic": "Fixed phrases",
     "type": "multipleChoice",
     "prompt": "I've been to Paris once or _____.",
     "options": [
@@ -2355,6 +2523,7 @@
     "id": "vocab-76-2",
     "course": "vocabulary",
     "unit": 76,
+    "topic": "Fixed phrases in conversation",
     "type": "multipleChoice",
     "prompt": "_____ don't you make them sit in different places?",
     "options": [
@@ -2369,6 +2538,7 @@
     "id": "vocab-77-2",
     "course": "vocabulary",
     "unit": 77,
+    "topic": "Verb or adjective + preposition",
     "type": "multipleChoice",
     "prompt": "Many people _____ a lot of money on clothes.",
     "options": [
@@ -2383,6 +2553,7 @@
     "id": "vocab-78-2",
     "course": "vocabulary",
     "unit": 78,
+    "topic": "Prepositional phrases",
     "type": "multipleChoice",
     "prompt": "My boss is on the _____ at the moment.",
     "options": [
@@ -2397,6 +2568,7 @@
     "id": "vocab-79-2",
     "course": "vocabulary",
     "unit": 79,
+    "topic": "Phrasal verbs 1: form and meaning",
     "type": "multipleChoice",
     "prompt": "I didn't _____ up until 7 o'clock.",
     "options": [
@@ -2411,6 +2583,7 @@
     "id": "vocab-80-2",
     "course": "vocabulary",
     "unit": 80,
+    "topic": "Phrasal verbs 2: grammar and style",
     "type": "multipleChoice",
     "prompt": "There's nowhere for teenagers to go, so they just _____ around on street corners.",
     "options": [
@@ -2425,6 +2598,7 @@
     "id": "vocab-81-2",
     "course": "vocabulary",
     "unit": 81,
+    "topic": "Make, do and take: uses and phrases",
     "type": "multipleChoice",
     "prompt": "The children are making too much _____.",
     "options": [
@@ -2439,6 +2613,7 @@
     "id": "vocab-82-2",
     "course": "vocabulary",
     "unit": 82,
+    "topic": "Key verbs: give, keep and miss",
     "type": "multipleChoice",
     "prompt": "If you keep a _____, you don't tell other people something that you know.",
     "options": [
@@ -2453,6 +2628,7 @@
     "id": "vocab-83-2",
     "course": "vocabulary",
     "unit": 83,
+    "topic": "Get: uses, phrases and phrasal verbs",
     "type": "multipleChoice",
     "prompt": "It _____ dark very early in winter.",
     "options": [
@@ -2467,6 +2643,7 @@
     "id": "vocab-84-2",
     "course": "vocabulary",
     "unit": 84,
+    "topic": "Go: meanings and expressions",
     "type": "multipleChoice",
     "prompt": "Why don't we go out for a walk / drive / drink / meal / _____ at lunchtime?",
     "options": [
@@ -2481,6 +2658,7 @@
     "id": "vocab-85-2",
     "course": "vocabulary",
     "unit": 85,
+    "topic": "The senses",
     "type": "multipleChoice",
     "prompt": "Sight, hearing, _____, smell, touch.",
     "options": [
@@ -2495,6 +2673,7 @@
     "id": "vocab-86-2",
     "course": "vocabulary",
     "unit": 86,
+    "topic": "Uncountable nouns",
     "type": "multipleChoice",
     "prompt": "You can put all that rubbish in the _____ over there.",
     "options": [
@@ -2509,6 +2688,7 @@
     "id": "vocab-87-2",
     "course": "vocabulary",
     "unit": 87,
+    "topic": "Verb constructions 1",
     "type": "multipleChoice",
     "prompt": "I _____ to help them.",
     "options": [
@@ -2523,6 +2703,7 @@
     "id": "vocab-88-2",
     "course": "vocabulary",
     "unit": 88,
+    "topic": "Verb constructions 2",
     "type": "multipleChoice",
     "prompt": "He tried to _____ me that I needed some new clothes.",
     "options": [
@@ -2537,6 +2718,7 @@
     "id": "vocab-89-2",
     "course": "vocabulary",
     "unit": 89,
+    "topic": "Adjectives",
     "type": "multipleChoice",
     "prompt": "I don't know if other people were _____, but I thought it was a very boring lesson.",
     "options": [
@@ -2551,6 +2733,7 @@
     "id": "vocab-90-2",
     "course": "vocabulary",
     "unit": 90,
+    "topic": "Prepositions: place and movement",
     "type": "multipleChoice",
     "prompt": "They've just bought a house right _____ the river.",
     "options": [
@@ -2565,6 +2748,7 @@
     "id": "vocab-91-2",
     "course": "vocabulary",
     "unit": 91,
+    "topic": "Adverbs",
     "type": "multipleChoice",
     "prompt": "The hotel was _____ busy.",
     "options": [
@@ -2579,6 +2763,7 @@
     "id": "vocab-92-2",
     "course": "vocabulary",
     "unit": 92,
+    "topic": "Time and sequence",
     "type": "multipleChoice",
     "prompt": "At first I enjoyed the classes, but after a while it got a bit boring, and in the _____ I left.",
     "options": [
@@ -2593,6 +2778,7 @@
     "id": "vocab-93-2",
     "course": "vocabulary",
     "unit": 93,
+    "topic": "Addition and contrast",
     "type": "multipleChoice",
     "prompt": "Although / _____ though the sun was shining, it wasn't very warm.",
     "options": [
@@ -2607,6 +2793,7 @@
     "id": "vocab-94-2",
     "course": "vocabulary",
     "unit": 94,
+    "topic": "Reason, purpose, result, condition",
     "type": "multipleChoice",
     "prompt": "_____ and as a result are more formal than so, and less common in spoken English.",
     "options": [
@@ -2621,6 +2808,7 @@
     "id": "vocab-95-2",
     "course": "vocabulary",
     "unit": 95,
+    "topic": "Formal and informal English",
     "type": "multipleChoice",
     "prompt": "Really, my brother saw it and said it was a _____ of rubbish.",
     "options": [
@@ -2635,6 +2823,7 @@
     "id": "vocab-96-2",
     "course": "vocabulary",
     "unit": 96,
+    "topic": "Completing forms and CVs",
     "type": "multipleChoice",
     "prompt": "Country of _____, where do you come from?",
     "options": [
@@ -2649,6 +2838,7 @@
     "id": "vocab-97-2",
     "course": "vocabulary",
     "unit": 97,
+    "topic": "Writing an essay",
     "type": "multipleChoice",
     "prompt": "There is an _____ that everyone should have a university education.",
     "options": [
@@ -2663,6 +2853,7 @@
     "id": "vocab-98-2",
     "course": "vocabulary",
     "unit": 98,
+    "topic": "Formal letters and emails",
     "type": "multipleChoice",
     "prompt": "I am _____ for interview at any time.",
     "options": [
@@ -2677,6 +2868,7 @@
     "id": "vocab-99-2",
     "course": "vocabulary",
     "unit": 99,
+    "topic": "Informal emails and messages",
     "type": "multipleChoice",
     "prompt": "_____ my regards to Conrad when he gets back from Poland, and once again, thanks for last night.",
     "options": [
@@ -2691,6 +2883,7 @@
     "id": "vocab-100-2",
     "course": "vocabulary",
     "unit": 100,
+    "topic": "Abbreviations",
     "type": "multipleChoice",
     "prompt": "_____, photograph.",
     "options": [
@@ -2705,6 +2898,7 @@
     "id": "vocab-4-3",
     "course": "vocabulary",
     "unit": 4,
+    "topic": "English language words",
     "type": "multipleChoice",
     "prompt": "Some sentences have a comma, which often shows a _____ in a long sentence.",
     "options": [
@@ -2719,6 +2913,7 @@
     "id": "vocab-5-3",
     "course": "vocabulary",
     "unit": 5,
+    "topic": "Country, nationality and language",
     "type": "multipleChoice",
     "prompt": "The capital is Buenos Aires, which has a _____ of more than 10 million people.",
     "options": [
@@ -2733,6 +2928,7 @@
     "id": "vocab-6-3",
     "course": "vocabulary",
     "unit": 6,
+    "topic": "The physical world",
     "type": "multipleChoice",
     "prompt": "Switzerland _____ of three main geographical regions: The Swiss Plateau, The Jura, and The Alps.",
     "options": [
@@ -2747,6 +2943,7 @@
     "id": "vocab-7-3",
     "course": "vocabulary",
     "unit": 7,
+    "topic": "Weather",
     "type": "multipleChoice",
     "prompt": "A _____ is heavy rain with strong winds.",
     "options": [
@@ -2761,6 +2958,7 @@
     "id": "vocab-8-3",
     "course": "vocabulary",
     "unit": 8,
+    "topic": "Animals and insects",
     "type": "multipleChoice",
     "prompt": "In the UK, many people keep _____.",
     "options": [
@@ -2775,6 +2973,7 @@
     "id": "vocab-9-3",
     "course": "vocabulary",
     "unit": 9,
+    "topic": "The body and movement",
     "type": "multipleChoice",
     "prompt": "Wave to _____.",
     "options": [
@@ -2789,6 +2988,7 @@
     "id": "vocab-10-3",
     "course": "vocabulary",
     "unit": 10,
+    "topic": "Describing appearance",
     "type": "multipleChoice",
     "prompt": "_____ does Sophia’s boyfriend look like?",
     "options": [

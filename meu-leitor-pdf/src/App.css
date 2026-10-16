@@ -1255,13 +1255,15 @@ body {
   line-height: 1.5;
 }
 
-/* Trecho "(unit N-x)" no h1 da tela de exercício: link isolado que abre a
-   unit correspondente na Vocabulary — span (não <a>, o h1 não tem <a> pai
-   aqui, mas mantém o mesmo padrão) — display:inline explícito pra nunca
-   herdar algum "span { display:block }" de around e quebrar o parêntese
-   pra linha própria. Removido da lista de exercícios (accidental-click). */
+/* Trecho "(unit N-x)"/"Unit 8A" no título da tela de exercício (Listening,
+   Dictation, Speaking): <a target="_blank"> que abre a unit em OUTRA ABA (ver
+   buildOpenUnitHref). Herda a cor do título (a de <a> padrão é azul de
+   navegador). display:inline explícito pra nunca herdar algum "span {
+   display:block }" de around e quebrar o parêntese pra linha própria. Fora da
+   lista de exercícios (accidental-click). */
 .listening-unit-link {
   display: inline;
+  color: inherit;
   text-decoration: underline;
   text-underline-offset: 2px;
   cursor: pointer;
