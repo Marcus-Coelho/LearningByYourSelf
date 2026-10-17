@@ -11464,7 +11464,7 @@ function listeningWordMatchesTarget(word, targetWords) {
 // fala que estiver em destaque/negrito no PDF da unit (pode dar zero lacunas
 // numa fala sem nenhuma palavra-alvo, ou várias numa fala que é literalmente
 // a lista de definições da unit — ambos os casos são esperados).
-function buildListeningSentenceModel(textFull, targetWords = null, forceAllTargets = false, keepSpeakerLabel = false, visiblePrefix = '', underlinePrefix = false, keepAfterLabel = false) {
+function buildListeningSentenceModel(textFull, targetWords = null, forceAllTargets = false, keepSpeakerLabel = false, visiblePrefix = '', underlinePrefix = false, keepAfterLabel = false, blankCountOverride = 0) {
   // visiblePrefix (track.visiblePrefix[i]): início da frase que fica SEMPRE visível (ex. o prefixo "pre–" da 252 ou
   // "Practice with Contractions: will" da 373); as lacunas só saem do resto do texto.
   const prefixText = visiblePrefix && textFull.startsWith(visiblePrefix) ? visiblePrefix : '';
@@ -11506,7 +11506,7 @@ function buildListeningSentenceModel(textFull, targetWords = null, forceAllTarge
   } else {
     const blankCount = Math.max(
       1,
-      Math.min(candidates.length, wordIndices.length < 10 ? 1 : Math.ceil(wordIndices.length / 6))
+      Math.min(candidates.length, blankCountOverride > 0 ? blankCountOverride : (wordIndices.length < 10 ? 1 : Math.ceil(wordIndices.length / 6)))
     );
     blankTokenIndices = new Set(pickRandomIndices(candidates, blankCount));
   }
@@ -11881,9 +11881,11 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBac
         const all = new Set([...(low.match(/[a-z0-9]+/g) || []), ...low.split(/\s+/).map((w) => w.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, '')).filter(Boolean)]);
         return buildListeningSentenceModel(text, all);
       }
-      return buildListeningSentenceModel(text, targetWordSet, Boolean(track.blankAllTargets), Boolean(track.showSpeakerLabels), (track.visiblePrefix || [])[sentenceIndex] || '', Boolean(track.underlinePrefix), Boolean(track.keepAfterLabel));
+      return buildListeningSentenceModel(text, targetWordSet, Boolean(track.blankAllTargets), Boolean(track.showSpeakerLabels), (track.visiblePrefix || [])[sentenceIndex] || '', Boolean(track.underlinePrefix), Boolean(track.keepAfterLabel),
+        // track.blankCountByWords: { "3": 2 } = frases de 3 palavras ganham 2 lacunas sorteadas (faixa 254)
+        (track.blankCountByWords || {})[String(text.trim().split(/\s+/).length)] || 0);
     }),
-    [track.id, track.blankAllTargets, track.showSpeakerLabels, track.plainSentences, track.visiblePrefix, track.underlinePrefix, track.keepAfterLabel, regenerateKey, targetWordSet, wordMode, wordItemSet]
+    [track.id, track.blankAllTargets, track.showSpeakerLabels, track.plainSentences, track.visiblePrefix, track.underlinePrefix, track.keepAfterLabel, track.blankCountByWords, regenerateKey, targetWordSet, wordMode, wordItemSet]
   );
   const [answers, setAnswers] = useState({});
   const [checked, setChecked] = useState(false);
