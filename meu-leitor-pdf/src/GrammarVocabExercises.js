@@ -442,7 +442,7 @@ function WrittenExerciseBlock({ block, unitCourse, index, total, savedAnswers, o
   );
 }
 
-export default function GrammarVocabExercisesPage({ userName, askConfirm }) {
+export default function GrammarVocabExercisesPage({ userName, askConfirm, onPracticed }) {
   const [activeSourceId, setActiveSourceId] = useState(loadSavedActiveSourceId);
   const [resetToken, setResetToken] = useState(0);
   // Filtro da seção escrita: são 115 exercícios (um por unit do livro), longe
@@ -486,6 +486,7 @@ export default function GrammarVocabExercisesPage({ userName, askConfirm }) {
   const activeSource = SOURCES.find((source) => source.id === activeSourceId) || null;
 
   const handleCheckAnswer = (exercise, option) => {
+    if (onPracticed) onPracticed(activeSourceId); // Today's Goal: conta como exercício feito hoje
     setAnswersBySource((prev) => {
       const next = { ...prev, [activeSourceId]: { ...prev[activeSourceId], [exercise.id]: option } };
       saveAnswers(userName, activeSourceId, next[activeSourceId]);
@@ -512,6 +513,7 @@ export default function GrammarVocabExercisesPage({ userName, askConfirm }) {
   // mais de uma seção escrita (Grammar Elementary e English Vocabulary B), o
   // literal gravaria as respostas da Vocabulary por cima das da Grammar.
   const handleCheckBlock = (block, drafts) => {
+    if (onPracticed) onPracticed(activeSourceId); // Today's Goal: conta como exercício feito hoje
     setAnswersBySource((prev) => {
       const merged = { ...prev[activeSourceId], [block.id]: 'checked' };
       block.items.forEach((item) => { merged[item.id] = drafts[item.id] || ''; });

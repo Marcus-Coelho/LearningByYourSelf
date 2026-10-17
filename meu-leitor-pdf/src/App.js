@@ -268,7 +268,7 @@ const localDayKeyOf = (timestamp) => {
 };
 const todayDateKey = () => localDayKeyOf(Date.now());
 
-const DEFAULT_DAILY_GOAL_PREFS = { newUnit: true, reviews: true, listening: true };
+const DEFAULT_DAILY_GOAL_PREFS = { newUnit: true, reviews: true, listening: true, exercises: true };
 
 // Intervalos (em dias) dos flashcards do "My Words". FIXOS por grau — pedido
 // do dono, 2026-08-08: o número escrito no botão é exatamente o que acontece,
@@ -1907,6 +1907,9 @@ function App() {
   const [activePage, setActivePage] = useState(RESTORED_POSITION?.activePage || 'home');
   const [activeCourseId, setActiveCourseId] = useState(RESTORED_POSITION?.activeCourseId ?? null);
   const [grammarVocabExercisesResetKey, setGrammarVocabExercisesResetKey] = useState(0);
+  // Today's Plan: UMA das 4 seções da tela Grammar & Vocabulary Exercises sorteada ao carregar o app (estável durante a
+  // sessão, pra o item do plano não trocar sozinho a cada render).
+  const [planExerciseSourceId] = useState(() => ['grammar', 'vocabulary', 'similar', 'vocabSimilar'][Math.floor(Math.random() * 4)]);
   // Busca por palavra-chave nas 3 grades de unit (Vocabulary/American1/
   // Grammar Elementary) — compartilhada entre as 3 porque só uma grade fica
   // visível de cada vez; zerada ao entrar em qualquer uma delas (ver
@@ -4092,6 +4095,27 @@ function App() {
 
   // Tela "Grammar & Vocabulary Exercises" (ver GrammarVocabExercises.js) —
   // mesma trava de acesso do resto do menu.
+  // Abre a tela já NA seção sorteada (item "Practice exercises" do Today's Plan): grava a posição que a tela lê ao montar
+  // (`grammarVocabExercisesPosition`) em vez de apagá-la, como faz o menu.
+  const openGrammarVocabExercisesAt = (sourceId) => {
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
+    try {
+      window.sessionStorage.setItem('grammarVocabExercisesPosition', JSON.stringify({ activeSourceId: sourceId, hideSolved: false }));
+    } catch (error) {
+      // Ignore sessionStorage issues.
+    }
+    setGrammarVocabExercisesResetKey((key) => key + 1);
+    setActivePage('grammar-vocab-exercises');
+    setSelectedUnit(null);
+    setSelectedAmerican1Unit(null);
+    setSelectedAmerican1Section(null);
+    setSelectedGrammarElemUnit(null);
+    setSelectedGrammarElemAppendix(null);
+  };
+
   const handleOpenGrammarVocabExercises = (event) => {
     event.preventDefault();
     if (!userName) {
@@ -5315,6 +5339,17 @@ function App() {
   const newContentCandidates = userName ? findNextUnratedByCourse() : [];
   const planNewUnit = newContentCandidates[0] || null;
   const planListening = userName ? findUnpracticedListeningTrack() : null;
+  const PLAN_EXERCISE_LABELS = {
+    grammar: ['Grammar', 'multiple choice'],
+    vocabulary: ['Vocabulary', 'multiple choice'],
+    similar: ['Grammar', 'Similar Exercises from Grammar Elementary'],
+    vocabSimilar: ['Vocabulary', 'Similar Exercises from English Vocabulary B'],
+  };
+  const planExercise = userName ? {
+    label: `${PLAN_EXERCISE_LABELS[planExerciseSourceId][0]} exercise`,
+    sublabel: `Grammar & Vocabulary Exercises — ${PLAN_EXERCISE_LABELS[planExerciseSourceId][1]}`,
+    onOpen: () => openGrammarVocabExercisesAt(planExerciseSourceId),
+  } : null;
 
   // "Today's Goal" (ROADMAP item 3): 3 componentes togglináveis
   // (dailyGoalPrefs), todos marcados permanentemente assim que acontecem
@@ -5326,6 +5361,9 @@ function App() {
     { key: 'newUnit', label: 'Learn a new unit', done: dailyGoalToday.newUnit, enabled: dailyGoalPrefs.newUnit },
     { key: 'reviews', label: "Clear today's reviews", done: dailyGoalToday.reviews, enabled: dailyGoalPrefs.reviews },
     { key: 'listening', label: 'Practice Listening or Dictation', done: dailyGoalToday.listening, enabled: dailyGoalPrefs.listening },
+    // Dois marcadores (um por tipo) — a meta fecha quando o aluno fez PELO MENOS UM exercício de Grammar E um de Vocabulary
+    // na tela Grammar & Vocabulary Exercises (pedido do dono, 2026-10-17).
+    { key: 'exercises', label: 'Do a Grammar and a Vocabulary exercise', done: Boolean(dailyGoalToday.exerciseGrammar && dailyGoalToday.exerciseVocabulary), enabled: dailyGoalPrefs.exercises },
   ];
   const dailyGoalItems = dailyGoalAllItems.filter((item) => item.enabled);
   const dailyGoalCompletedCount = dailyGoalItems.filter((item) => item.done).length;
@@ -7470,6 +7508,7 @@ function App() {
             key={grammarVocabExercisesResetKey}
             userName={userName}
             askConfirm={askConfirm}
+            onPracticed={(sourceId) => markDailyGoalDone(sourceId === 'grammar' || sourceId === 'similar' ? 'exerciseGrammar' : 'exerciseVocabulary')}
           />
         </main>
       ) : activePage === 'profile' ? (
@@ -7942,6 +7981,7 @@ function App() {
               <TodayPlanCard
                 newUnit={planNewUnit}
                 listening={planListening}
+                exercise={planExercise}
                 words={{
                   dueCount: wordbookDueCount,
                   addedTodayCount: wordbookAddedTodayCount,
@@ -8279,12 +8319,12 @@ function useCountUp(target, duration = 800) {
   return value;
 }
 
-function TodayPlanCard({ newUnit, listening, words, reviewQueue, onOpenReviewItem, onSeeAllReviews }) {
+function TodayPlanCard({ newUnit, listening, exercise, words, reviewQueue, onOpenReviewItem, onSeeAllReviews }) {
   const reviewItems = reviewQueue.slice(0, 2);
   const moreReviewCount = reviewQueue.length - reviewItems.length;
   const showWords = Boolean(words) && (words.dueCount > 0 || words.addedTodayCount > 0);
 
-  if (!newUnit && !listening && reviewItems.length === 0 && !showWords) {
+  if (!newUnit && !listening && !exercise && reviewItems.length === 0 && !showWords) {
     return null;
   }
 
@@ -8332,6 +8372,16 @@ function TodayPlanCard({ newUnit, listening, words, reviewQueue, onOpenReviewIte
               <span className="plan-item-title">Practice listening</span>
               <span className="plan-item-detail">{listening.label}</span>
               <span className="plan-item-sub">{listening.sublabel}</span>
+            </span>
+          </button>
+        )}
+        {exercise && (
+          <button type="button" className="plan-item" onClick={exercise.onOpen}>
+            <span className="plan-item-icon" aria-hidden="true">{'✏️'}</span>
+            <span className="plan-item-main">
+              <span className="plan-item-title">Practice exercises</span>
+              <span className="plan-item-detail">{exercise.label}</span>
+              <span className="plan-item-sub">{exercise.sublabel}</span>
             </span>
           </button>
         )}
@@ -8386,6 +8436,10 @@ const DAILY_GOAL_EXPLANATIONS = {
   listening: 'You get this the first time today that you finish checking a Listening exercise '
     + '(press "Check answers" after filling in at least one blank) or a Dictation exercise '
     + '(press "Check my answer").',
+  exercises: 'You get this once today you have checked at least one exercise from a Grammar '
+    + 'section AND at least one from a Vocabulary section of the "Grammar & Vocabulary Exercises" screen '
+    + '(press "Check Answer" on a multiple-choice question, or check a written block). Reaching only '
+    + 'one of the two leaves it unchecked.',
 };
 
 function DailyGoalCard({ items, completedCount, allItems, onTogglePref, overallMasteryPercent }) {

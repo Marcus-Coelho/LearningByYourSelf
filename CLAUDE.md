@@ -521,6 +521,7 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
   algo que já tinha nota NÃO conta (isso é a meta "reviews"), e no Vocabulary vale a nota da
   UNIT — nota de exercício solto não passa por scheduleReview. O texto do botão "i"
   (`DAILY_GOAL_EXPLANATIONS.newUnit`) tem que continuar batendo.
+  **"Practice exercises" (2026-10-17)**: item do Today's Plan que abre a tela Grammar & Vocabulary Exercises JÁ numa das 4 seções (grammar, vocabulary, similar, vocabSimilar), sorteada UMA vez ao carregar o app (`planExerciseSourceId`) e entregue à tela pela posição de sessionStorage (`openGrammarVocabExercisesAt`); o aluno escolhe o exercício lá. Conta pra meta "Do a Grammar and a Vocabulary exercise" do `DailyGoalCard`.
   "Practice listening" é uma faixa de Listening/Dictation de
   verdade nunca tentada em nenhum dos 2 modos (`findUnpracticedListeningTrack`, varre os 359
   tracks dos 2 cursos), não mais o 2º curso da lista de units. **"Review words" (My Words) é
@@ -529,7 +530,7 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
   aparece mesmo com nada vencido, desde que tenham sido adicionadas palavras HOJE
   (`wordbookAddedTodayCount`): palavra nova só vence na virada do dia, então sem ela adicionar
   palavras não mudava nada visível na Home e parecia que não tinham sido salvas
-- **`DailyGoalCard`**: meta diária com 3 componentes togglináveis via "Customize goal" —
+- **`DailyGoalCard`** (**4º item desde 2026-10-17: "Do a Grammar and a Vocabulary exercise"**, chave de preferência `exercises`; fecha quando, no mesmo dia, o aluno checou ao menos 1 exercício de uma seção Grammar/Similar E 1 de uma seção Vocabulary/VocabSimilar da tela Grammar & Vocabulary Exercises — dois marcadores em `dailyGoal:<data>`, `exerciseGrammar`/`exerciseVocabulary`, via `onPracticed(sourceId)` da tela; texto em `DAILY_GOAL_EXPLANATIONS.exercises`): meta diária com 3 componentes togglináveis (os 3 originais) via "Customize goal" —
   aprender unit nova, zerar revisões do dia, praticar Listening/Dictation. Os 3 usam uma flag
   própria em `dailyGoalToday` (nenhum é `reviewQueue.length === 0` — isso dava um check de
   graça pra usuário novo sem nada agendado ainda, corrigido em 2026-07-20): "reviews" só marca

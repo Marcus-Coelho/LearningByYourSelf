@@ -1200,6 +1200,24 @@
       "audio": "/american-accent-audio/084 Word Pairs Aa & Uh-ankle uncle.mp3",
       "audioLabel": "p. 26",
       "sentences": [
+        "ankle, uncle",
+        "bat, but",
+        "began, begun",
+        "cap, cop",
+        "cat, cut",
+        "crash, crush",
+        "drank, drunk",
+        "fan, fun",
+        "lack, luck",
+        "match, much",
+        "ran, run",
+        "sang, sung",
+        "staff, stuff",
+        "swam, swum"
+      ],
+      "number": 58,
+      "trackNumber": 84,
+      "targetWords": [
         "ankle",
         "uncle",
         "bat",
@@ -1229,8 +1247,7 @@
         "swam",
         "swum"
       ],
-      "number": 58,
-      "trackNumber": 84
+      "blankAllTargets": true
     },
     {
       "id": "accent-85",
