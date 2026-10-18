@@ -3682,6 +3682,14 @@ body {
     filter 140ms ease;
 }
 
+/* Botão que é um <a> (ex. "Listening" das telas de leitura, abre em outra aba): sem sublinhado, igual aos <button> vizinhos */
+a.upload-button,
+a.upload-button:hover,
+a.upload-button:visited {
+  color: #fff;
+  text-decoration: none;
+}
+
 .upload-button:hover {
   transform: translateY(-1px);
   filter: saturate(1.08);

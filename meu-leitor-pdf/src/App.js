@@ -22,6 +22,7 @@ import listeningVocabulary from './listening_vocabulary.json';
 import listeningAmericanAccent from './listening_american_accent.json';
 import dictationPausePoints from './dictation_pause_points.json';
 import vocabularyTargetWords from './vocabulary_target_words.json';
+import vocabularyTargetPhrases from './vocabulary_target_phrases.json';
 import americanAccentIndexData from './american_accent_index.json';
 import GrammarVocabExercisesPage from './GrammarVocabExercises';
 import './App.css';
@@ -127,6 +128,13 @@ export const buildOpenUnitHref = (course, unit, section) => {
   const params = new URLSearchParams({ open: course });
   params.set(course === 'americanAccent' ? 'screen' : 'unit', String(unit));
   if (section) params.set('section', section);
+  return `/?${params.toString()}`;
+};
+
+// Link pro exercício de Listening em OUTRA ABA (botões "Listening" das telas de leitura do Vocabulary e do American Accent,
+// 2026-10-17): `?open=listening&source=vocabulary&track=unit17-a`, lido por OPEN_REQUEST_POSITION.
+export const buildOpenListeningHref = (sourceId, trackId) => {
+  const params = new URLSearchParams({ open: 'listening', source: sourceId, track: trackId });
   return `/?${params.toString()}`;
 };
 
@@ -1852,6 +1860,12 @@ const OPEN_REQUEST_POSITION = (() => {
     const course = params.get('open');
     if (!course) return null;
     window.history.replaceState(null, '', window.location.pathname);
+    if (course === 'listening') {
+      const source = LISTENING_SOURCES.find((item) => item.id === params.get('source'));
+      const track = source && source.tracks.find((item) => item.id === params.get('track'));
+      if (!track || !window.localStorage.getItem(ACTIVE_USER_KEY)) return null;
+      return { activePage: 'listening-exercise', selectedListeningSource: source.id, selectedListeningTrack: track.id, activeCourseId: null };
+    }
     const build = OPEN_UNIT_POSITIONS[course];
     if (!build || !window.localStorage.getItem(ACTIVE_USER_KEY)) return null;
     if (course === 'americanAccent') return build(params.get('screen'));
@@ -3732,14 +3746,15 @@ function App() {
     return null;
   };
 
-  const handleOpenAccentListeningFromScreen = (screen) => {
-    const target = findAccentListeningTrack(screen);
-    if (!target) return;
-    setSelectedListeningSource(target.source.id);
-    setListeningSearchQuery('');
-    setHideMasteredListening(false);
-    setSelectedListeningTrack(target.track.id);
-    setActivePage('listening-exercise');
+  // Botão "Listening" da leitura do Vocabulary (2026-10-17): abre o exercício da PRIMEIRA seção (A, B, C...) da unit que existe
+  // no Listening. Mesmo padrão do botão do American Accent.
+  const findVocabularyListeningTrack = (unit) => {
+    const source = LISTENING_SOURCES.find((item) => item.id === 'vocabulary');
+    if (!source || !unit) return null;
+    const candidates = source.tracks.filter((item) => Number(item.unit) === Number(unit));
+    if (candidates.length === 0) return null;
+    candidates.sort((a, b) => String(a.letter || '').localeCompare(String(b.letter || '')));
+    return { source, track: candidates[0] };
   };
 
   // "Next Listening": pula pro próximo exercício da MESMA fonte (a ordem de
@@ -5361,9 +5376,10 @@ function App() {
     { key: 'newUnit', label: 'Learn a new unit', done: dailyGoalToday.newUnit, enabled: dailyGoalPrefs.newUnit },
     { key: 'reviews', label: "Clear today's reviews", done: dailyGoalToday.reviews, enabled: dailyGoalPrefs.reviews },
     { key: 'listening', label: 'Practice Listening or Dictation', done: dailyGoalToday.listening, enabled: dailyGoalPrefs.listening },
-    // Dois marcadores (um por tipo) — a meta fecha quando o aluno fez PELO MENOS UM exercício de Grammar E um de Vocabulary
-    // na tela Grammar & Vocabulary Exercises (pedido do dono, 2026-10-17).
-    { key: 'exercises', label: 'Do a Grammar and a Vocabulary exercise', done: Boolean(dailyGoalToday.exerciseGrammar && dailyGoalToday.exerciseVocabulary), enabled: dailyGoalPrefs.exercises },
+    // Qualquer exercício checado em QUALQUER seção da tela Grammar & Vocabulary Exercises fecha a meta (esclarecido pelo dono,
+    // 2026-10-17: o sorteio do Today's Plan é só um atalho; fazer em outra seção vale igual). exerciseGrammar/exerciseVocabulary
+    // são marcadores da 1ª versão (um de cada) e continuam contando pra quem já tinha um deles hoje.
+    { key: 'exercises', label: 'Do a Grammar & Vocabulary exercise', done: Boolean(dailyGoalToday.exercises || dailyGoalToday.exerciseGrammar || dailyGoalToday.exerciseVocabulary), enabled: dailyGoalPrefs.exercises },
   ];
   const dailyGoalItems = dailyGoalAllItems.filter((item) => item.enabled);
   const dailyGoalCompletedCount = dailyGoalItems.filter((item) => item.done).length;
@@ -5687,6 +5703,17 @@ function App() {
                     <button type="button" className="upload-button exercises-link" onClick={handleOpenExercises}>
                       Exercises
                     </button>
+                  )}
+                  {findVocabularyListeningTrack(selectedUnit) && (
+                    <a
+                      className="upload-button"
+                      href={buildOpenListeningHref(findVocabularyListeningTrack(selectedUnit).source.id, findVocabularyListeningTrack(selectedUnit).track.id)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Open the first Listening exercise of this unit in a new tab"
+                    >
+                      Listening
+                    </a>
                   )}
                 </div>
               ) : (
@@ -6080,15 +6107,21 @@ function App() {
                   >
                     Next Page
                   </button>
-                  <button
-                    type="button"
-                    className="upload-button"
-                    onClick={() => handleOpenAccentListeningFromScreen(screen)}
-                    disabled={!findAccentListeningTrack(screen)}
-                    title={findAccentListeningTrack(screen) ? 'Open the first Listening exercise of this page' : 'No Listening exercise for this page'}
-                  >
-                    Listening
-                  </button>
+                  {findAccentListeningTrack(screen) ? (
+                    <a
+                      className="upload-button"
+                      href={buildOpenListeningHref(findAccentListeningTrack(screen).source.id, findAccentListeningTrack(screen).track.id)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Open the first Listening exercise of this page in a new tab"
+                    >
+                      Listening
+                    </a>
+                  ) : (
+                    <button type="button" className="upload-button" disabled title="No Listening exercise for this page">
+                      Listening
+                    </button>
+                  )}
                 </div>
                 {/* Player fixo no topo, não ancorado sobre o PDF — diferente do
                     Vocabulary/American1 (ver decisão registrada em conversa: uma
@@ -7508,7 +7541,7 @@ function App() {
             key={grammarVocabExercisesResetKey}
             userName={userName}
             askConfirm={askConfirm}
-            onPracticed={(sourceId) => markDailyGoalDone(sourceId === 'grammar' || sourceId === 'similar' ? 'exerciseGrammar' : 'exerciseVocabulary')}
+            onPracticed={() => markDailyGoalDone('exercises')}
           />
         </main>
       ) : activePage === 'profile' ? (
@@ -8436,10 +8469,9 @@ const DAILY_GOAL_EXPLANATIONS = {
   listening: 'You get this the first time today that you finish checking a Listening exercise '
     + '(press "Check answers" after filling in at least one blank) or a Dictation exercise '
     + '(press "Check my answer").',
-  exercises: 'You get this once today you have checked at least one exercise from a Grammar '
-    + 'section AND at least one from a Vocabulary section of the "Grammar & Vocabulary Exercises" screen '
-    + '(press "Check Answer" on a multiple-choice question, or check a written block). Reaching only '
-    + 'one of the two leaves it unchecked.',
+  exercises: 'You get this the first time today that you check an exercise on the "Grammar & Vocabulary Exercises" '
+    + 'screen — any of its 4 sections, no matter which one (press "Check Answer" on a multiple-choice question, '
+    + 'or check a written block). The suggestion in the plan above is only a shortcut.',
 };
 
 function DailyGoalCard({ items, completedCount, allItems, onTogglePref, overallMasteryPercent }) {
@@ -11457,6 +11489,9 @@ const LISTENING_STOPWORDS = new Set([
   'yes', 'no', 'not', 'please', 'thank', 'thanks', 'ok', 'oh',
 ]);
 
+const LISTENING_NOUN_PRECEDERS = new Set(['a', 'an', 'the', 'my', 'your', 'his', 'her', 'its', 'our', 'their', 'this', 'that', 'these', 'those', 'some', 'any', 'no', 'every']);
+const normalizeListeningPhraseToken = (token) => token.replace(/’/g, "'").toLowerCase().replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, '');
+
 // Tira um rótulo de falante do início da fala (ex.: "A: ", "Teacher: ",
 // "Student 1: ") — nunca vira lacuna nem conta pro tamanho da fala. Sempre
 // retorna label:'' agora (nunca mais exibido — pedido do dono, os
@@ -11518,7 +11553,7 @@ function listeningWordMatchesTarget(word, targetWords) {
 // fala que estiver em destaque/negrito no PDF da unit (pode dar zero lacunas
 // numa fala sem nenhuma palavra-alvo, ou várias numa fala que é literalmente
 // a lista de definições da unit — ambos os casos são esperados).
-function buildListeningSentenceModel(textFull, targetWords = null, forceAllTargets = false, keepSpeakerLabel = false, visiblePrefix = '', underlinePrefix = false, keepAfterLabel = false, blankCountOverride = 0) {
+function buildListeningSentenceModel(textFull, targetWords = null, forceAllTargets = false, keepSpeakerLabel = false, visiblePrefix = '', underlinePrefix = false, keepAfterLabel = false, blankCountOverride = 0, targetPhrases = null, ensureOneBlank = false) {
   // visiblePrefix (track.visiblePrefix[i]): início da frase que fica SEMPRE visível (ex. o prefixo "pre–" da 252 ou
   // "Practice with Contractions: will" da 373); as lacunas só saem do resto do texto.
   const prefixText = visiblePrefix && textFull.startsWith(visiblePrefix) ? visiblePrefix : '';
@@ -11557,6 +11592,32 @@ function buildListeningSentenceModel(textFull, targetWords = null, forceAllTarge
     blankTokenIndices = new Set(
       (forceAllTargets ? blankableIndices : candidates).filter((i) => listeningWordMatchesTarget(stripListeningTokenPunctuation(tokens[i]).toLowerCase(), targetWords))
     );
+    // Expressões em NEGRITO do livro ("on the outskirts of town") viram lacuna INTEIRA, palavra por palavra, inclusive
+    // as pequenas (on/the/of) — mas só ONDE a expressão ocorre, nunca no resto da unit (pedido do dono, 2026-10-17).
+    if (targetPhrases && targetPhrases.length > 0) {
+      const normalized = blankableIndices.map((i) => normalizeListeningPhraseToken(tokens[i]));
+      targetPhrases.forEach((phrase) => {
+        for (let start = 0; start + phrase.length <= normalized.length; start += 1) {
+          // só vale se as palavras forem CONSECUTIVAS no texto (sem outra palavra no meio)
+          let ok = true;
+          for (let k = 0; k < phrase.length && ok; k += 1) {
+            if (normalized[start + k] !== phrase[k]) ok = false;
+            if (ok && k > 0 && blankableIndices[start + k] - blankableIndices[start + k - 1] > 2) ok = false;
+          }
+          if (ok) for (let k = 0; k < phrase.length; k += 1) blankTokenIndices.add(blankableIndices[start + k]);
+        }
+      });
+    }
+    // Linha sem NENHUMA palavra da unit: sorteia uma — primeiro um substantivo (palavra depois de artigo/possessivo),
+    // senão qualquer palavra de conteúdo (um verbo, na prática). Pedido do dono, repetido em 2026-10-17.
+    if (ensureOneBlank && blankTokenIndices.size === 0 && candidates.length > 0) {
+      const nounLike = candidates.filter((i) => {
+        const at = blankableIndices.indexOf(i);
+        return at > 0 && LISTENING_NOUN_PRECEDERS.has(normalizeListeningPhraseToken(tokens[blankableIndices[at - 1]]));
+      });
+      const pool = nounLike.length > 0 ? nounLike : candidates;
+      blankTokenIndices.add(pool[Math.floor(Math.random() * pool.length)]);
+    }
   } else {
     const blankCount = Math.max(
       1,
@@ -11605,6 +11666,68 @@ function loadListeningStats(userName, trackId) {
     return raw ? JSON.parse(raw) : null;
   } catch (error) {
     return null;
+  }
+}
+
+// Última tentativa de um exercício do Listening (pedido do dono, 2026-10-17): ao REABRIR o exercício, as lacunas e o que foi
+// digitado voltam como estavam — antes ele abria vazio e o aluno não sabia se já tinha feito. Guarda QUAIS partes eram
+// lacuna (as lacunas são sorteadas) além das respostas, e só é gravada ao "Check answers".
+const listeningSnapshotKey = (userName, trackId) => userKey(userName, `listening:${trackId}:last`);
+function loadListeningSnapshot(userName, trackId) {
+  if (!userName) return null;
+  try {
+    const raw = window.localStorage.getItem(listeningSnapshotKey(userName, trackId));
+    const parsed = raw ? JSON.parse(raw) : null;
+    return parsed && Array.isArray(parsed.blanks) && parsed.answers ? parsed : null;
+  } catch (error) {
+    return null;
+  }
+}
+function saveListeningSnapshot(userName, trackId, snapshot) {
+  if (!userName) return;
+  try {
+    window.localStorage.setItem(listeningSnapshotKey(userName, trackId), JSON.stringify(snapshot));
+  } catch (error) {
+    // Sem armazenamento: o exercício segue funcionando, só não reabre preenchido.
+  }
+}
+// Refaz as lacunas de um modelo de frase com os índices de `parts` que eram lacuna na tentativa salva.
+function applyBlankSelection(model, blankIndices) {
+  const wanted = new Set(blankIndices || []);
+  const parts = model.parts.map((part, index) => {
+    const isWanted = wanted.has(index);
+    if (isWanted && part.type === 'text' && !part.underline && !/^\s+$/.test(part.value)) {
+      const match = part.value.match(/^([^a-zA-Z0-9]*)([a-zA-Z0-9]+)([^a-zA-Z0-9]*)$/);
+      return match
+        ? { type: 'blank', before: match[1], word: match[2], after: match[3] }
+        : { type: 'blank', before: '', word: part.value, after: '' };
+    }
+    if (!isWanted && part.type === 'blank') return { type: 'text', value: `${part.before}${part.word}${part.after}` };
+    return part;
+  });
+  return { ...model, parts };
+}
+
+function clearListeningSnapshot(userName, trackId) {
+  if (!userName) return;
+  try {
+    window.localStorage.removeItem(listeningSnapshotKey(userName, trackId));
+  } catch (error) {
+    // Sem armazenamento: nada a limpar.
+  }
+}
+// "Try again": a nota do exercício volta a 0% (as tentativas anteriores continuam contadas).
+function resetListeningScore(userName, trackId) {
+  if (!userName) return;
+  try {
+    const prev = loadListeningStats(userName, trackId);
+    window.localStorage.setItem(listeningStatsKey(userName, trackId), JSON.stringify({
+      attempts: prev?.attempts || 0,
+      lastScorePercent: 0,
+      lastAttemptAt: prev?.lastAttemptAt || new Date().toISOString(),
+    }));
+  } catch (error) {
+    // Armazenamento indisponível — segue sem zerar.
   }
 }
 
@@ -11925,7 +12048,13 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBac
   // existem no texto do livro, então não estão em vocabulary_target_words.json. No "Only Unit Words" elas
   // são SEMPRE lacuna inteira (senão apareciam já escritas, sem nada a preencher).
   const wordItemSet = useMemo(() => new Set(track.wordItems || []), [track.wordItems]);
-  const sentenceModels = useMemo(
+  // Expressões em negrito da unit (só "Only Unit Words" do Vocabulary): cada uma vira uma lista de palavras normalizadas.
+  const targetPhraseList = useMemo(() => {
+    if (!isVocabularyTrack || wordMode !== 'unitWords' || track.targetWords) return null;
+    const phrases = vocabularyTargetPhrases[String(track.unit)];
+    return phrases ? phrases.map((phrase) => phrase.split(' ')) : null;
+  }, [isVocabularyTrack, wordMode, track.unit, track.targetWords]);
+  const baseSentenceModels = useMemo(
     () => track.sentences.map((text, sentenceIndex) => {
       // track.plainSentences: índices de frases que ficam INTEIRAS na tela, sem nenhuma lacuna (ex. a nota "The th of the pronoun them is silent..." da 314)
       if ((track.plainSentences || []).includes(sentenceIndex)) return buildListeningSentenceModel(text, new Set());
@@ -11937,12 +12066,32 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBac
       }
       return buildListeningSentenceModel(text, targetWordSet, Boolean(track.blankAllTargets), Boolean(track.showSpeakerLabels), (track.visiblePrefix || [])[sentenceIndex] || '', Boolean(track.underlinePrefix), Boolean(track.keepAfterLabel),
         // track.blankCountByWords: { "3": 2 } = frases de 3 palavras ganham 2 lacunas sorteadas (faixa 254)
-        (track.blankCountByWords || {})[String(text.trim().split(/\s+/).length)] || 0);
+        (track.blankCountByWords || {})[String(text.trim().split(/\s+/).length)] || 0,
+        targetPhraseList, Boolean(targetPhraseList || (isVocabularyTrack && wordMode === 'unitWords' && !track.targetWords)));
     }),
-    [track.id, track.blankAllTargets, track.showSpeakerLabels, track.plainSentences, track.visiblePrefix, track.underlinePrefix, track.keepAfterLabel, track.blankCountByWords, regenerateKey, targetWordSet, wordMode, wordItemSet]
+    [track.id, track.blankAllTargets, track.showSpeakerLabels, track.plainSentences, track.visiblePrefix, track.underlinePrefix, track.keepAfterLabel, track.blankCountByWords, regenerateKey, targetWordSet, wordMode, wordItemSet, targetPhraseList, isVocabularyTrack, track.targetWords]
+  );
+  // Tentativa anterior deste exercício (null = nunca checado, ou o aluno pediu "Change words"). Só vale enquanto o
+  // modo de palavras for o mesmo da época e o aluno não tiver sorteado de novo.
+  const savedSnapshot = useMemo(
+    () => (regenerateKey === 0 ? loadListeningSnapshot(userName, track.id) : null),
+    [userName, track.id, regenerateKey]
+  );
+  const restoring = Boolean(savedSnapshot) && (!isVocabularyTrack || (savedSnapshot.mode || 'unitWords') === wordMode);
+  // Exercício feito ANTES de existir a tentativa guardada (só tem a nota) com 100%: sabemos que TODAS as respostas estavam
+  // certas, então reabre com as lacunas atuais preenchidas com a resposta certa, em verde.
+  const implicitPerfect = useMemo(
+    () => regenerateKey === 0 && !savedSnapshot && loadListeningStats(userName, track.id)?.lastScorePercent === 100,
+    [userName, track.id, regenerateKey, savedSnapshot]
+  );
+  const sentenceModels = useMemo(
+    () => (restoring ? baseSentenceModels.map((model, index) => applyBlankSelection(model, savedSnapshot.blanks[index])) : baseSentenceModels),
+    [restoring, savedSnapshot, baseSentenceModels]
   );
   const [answers, setAnswers] = useState({});
   const [checked, setChecked] = useState(false);
+  // true quando o exercício foi checado (ou reabriu de uma tentativa guardada): libera o botão "Try again".
+  const [perfect, setPerfect] = useState(false);
   const [showAnswers, setShowAnswers] = useState(false);
   // Resultado do envio pro My Words: quantas entraram e quantas já estavam lá.
   // Um state só (não dois) pra o setTimeout que limpa a mensagem depois de 4s
@@ -11956,13 +12105,47 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBac
   const [autoPauseEnabled, setAutoPauseEnabled] = useState(true);
   const { hasAutoPause, isAutoPaused, audioEnded } = useAudioAutoPause(audioBarRef, track.id, autoPauseEnabled);
 
+  // Ao abrir um exercício já feito, o modo de palavras volta pro da época (senão as lacunas salvas não casariam).
   useEffect(() => {
-    setAnswers({});
-    setChecked(false);
+    if (savedSnapshot && isVocabularyTrack && savedSnapshot.mode && savedSnapshot.mode !== wordMode) setWordMode(savedSnapshot.mode);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [track.id]);
+
+  useEffect(() => {
+    if (restoring) {
+      setAnswers(savedSnapshot.answers || {});
+      setChecked(true);
+      setPerfect(true);
+    } else if (implicitPerfect) {
+      const filled = {};
+      sentenceModels.forEach((model, sentenceIndex) => {
+        let blankIdx = -1;
+        model.parts.forEach((part) => {
+          if (part.type !== 'blank') return;
+          blankIdx += 1;
+          filled[`${sentenceIndex}:${blankIdx}`] = part.word;
+        });
+      });
+      setAnswers(filled);
+      setChecked(true);
+      setPerfect(true);
+    } else {
+      setAnswers({});
+      setChecked(false);
+      setPerfect(false);
+    }
     setShowAnswers(false);
-  }, [track.id, regenerateKey, wordMode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [track.id, regenerateKey, wordMode, restoring, implicitPerfect]);
 
   const handleRegenerate = () => {
+    setRegenerateKey((key) => key + 1);
+  };
+
+  // "Try again" (aparece em exercício já checado): apaga a tentativa guardada, zera a nota do exercício e sorteia lacunas novas.
+  const handleTryAgain = () => {
+    clearListeningSnapshot(userName, track.id);
+    resetListeningScore(userName, track.id);
     setRegenerateKey((key) => key + 1);
   };
 
@@ -11985,6 +12168,7 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBac
   const handleChange = (key, value) => {
     setAnswers((prev) => ({ ...prev, [key]: value }));
     if (checked) setChecked(false);
+    if (perfect) setPerfect(false);
   };
 
   const handleCheckAll = () => {
@@ -12012,6 +12196,15 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBac
       });
     });
     if (total > 0) {
+      // QUALQUER tentativa checada fica guardada pra reabrir preenchida e corrigida (verde = certa, vermelho = errada),
+      // independente da nota (pedido do dono, 2026-10-17 — uma versão só-100% foi descartada no mesmo dia).
+      saveListeningSnapshot(userName, track.id, {
+        mode: wordMode,
+        answers,
+        blanks: sentenceModels.map((model) => model.parts.map((part, index) => (part.type === 'blank' ? index : -1)).filter((index) => index >= 0)),
+        savedAt: new Date().toISOString(),
+      });
+      setPerfect(true);
       saveListeningAttempt(userName, track.id, Math.round((correct / total) * 100));
       if (onPracticed) onPracticed();
     }
@@ -12169,6 +12362,11 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBac
         <button type="button" className="show-answers-btn secondary" onClick={handleRegenerate}>
           Change words
         </button>
+        {perfect && checked && (
+          <button type="button" className="show-answers-btn" onClick={handleTryAgain}>
+            Try again
+          </button>
+        )}
         {onBack && (
           <button type="button" className="show-answers-btn secondary" onClick={onBack}>
             {backLabel}
