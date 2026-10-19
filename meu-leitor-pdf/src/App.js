@@ -5374,7 +5374,9 @@ function App() {
   // agendado ainda, ganhava esse item de graça).
   const dailyGoalAllItems = [
     { key: 'newUnit', label: 'Learn a new unit', done: dailyGoalToday.newUnit, enabled: dailyGoalPrefs.newUnit },
-    { key: 'reviews', label: "Clear today's reviews", done: dailyGoalToday.reviews, enabled: dailyGoalPrefs.reviews },
+    // Sem nada vencido (fila de units vazia E nenhuma palavra do My Words vencida) a meta já está cumprida — pedido do dono,
+    // 2026-10-19: deixar a caixa vazia sem ter o que fazer não fazia sentido. Só vale com a lista de revisão JÁ carregada.
+    { key: 'reviews', label: "Clear today's reviews", done: Boolean(dailyGoalToday.reviews || (reviewQueue.length === 0 && wordbookDueCount === 0)), enabled: dailyGoalPrefs.reviews },
     { key: 'listening', label: 'Practice Listening or Dictation', done: dailyGoalToday.listening, enabled: dailyGoalPrefs.listening },
     // Qualquer exercício checado em QUALQUER seção da tela Grammar & Vocabulary Exercises fecha a meta (esclarecido pelo dono,
     // 2026-10-17: o sorteio do Today's Plan é só um atalho; fazer em outra seção vale igual). exerciseGrammar/exerciseVocabulary
@@ -8494,7 +8496,7 @@ const DAILY_GOAL_EXPLANATIONS = {
     + 'section or page you hadn\'t rated before, in any of the 4 courses — that\'s how you '
     + 'finish the one Today\'s Plan suggests. Just opening it doesn\'t count, and neither does '
     + 'rating something again later.',
-  reviews: 'Two ways to get this. Either re-rate a course item that was already due for '
+  reviews: 'It counts as done when nothing is due today (no course item and no My Words card waiting). Otherwise there are two ways to get this. Either re-rate a course item that was already due for '
     + 'spaced review — find them in the "Review" line of Today\'s Plan above (Home) or in the '
     + '"Today\'s Review" card on the Courses screen, open one and give it a new star rating '
     + '(rating something for the first time isn\'t a "review", so it doesn\'t count). Or '

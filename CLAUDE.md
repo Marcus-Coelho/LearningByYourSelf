@@ -543,7 +543,7 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
 - **`DailyGoalCard`** (**4º item desde 2026-10-17: "Do a Grammar & Vocabulary exercise"**, chave de preferência `exercises`; fecha quando o aluno checa QUALQUER exercício de QUALQUER das 4 seções da tela Grammar & Vocabulary Exercises — o dono esclareceu que o sorteio do Today's Plan é só atalho e que "Grammar & Vocabulary" era o nome da tela, não "um de cada"; marcador `exercises` em `dailyGoal:<data>` via `onPracticed` da tela, e os antigos `exerciseGrammar`/`exerciseVocabulary` ainda contam; texto em `DAILY_GOAL_EXPLANATIONS.exercises`): meta diária com 3 componentes togglináveis (os 3 originais) via "Customize goal" —
   aprender unit nova, zerar revisões do dia, praticar Listening/Dictation. Os 3 usam uma flag
   própria em `dailyGoalToday` (nenhum é `reviewQueue.length === 0` — isso dava um check de
-  graça pra usuário novo sem nada agendado ainda, corrigido em 2026-07-20): "reviews" só marca
+  graça pra usuário novo sem nada agendado ainda, corrigido em 2026-07-20) — **REVERTIDO em parte em 2026-10-19 a pedido do dono**: "reviews" agora também aparece MARCADA quando não há nada vencido (fila de units vazia E nenhuma palavra do My Words vencida), calculado na hora em `dailyGoalAllItems`; sem nada a fazer, a caixa vazia não fazia sentido pra ele: "reviews" só marca
   dentro de `scheduleReview`, quando o item reavaliado JÁ estava vencido (reavaliar conteúdo
   novo não conta) — checado **direto no localStorage**, nunca contra o state `reviewQueue`
   (bug real corrigido em 2026-07-24: `reviewQueue` só recarrega quando `activePage` MUDA de
