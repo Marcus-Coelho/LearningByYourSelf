@@ -84,6 +84,22 @@
       "audio": "/american-accent-audio/011 Quick Review- Word Contrasts-leave-live.mp3",
       "audioLabel": "p. 5",
       "sentences": [
+        "leave, live",
+        "feel, fill",
+        "least, list",
+        "he’s, his",
+        "sleep, slip",
+        "cheap, chip",
+        "beat, bit",
+        "steal, still",
+        "each, itch",
+        "seek, sick",
+        "feet, fit",
+        "sheep, ship"
+      ],
+      "trackNumber": 11,
+      "number": 5,
+      "targetWords": [
         "leave",
         "live",
         "feel",
@@ -109,8 +125,7 @@
         "sheep",
         "ship"
       ],
-      "trackNumber": 11,
-      "number": 5
+      "blankAllTargets": true
     },
     {
       "id": "accent-12",
@@ -214,6 +229,18 @@
       "audio": "/american-accent-audio/019 Quick Review - Word Contrasts-pen-pain.mp3",
       "audioLabel": "p. 8",
       "sentences": [
+        "pen, pain",
+        "sell, sail",
+        "wet, wait",
+        "west, waste",
+        "tell, tail",
+        "Ed, aid",
+        "test, taste",
+        "men, main"
+      ],
+      "trackNumber": 19,
+      "number": 11,
+      "targetWords": [
         "pen",
         "pain",
         "sell",
@@ -224,15 +251,14 @@
         "waste",
         "tell",
         "tail",
-        "Ed",
+        "ed",
         "aid",
         "test",
         "taste",
         "men",
         "main"
       ],
-      "trackNumber": 19,
-      "number": 11
+      "blankAllTargets": true
     },
     {
       "id": "accent-20",
@@ -297,6 +323,18 @@
       "audio": "/american-accent-audio/024 Quick Review-Word Contrasts-men man.mp3",
       "audioLabel": "p. 9",
       "sentences": [
+        "men, man",
+        "said, sad",
+        "end, and",
+        "then, than",
+        "guess, gas",
+        "slept, slapped",
+        "head, had",
+        "expensive, expansive"
+      ],
+      "trackNumber": 24,
+      "number": 15,
+      "targetWords": [
         "men",
         "man",
         "said",
@@ -314,8 +352,7 @@
         "expensive",
         "expansive"
       ],
-      "trackNumber": 24,
-      "number": 15
+      "blankAllTargets": true
     },
     {
       "id": "accent-25",
@@ -378,6 +415,18 @@
       "audio": "/american-accent-audio/029 Quick Review-Word Contrasts-hat hot.mp3",
       "audioLabel": "p. 10",
       "sentences": [
+        "hat, hot",
+        "lack, lock",
+        "sack, sock",
+        "sang, song",
+        "cap, cop",
+        "add, odd",
+        "rack, rock",
+        "tap, top"
+      ],
+      "trackNumber": 29,
+      "number": 19,
+      "targetWords": [
         "hat",
         "hot",
         "lack",
@@ -395,8 +444,7 @@
         "tap",
         "top"
       ],
-      "trackNumber": 29,
-      "number": 19
+      "blankAllTargets": true
     },
     {
       "id": "accent-30",
@@ -459,7 +507,19 @@
       "audio": "/american-accent-audio/035 Quick Review- Word Contrasts-Don done.mp3",
       "audioLabel": "p. 11",
       "sentences": [
-        "Don",
+        "Don, done",
+        "shot, shut",
+        "fond, fund",
+        "got, gut",
+        "lock, luck",
+        "non, none",
+        "robber, rubber",
+        "doll, dull"
+      ],
+      "trackNumber": 35,
+      "number": 23,
+      "targetWords": [
+        "don",
         "done",
         "shot",
         "shut",
@@ -476,8 +536,7 @@
         "doll",
         "dull"
       ],
-      "trackNumber": 35,
-      "number": 23
+      "blankAllTargets": true
     },
     {
       "id": "accent-36",
@@ -542,6 +601,18 @@
       "audio": "/american-accent-audio/040 Quick Review-Word Contrasts-cut caught.mp3",
       "audioLabel": "p. 12",
       "sentences": [
+        "cut, caught",
+        "hull, hall",
+        "done, dawn",
+        "dug, dog",
+        "but, bought",
+        "sung, song",
+        "cuff, cough",
+        "flood, flawed"
+      ],
+      "trackNumber": 40,
+      "number": 27,
+      "targetWords": [
         "cut",
         "caught",
         "hull",
@@ -559,8 +630,7 @@
         "flood",
         "flawed"
       ],
-      "trackNumber": 40,
-      "number": 27
+      "blankAllTargets": true
     },
     {
       "id": "accent-41",
@@ -623,6 +693,20 @@
       "audio": "/american-accent-audio/045 Quick Review-Word Contrasts-bought boat.mp3",
       "audioLabel": "p. 13",
       "sentences": [
+        "bought, boat",
+        "law, low",
+        "clause, close",
+        "odd, owed",
+        "want, won’t",
+        "caught, coat",
+        "walk, woke",
+        "not, note",
+        "got, goat",
+        "non, known"
+      ],
+      "trackNumber": 45,
+      "number": 31,
+      "targetWords": [
         "bought",
         "boat",
         "law",
@@ -644,8 +728,7 @@
         "non",
         "known"
       ],
-      "trackNumber": 45,
-      "number": 31
+      "blankAllTargets": true
     },
     {
       "id": "accent-46",
@@ -751,7 +834,18 @@
         "stood, stewed"
       ],
       "trackNumber": 53,
-      "number": 37
+      "number": 37,
+      "targetWords": [
+        "full",
+        "fool",
+        "look",
+        "luke",
+        "pull",
+        "pool",
+        "stood",
+        "stewed"
+      ],
+      "blankAllTargets": true
     },
     {
       "id": "accent-54",
@@ -1656,6 +1750,22 @@
       "audio": "/american-accent-audio/115 Word Pairs-advice advise.mp3",
       "audioLabel": "p. 36",
       "sentences": [
+        "advice, advise",
+        "ice, eyes",
+        "niece, knees",
+        "mate, made",
+        "hat, had",
+        "bet, bed",
+        "half, have",
+        "life, live",
+        "belief, believe",
+        "back, bag",
+        "dock, dog",
+        "duck, Doug"
+      ],
+      "trackNumber": 115,
+      "number": 75,
+      "targetWords": [
         "advice",
         "advise",
         "ice",
@@ -1679,10 +1789,9 @@
         "dock",
         "dog",
         "duck",
-        "Doug"
+        "doug"
       ],
-      "trackNumber": 115,
-      "number": 75
+      "blankAllTargets": true
     },
     {
       "id": "accent-116",
@@ -2397,7 +2506,22 @@
         "true, threw"
       ],
       "trackNumber": 165,
-      "number": 110
+      "number": 110,
+      "targetWords": [
+        "bat",
+        "bath",
+        "boat",
+        "both",
+        "mat",
+        "math",
+        "tank",
+        "thank",
+        "team",
+        "theme",
+        "true",
+        "threw"
+      ],
+      "blankAllTargets": true
     },
     {
       "id": "accent-166",
@@ -2414,7 +2538,22 @@
         "wordy, worthy"
       ],
       "trackNumber": 166,
-      "number": 111
+      "number": 111,
+      "targetWords": [
+        "breeding",
+        "breathing",
+        "dare",
+        "their",
+        "doze",
+        "those",
+        "dan",
+        "than",
+        "day",
+        "they",
+        "wordy",
+        "worthy"
+      ],
+      "blankAllTargets": true
     },
     {
       "id": "accent-167",
@@ -2460,6 +2599,18 @@
       "audio": "/american-accent-audio/170 Word Contrasts for S and TH-mass math.mp3",
       "audioLabel": "p. 53",
       "sentences": [
+        "mass, math",
+        "sank, thank",
+        "close, clothe",
+        "breeze, breathe",
+        "tense, tenth",
+        "sing, thing",
+        "bays, bathe",
+        "Zen, then"
+      ],
+      "trackNumber": 170,
+      "number": 114,
+      "targetWords": [
         "mass",
         "math",
         "sank",
@@ -2474,11 +2625,10 @@
         "thing",
         "bays",
         "bathe",
-        "Zen",
+        "zen",
         "then"
       ],
-      "trackNumber": 170,
-      "number": 114
+      "blankAllTargets": true
     },
     {
       "id": "accent-171",
@@ -2643,6 +2793,14 @@
       "audio": "/american-accent-audio/183 Word Contrasts For Practice-code cold.mp3",
       "audioLabel": "p. 56",
       "sentences": [
+        "code, cold",
+        "debt, dealt",
+        "toad, told",
+        "wide, wild"
+      ],
+      "trackNumber": 183,
+      "number": 122,
+      "targetWords": [
         "code",
         "cold",
         "debt",
@@ -2652,8 +2810,7 @@
         "wide",
         "wild"
       ],
-      "trackNumber": 183,
-      "number": 122
+      "blankAllTargets": true
     },
     {
       "id": "accent-184",
@@ -2762,7 +2919,26 @@
         "file, fire"
       ],
       "trackNumber": 189,
-      "number": 126
+      "number": 126,
+      "targetWords": [
+        "feel",
+        "fear",
+        "deal",
+        "dear",
+        "stole",
+        "store",
+        "mole",
+        "more",
+        "bowl",
+        "bore",
+        "tile",
+        "tire",
+        "while",
+        "wire",
+        "file",
+        "fire"
+      ],
+      "blankAllTargets": true
     },
     {
       "id": "accent-191",
@@ -2895,7 +3071,22 @@
         "vote, boat"
       ],
       "trackNumber": 201,
-      "number": 132
+      "number": 132,
+      "targetWords": [
+        "vest",
+        "best",
+        "very",
+        "berry",
+        "vow",
+        "bow",
+        "vet",
+        "bet",
+        "curve",
+        "curb",
+        "vote",
+        "boat"
+      ],
+      "blankAllTargets": true
     },
     {
       "id": "accent-202",
@@ -3016,6 +3207,16 @@
       "audio": "/american-accent-audio/209 Word Contrasts-vine wine.mp3",
       "audioLabel": "p. 64",
       "sentences": [
+        "vine, wine",
+        "vow, wow",
+        "vet, wet",
+        "vest, west",
+        "verse, worse",
+        "veal, wheel"
+      ],
+      "trackNumber": 209,
+      "number": 139,
+      "targetWords": [
         "vine",
         "wine",
         "vow",
@@ -3029,8 +3230,7 @@
         "veal",
         "wheel"
       ],
-      "trackNumber": 209,
-      "number": 139
+      "blankAllTargets": true
     },
     {
       "id": "accent-210",
@@ -3085,7 +3285,17 @@
         "advice, to advise"
       ],
       "trackNumber": 215,
-      "number": 142
+      "number": 142,
+      "targetWords": [
+        "use",
+        "abuse",
+        "close",
+        "house",
+        "excuse",
+        "advice",
+        "advise"
+      ],
+      "blankAllTargets": true
     },
     {
       "id": "accent-216",
@@ -3201,6 +3411,16 @@
       "audio": "/american-accent-audio/224 Word Contrasts For Practice-thin thing.mp3",
       "audioLabel": "p. 69",
       "sentences": [
+        "thin, thing",
+        "ran, rang",
+        "fan, fang",
+        "win, wing",
+        "ban, bang",
+        "run, rung"
+      ],
+      "trackNumber": 224,
+      "number": 149,
+      "targetWords": [
         "thin",
         "thing",
         "ran",
@@ -3214,8 +3434,7 @@
         "run",
         "rung"
       ],
-      "trackNumber": 224,
-      "number": 149
+      "blankAllTargets": true
     },
     {
       "id": "accent-226",
@@ -3338,7 +3557,26 @@
         "lies, lights"
       ],
       "trackNumber": 231,
-      "number": 154
+      "number": 154,
+      "targetWords": [
+        "is",
+        "its",
+        "stays",
+        "states",
+        "less",
+        "lets",
+        "fax",
+        "facts",
+        "was",
+        "what’s",
+        "pains",
+        "paints",
+        "knees",
+        "needs",
+        "lies",
+        "lights"
+      ],
+      "blankAllTargets": true
     },
     {
       "id": "accent-232",

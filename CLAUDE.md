@@ -227,6 +227,15 @@ pras 4 telas acima pegarem sozinhas.
   entra aqui — só as que são de verdade sobre confusão de som/acento (331/333/280-parcial são
   sobre tipo de pergunta/entonação, não confusão sonora, então ficam com lacuna aleatória)
 
+- **Pares de palavras (2026-10-18, pedido do dono: n. 5 / Track 11 estava com as palavras soltas)**: toda faixa cuja tabela do PDF é de PARES MÍNIMOS
+  (4 colunas "w1 w2 | w3 w4" ou 2 colunas "w1 | w2" de palavras soltas) vira uma frase por par, `"leave, live"`, e **as DUAS palavras são lacuna**:
+  `targetWords` (todas as palavras do par) + `blankAllTargets`. Sem isso uma frase de 2 palavras ganha só 1 lacuna. Convertidas: 11, 19, 24, 29, 35, 40, 45, 115,
+  170, 183, 209, 224; só ganharam as lacunas dobradas as que já eram pares: 53, 165, 166, 189, 201, 231 (228/234 já tinham) e 215 (só as palavras de conteúdo,
+  "to" fica visível). Pontos de pausa das convertidas = UM por par (fim do 2º membro): onde o áudio tem ritmo de par (pausa curta dentro, longa entre) os
+  pontos são as pausas longas; senão é `pp[1::2]` dos pontos por palavra; a 224 foi recalculada pelas pausas >= 2 s. **NÃO são pares** (colunas de frases
+  ou grupos, lidos coluna a coluna): as "Word Pairs for Practice" de frases (12, 20, 22, 25, 30, 36, 41, 43, 46, 51, 54, 56, 122, 141, 160, 163, 181, 207,
+  221, 353, 357), 154, 276, os trios da 191 e as já combinadas pelo dono (237-241, 244, 247, 254). Se o dono disser que alguma dessas é par, converter igual.
+
 ### Ask AI (menu principal, fora dos 4 cursos, 2026-07-25)
 
 Tela de Q&A pra dúvidas sobre a língua inglesa em geral (gramática, vocabulário, pronúncia,

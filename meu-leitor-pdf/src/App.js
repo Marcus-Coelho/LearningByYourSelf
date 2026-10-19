@@ -5361,7 +5361,7 @@ function App() {
     vocabSimilar: ['Vocabulary', 'Similar Exercises from English Vocabulary B'],
   };
   const planExercise = userName ? {
-    label: `${PLAN_EXERCISE_LABELS[planExerciseSourceId][0]} exercise`,
+    label: 'Vocabulary or Grammar Exercise',
     sublabel: `Grammar & Vocabulary Exercises — ${PLAN_EXERCISE_LABELS[planExerciseSourceId][1]}`,
     onOpen: () => openGrammarVocabExercisesAt(planExerciseSourceId),
   } : null;
@@ -8023,6 +8023,7 @@ function App() {
                 reviewQueue={reviewQueue}
                 onOpenReviewItem={handleOpenReviewItem}
                 onSeeAllReviews={handleCourses}
+                goals={dailyGoalItems}
               />
             )}
             {userName && (
@@ -8216,7 +8217,7 @@ function UnitBadgeDot({ status }) {
 // (value/onChange), pra o estado (unitSearchQuery) poder ser compartilhado
 // e zerado ao trocar de curso (ver handleVocabulary/handleAmerican1/
 // handleGrammarElem em App()).
-function UnitSearchBox({ value, onChange, placeholder }) {
+function UnitSearchBox({ value, onChange, placeholder, ariaLabel = 'Search units by keyword' }) {
   return (
     <div className="unit-search-box">
       <IconSearch />
@@ -8226,7 +8227,7 @@ function UnitSearchBox({ value, onChange, placeholder }) {
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder || 'Search units...'}
-        aria-label="Search units by keyword"
+        aria-label={ariaLabel}
       />
       {value && (
         <button
@@ -8352,8 +8353,18 @@ function useCountUp(target, duration = 800) {
   return value;
 }
 
-function TodayPlanCard({ newUnit, listening, exercise, words, reviewQueue, onOpenReviewItem, onSeeAllReviews }) {
-  const reviewItems = reviewQueue.slice(0, 2);
+// Cada linha do plano é UM dos itens da meta diária (DailyGoalCard): `goals` são só os itens ligados, na ordem
+// da meta, então o "Goal 2/4" bate com a numeração do cartão de baixo. As revisões de curso e o My Words são os
+// dois jeitos de cumprir o MESMO item ("Clear today's reviews").
+function TodayPlanCard({ newUnit, listening, exercise, words, reviewQueue, onOpenReviewItem, onSeeAllReviews, goals = [] }) {
+  const goalTag = (key) => {
+    const idx = goals.findIndex((g) => g.key === key);
+    if (idx < 0) return '';
+    return ` · Goal ${idx + 1}/${goals.length}${goals[idx].done ? ' ✓' : ''}`;
+  };
+  // Mostra todos os itens vencidos de hoje até o teto diário (REVIEW_DAILY_CAP), não só 2 — o resto
+  // espera e vira "+N more". O resumo abaixo do subtítulo diz de uma vez quantos itens são.
+  const reviewItems = reviewQueue.slice(0, REVIEW_DAILY_CAP);
   const moreReviewCount = reviewQueue.length - reviewItems.length;
   const showWords = Boolean(words) && (words.dueCount > 0 || words.addedTodayCount > 0);
 
@@ -8369,12 +8380,22 @@ function TodayPlanCard({ newUnit, listening, exercise, words, reviewQueue, onOpe
       <p className="plan-card-hint">
         Not sure where to start? Here's a simple plan for today's session.
       </p>
+      {goals.length > 0 && (
+        <p className="plan-card-hint plan-review-summary">
+          <strong>{goals.length} goal{goals.length === 1 ? '' : 's'} today, {goals.filter((g) => g.done).length}/{goals.length} done.</strong>
+          {(reviewQueue.length > 0 || (words && words.dueCount > 0)) ? ' To review today: ' : ''}
+          {[
+            reviewQueue.length > 0 ? `${reviewQueue.length} course item${reviewQueue.length === 1 ? '' : 's'}` : null,
+            words && words.dueCount > 0 ? `${words.dueCount} word${words.dueCount === 1 ? '' : 's'}` : null,
+          ].filter(Boolean).join(' + ')}.
+        </p>
+      )}
       <div className="plan-items">
         {newUnit && (
           <button type="button" className="plan-item" onClick={newUnit.onOpen}>
             <span className="plan-item-icon" aria-hidden="true">📘</span>
             <span className="plan-item-main">
-              <span className="plan-item-title">Learn something new</span>
+              <span className="plan-item-title">Learn something new{goalTag('newUnit')}</span>
               <span className="plan-item-detail">{newUnit.label}</span>
               <span className="plan-item-sub">{newUnit.sublabel}</span>
             </span>
@@ -8391,7 +8412,7 @@ function TodayPlanCard({ newUnit, listening, exercise, words, reviewQueue, onOpe
             >
               <span className="plan-item-icon" aria-hidden="true">🔁</span>
               <span className="plan-item-main">
-                <span className="plan-item-title">Review</span>
+                <span className="plan-item-title">Review{goalTag('reviews')}</span>
                 <span className="plan-item-detail">{label.title}</span>
                 <span className="plan-item-sub">{label.subtitle}</span>
               </span>
@@ -8402,7 +8423,7 @@ function TodayPlanCard({ newUnit, listening, exercise, words, reviewQueue, onOpe
           <button type="button" className="plan-item" onClick={listening.onOpen}>
             <span className="plan-item-icon" aria-hidden="true">🎧</span>
             <span className="plan-item-main">
-              <span className="plan-item-title">Practice listening</span>
+              <span className="plan-item-title">Practice listening{goalTag('listening')}</span>
               <span className="plan-item-detail">{listening.label}</span>
               <span className="plan-item-sub">{listening.sublabel}</span>
             </span>
@@ -8412,7 +8433,7 @@ function TodayPlanCard({ newUnit, listening, exercise, words, reviewQueue, onOpe
           <button type="button" className="plan-item" onClick={exercise.onOpen}>
             <span className="plan-item-icon" aria-hidden="true">{'✏️'}</span>
             <span className="plan-item-main">
-              <span className="plan-item-title">Practice exercises</span>
+              <span className="plan-item-title">Practice exercises{goalTag('exercises')}</span>
               <span className="plan-item-detail">{exercise.label}</span>
               <span className="plan-item-sub">{exercise.sublabel}</span>
             </span>
@@ -8422,7 +8443,7 @@ function TodayPlanCard({ newUnit, listening, exercise, words, reviewQueue, onOpe
           <button type="button" className="plan-item" onClick={words.onOpen}>
             <span className="plan-item-icon" aria-hidden="true">🗂️</span>
             <span className="plan-item-main">
-              <span className="plan-item-title">Review words</span>
+              <span className="plan-item-title">Review words{goalTag('reviews')}</span>
               <span className="plan-item-detail">
                 {words.dueCount > 0
                   ? `${words.dueCount} word${words.dueCount === 1 ? '' : 's'} due today`
@@ -9303,6 +9324,7 @@ const maskWordInExample = (example, word) => {
 //   imagem, ler o significado, e tentar lembrar/reconhecer a palavra em
 //   inglês antes de revelar, em vez de só reconhecer a tradução.
 function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUpdateEntry, onSessionComplete }) {
+  const [wordSearchQuery, setWordSearchQuery] = useState('');
   const [word, setWord] = useState('');
   const [meaning, setMeaning] = useState('');
   const [example, setExample] = useState('');
@@ -9592,6 +9614,16 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
   };
 
   const sortedEntries = [...entries].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  // Busca ao vivo (como a dos tracks do Listening): filtra a cada tecla por palavra, significado, exemplo e contexto,
+  // sem diferenciar maiúscula nem acento. Só filtra a EXIBIÇÃO — contagem total e a sessão de flashcards não mudam.
+  const normalizeSearchText = (text) => String(text || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const wordSearchTerms = normalizeSearchText(wordSearchQuery).split(/\s+/).filter(Boolean);
+  const visibleEntries = wordSearchTerms.length === 0
+    ? sortedEntries
+    : sortedEntries.filter((entry) => {
+      const haystack = normalizeSearchText([entry.word, entry.meaning, entry.example, entry.context].join(' '));
+      return wordSearchTerms.every((term) => haystack.includes(term));
+    });
 
   // Reaproveitado nos dois estados (praticando/nao praticando) — ver
   // .wordbook-sticky-top no CSS: o titulo fica fixo junto com o resto do
@@ -9602,7 +9634,9 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
     <div className="wordbook-head">
       <h2 className="vocabulary-title">My Words</h2>
       <span className="wordbook-count">
-        {entries.length} word{entries.length === 1 ? '' : 's'} saved
+        {wordSearchTerms.length > 0 && visibleEntries.length !== entries.length
+          ? `${visibleEntries.length} of ${entries.length} words`
+          : `${entries.length} word${entries.length === 1 ? '' : 's'} saved`}
       </span>
     </div>
   );
@@ -9854,14 +9888,24 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
             )}
           </div>
 
+          {entries.length > 0 && (
+            <UnitSearchBox
+              value={wordSearchQuery}
+              onChange={setWordSearchQuery}
+              placeholder="Search your words..."
+              ariaLabel="Search your words"
+            />
+          )}
           <div className="wordbook-list">
             {sortedEntries.length === 0 ? (
               <p className="wordbook-empty">
                 No words yet. Add one above, or use the “+ Word” button inside any unit — selecting
                 text in the reading PDF first fills the word in for you.
               </p>
+            ) : visibleEntries.length === 0 ? (
+              <p className="unit-search-empty">No words match your search.</p>
             ) : (
-              sortedEntries.map((entry) => {
+              visibleEntries.map((entry) => {
                 const isEditing = editingEntryId === entry.id;
                 return (
                   <div key={entry.id} className="wordbook-entry">
