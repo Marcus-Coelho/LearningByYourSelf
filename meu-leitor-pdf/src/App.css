@@ -6392,3 +6392,10 @@ a.upload-button:visited {
     display: none;
   }
 }
+
+.plan-item.plan-item--static,
+.plan-item.plan-item--static:hover {
+  cursor: default;
+  border-color: var(--border);
+  opacity: 0.8;
+}

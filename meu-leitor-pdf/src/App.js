@@ -8383,11 +8383,10 @@ function TodayPlanCard({ newUnit, listening, exercise, words, reviewQueue, onOpe
       {goals.length > 0 && (
         <p className="plan-card-hint plan-review-summary">
           <strong>{goals.length} goal{goals.length === 1 ? '' : 's'} today, {goals.filter((g) => g.done).length}/{goals.length} done.</strong>
-          {(reviewQueue.length > 0 || (words && words.dueCount > 0)) ? ' To review today: ' : ''}
-          {[
+          {(reviewQueue.length > 0 || (words && words.dueCount > 0)) ? ` To review today: ${[
             reviewQueue.length > 0 ? `${reviewQueue.length} course item${reviewQueue.length === 1 ? '' : 's'}` : null,
             words && words.dueCount > 0 ? `${words.dueCount} word${words.dueCount === 1 ? '' : 's'}` : null,
-          ].filter(Boolean).join(' + ')}.
+          ].filter(Boolean).join(' + ')}.` : ''}
         </p>
       )}
       <div className="plan-items">
@@ -8457,6 +8456,21 @@ function TodayPlanCard({ newUnit, listening, exercise, words, reviewQueue, onOpe
             </span>
           </button>
         )}
+        {/* Meta ligada sem nada a fazer hoje: a linha continua no plano, dizendo por que, pra a conta "N metas" bater com o que se vê */}
+        {[
+          { key: 'newUnit', missing: !newUnit, icon: '📘', title: 'Learn something new', detail: 'Nothing new to suggest' },
+          { key: 'reviews', missing: reviewItems.length === 0 && !showWords, icon: '🔁', title: 'Review', detail: 'Nothing due today', sub: 'No course items or words to review' },
+          { key: 'listening', missing: !listening, icon: '🎧', title: 'Practice listening', detail: 'Nothing new to suggest' },
+        ].filter((row) => row.missing && goals.some((g) => g.key === row.key)).map((row) => (
+          <div key={row.key} className="plan-item plan-item--static">
+            <span className="plan-item-icon" aria-hidden="true">{row.icon}</span>
+            <span className="plan-item-main">
+              <span className="plan-item-title">{row.title}{goalTag(row.key)}</span>
+              <span className="plan-item-detail">{row.detail}</span>
+              {row.sub && <span className="plan-item-sub">{row.sub}</span>}
+            </span>
+          </div>
+        ))}
       </div>
       {moreReviewCount > 0 && (
         <button type="button" className="plan-more-link" onClick={onSeeAllReviews}>
