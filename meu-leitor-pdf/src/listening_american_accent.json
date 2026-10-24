@@ -22,7 +22,39 @@
         "speak Chinese"
       ],
       "number": 1,
-      "trackNumber": 6
+      "trackNumber": 6,
+      "lineTargets": [
+        [
+          "sea"
+        ],
+        [
+          "cheese"
+        ],
+        [
+          "heat"
+        ],
+        [
+          "breathe"
+        ],
+        [
+          "meals"
+        ],
+        [
+          "leaves"
+        ],
+        [
+          "easy"
+        ],
+        [
+          "dreams"
+        ],
+        [
+          "peaches"
+        ],
+        [
+          "speak"
+        ]
+      ]
     },
     {
       "id": "accent-7",
@@ -38,7 +70,25 @@
         "Steve will reread the email before he leaves."
       ],
       "number": 2,
-      "trackNumber": 7
+      "trackNumber": 7,
+      "lineTargets": [
+        [
+          "employees"
+        ],
+        [
+          "heater"
+        ],
+        [
+          "easy",
+          "teacher"
+        ],
+        [
+          "employee"
+        ],
+        [
+          "email"
+        ]
+      ]
     },
     {
       "id": "accent-9",
@@ -59,7 +109,39 @@
         "winter wind"
       ],
       "number": 3,
-      "trackNumber": 9
+      "trackNumber": 9,
+      "lineTargets": [
+        [
+          "city"
+        ],
+        [
+          "victim"
+        ],
+        [
+          "milk"
+        ],
+        [
+          "children’s"
+        ],
+        [
+          "simple"
+        ],
+        [
+          "chips"
+        ],
+        [
+          "trip"
+        ],
+        [
+          "spring"
+        ],
+        [
+          "thing"
+        ],
+        [
+          "winter"
+        ]
+      ]
     },
     {
       "id": "accent-10",
@@ -75,7 +157,25 @@
         "When did Bill Clinton visit the Middle East?"
       ],
       "number": 4,
-      "trackNumber": 10
+      "trackNumber": 10,
+      "lineTargets": [
+        [
+          "sister"
+        ],
+        [
+          "beginning",
+          "drinking"
+        ],
+        [
+          "dinner"
+        ],
+        [
+          "history"
+        ],
+        [
+          "visit"
+        ]
+      ]
     },
     {
       "id": "accent-11",
@@ -146,7 +246,39 @@
         "green pill"
       ],
       "number": 6,
-      "trackNumber": 12
+      "trackNumber": 12,
+      "lineTargets": [
+        [
+          "sleepy"
+        ],
+        [
+          "interesting"
+        ],
+        [
+          "feeling"
+        ],
+        [
+          "easy"
+        ],
+        [
+          "is"
+        ],
+        [
+          "deal"
+        ],
+        [
+          "things"
+        ],
+        [
+          "middle"
+        ],
+        [
+          "meal"
+        ],
+        [
+          "green"
+        ]
+      ]
     },
     {
       "id": "accent-14",
@@ -167,7 +299,38 @@
         "save the whales"
       ],
       "number": 7,
-      "trackNumber": 14
+      "trackNumber": 14,
+      "lineTargets": [
+        [
+          "day"
+        ],
+        [
+          "stay",
+          "away"
+        ],
+        [
+          "escape"
+        ],
+        [
+          "break"
+        ],
+        [
+          "same"
+        ],
+        [
+          "situation"
+        ],
+        [
+          "baseball"
+        ],
+        [],
+        [
+          "cake"
+        ],
+        [
+          "whales"
+        ]
+      ]
     },
     {
       "id": "accent-15",
@@ -183,7 +346,26 @@
         "My neighbor from Spain moved away today."
       ],
       "number": 8,
-      "trackNumber": 15
+      "trackNumber": 15,
+      "lineTargets": [
+        [
+          "weight",
+          "cake"
+        ],
+        [
+          "trains"
+        ],
+        [
+          "hails"
+        ],
+        [
+          "stay",
+          "game"
+        ],
+        [
+          "neighbor"
+        ]
+      ]
     },
     {
       "id": "accent-17",
@@ -204,7 +386,39 @@
         "well read"
       ],
       "number": 9,
-      "trackNumber": 17
+      "trackNumber": 17,
+      "lineTargets": [
+        [
+          "election"
+        ],
+        [
+          "legs"
+        ],
+        [
+          "plenty"
+        ],
+        [
+          "pledge"
+        ],
+        [
+          "friend"
+        ],
+        [
+          "metal"
+        ],
+        [
+          "better"
+        ],
+        [
+          "dress"
+        ],
+        [
+          "next"
+        ],
+        [
+          "read"
+        ]
+      ]
     },
     {
       "id": "accent-18",
@@ -220,7 +434,24 @@
         "I see my best friend Fred every seven days."
       ],
       "number": 10,
-      "trackNumber": 18
+      "trackNumber": 18,
+      "lineTargets": [
+        [
+          "effort"
+        ],
+        [
+          "breakfast"
+        ],
+        [
+          "session"
+        ],
+        [
+          "seventh"
+        ],
+        [
+          "friend"
+        ]
+      ]
     },
     {
       "id": "accent-19",
@@ -277,7 +508,32 @@
         "headache"
       ],
       "number": 12,
-      "trackNumber": 20
+      "trackNumber": 20,
+      "lineTargets": [
+        [
+          "rain"
+        ],
+        [
+          "taste"
+        ],
+        [
+          "neck"
+        ],
+        [
+          "fell",
+          "away"
+        ],
+        [
+          "day"
+        ],
+        [
+          "men"
+        ],
+        [
+          "dress"
+        ],
+        []
+      ]
     },
     {
       "id": "accent-22",
@@ -298,7 +554,39 @@
         "angry man"
       ],
       "number": 13,
-      "trackNumber": 22
+      "trackNumber": 22,
+      "lineTargets": [
+        [
+          "example"
+        ],
+        [
+          "anthem"
+        ],
+        [
+          "ranch"
+        ],
+        [
+          "accurate"
+        ],
+        [
+          "habit"
+        ],
+        [
+          "plan"
+        ],
+        [
+          "gathering"
+        ],
+        [
+          "chance"
+        ],
+        [
+          "actor"
+        ],
+        [
+          "man"
+        ]
+      ]
     },
     {
       "id": "accent-23",
@@ -314,7 +602,26 @@
         "Kathy would rather study acting at the national academy."
       ],
       "number": 14,
-      "trackNumber": 23
+      "trackNumber": 23,
+      "lineTargets": [
+        [
+          "chance",
+          "accurate"
+        ],
+        [
+          "class"
+        ],
+        [
+          "sandwich",
+          "cafeteria"
+        ],
+        [
+          "attitude"
+        ],
+        [
+          "academy"
+        ]
+      ]
     },
     {
       "id": "accent-24",
@@ -369,7 +676,27 @@
         "bad friend"
       ],
       "number": 16,
-      "trackNumber": 25
+      "trackNumber": 25,
+      "lineTargets": [
+        [
+          "endings"
+        ],
+        [
+          "land"
+        ],
+        [
+          "men"
+        ],
+        [
+          "gallons"
+        ],
+        [
+          "exit"
+        ],
+        [
+          "friend"
+        ]
+      ]
     },
     {
       "id": "accent-27",
@@ -390,7 +717,37 @@
         "sloppy job"
       ],
       "number": 17,
-      "trackNumber": 27
+      "trackNumber": 27,
+      "lineTargets": [
+        [
+          "problem"
+        ],
+        [
+          "body"
+        ],
+        [
+          "office"
+        ],
+        [
+          "politics"
+        ],
+        [
+          "top"
+        ],
+        [
+          "response"
+        ],
+        [
+          "topic"
+        ],
+        [
+          "hospital"
+        ],
+        [],
+        [
+          "job"
+        ]
+      ]
     },
     {
       "id": "accent-28",
@@ -406,7 +763,24 @@
         "He’s got a lot of dollars in his pocket."
       ],
       "number": 18,
-      "trackNumber": 28
+      "trackNumber": 28,
+      "lineTargets": [
+        [
+          "job"
+        ],
+        [
+          "concerts"
+        ],
+        [
+          "hospital"
+        ],
+        [
+          "office"
+        ],
+        [
+          "dollars"
+        ]
+      ]
     },
     {
       "id": "accent-29",
@@ -461,7 +835,27 @@
         "back pocket"
       ],
       "number": 20,
-      "trackNumber": 30
+      "trackNumber": 30,
+      "lineTargets": [
+        [
+          "pan"
+        ],
+        [
+          "man’s"
+        ],
+        [
+          "answer"
+        ],
+        [
+          "back"
+        ],
+        [
+          "dog"
+        ],
+        [
+          "pocket"
+        ]
+      ]
     },
     {
       "id": "accent-33",
@@ -482,7 +876,37 @@
         "Sunday brunch"
       ],
       "number": 21,
-      "trackNumber": 33
+      "trackNumber": 33,
+      "lineTargets": [
+        [
+          "son"
+        ],
+        [
+          "jump"
+        ],
+        [
+          "fun"
+        ],
+        [
+          "subject"
+        ],
+        [
+          "mother"
+        ],
+        [
+          "rug"
+        ],
+        [
+          "number"
+        ],
+        [],
+        [
+          "money"
+        ],
+        [
+          "brunch"
+        ]
+      ]
     },
     {
       "id": "accent-34",
@@ -498,7 +922,25 @@
         "I love the sunny summer months."
       ],
       "number": 22,
-      "trackNumber": 34
+      "trackNumber": 34,
+      "lineTargets": [
+        [
+          "brother"
+        ],
+        [
+          "country"
+        ],
+        [
+          "summer"
+        ],
+        [
+          "stuff",
+          "trunk"
+        ],
+        [
+          "summer"
+        ]
+      ]
     },
     {
       "id": "accent-35",
@@ -555,7 +997,32 @@
         "gunshot"
       ],
       "number": 24,
-      "trackNumber": 36
+      "trackNumber": 36,
+      "lineTargets": [
+        [
+          "come",
+          "on"
+        ],
+        [
+          "lucky"
+        ],
+        [
+          "enough"
+        ],
+        [
+          "cost"
+        ],
+        [
+          "fun"
+        ],
+        [
+          "stop"
+        ],
+        [
+          "jump"
+        ],
+        []
+      ]
     },
     {
       "id": "accent-38",
@@ -576,7 +1043,39 @@
         "caught the ball"
       ],
       "number": 25,
-      "trackNumber": 38
+      "trackNumber": 38,
+      "lineTargets": [
+        [
+          "pause"
+        ],
+        [
+          "awful"
+        ],
+        [
+          "water"
+        ],
+        [
+          "talk"
+        ],
+        [
+          "autumn"
+        ],
+        [
+          "dog"
+        ],
+        [
+          "talk"
+        ],
+        [
+          "exhausted"
+        ],
+        [
+          "tall"
+        ],
+        [
+          "ball"
+        ]
+      ]
     },
     {
       "id": "accent-39",
@@ -592,7 +1091,26 @@
         "This sauce is awesome, Paula!"
       ],
       "number": 26,
-      "trackNumber": 39
+      "trackNumber": 39,
+      "lineTargets": [
+        [
+          "audience"
+        ],
+        [
+          "daughter",
+          "come",
+          "in"
+        ],
+        [
+          "mother-in-law"
+        ],
+        [
+          "automobile"
+        ],
+        [
+          "sauce"
+        ]
+      ]
     },
     {
       "id": "accent-40",
@@ -647,7 +1165,27 @@
         "small club"
       ],
       "number": 28,
-      "trackNumber": 41
+      "trackNumber": 41,
+      "lineTargets": [
+        [
+          "dog"
+        ],
+        [
+          "month"
+        ],
+        [
+          "talk"
+        ],
+        [
+          "lunch"
+        ],
+        [
+          "coffee"
+        ],
+        [
+          "club"
+        ]
+      ]
     },
     {
       "id": "accent-43",
@@ -668,7 +1206,39 @@
         "golden bowl"
       ],
       "number": 29,
-      "trackNumber": 43
+      "trackNumber": 43,
+      "lineTargets": [
+        [
+          "phone"
+        ],
+        [
+          "home"
+        ],
+        [
+          "almost"
+        ],
+        [
+          "road"
+        ],
+        [
+          "drove"
+        ],
+        [
+          "smoke"
+        ],
+        [
+          "profile"
+        ],
+        [
+          "motion"
+        ],
+        [
+          "poem"
+        ],
+        [
+          "bowl"
+        ]
+      ]
     },
     {
       "id": "accent-44",
@@ -684,7 +1254,25 @@
         "I don’t know if Joan smokes."
       ],
       "number": 30,
-      "trackNumber": 44
+      "trackNumber": 44,
+      "lineTargets": [
+        [
+          "going"
+        ],
+        [
+          "window"
+        ],
+        [
+          "bowling"
+        ],
+        [
+          "bowl",
+          "potatoes"
+        ],
+        [
+          "smokes"
+        ]
+      ]
     },
     {
       "id": "accent-45",
@@ -745,7 +1333,27 @@
         "only daughter"
       ],
       "number": 32,
-      "trackNumber": 46
+      "trackNumber": 46,
+      "lineTargets": [
+        [
+          "law"
+        ],
+        [
+          "home"
+        ],
+        [
+          "dogs"
+        ],
+        [
+          "boat"
+        ],
+        [
+          "walk"
+        ],
+        [
+          "daughter"
+        ]
+      ]
     },
     {
       "id": "accent-48",
@@ -766,7 +1374,39 @@
         "good childhood"
       ],
       "number": 33,
-      "trackNumber": 48
+      "trackNumber": 48,
+      "lineTargets": [
+        [
+          "book"
+        ],
+        [
+          "look"
+        ],
+        [
+          "good"
+        ],
+        [
+          "cooked"
+        ],
+        [
+          "foot"
+        ],
+        [
+          "cookie"
+        ],
+        [
+          "push"
+        ],
+        [
+          "pullover"
+        ],
+        [
+          "hook"
+        ],
+        [
+          "childhood"
+        ]
+      ]
     },
     {
       "id": "accent-49",
@@ -782,7 +1422,24 @@
         "Butch visited his old neighborhood in Brooklyn."
       ],
       "number": 34,
-      "trackNumber": 49
+      "trackNumber": 49,
+      "lineTargets": [
+        [
+          "book"
+        ],
+        [
+          "cookies"
+        ],
+        [
+          "butcher"
+        ],
+        [
+          "book"
+        ],
+        [
+          "neighborhood"
+        ]
+      ]
     },
     {
       "id": "accent-51",
@@ -803,7 +1460,39 @@
         "super cool"
       ],
       "number": 35,
-      "trackNumber": 51
+      "trackNumber": 51,
+      "lineTargets": [
+        [
+          "few"
+        ],
+        [
+          "fruit"
+        ],
+        [
+          "spoon"
+        ],
+        [
+          "suit"
+        ],
+        [
+          "value"
+        ],
+        [
+          "shoes"
+        ],
+        [
+          "moon"
+        ],
+        [
+          "suitcase"
+        ],
+        [
+          "rooms"
+        ],
+        [
+          "cool"
+        ]
+      ]
     },
     {
       "id": "accent-52",
@@ -819,7 +1508,25 @@
         "The statue on the avenue is truly beautiful."
       ],
       "number": 36,
-      "trackNumber": 52
+      "trackNumber": 52,
+      "lineTargets": [
+        [
+          "roof"
+        ],
+        [
+          "juice",
+          "soup"
+        ],
+        [
+          "shoes"
+        ],
+        [
+          "proof"
+        ],
+        [
+          "statue"
+        ]
+      ]
     },
     {
       "id": "accent-53",
@@ -862,7 +1569,27 @@
         "too full"
       ],
       "number": 38,
-      "trackNumber": 54
+      "trackNumber": 54,
+      "lineTargets": [
+        [
+          "food"
+        ],
+        [
+          "room"
+        ],
+        [
+          "cook"
+        ],
+        [
+          "book"
+        ],
+        [
+          "cookies"
+        ],
+        [
+          "full"
+        ]
+      ]
     },
     {
       "id": "accent-56",
@@ -883,7 +1610,37 @@
         "thirty-third"
       ],
       "number": 39,
-      "trackNumber": 56
+      "trackNumber": 56,
+      "lineTargets": [
+        [
+          "person"
+        ],
+        [
+          "purple"
+        ],
+        [
+          "german"
+        ],
+        [
+          "world"
+        ],
+        [
+          "dinner"
+        ],
+        [
+          "term"
+        ],
+        [
+          "words"
+        ],
+        [
+          "bird"
+        ],
+        [
+          "girl"
+        ],
+        []
+      ]
     },
     {
       "id": "accent-57",
@@ -899,7 +1656,24 @@
         "It’s not worth worrying about another birthday."
       ],
       "number": 40,
-      "trackNumber": 57
+      "trackNumber": 57,
+      "lineTargets": [
+        [
+          "term"
+        ],
+        [
+          "turkey"
+        ],
+        [
+          "shirt"
+        ],
+        [
+          "birth"
+        ],
+        [
+          "birthday"
+        ]
+      ]
     },
     {
       "id": "accent-59",
@@ -920,7 +1694,37 @@
         "ninety-nine"
       ],
       "number": 41,
-      "trackNumber": 59
+      "trackNumber": 59,
+      "lineTargets": [
+        [
+          "lime"
+        ],
+        [
+          "wine"
+        ],
+        [
+          "kite"
+        ],
+        [
+          "try"
+        ],
+        [
+          "lives"
+        ],
+        [
+          "light"
+        ],
+        [
+          "high"
+        ],
+        [
+          "sign"
+        ],
+        [
+          "dining"
+        ],
+        []
+      ]
     },
     {
       "id": "accent-60",
@@ -936,7 +1740,24 @@
         "We had lime pie and dry white wine."
       ],
       "number": 42,
-      "trackNumber": 60
+      "trackNumber": 60,
+      "lineTargets": [
+        [
+          "design"
+        ],
+        [
+          "wildfire"
+        ],
+        [
+          "hours"
+        ],
+        [
+          "drive"
+        ],
+        [
+          "wine"
+        ]
+      ]
     },
     {
       "id": "accent-62",
@@ -957,7 +1778,36 @@
         "pronounce the vowel"
       ],
       "number": 43,
-      "trackNumber": 62
+      "trackNumber": 62,
+      "lineTargets": [
+        [
+          "hour"
+        ],
+        [
+          "house"
+        ],
+        [],
+        [
+          "announcement"
+        ],
+        [],
+        [
+          "mountain"
+        ],
+        [
+          "brown"
+        ],
+        [
+          "found",
+          "out"
+        ],
+        [
+          "down"
+        ],
+        [
+          "pronounce"
+        ]
+      ]
     },
     {
       "id": "accent-63",
@@ -973,7 +1823,24 @@
         "The brown cow is near the fountain."
       ],
       "number": 44,
-      "trackNumber": 63
+      "trackNumber": 63,
+      "lineTargets": [
+        [
+          "something"
+        ],
+        [
+          "flowers"
+        ],
+        [
+          "spouse"
+        ],
+        [
+          "mountain"
+        ],
+        [
+          "fountain"
+        ]
+      ]
     },
     {
       "id": "accent-65",
@@ -994,7 +1861,39 @@
         "avoid the moisture"
       ],
       "number": 45,
-      "trackNumber": 65
+      "trackNumber": 65,
+      "lineTargets": [
+        [
+          "toy"
+        ],
+        [
+          "boy"
+        ],
+        [
+          "appointment"
+        ],
+        [
+          "oysters"
+        ],
+        [
+          "point"
+        ],
+        [
+          "noise"
+        ],
+        [
+          "poison"
+        ],
+        [
+          "employee"
+        ],
+        [
+          "moist"
+        ],
+        [
+          "moisture"
+        ]
+      ]
     },
     {
       "id": "accent-66",
@@ -1010,7 +1909,25 @@
         "Why is Floyd avoiding Roy?"
       ],
       "number": 46,
-      "trackNumber": 66
+      "trackNumber": 66,
+      "lineTargets": [
+        [
+          "poison",
+          "toilet"
+        ],
+        [
+          "appointment"
+        ],
+        [
+          "paranoid"
+        ],
+        [
+          "choice"
+        ],
+        [
+          "avoiding"
+        ]
+      ]
     },
     {
       "id": "accent-69",
@@ -1035,7 +1952,51 @@
         "B: But it is interesting, isn’t it?"
       ],
       "number": 47,
-      "trackNumber": 69
+      "trackNumber": 69,
+      "lineTargets": [
+        [
+          "difficult"
+        ],
+        [
+          "easy"
+        ],
+        [
+          "feel"
+        ],
+        [
+          "tea"
+        ],
+        [
+          "dinner"
+        ],
+        [
+          "six"
+        ],
+        [
+          "expensive"
+        ],
+        [
+          "cheap"
+        ],
+        [
+          "refill"
+        ],
+        [
+          "physician"
+        ],
+        [
+          "sick"
+        ],
+        [
+          "little"
+        ],
+        [
+          "different"
+        ],
+        [
+          "interesting"
+        ]
+      ]
     },
     {
       "id": "accent-70",
@@ -1056,7 +2017,44 @@
         "Don’t you agree with me?"
       ],
       "trackNumber": 70,
-      "number": 48
+      "number": 48,
+      "lineTargets": [
+        [
+          "realistic"
+        ],
+        [
+          "difficult"
+        ],
+        [
+          "drinks"
+        ],
+        [
+          "victims",
+          "prison"
+        ],
+        [
+          "things",
+          "innocent"
+        ],
+        [
+          "kidding"
+        ],
+        [
+          "beginning",
+          "people"
+        ],
+        [
+          "evidence"
+        ],
+        [
+          "guilt",
+          "prison",
+          "years"
+        ],
+        [
+          "agree"
+        ]
+      ]
     },
     {
       "id": "accent-71",
@@ -1110,7 +2108,27 @@
         "I bet that’s a bat."
       ],
       "trackNumber": 72,
-      "number": 50
+      "number": 50,
+      "lineTargets": [
+        [
+          "bed"
+        ],
+        [
+          "den"
+        ],
+        [
+          "sad"
+        ],
+        [
+          "gas"
+        ],
+        [
+          "laughed"
+        ],
+        [
+          "bat"
+        ]
+      ]
     },
     {
       "id": "accent-73",
@@ -1127,7 +2145,27 @@
         "Don’t forget to thank Dan for his generous present."
       ],
       "number": 51,
-      "trackNumber": 73
+      "trackNumber": 73,
+      "lineTargets": [
+        [
+          "member"
+        ],
+        [
+          "dentist"
+        ],
+        [
+          "headache"
+        ],
+        [
+          "lemonade"
+        ],
+        [
+          "president"
+        ],
+        [
+          "present"
+        ]
+      ]
     },
     {
       "id": "accent-74",
@@ -1147,7 +2185,48 @@
         "I want to learn the language and have a better accent so that people can understand me when I am asking for directions and ordering in restaurants."
       ],
       "trackNumber": 74,
-      "number": 52
+      "number": 52,
+      "lineTargets": [
+        [
+          "planning",
+          "friends"
+        ],
+        [
+          "time",
+          "eleven"
+        ],
+        [
+          "love"
+        ],
+        [
+          "class"
+        ],
+        [
+          "vocabulary",
+          "tenses"
+        ],
+        [
+          "french",
+          "better",
+          "chance"
+        ],
+        [
+          "film",
+          "bad",
+          "word"
+        ],
+        [
+          "guess",
+          "effort"
+        ],
+        [
+          "language",
+          "accent",
+          "people",
+          "directions",
+          "restaurants"
+        ]
+      ]
     },
     {
       "id": "accent-76",
@@ -1164,7 +2243,37 @@
         "Nicole: Oh, that sounds like fun. I’ve been working nonstop, and I’d love to get out of the office."
       ],
       "number": 53,
-      "trackNumber": 76
+      "trackNumber": 76,
+      "lineTargets": [
+        [
+          "talk"
+        ],
+        [
+          "hold",
+          "on",
+          "call",
+          "boss"
+        ],
+        [
+          "problem"
+        ],
+        [
+          "sorry",
+          "long",
+          "going",
+          "on"
+        ],
+        [
+          "much",
+          "lunch",
+          "tomorrow"
+        ],
+        [
+          "fun",
+          "nonstop",
+          "office"
+        ]
+      ]
     },
     {
       "id": "accent-79",
@@ -1197,7 +2306,81 @@
         "B: No, just until next Monday."
       ],
       "number": 54,
-      "trackNumber": 79
+      "trackNumber": 79,
+      "lineTargets": [
+        [
+          "lunch"
+        ],
+        [
+          "love",
+          "money"
+        ],
+        [
+          "money"
+        ],
+        [
+          "pay",
+          "month"
+        ],
+        [
+          "cost"
+        ],
+        [
+          "lovely"
+        ],
+        [
+          "dollars"
+        ],
+        [
+          "color"
+        ],
+        [
+          "colors"
+        ],
+        [
+          "country"
+        ],
+        [
+          "comes"
+        ],
+        [
+          "husband"
+        ],
+        [
+          "london",
+          "english"
+        ],
+        [
+          "loved"
+        ],
+        [
+          "doing",
+          "on"
+        ],
+        [
+          "run"
+        ],
+        [
+          "brunch",
+          "mother",
+          "come"
+        ],
+        [
+          "wonderful"
+        ],
+        [
+          "brother"
+        ],
+        [
+          "son"
+        ],
+        [
+          "summer"
+        ],
+        [
+          "next"
+        ]
+      ]
     },
     {
       "id": "accent-80",
@@ -1244,7 +2427,18 @@
         "When in doubt, check the dictionary."
       ],
       "trackNumber": 81,
-      "number": 56
+      "number": 56,
+      "lineTargets": [
+        [
+          "words"
+        ],
+        [
+          "speakers"
+        ],
+        [
+          "dictionary"
+        ]
+      ]
     },
     {
       "id": "accent-82",
@@ -1424,7 +2618,24 @@
         "I was awed that he owed so much."
       ],
       "trackNumber": 89,
-      "number": 61
+      "number": 61,
+      "lineTargets": [
+        [
+          "boat"
+        ],
+        [
+          "ball"
+        ],
+        [
+          "coal"
+        ],
+        [
+          "oats"
+        ],
+        [
+          "much"
+        ]
+      ]
     },
     {
       "id": "accent-90",
@@ -1441,7 +2652,27 @@
         "The author wrote his autobiography."
       ],
       "number": 62,
-      "trackNumber": 90
+      "trackNumber": 90,
+      "lineTargets": [
+        [
+          "thought"
+        ],
+        [
+          "clothes"
+        ],
+        [
+          "audience"
+        ],
+        [
+          "home"
+        ],
+        [
+          "walk"
+        ],
+        [
+          "autobiography"
+        ]
+      ]
     },
     {
       "id": "accent-95",
@@ -1582,7 +2813,66 @@
         "A: And I think you shouldn’t be so rude!"
       ],
       "number": 68,
-      "trackNumber": 101
+      "trackNumber": 101,
+      "lineTargets": [
+        [
+          "start"
+        ],
+        [
+          "full",
+          "food"
+        ],
+        [
+          "cookie"
+        ],
+        [
+          "look"
+        ],
+        [
+          "soup"
+        ],
+        [
+          "full"
+        ],
+        [
+          "woods"
+        ],
+        [
+          "wolves",
+          "woods"
+        ],
+        [
+          "true"
+        ],
+        [
+          "wolves",
+          "moon"
+        ],
+        [
+          "boots"
+        ],
+        [
+          "cool"
+        ],
+        [
+          "look",
+          "suit"
+        ],
+        [
+          "tell",
+          "truth",
+          "blue"
+        ],
+        [
+          "good"
+        ],
+        [
+          "return"
+        ],
+        [
+          "rude"
+        ]
+      ]
     },
     {
       "id": "accent-103",
@@ -1630,7 +2920,28 @@
         "That’s a stupid attitude, Stewart."
       ],
       "number": 70,
-      "trackNumber": 104
+      "trackNumber": 104,
+      "lineTargets": [
+        [
+          "duty"
+        ],
+        [
+          "students"
+        ],
+        [
+          "tutor"
+        ],
+        [
+          "producer",
+          "studio"
+        ],
+        [
+          "due"
+        ],
+        [
+          "attitude"
+        ]
+      ]
     },
     {
       "id": "accent-106",
@@ -1689,7 +3000,30 @@
         "They weren’t certain that the Earth circles the sun."
       ],
       "number": 72,
-      "trackNumber": 107
+      "trackNumber": 107,
+      "lineTargets": [
+        [
+          "words"
+        ],
+        [
+          "verbs"
+        ],
+        [
+          "dessert"
+        ],
+        [
+          "version"
+        ],
+        [
+          "birthday"
+        ],
+        [
+          "curse"
+        ],
+        [
+          "sun"
+        ]
+      ]
     },
     {
       "id": "accent-109",
@@ -1741,7 +3075,27 @@
         "How far is Ireland from here?"
       ],
       "number": 74,
-      "trackNumber": 110
+      "trackNumber": 110,
+      "lineTargets": [
+        [
+          "stairs"
+        ],
+        [
+          "employer"
+        ],
+        [
+          "fourth"
+        ],
+        [
+          "store"
+        ],
+        [
+          "cashier"
+        ],
+        [
+          "ireland"
+        ]
+      ]
     },
     {
       "id": "accent-115",
@@ -1810,7 +3164,33 @@
         "I heard about the lies."
       ],
       "number": 76,
-      "trackNumber": 116
+      "trackNumber": 116,
+      "lineTargets": [
+        [
+          "wallet"
+        ],
+        [
+          "wallet"
+        ],
+        [
+          "bucks"
+        ],
+        [
+          "floor"
+        ],
+        [
+          "ice"
+        ],
+        [
+          "eyes"
+        ],
+        [
+          "lice"
+        ],
+        [
+          "lies"
+        ]
+      ]
     },
     {
       "id": "accent-117",
@@ -1825,7 +3205,21 @@
         "The dog is on the dock."
       ],
       "trackNumber": 117,
-      "number": 77
+      "number": 77,
+      "lineTargets": [
+        [
+          "lice"
+        ],
+        [
+          "eyes"
+        ],
+        [
+          "buzz"
+        ],
+        [
+          "dock"
+        ]
+      ]
     },
     {
       "id": "accent-120",
@@ -1856,7 +3250,37 @@
         "cut"
       ],
       "trackNumber": 120,
-      "number": 78
+      "number": 78,
+      "lineTargets": [
+        [
+          "p"
+        ],
+        [],
+        [],
+        [],
+        [],
+        [
+          "b"
+        ],
+        [],
+        [],
+        [],
+        [],
+        [
+          "d"
+        ],
+        [],
+        [],
+        [],
+        [],
+        [
+          "t"
+        ],
+        [],
+        [],
+        [],
+        []
+      ]
     },
     {
       "id": "accent-122",
@@ -1875,7 +3299,33 @@
         "cup cake"
       ],
       "number": 79,
-      "trackNumber": 122
+      "trackNumber": 122,
+      "lineTargets": [
+        [
+          "help"
+        ],
+        [
+          "talking"
+        ],
+        [
+          "did"
+        ],
+        [
+          "could"
+        ],
+        [
+          "stop"
+        ],
+        [
+          "market"
+        ],
+        [
+          "park"
+        ],
+        [
+          "cup"
+        ]
+      ]
     },
     {
       "id": "accent-125",
@@ -1902,7 +3352,41 @@
         "butler"
       ],
       "trackNumber": 125,
-      "number": 80
+      "number": 80,
+      "lineTargets": [
+        [
+          "was"
+        ],
+        [
+          "might"
+        ],
+        [
+          "go"
+        ],
+        [
+          "work"
+        ],
+        [
+          "didn’t"
+        ],
+        [
+          "need"
+        ],
+        [
+          "weeks"
+        ],
+        [
+          "budget"
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ]
     },
     {
       "id": "accent-126",
@@ -1921,7 +3405,33 @@
         "If you eat out every night you'll get fat."
       ],
       "number": 81,
-      "trackNumber": 126
+      "trackNumber": 126,
+      "lineTargets": [
+        [
+          "might"
+        ],
+        [
+          "great"
+        ],
+        [
+          "website"
+        ],
+        [
+          "hot"
+        ],
+        [
+          "right"
+        ],
+        [
+          "bite"
+        ],
+        [
+          "apartment"
+        ],
+        [
+          "night"
+        ]
+      ]
     },
     {
       "id": "accent-128",
@@ -1943,7 +3453,22 @@
         "frighten"
       ],
       "trackNumber": 128,
-      "number": 82
+      "number": 82,
+      "lineTargets": [
+        [],
+        [],
+        [
+          "curtain"
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ]
     },
     {
       "id": "accent-129",
@@ -1960,7 +3485,28 @@
         "Martin Luther King and Bill Clinton are famous Americans."
       ],
       "number": 83,
-      "trackNumber": 129
+      "trackNumber": 129,
+      "lineTargets": [
+        [
+          "curtain"
+        ],
+        [
+          "rotten"
+        ],
+        [
+          "written",
+          "in"
+        ],
+        [
+          "sentence"
+        ],
+        [
+          "buttons"
+        ],
+        [
+          "americans"
+        ]
+      ]
     },
     {
       "id": "accent-131",
@@ -1983,7 +3529,23 @@
         "Sacramento"
       ],
       "trackNumber": 131,
-      "number": 84
+      "number": 84,
+      "lineTargets": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+          "orange"
+        ],
+        []
+      ]
     },
     {
       "id": "accent-132",
@@ -1998,7 +3560,25 @@
         "B: It’s only twenty minutes from Santa Monica."
       ],
       "number": 85,
-      "trackNumber": 132
+      "trackNumber": 132,
+      "lineTargets": [
+        [
+          "advantages",
+          "company"
+        ],
+        [
+          "disappointed",
+          "interview"
+        ],
+        [
+          "someone",
+          "skills",
+          "plenty"
+        ],
+        [
+          "minutes"
+        ]
+      ]
     },
     {
       "id": "accent-134",
@@ -2036,7 +3616,34 @@
         "put it off"
       ],
       "trackNumber": 136,
-      "number": 87
+      "number": 87,
+      "lineTargets": [
+        [
+          "is"
+        ],
+        [
+          "up"
+        ],
+        [
+          "try"
+        ],
+        [
+          "eat"
+        ],
+        [
+          "eleven"
+        ],
+        [
+          "minute"
+        ],
+        [
+          "what"
+        ],
+        [
+          "put",
+          "off"
+        ]
+      ]
     },
     {
       "id": "accent-137",
@@ -2057,7 +3664,40 @@
         "It’ll be better if you heat it before you eat it."
       ],
       "number": 88,
-      "trackNumber": 137
+      "trackNumber": 137,
+      "lineTargets": [
+        [
+          "later"
+        ],
+        [
+          "battery"
+        ],
+        [
+          "letter"
+        ],
+        [
+          "meeting"
+        ],
+        [
+          "computer"
+        ],
+        [
+          "fatter"
+        ],
+        [
+          "waiter"
+        ],
+        [
+          "bottles"
+        ],
+        [
+          "daughter"
+        ],
+        [
+          "better",
+          "heat"
+        ]
+      ]
     },
     {
       "id": "accent-139",
@@ -2078,7 +3718,39 @@
         "My effort was totally futile."
       ],
       "number": 89,
-      "trackNumber": 139
+      "trackNumber": 139,
+      "lineTargets": [
+        [
+          "medal"
+        ],
+        [
+          "metal"
+        ],
+        [
+          "name"
+        ],
+        [
+          "element"
+        ],
+        [
+          "hand"
+        ],
+        [
+          "find"
+        ],
+        [
+          "president"
+        ],
+        [
+          "gasoline"
+        ],
+        [
+          "system"
+        ],
+        [
+          "effort"
+        ]
+      ]
     },
     {
       "id": "accent-140",
@@ -2112,7 +3784,22 @@
         "fed up"
       ],
       "number": 91,
-      "trackNumber": 141
+      "trackNumber": 141,
+      "lineTargets": [
+        [
+          "add"
+        ],
+        [
+          "made"
+        ],
+        [
+          "hid"
+        ],
+        [
+          "fed",
+          "up"
+        ]
+      ]
     },
     {
       "id": "accent-142",
@@ -2128,7 +3815,24 @@
         "I’m fed up with the crowded elevator."
       ],
       "number": 92,
-      "trackNumber": 142
+      "trackNumber": 142,
+      "lineTargets": [
+        [
+          "added"
+        ],
+        [
+          "part"
+        ],
+        [
+          "products"
+        ],
+        [
+          "dress"
+        ],
+        [
+          "elevator"
+        ]
+      ]
     },
     {
       "id": "accent-144",
@@ -2190,7 +3894,38 @@
         "A: To tell you the truth, I am drained from all this drama."
       ],
       "number": 95,
-      "trackNumber": 147
+      "trackNumber": 147,
+      "lineTargets": [
+        [
+          "train"
+        ],
+        [
+          "traffic"
+        ],
+        [
+          "attorney"
+        ],
+        [
+          "truth"
+        ],
+        [
+          "traveled"
+        ],
+        [
+          "traditions"
+        ],
+        [
+          "times",
+          "drink"
+        ],
+        [
+          "trouble"
+        ],
+        [
+          "truth",
+          "drama"
+        ]
+      ]
     },
     {
       "id": "accent-148",
@@ -2222,7 +3957,21 @@
         "Should you?"
       ],
       "trackNumber": 149,
-      "number": 97
+      "number": 97,
+      "lineTargets": [
+        [
+          "did"
+        ],
+        [
+          "would"
+        ],
+        [
+          "could"
+        ],
+        [
+          "should"
+        ]
+      ]
     },
     {
       "id": "accent-150",
@@ -2247,7 +3996,31 @@
         "Aren’t you?"
       ],
       "trackNumber": 150,
-      "number": 98
+      "number": 98,
+      "lineTargets": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+          "don’t"
+        ],
+        [
+          "won’t"
+        ],
+        [
+          "can’t"
+        ],
+        [
+          "aren’t"
+        ]
+      ]
     },
     {
       "id": "accent-151",
@@ -2266,7 +4039,33 @@
         "Can’t you change your schedule?"
       ],
       "number": 99,
-      "trackNumber": 151
+      "trackNumber": 151,
+      "lineTargets": [
+        [
+          "graduation"
+        ],
+        [
+          "picture"
+        ],
+        [
+          "punctual"
+        ],
+        [
+          "nature"
+        ],
+        [
+          "situation"
+        ],
+        [
+          "adventurous"
+        ],
+        [
+          "gradually"
+        ],
+        [
+          "schedule"
+        ]
+      ]
     },
     {
       "id": "accent-152",
@@ -2330,7 +4129,23 @@
         "needed a"
       ],
       "trackNumber": 153,
-      "number": 101
+      "number": 101,
+      "lineTargets": [
+        [
+          "stayed",
+          "in"
+        ],
+        [
+          "turned",
+          "on"
+        ],
+        [
+          "developed"
+        ],
+        [
+          "needed"
+        ]
+      ]
     },
     {
       "id": "accent-154",
@@ -2347,7 +4162,28 @@
         "liked it"
       ],
       "trackNumber": 154,
-      "number": 102
+      "number": 102,
+      "lineTargets": [
+        [
+          "worried"
+        ],
+        [
+          "looked"
+        ],
+        [
+          "talked"
+        ],
+        [
+          "interested"
+        ],
+        [
+          "worked",
+          "on"
+        ],
+        [
+          "liked"
+        ]
+      ]
     },
     {
       "id": "accent-155",
@@ -2370,7 +4206,45 @@
         "I loved it."
       ],
       "trackNumber": 155,
-      "number": 103
+      "number": 103,
+      "lineTargets": [
+        [
+          "needed"
+        ],
+        [
+          "painted"
+        ],
+        [
+          "attended"
+        ],
+        [
+          "admitted"
+        ],
+        [
+          "cooked"
+        ],
+        [
+          "liked"
+        ],
+        [
+          "watched"
+        ],
+        [
+          "stopped"
+        ],
+        [
+          "used"
+        ],
+        [
+          "cleaned"
+        ],
+        [
+          "changed"
+        ],
+        [
+          "loved"
+        ]
+      ]
     },
     {
       "id": "accent-156",
@@ -2391,7 +4265,40 @@
         "B: I painted it last week."
       ],
       "number": 104,
-      "trackNumber": 156
+      "trackNumber": 156,
+      "lineTargets": [
+        [
+          "movie"
+        ],
+        [
+          "lot"
+        ],
+        [
+          "money"
+        ],
+        [
+          "bank"
+        ],
+        [
+          "chicken"
+        ],
+        [
+          "oil"
+        ],
+        [
+          "heater"
+        ],
+        [
+          "turned",
+          "off"
+        ],
+        [
+          "room"
+        ],
+        [
+          "week"
+        ]
+      ]
     },
     {
       "id": "accent-157",
@@ -2413,7 +4320,58 @@
         "He encouraged him to start a foreign language club."
       ],
       "trackNumber": 157,
-      "number": 105
+      "number": 105,
+      "lineTargets": [
+        [
+          "arrived",
+          "decided",
+          "work",
+          "skills"
+        ],
+        [
+          "school",
+          "remembered",
+          "bit"
+        ],
+        [
+          "confidence",
+          "americans"
+        ],
+        [
+          "college",
+          "students",
+          "world"
+        ],
+        [
+          "attending",
+          "courses",
+          "way"
+        ],
+        [
+          "frustrated",
+          "classmates"
+        ],
+        [
+          "surprised"
+        ],
+        [
+          "impossible"
+        ],
+        [
+          "teacher",
+          "advice"
+        ],
+        [
+          "teacher",
+          "give",
+          "up",
+          "friends",
+          "practice"
+        ],
+        [
+          "language"
+        ]
+      ]
     },
     {
       "id": "accent-159",
@@ -2451,7 +4409,21 @@
         "third month"
       ],
       "trackNumber": 160,
-      "number": 107
+      "number": 107,
+      "lineTargets": [
+        [
+          "nothing"
+        ],
+        [
+          "birthday"
+        ],
+        [
+          "methods"
+        ],
+        [
+          "month"
+        ]
+      ]
     },
     {
       "id": "accent-162",
@@ -2489,7 +4461,21 @@
         "mother and father"
       ],
       "trackNumber": 163,
-      "number": 109
+      "number": 109,
+      "lineTargets": [
+        [
+          "clothing"
+        ],
+        [
+          "weather"
+        ],
+        [
+          "brother"
+        ],
+        [
+          "mother"
+        ]
+      ]
     },
     {
       "id": "accent-165",
@@ -2573,7 +4559,39 @@
         "Although they’re rather thin, they’re very healthy."
       ],
       "trackNumber": 167,
-      "number": 112
+      "number": 112,
+      "lineTargets": [
+        [
+          "birthday",
+          "month"
+        ],
+        [
+          "thousands"
+        ],
+        [
+          "father"
+        ],
+        [
+          "catholics"
+        ],
+        [
+          "anything",
+          "everything"
+        ],
+        [
+          "truth"
+        ],
+        [
+          "south",
+          "warmth"
+        ],
+        [
+          "rather"
+        ],
+        [
+          "healthy"
+        ]
+      ]
     },
     {
       "id": "accent-168",
@@ -2590,7 +4608,27 @@
         "They did it the other day. Didn’t they?"
       ],
       "trackNumber": 168,
-      "number": 113
+      "number": 113,
+      "lineTargets": [
+        [
+          "dan"
+        ],
+        [
+          "thing"
+        ],
+        [
+          "dust"
+        ],
+        [
+          "birthday"
+        ],
+        [
+          "dare"
+        ],
+        [
+          "day"
+        ]
+      ]
     },
     {
       "id": "accent-170",
@@ -2650,7 +4688,42 @@
         "If it’s Thursday, it’s the same thing."
       ],
       "trackNumber": 171,
-      "number": 115
+      "number": 115,
+      "lineTargets": [
+        [
+          "does"
+        ],
+        [
+          "what’s"
+        ],
+        [
+          "thin"
+        ],
+        [
+          "step"
+        ],
+        [
+          "something"
+        ],
+        [
+          "song"
+        ],
+        [
+          "birthday"
+        ],
+        [
+          "zebras"
+        ],
+        [
+          "thankful"
+        ],
+        [
+          "strengths"
+        ],
+        [
+          "thing"
+        ]
+      ]
     },
     {
       "id": "accent-173",
@@ -2676,7 +4749,38 @@
         "four more over there"
       ],
       "trackNumber": 173,
-      "number": 116
+      "number": 116,
+      "lineTargets": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+          "door"
+        ],
+        [
+          "sister"
+        ],
+        [
+          "never"
+        ],
+        [
+          "sooner"
+        ],
+        [
+          "lobster"
+        ],
+        [
+          "brother"
+        ],
+        [
+          "more"
+        ]
+      ]
     },
     {
       "id": "accent-175",
@@ -2699,7 +4803,45 @@
         "perfect performance"
       ],
       "number": 117,
-      "trackNumber": 175
+      "trackNumber": 175,
+      "lineTargets": [
+        [
+          "information"
+        ],
+        [
+          "person"
+        ],
+        [
+          "understand"
+        ],
+        [
+          "california"
+        ],
+        [
+          "morning"
+        ],
+        [
+          "divorce"
+        ],
+        [
+          "german"
+        ],
+        [
+          "surgery"
+        ],
+        [
+          "percent"
+        ],
+        [
+          "furniture"
+        ],
+        [
+          "bargain"
+        ],
+        [
+          "performance"
+        ]
+      ]
     },
     {
       "id": "accent-176",
@@ -2720,7 +4862,42 @@
         "For your information, they’re not divorced."
       ],
       "trackNumber": 176,
-      "number": 118
+      "number": 118,
+      "lineTargets": [
+        [
+          "part",
+          "computer"
+        ],
+        [
+          "performance"
+        ],
+        [
+          "journalism",
+          "report"
+        ],
+        [
+          "procedure"
+        ],
+        [
+          "yesterday"
+        ],
+        [
+          "works",
+          "in"
+        ],
+        [
+          "girlfriend"
+        ],
+        [
+          "german"
+        ],
+        [
+          "procedure"
+        ],
+        [
+          "information"
+        ]
+      ]
     },
     {
       "id": "accent-177",
@@ -2742,7 +4919,57 @@
         "We hope it works out and that Rachel will be really surprised."
       ],
       "trackNumber": 177,
-      "number": 119
+      "number": 119,
+      "lineTargets": [
+        [
+          "afternoon",
+          "surprise",
+          "daughter"
+        ],
+        [
+          "thirteen"
+        ],
+        [
+          "cousins",
+          "early"
+        ],
+        [
+          "pictures"
+        ],
+        [
+          "strawberry",
+          "cream"
+        ],
+        [
+          "thirty",
+          "friends",
+          "come",
+          "over"
+        ],
+        [
+          "friends",
+          "returns",
+          "park"
+        ],
+        [
+          "call",
+          "bring",
+          "over"
+        ],
+        [
+          "front",
+          "lights"
+        ],
+        [
+          "friends",
+          "room"
+        ],
+        [
+          "works",
+          "out",
+          "surprised"
+        ]
+      ]
     },
     {
       "id": "accent-180",
@@ -2784,7 +5011,33 @@
         "twelve soldiers"
       ],
       "number": 121,
-      "trackNumber": 181
+      "trackNumber": 181,
+      "lineTargets": [
+        [
+          "girl"
+        ],
+        [
+          "guilty"
+        ],
+        [
+          "school"
+        ],
+        [
+          "tall"
+        ],
+        [
+          "milk"
+        ],
+        [
+          "medal"
+        ],
+        [
+          "children"
+        ],
+        [
+          "soldiers"
+        ]
+      ]
     },
     {
       "id": "accent-183",
@@ -2829,7 +5082,37 @@
         "The girl told me about the old film."
       ],
       "trackNumber": 184,
-      "number": 123
+      "number": 123,
+      "lineTargets": [
+        [
+          "feel",
+          "school"
+        ],
+        [
+          "call",
+          "late"
+        ],
+        [
+          "people",
+          "castle"
+        ],
+        [
+          "doubtful",
+          "able"
+        ],
+        [
+          "soldier"
+        ],
+        [
+          "building"
+        ],
+        [
+          "milk"
+        ],
+        [
+          "girl"
+        ]
+      ]
     },
     {
       "id": "accent-185",
@@ -2900,7 +5183,69 @@
         "B: Yes, she had three males and two females."
       ],
       "number": 125,
-      "trackNumber": 187
+      "trackNumber": 187,
+      "lineTargets": [
+        [
+          "money"
+        ],
+        [
+          "child"
+        ],
+        [
+          "fool",
+          "wrong"
+        ],
+        [
+          "kyle"
+        ],
+        [
+          "said"
+        ],
+        [
+          "school"
+        ],
+        [
+          "email"
+        ],
+        [
+          "while"
+        ],
+        [
+          "whale"
+        ],
+        [
+          "huge"
+        ],
+        [
+          "wheel"
+        ],
+        [
+          "oil"
+        ],
+        [
+          "style",
+          "shoes"
+        ],
+        [
+          "heels"
+        ],
+        [
+          "sale"
+        ],
+        [
+          "miles",
+          "miles"
+        ],
+        [
+          "help"
+        ],
+        [
+          "puppies"
+        ],
+        [
+          "females"
+        ]
+      ]
     },
     {
       "id": "accent-189",
@@ -2988,7 +5333,40 @@
         "Brian is fluent in French."
       ],
       "trackNumber": 192,
-      "number": 128
+      "number": 128,
+      "lineTargets": [
+        [
+          "class"
+        ],
+        [
+          "promotion"
+        ],
+        [
+          "president"
+        ],
+        [
+          "training",
+          "spring"
+        ],
+        [
+          "practice"
+        ],
+        [
+          "everyone"
+        ],
+        [
+          "spring"
+        ],
+        [
+          "friend"
+        ],
+        [
+          "blouse"
+        ],
+        [
+          "french"
+        ]
+      ]
     },
     {
       "id": "accent-193",
@@ -3013,7 +5391,53 @@
         "B: He also regularly plays the clarinet."
       ],
       "trackNumber": 193,
-      "number": 129
+      "number": 129,
+      "lineTargets": [
+        [
+          "hair"
+        ],
+        [
+          "brother"
+        ],
+        [
+          "priority"
+        ],
+        [
+          "trial"
+        ],
+        [
+          "pronounce",
+          "correctly"
+        ],
+        [
+          "wonderful"
+        ],
+        [
+          "languages"
+        ],
+        [
+          "french"
+        ],
+        [
+          "cinderella"
+        ],
+        [
+          "girl",
+          "pretty"
+        ],
+        [
+          "place"
+        ],
+        [
+          "apartment"
+        ],
+        [
+          "player"
+        ],
+        [
+          "clarinet"
+        ]
+      ]
     },
     {
       "id": "accent-198",
@@ -3054,7 +5478,41 @@
         "They’ve never believed my viewpoint."
       ],
       "number": 131,
-      "trackNumber": 199
+      "trackNumber": 199,
+      "lineTargets": [
+        [
+          "relatives"
+        ],
+        [
+          "come",
+          "over"
+        ],
+        [
+          "believe"
+        ],
+        [
+          "investigated"
+        ],
+        [
+          "twelve"
+        ],
+        [
+          "drinking"
+        ],
+        [
+          "vegetables"
+        ],
+        [
+          "evaluation"
+        ],
+        [
+          "invited",
+          "fever"
+        ],
+        [
+          "viewpoint"
+        ]
+      ]
     },
     {
       "id": "accent-201",
@@ -3102,7 +5560,24 @@
         "I bet he’s a vet."
       ],
       "trackNumber": 202,
-      "number": 133
+      "number": 133,
+      "lineTargets": [
+        [
+          "berry"
+        ],
+        [
+          "vest"
+        ],
+        [
+          "boat"
+        ],
+        [
+          "curve"
+        ],
+        [
+          "vet"
+        ]
+      ]
     },
     {
       "id": "accent-203",
@@ -3121,7 +5596,34 @@
         "Gabriel was overwhelmed when he won the Nobel Prize for the novel."
       ],
       "number": 134,
-      "trackNumber": 203
+      "trackNumber": 203,
+      "lineTargets": [
+        [
+          "business"
+        ],
+        [
+          "basketball"
+        ],
+        [
+          "black"
+        ],
+        [
+          "believe"
+        ],
+        [
+          "birthday"
+        ],
+        [
+          "able"
+        ],
+        [
+          "vegetables"
+        ],
+        [
+          "overwhelmed",
+          "novel"
+        ]
+      ]
     },
     {
       "id": "accent-205",
@@ -3178,7 +5680,39 @@
         "frequent question"
       ],
       "number": 137,
-      "trackNumber": 207
+      "trackNumber": 207,
+      "lineTargets": [
+        [
+          "wine"
+        ],
+        [
+          "working"
+        ],
+        [
+          "wedding"
+        ],
+        [
+          "wind"
+        ],
+        [
+          "witness"
+        ],
+        [
+          "weekend"
+        ],
+        [
+          "wish"
+        ],
+        [
+          "flowers"
+        ],
+        [
+          "windshield"
+        ],
+        [
+          "question"
+        ]
+      ]
     },
     {
       "id": "accent-208",
@@ -3198,7 +5732,49 @@
         "A: Wake up and stop your wishful thinking."
       ],
       "number": 138,
-      "trackNumber": 208
+      "trackNumber": 208,
+      "lineTargets": [
+        [
+          "weather"
+        ],
+        [
+          "weather"
+        ],
+        [
+          "windy",
+          "swim",
+          "walk",
+          "woods"
+        ],
+        [
+          "weeks",
+          "wet",
+          "windy"
+        ],
+        [
+          "right",
+          "weeks",
+          "winter"
+        ],
+        [
+          "move",
+          "weather",
+          "warmer"
+        ],
+        [
+          "idea",
+          "wait"
+        ],
+        [
+          "work",
+          "welcome",
+          "become",
+          "movie"
+        ],
+        [
+          "thinking"
+        ]
+      ]
     },
     {
       "id": "accent-209",
@@ -3251,7 +5827,39 @@
         "weird video"
       ],
       "number": 140,
-      "trackNumber": 210
+      "trackNumber": 210,
+      "lineTargets": [
+        [
+          "week"
+        ],
+        [
+          "well"
+        ],
+        [
+          "investment"
+        ],
+        [
+          "vegetables"
+        ],
+        [
+          "virginia"
+        ],
+        [
+          "voice"
+        ],
+        [
+          "van"
+        ],
+        [
+          "watch"
+        ],
+        [
+          "vest"
+        ],
+        [
+          "video"
+        ]
+      ]
     },
     {
       "id": "accent-211",
@@ -3268,7 +5876,27 @@
         "Will we view the video on Wednesday?"
       ],
       "number": 141,
-      "trackNumber": 211
+      "trackNumber": 211,
+      "lineTargets": [
+        [
+          "wife"
+        ],
+        [
+          "week"
+        ],
+        [
+          "weekend"
+        ],
+        [
+          "vegetables"
+        ],
+        [
+          "wedding"
+        ],
+        [
+          "video"
+        ]
+      ]
     },
     {
       "id": "accent-215",
@@ -3318,7 +5946,45 @@
         "B: Sure, I can give you some advice."
       ],
       "number": 143,
-      "trackNumber": 216
+      "trackNumber": 216,
+      "lineTargets": [
+        [
+          "use"
+        ],
+        [
+          "use"
+        ],
+        [
+          "guests"
+        ],
+        [
+          "guest"
+        ],
+        [
+          "drugs"
+        ],
+        [
+          "abuse"
+        ],
+        [
+          "excuse"
+        ],
+        [
+          "excuse"
+        ],
+        [
+          "door"
+        ],
+        [
+          "close"
+        ],
+        [
+          "advise"
+        ],
+        [
+          "advice"
+        ]
+      ]
     },
     {
       "id": "accent-217",
@@ -3335,7 +6001,27 @@
         "A real estate agent sells houses."
       ],
       "number": 144,
-      "trackNumber": 217
+      "trackNumber": 217,
+      "lineTargets": [
+        [
+          "dishwasher"
+        ],
+        [
+          "driver"
+        ],
+        [
+          "fixes"
+        ],
+        [
+          "students"
+        ],
+        [
+          "watchmaker"
+        ],
+        [
+          "estate"
+        ]
+      ]
     },
     {
       "id": "accent-218",
@@ -3353,7 +6039,37 @@
         "He focuses on his daily tasks and likes to take only 30 minutes for lunch."
       ],
       "trackNumber": 218,
-      "number": 145
+      "number": 145,
+      "lineTargets": [
+        [
+          "morning",
+          "brushes",
+          "teeth"
+        ],
+        [
+          "goodbye"
+        ],
+        [
+          "buses"
+        ],
+        [
+          "manages",
+          "coworkers"
+        ],
+        [
+          "messages",
+          "returns"
+        ],
+        [
+          "colleagues",
+          "conducts"
+        ],
+        [
+          "tasks",
+          "minutes",
+          "lunch"
+        ]
+      ]
     },
     {
       "id": "accent-220",
@@ -3387,7 +6103,27 @@
         "feeling strong"
       ],
       "number": 147,
-      "trackNumber": 221
+      "trackNumber": 221,
+      "lineTargets": [
+        [
+          "nothing"
+        ],
+        [
+          "something"
+        ],
+        [
+          "young"
+        ],
+        [
+          "ring"
+        ],
+        [
+          "everything"
+        ],
+        [
+          "feeling"
+        ]
+      ]
     },
     {
       "id": "accent-222",
@@ -3402,7 +6138,21 @@
         "They sell anything and everything in that clothing store."
       ],
       "number": 148,
-      "trackNumber": 222
+      "trackNumber": 222,
+      "lineTargets": [
+        [
+          "wedding"
+        ],
+        [
+          "swimming"
+        ],
+        [
+          "feeling"
+        ],
+        [
+          "everything"
+        ]
+      ]
     },
     {
       "id": "accent-224",
@@ -3538,7 +6288,33 @@
         "B: I will attempt it in September. I’ll be ecstatic if I get accepted at the best school."
       ],
       "number": 153,
-      "trackNumber": 229
+      "trackNumber": 229,
+      "lineTargets": [
+        [
+          "entrance"
+        ],
+        [
+          "successful",
+          "expected",
+          "difficult"
+        ],
+        [
+          "sections"
+        ],
+        [
+          "harder",
+          "test",
+          "successful"
+        ],
+        [
+          "test"
+        ],
+        [
+          "ecstatic",
+          "accepted",
+          "school"
+        ]
+      ]
     },
     {
       "id": "accent-231",
@@ -3592,7 +6368,24 @@
         "He accepts the facts about the Democrats."
       ],
       "trackNumber": 232,
-      "number": 155
+      "number": 155,
+      "lineTargets": [
+        [
+          "flights"
+        ],
+        [
+          "costs"
+        ],
+        [
+          "courts"
+        ],
+        [
+          "applicants"
+        ],
+        [
+          "facts"
+        ]
+      ]
     },
     {
       "id": "accent-233",
@@ -3657,7 +6450,24 @@
         "He needs the facts about the debts."
       ],
       "trackNumber": 235,
-      "number": 158
+      "number": 158,
+      "lineTargets": [
+        [
+          "friends"
+        ],
+        [
+          "yards"
+        ],
+        [
+          "diamonds"
+        ],
+        [
+          "friends"
+        ],
+        [
+          "facts"
+        ]
+      ]
     },
     {
       "id": "accent-237",
@@ -3684,7 +6494,73 @@
         "mad, Madrid"
       ],
       "trackNumber": 237,
-      "number": 159
+      "number": 159,
+      "lineTargets": [
+        [
+          "man",
+          "salesman"
+        ],
+        [
+          "pose",
+          "purpose"
+        ],
+        [
+          "race",
+          "terrace"
+        ],
+        [
+          "late",
+          "chocolate"
+        ],
+        [
+          "cord",
+          "record"
+        ],
+        [
+          "rage",
+          "courage"
+        ],
+        [
+          "fast",
+          "breakfast"
+        ],
+        [
+          "land",
+          "england"
+        ],
+        [
+          "con",
+          "control"
+        ],
+        [
+          "ad",
+          "advice"
+        ],
+        [
+          "lag",
+          "lagoon"
+        ],
+        [
+          "ball",
+          "balloon"
+        ],
+        [
+          "red",
+          "reduce"
+        ],
+        [
+          "off",
+          "offend"
+        ],
+        [
+          "mat",
+          "material"
+        ],
+        [
+          "mad",
+          "madrid"
+        ]
+      ]
     },
     {
       "id": "accent-238",
@@ -3703,7 +6579,40 @@
         "apple, apply"
       ],
       "trackNumber": 238,
-      "number": 160
+      "number": 160,
+      "lineTargets": [
+        [
+          "absent",
+          "about"
+        ],
+        [
+          "after",
+          "afford"
+        ],
+        [
+          "address"
+        ],
+        [
+          "adverb",
+          "admit"
+        ],
+        [
+          "allergy",
+          "allergic"
+        ],
+        [
+          "ally",
+          "allow"
+        ],
+        [
+          "angry",
+          "annoyed"
+        ],
+        [
+          "apple",
+          "apply"
+        ]
+      ]
     },
     {
       "id": "accent-239",
@@ -3721,7 +6630,37 @@
         "empty, employ"
       ],
       "trackNumber": 239,
-      "number": 161
+      "number": 161,
+      "lineTargets": [
+        [
+          "envy",
+          "enjoy"
+        ],
+        [
+          "edit",
+          "edition"
+        ],
+        [
+          "extra",
+          "exact"
+        ],
+        [
+          "enter",
+          "enough"
+        ],
+        [
+          "enemy",
+          "explode"
+        ],
+        [
+          "episode",
+          "escape"
+        ],
+        [
+          "empty",
+          "employ"
+        ]
+      ]
     },
     {
       "id": "accent-240",
@@ -3740,7 +6679,41 @@
         "contract, connect"
       ],
       "trackNumber": 240,
-      "number": 162
+      "number": 162,
+      "lineTargets": [
+        [
+          "concert",
+          "concern"
+        ],
+        [
+          "contact",
+          "conclude"
+        ],
+        [
+          "conflict",
+          "confess"
+        ],
+        [
+          "conscious",
+          "confirm"
+        ],
+        [
+          "contrary",
+          "continue"
+        ],
+        [
+          "concept",
+          "confuse"
+        ],
+        [
+          "confident",
+          "convince"
+        ],
+        [
+          "contract",
+          "connect"
+        ]
+      ]
     },
     {
       "id": "accent-241",
@@ -3870,7 +6843,66 @@
         "suspect, suspect"
       ],
       "trackNumber": 244,
-      "number": 166
+      "number": 166,
+      "lineTargets": [
+        [
+          "addict"
+        ],
+        [
+          "conduct"
+        ],
+        [
+          "conflict"
+        ],
+        [
+          "contest"
+        ],
+        [
+          "convert"
+        ],
+        [
+          "convict"
+        ],
+        [
+          "defect"
+        ],
+        [
+          "desert"
+        ],
+        [
+          "increase"
+        ],
+        [
+          "insult"
+        ],
+        [
+          "object"
+        ],
+        [
+          "present"
+        ],
+        [
+          "produce"
+        ],
+        [
+          "progress"
+        ],
+        [
+          "rebel"
+        ],
+        [
+          "record"
+        ],
+        [
+          "research"
+        ],
+        [
+          "subject"
+        ],
+        [
+          "suspect"
+        ]
+      ]
     },
     {
       "id": "accent-245",
@@ -3928,7 +6960,44 @@
         "B: If he conducts himself badly and insults the prison guards, I wonder if his sentence will be increased. c. I don’t know. I haven’t heard of a prison term increase for insults and bad conduct."
       ],
       "number": 168,
-      "trackNumber": 246
+      "trackNumber": 246,
+      "lineTargets": [
+        [
+          "suspect"
+        ],
+        [
+          "one",
+          "bank"
+        ],
+        [
+          "record"
+        ],
+        [
+          "crime"
+        ],
+        [
+          "addict",
+          "banks",
+          "addiction"
+        ],
+        [
+          "years",
+          "prison"
+        ],
+        [
+          "maximum",
+          "years",
+          "conduct"
+        ],
+        [
+          "prison",
+          "sentence",
+          "heard",
+          "increase",
+          "insults",
+          "conduct"
+        ]
+      ]
     },
     {
       "id": "accent-247",
@@ -3947,7 +7016,41 @@
         "locate, location"
       ],
       "trackNumber": 247,
-      "number": 169
+      "number": 169,
+      "lineTargets": [
+        [
+          "activate",
+          "activation"
+        ],
+        [
+          "celebrate",
+          "celebration"
+        ],
+        [
+          "congratulate",
+          "congratulation"
+        ],
+        [
+          "demonstrate",
+          "demonstration"
+        ],
+        [
+          "donate",
+          "donation"
+        ],
+        [
+          "frustrate",
+          "frustration"
+        ],
+        [
+          "imitate",
+          "imitation"
+        ],
+        [
+          "locate",
+          "location"
+        ]
+      ]
     },
     {
       "id": "accent-248",
@@ -4042,7 +7145,52 @@
         "a–"
       ],
       "number": 172,
-      "underlinePrefix": true
+      "underlinePrefix": true,
+      "lineTargets": [
+        [
+          "preview"
+        ],
+        [
+          "persuade"
+        ],
+        [
+          "product",
+          "progress",
+          "program"
+        ],
+        [
+          "mischief"
+        ],
+        [
+          "concert",
+          "conflict",
+          "confess"
+        ],
+        [
+          "compound"
+        ],
+        [
+          "obstruct"
+        ],
+        [
+          "subscribe"
+        ],
+        [
+          "excerpt",
+          "exchange"
+        ],
+        [
+          "decrease"
+        ],
+        [
+          "discourse"
+        ],
+        [
+          "access",
+          "applaud",
+          "arrange"
+        ]
+      ]
     },
     {
       "id": "accent-253",
@@ -4061,7 +7209,43 @@
         "The mayor assured the public that he would make an effort to protect the citizens from further corruption."
       ],
       "trackNumber": 253,
-      "number": 173
+      "number": 173,
+      "lineTargets": [
+        [
+          "protesters",
+          "government",
+          "officials"
+        ],
+        [
+          "corruption"
+        ],
+        [
+          "officials",
+          "building",
+          "conflict"
+        ],
+        [
+          "meeting"
+        ],
+        [
+          "protesters"
+        ],
+        [
+          "mayor",
+          "investigation",
+          "conflict"
+        ],
+        [
+          "sheriff",
+          "details",
+          "investigation"
+        ],
+        [
+          "public",
+          "citizens",
+          "corruption"
+        ]
+      ]
     },
     {
       "id": "accent-254",
@@ -4419,7 +7603,43 @@
         "ballroom"
       ],
       "trackNumber": 266,
-      "number": 183
+      "number": 183,
+      "lineTargets": [
+        [
+          "parking"
+        ],
+        [
+          "ticket"
+        ],
+        [
+          "parking"
+        ],
+        [
+          "space"
+        ],
+        [
+          "shelf"
+        ],
+        [
+          "cover"
+        ],
+        [],
+        [],
+        [
+          "credit"
+        ],
+        [],
+        [
+          "report"
+        ],
+        [
+          "card"
+        ],
+        [],
+        [],
+        [],
+        []
+      ]
     },
     {
       "id": "accent-267",
@@ -4438,7 +7658,33 @@
         "parking lot attendant"
       ],
       "trackNumber": 267,
-      "number": 184
+      "number": 184,
+      "lineTargets": [
+        [
+          "number"
+        ],
+        [
+          "football"
+        ],
+        [
+          "furniture"
+        ],
+        [
+          "school"
+        ],
+        [
+          "basketball"
+        ],
+        [
+          "pressure"
+        ],
+        [
+          "website"
+        ],
+        [
+          "attendant"
+        ]
+      ]
     },
     {
       "id": "accent-268",
@@ -4462,7 +7708,54 @@
         "A: Oh, I won’t. I don’t go anywhere without my smartphone."
       ],
       "number": 185,
-      "trackNumber": 268
+      "trackNumber": 268,
+      "lineTargets": [
+        [
+          "business"
+        ],
+        [
+          "airline"
+        ],
+        [
+          "window"
+        ],
+        [
+          "reservations"
+        ],
+        [
+          "hotel",
+          "view"
+        ],
+        [
+          "suitcase"
+        ],
+        [
+          "suit",
+          "running"
+        ],
+        [
+          "bathing",
+          "shoes",
+          "business"
+        ],
+        [
+          "swimming",
+          "workout"
+        ],
+        [
+          "laptop"
+        ],
+        [
+          "checklist"
+        ],
+        [
+          "smartphone"
+        ],
+        [
+          "anywhere",
+          "smartphone"
+        ]
+      ]
     },
     {
       "id": "accent-271",
@@ -4524,7 +7817,21 @@
         "The rich young man bought that big old house."
       ],
       "number": 187,
-      "trackNumber": 272
+      "trackNumber": 272,
+      "lineTargets": [
+        [
+          "eyes"
+        ],
+        [
+          "lady"
+        ],
+        [
+          "blue"
+        ],
+        [
+          "house"
+        ]
+      ]
     },
     {
       "id": "accent-273",
@@ -4550,7 +7857,54 @@
         "That new house has big bedrooms and small bathrooms."
       ],
       "trackNumber": 273,
-      "number": 188
+      "number": 188,
+      "lineTargets": [
+        [
+          "ticket"
+        ],
+        [
+          "phone"
+        ],
+        [
+          "school"
+        ],
+        [
+          "movie"
+        ],
+        [
+          "youtube"
+        ],
+        [
+          "computer"
+        ],
+        [
+          "professor"
+        ],
+        [
+          "fingernails"
+        ],
+        [
+          "problem"
+        ],
+        [
+          "businessman"
+        ],
+        [
+          "address"
+        ],
+        [
+          "website"
+        ],
+        [
+          "school"
+        ],
+        [
+          "wedding"
+        ],
+        [
+          "bathrooms"
+        ]
+      ]
     },
     {
       "id": "accent-274",
@@ -4572,7 +7926,50 @@
         "girlfriend, great friend"
       ],
       "number": 189,
-      "trackNumber": 274
+      "trackNumber": 274,
+      "lineTargets": [
+        [
+          "pool"
+        ],
+        [
+          "store"
+        ],
+        [
+          "newspaper",
+          "paper"
+        ],
+        [
+          "credit",
+          "card"
+        ],
+        [
+          "sunglasses",
+          "glasses"
+        ],
+        [
+          "postman",
+          "man"
+        ],
+        [
+          "driver"
+        ],
+        [
+          "textbook",
+          "book"
+        ],
+        [
+          "palm",
+          "tree"
+        ],
+        [
+          "fingernails",
+          "nails"
+        ],
+        [
+          "girlfriend",
+          "friend"
+        ]
+      ]
     },
     {
       "id": "accent-275",
@@ -4591,7 +7988,37 @@
         "Let’s go see the new film at the movie theater."
       ],
       "number": 190,
-      "trackNumber": 275
+      "trackNumber": 275,
+      "lineTargets": [
+        [
+          "football"
+        ],
+        [
+          "sunglasses"
+        ],
+        [
+          "hairdresser"
+        ],
+        [
+          "postman"
+        ],
+        [
+          "salesman"
+        ],
+        [
+          "apartment",
+          "apartment"
+        ],
+        [
+          "phone",
+          "seat",
+          "friend’s"
+        ],
+        [
+          "film",
+          "theater"
+        ]
+      ]
     },
     {
       "id": "accent-276",
@@ -4610,7 +8037,27 @@
         "Bluetooth"
       ],
       "trackNumber": 276,
-      "number": 191
+      "number": 191,
+      "lineTargets": [
+        [
+          "white"
+        ],
+        [],
+        [
+          "dog"
+        ],
+        [
+          "jeans"
+        ],
+        [
+          "school"
+        ],
+        [
+          "card"
+        ],
+        [],
+        []
+      ]
     },
     {
       "id": "accent-278",
@@ -4637,7 +8084,64 @@
         "B: They turned me away."
       ],
       "number": 192,
-      "trackNumber": 278
+      "trackNumber": 278,
+      "lineTargets": [
+        [
+          "heater"
+        ],
+        [
+          "turn",
+          "off"
+        ],
+        [
+          "music"
+        ],
+        [
+          "turn"
+        ],
+        [
+          "watch"
+        ],
+        [
+          "turn"
+        ],
+        [
+          "impolite"
+        ],
+        [
+          "turns",
+          "off"
+        ],
+        [
+          "music"
+        ],
+        [
+          "turn",
+          "down"
+        ],
+        [
+          "ask",
+          "out"
+        ],
+        [
+          "turned",
+          "down"
+        ],
+        [
+          "party"
+        ],
+        [
+          "turn",
+          "up"
+        ],
+        [
+          "help"
+        ],
+        [
+          "turned",
+          "away"
+        ]
+      ]
     },
     {
       "id": "accent-280",
@@ -4706,7 +8210,54 @@
         "move-in date"
       ],
       "trackNumber": 281,
-      "number": 194
+      "number": 194,
+      "lineTargets": [
+        [
+          "backup"
+        ],
+        [
+          "cutoff"
+        ],
+        [
+          "sheet"
+        ],
+        [
+          "checkout"
+        ],
+        [
+          "exercises"
+        ],
+        [
+          "pickup"
+        ],
+        [
+          "case"
+        ],
+        [
+          "playback"
+        ],
+        [
+          "dropout"
+        ],
+        [
+          "workout"
+        ],
+        [
+          "comedy"
+        ],
+        [
+          "drive-through"
+        ],
+        [
+          "dinner"
+        ],
+        [
+          "remover"
+        ],
+        [
+          "move-in"
+        ]
+      ]
     },
     {
       "id": "accent-282",
@@ -4727,7 +8278,48 @@
         "There was a mix-up at the drive-through window."
       ],
       "trackNumber": 282,
-      "number": 195
+      "number": 195,
+      "lineTargets": [
+        [
+          "backup",
+          "things"
+        ],
+        [
+          "truck",
+          "tune-up"
+        ],
+        [
+          "marriage",
+          "couple"
+        ],
+        [
+          "workout"
+        ],
+        [
+          "called",
+          "up",
+          "holdup",
+          "bank"
+        ],
+        [
+          "dinner"
+        ],
+        [
+          "found",
+          "out",
+          "time"
+        ],
+        [
+          "eating",
+          "out"
+        ],
+        [
+          "printout"
+        ],
+        [
+          "mix-up"
+        ]
+      ]
     },
     {
       "id": "accent-283",
@@ -4769,7 +8361,24 @@
         "My class starts at 9:15 and ends at 10:45."
       ],
       "number": 197,
-      "trackNumber": 284
+      "trackNumber": 284,
+      "lineTargets": [
+        [
+          "am"
+        ],
+        [
+          "ph.d"
+        ],
+        [
+          "made"
+        ],
+        [
+          "arrived"
+        ],
+        [
+          "class"
+        ]
+      ]
     },
     {
       "id": "accent-285",
@@ -4833,7 +8442,57 @@
         "I really think it’s going to be a nice getaway."
       ],
       "trackNumber": 287,
-      "number": 199
+      "number": 199,
+      "lineTargets": [
+        [
+          "planning"
+        ],
+        [
+          "flight"
+        ],
+        [
+          "leaves",
+          "arrives"
+        ],
+        [
+          "found",
+          "out",
+          "three-hour",
+          "difference"
+        ],
+        [
+          "jetlag"
+        ],
+        [
+          "check",
+          "in",
+          "hotel",
+          "taxicab",
+          "pick",
+          "up"
+        ],
+        [
+          "knows",
+          "see",
+          "movie"
+        ],
+        [
+          "pass",
+          "out"
+        ],
+        [
+          "plan",
+          "visit"
+        ],
+        [
+          "way",
+          "layover"
+        ],
+        [
+          "think",
+          "getaway"
+        ]
+      ]
     },
     {
       "id": "accent-290",
@@ -4866,7 +8525,75 @@
         "I’m exhausted from talking all day long."
       ],
       "trackNumber": 290,
-      "number": 200
+      "number": 200,
+      "lineTargets": [
+        [
+          "got"
+        ],
+        [
+          "job"
+        ],
+        [
+          "job"
+        ],
+        [
+          "class"
+        ],
+        [
+          "stand"
+        ],
+        [
+          "class"
+        ],
+        [
+          "call"
+        ],
+        [
+          "soon"
+        ],
+        [
+          "call"
+        ],
+        [
+          "cold"
+        ],
+        [
+          "know"
+        ],
+        [
+          "know"
+        ],
+        [
+          "cold"
+        ],
+        [
+          "feel"
+        ],
+        [
+          "leave"
+        ],
+        [
+          "leave"
+        ],
+        [
+          "awful"
+        ],
+        [
+          "long"
+        ],
+        [
+          "novel"
+        ],
+        [
+          "exhausted"
+        ],
+        [
+          "day"
+        ],
+        [
+          "day"
+        ]
+      ]
     },
     {
       "id": "accent-292",
@@ -4898,7 +8625,73 @@
         "He drove the car that he bought from his friend."
       ],
       "number": 201,
-      "trackNumber": 292
+      "trackNumber": 292,
+      "lineTargets": [
+        [
+          "bacon"
+        ],
+        [
+          "bacon"
+        ],
+        [
+          "black"
+        ],
+        [
+          "black"
+        ],
+        [
+          "salt"
+        ],
+        [
+          "pepper"
+        ],
+        [
+          "good"
+        ],
+        [
+          "idea"
+        ],
+        [
+          "hot"
+        ],
+        [
+          "day"
+        ],
+        [
+          "need"
+        ],
+        [
+          "need"
+        ],
+        [
+          "home"
+        ],
+        [
+          "o’clock"
+        ],
+        [
+          "saw"
+        ],
+        [
+          "man"
+        ],
+        [
+          "man"
+        ],
+        [
+          "drove"
+        ],
+        [
+          "car"
+        ],
+        [
+          "yesterday"
+        ],
+        [
+          "car",
+          "friend"
+        ]
+      ]
     },
     {
       "id": "accent-294",
@@ -4914,7 +8707,24 @@
         "It’s nice to meet you."
       ],
       "number": 202,
-      "trackNumber": 294
+      "trackNumber": 294,
+      "lineTargets": [
+        [
+          "call"
+        ],
+        [
+          "saw"
+        ],
+        [
+          "wait"
+        ],
+        [
+          "go"
+        ],
+        [
+          "nice"
+        ]
+      ]
     },
     {
       "id": "accent-296",
@@ -4931,7 +8741,27 @@
         "I need it."
       ],
       "number": 203,
-      "trackNumber": 296
+      "trackNumber": 296,
+      "lineTargets": [
+        [
+          "told"
+        ],
+        [
+          "told"
+        ],
+        [
+          "car"
+        ],
+        [
+          "like"
+        ],
+        [
+          "job"
+        ],
+        [
+          "need"
+        ]
+      ]
     },
     {
       "id": "accent-297",
@@ -4950,7 +8780,33 @@
         "John is a nice man."
       ],
       "trackNumber": 297,
-      "number": 204
+      "number": 204,
+      "lineTargets": [
+        [
+          "good"
+        ],
+        [
+          "film"
+        ],
+        [
+          "hot"
+        ],
+        [
+          "day"
+        ],
+        [
+          "long"
+        ],
+        [
+          "drive"
+        ],
+        [
+          "nice"
+        ],
+        [
+          "man"
+        ]
+      ]
     },
     {
       "id": "accent-298",
@@ -4996,7 +8852,117 @@
         "I think he might have lost the money that I gave him."
       ],
       "number": 205,
-      "trackNumber": 298
+      "trackNumber": 298,
+      "lineTargets": [
+        [],
+        [
+          "wait"
+        ],
+        [
+          "wait"
+        ],
+        [
+          "waiting"
+        ],
+        [
+          "waiting"
+        ],
+        [
+          "waiting"
+        ],
+        [
+          "waited"
+        ],
+        [
+          "waiting"
+        ],
+        [
+          "wait"
+        ],
+        [
+          "car"
+        ],
+        [
+          "tell"
+        ],
+        [
+          "tell"
+        ],
+        [
+          "telling"
+        ],
+        [
+          "tell"
+        ],
+        [
+          "told"
+        ],
+        [
+          "telling"
+        ],
+        [
+          "wife"
+        ],
+        [
+          "wife"
+        ],
+        [
+          "situation"
+        ],
+        [
+          "situation"
+        ],
+        [
+          "bought"
+        ],
+        [
+          "watch"
+        ],
+        [
+          "watch"
+        ],
+        [
+          "watch"
+        ],
+        [
+          "watch"
+        ],
+        [
+          "birthday"
+        ],
+        [
+          "watch",
+          "thirtieth"
+        ],
+        [
+          "watch",
+          "thirtieth"
+        ],
+        [
+          "lost"
+        ],
+        [
+          "money"
+        ],
+        [
+          "money"
+        ],
+        [
+          "money"
+        ],
+        [
+          "think",
+          "money"
+        ],
+        [
+          "lost",
+          "money"
+        ],
+        [
+          "think",
+          "money"
+        ]
+      ]
     },
     {
       "id": "accent-302",
@@ -5030,7 +8996,80 @@
         "I’m leaving on Monday or Tuesday."
       ],
       "trackNumber": 302,
-      "number": 206
+      "number": 206,
+      "lineTargets": [
+        [
+          "go"
+        ],
+        [
+          "need"
+        ],
+        [
+          "park"
+        ],
+        [
+          "bacon"
+        ],
+        [
+          "black"
+        ],
+        [
+          "n"
+        ],
+        [
+          "rock"
+        ],
+        [
+          "walk"
+        ],
+        [
+          "wait"
+        ],
+        [
+          "bill"
+        ],
+        [
+          "book"
+        ],
+        [
+          "can"
+        ],
+        [
+          "call"
+        ],
+        [
+          "swim"
+        ],
+        [
+          "come",
+          "over"
+        ],
+        [
+          "house"
+        ],
+        [
+          "wolf"
+        ],
+        [
+          "call"
+        ],
+        [
+          "keep"
+        ],
+        [
+          "one"
+        ],
+        [
+          "tomorrow"
+        ],
+        [
+          "times"
+        ],
+        [
+          "leaving",
+          "on"
+        ]
+      ]
     },
     {
       "id": "accent-303",
@@ -5047,7 +9086,27 @@
         "B: I’ve been studying it tonight for two hours."
       ],
       "number": 207,
-      "trackNumber": 303
+      "trackNumber": 303,
+      "lineTargets": [
+        [
+          "doing"
+        ],
+        [
+          "studying"
+        ],
+        [
+          "studying"
+        ],
+        [
+          "english"
+        ],
+        [
+          "studying"
+        ],
+        [
+          "hours"
+        ]
+      ]
     },
     {
       "id": "accent-304",
@@ -5064,7 +9123,27 @@
         "B: She’s been watching it for an hour."
       ],
       "number": 208,
-      "trackNumber": 304
+      "trackNumber": 304,
+      "lineTargets": [
+        [
+          "doing"
+        ],
+        [
+          "tv"
+        ],
+        [
+          "watching"
+        ],
+        [
+          "film"
+        ],
+        [
+          "watching"
+        ],
+        [
+          "hour"
+        ]
+      ]
     },
     {
       "id": "accent-305",
@@ -5080,7 +9159,25 @@
         "A: OK, but we need to hurry. The store’s about to close."
       ],
       "number": 209,
-      "trackNumber": 305
+      "trackNumber": 305,
+      "lineTargets": [
+        [
+          "store"
+        ],
+        [
+          "need"
+        ],
+        [
+          "milk"
+        ],
+        [
+          "come"
+        ],
+        [
+          "hurry",
+          "store’s"
+        ]
+      ]
     },
     {
       "id": "accent-306",
@@ -5095,7 +9192,21 @@
         "B: I can try."
       ],
       "number": 210,
-      "trackNumber": 306
+      "trackNumber": 306,
+      "lineTargets": [
+        [
+          "can"
+        ],
+        [
+          "week"
+        ],
+        [
+          "sooner"
+        ],
+        [
+          "try"
+        ]
+      ]
     },
     {
       "id": "accent-307",
@@ -5113,7 +9224,30 @@
         "A: No, thanks. I need to lose some weight."
       ],
       "number": 211,
-      "trackNumber": 307
+      "trackNumber": 307,
+      "lineTargets": [
+        [
+          "hungry"
+        ],
+        [
+          "chicken"
+        ],
+        [
+          "love"
+        ],
+        [
+          "rice"
+        ],
+        [
+          "rice"
+        ],
+        [
+          "dessert"
+        ],
+        [
+          "weight"
+        ]
+      ]
     },
     {
       "id": "accent-308",
@@ -5128,7 +9262,24 @@
         "B: That’s true. We need to save our money to pay off our debts."
       ],
       "number": 212,
-      "trackNumber": 308
+      "trackNumber": 308,
+      "lineTargets": [
+        [
+          "apartment"
+        ],
+        [
+          "apartment"
+        ],
+        [
+          "cheaper"
+        ],
+        [
+          "money",
+          "pay",
+          "off",
+          "debts"
+        ]
+      ]
     },
     {
       "id": "accent-309",
@@ -5144,7 +9295,24 @@
         "A: Is that for me? I forgive you for everything."
       ],
       "number": 213,
-      "trackNumber": 309
+      "trackNumber": 309,
+      "lineTargets": [
+        [
+          "hour"
+        ],
+        [
+          "sorry"
+        ],
+        [
+          "everything"
+        ],
+        [
+          "birthday"
+        ],
+        [
+          "everything"
+        ]
+      ]
     },
     {
       "id": "accent-310",
@@ -5158,7 +9326,21 @@
         "A: I guess I can’t help myself."
       ],
       "number": 214,
-      "trackNumber": 310
+      "trackNumber": 310,
+      "lineTargets": [
+        [
+          "ashamed"
+        ],
+        [
+          "everyone",
+          "mistakes",
+          "crazy",
+          "much"
+        ],
+        [
+          "guess"
+        ]
+      ]
     },
     {
       "id": "accent-311",
@@ -5208,7 +9390,49 @@
         "Answer: He said that he thinks my friends ask too many questions!"
       ],
       "number": 216,
-      "trackNumber": 312
+      "trackNumber": 312,
+      "lineTargets": [
+        [
+          "nice"
+        ],
+        [
+          "name"
+        ],
+        [
+          "look"
+        ],
+        [
+          "old"
+        ],
+        [
+          "live"
+        ],
+        [
+          "does"
+        ],
+        [
+          "known"
+        ],
+        [
+          "love"
+        ],
+        [
+          "family"
+        ],
+        [
+          "meet"
+        ],
+        [
+          "tell"
+        ],
+        [
+          "say"
+        ],
+        [
+          "friends",
+          "questions"
+        ]
+      ]
     },
     {
       "id": "accent-313",
@@ -5226,7 +9450,35 @@
         "A: Next time you see her, tell her I want to talk to her."
       ],
       "trackNumber": 313,
-      "number": 217
+      "number": 217,
+      "lineTargets": [
+        [
+          "know"
+        ],
+        [
+          "know"
+        ],
+        [
+          "know"
+        ],
+        [
+          "school"
+        ],
+        [
+          "seen"
+        ],
+        [
+          "days",
+          "week",
+          "dance",
+          "door"
+        ],
+        [
+          "time",
+          "tell",
+          "want"
+        ]
+      ]
     },
     {
       "id": "accent-314",
@@ -5246,6 +9498,29 @@
       "trackNumber": 314,
       "plainSentences": [
         0
+      ],
+      "lineTargets": [
+        [],
+        [
+          "eggs"
+        ],
+        [
+          "cook"
+        ],
+        [
+          "sorts",
+          "ways",
+          "scramble"
+        ],
+        [
+          "breakfast"
+        ],
+        [
+          "dinner",
+          "cut",
+          "up",
+          "salads"
+        ]
       ]
     },
     {
@@ -5263,7 +9538,38 @@
         "He has been looking for a new job for a long time now but he just hasn’t found anything that he really likes."
       ],
       "trackNumber": 318,
-      "number": 219
+      "number": 219,
+      "lineTargets": [
+        [
+          "something"
+        ],
+        [
+          "give",
+          "address",
+          "information"
+        ],
+        [
+          "time",
+          "office",
+          "busy"
+        ],
+        [
+          "wonder",
+          "long",
+          "learn"
+        ],
+        [
+          "think",
+          "restaurant",
+          "night"
+        ],
+        [
+          "looking",
+          "job",
+          "time",
+          "anything"
+        ]
+      ]
     },
     {
       "id": "accent-319",
@@ -5278,7 +9584,44 @@
       ],
       "trackNumber": 319,
       "number": 220,
-      "showSpeakerLabels": true
+      "showSpeakerLabels": true,
+      "lineTargets": [
+        [
+          "sorry",
+          "missed",
+          "call",
+          "message",
+          "beep",
+          "call"
+        ],
+        [
+          "while",
+          "last",
+          "doing",
+          "calling",
+          "tomorrow",
+          "hiking",
+          "friends",
+          "wanted",
+          "great",
+          "call",
+          "available"
+        ],
+        [
+          "mary",
+          "call",
+          "great",
+          "missing",
+          "other",
+          "love",
+          "hiking",
+          "time",
+          "thinking",
+          "looking",
+          "forward",
+          "tonight"
+        ]
+      ]
     },
     {
       "id": "accent-320",
@@ -5301,7 +9644,63 @@
         "When would be a good time for us to meet?"
       ],
       "trackNumber": 320,
-      "number": 221
+      "number": 221,
+      "lineTargets": [
+        [
+          "speaking",
+          "circumstances",
+          "number",
+          "sentence"
+        ],
+        [
+          "example",
+          "speaker",
+          "salesman",
+          "message"
+        ],
+        [
+          "afternoon"
+        ],
+        [
+          "calling"
+        ],
+        [
+          "product",
+          "company",
+          "selling"
+        ],
+        [
+          "organization"
+        ],
+        [
+          "study",
+          "customer’s"
+        ],
+        [
+          "able",
+          "business",
+          "time",
+          "money"
+        ],
+        [
+          "people",
+          "firm",
+          "services"
+        ],
+        [
+          "set",
+          "up",
+          "time",
+          "company"
+        ],
+        [
+          "assure"
+        ],
+        [
+          "time",
+          "meet"
+        ]
+      ]
     },
     {
       "id": "accent-322",
@@ -5317,7 +9716,27 @@
         "The government is of the people, by the people, and for the people."
       ],
       "trackNumber": 322,
-      "number": 222
+      "number": 222,
+      "lineTargets": [
+        [
+          "need",
+          "ticket"
+        ],
+        [
+          "did"
+        ],
+        [
+          "pieces"
+        ],
+        [
+          "desk"
+        ],
+        [
+          "government",
+          "people",
+          "people"
+        ]
+      ]
     },
     {
       "id": "accent-323",
@@ -5336,7 +9755,33 @@
         "B: I have been here."
       ],
       "trackNumber": 323,
-      "number": 223
+      "number": 223,
+      "lineTargets": [
+        [
+          "understand"
+        ],
+        [
+          "understand"
+        ],
+        [
+          "go"
+        ],
+        [
+          "go"
+        ],
+        [
+          "hot"
+        ],
+        [
+          "hot"
+        ],
+        [
+          "never"
+        ],
+        [
+          "here"
+        ]
+      ]
     },
     {
       "id": "accent-326",
@@ -5352,7 +9797,24 @@
         "I’ll be back in a minute."
       ],
       "trackNumber": 326,
-      "number": 224
+      "number": 224,
+      "lineTargets": [
+        [
+          "name"
+        ],
+        [
+          "nice"
+        ],
+        [
+          "day"
+        ],
+        [
+          "outside"
+        ],
+        [
+          "minute"
+        ]
+      ]
     },
     {
       "id": "accent-327",
@@ -5370,7 +9832,30 @@
         "Who told you?"
       ],
       "trackNumber": 327,
-      "number": 225
+      "number": 225,
+      "lineTargets": [
+        [
+          "name"
+        ],
+        [
+          "leave"
+        ],
+        [
+          "going"
+        ],
+        [
+          "thinking"
+        ],
+        [
+          "doing"
+        ],
+        [
+          "start"
+        ],
+        [
+          "told"
+        ]
+      ]
     },
     {
       "id": "accent-329",
@@ -5388,7 +9873,28 @@
         "Really?"
       ],
       "number": 226,
-      "trackNumber": 329
+      "trackNumber": 329,
+      "lineTargets": [
+        [
+          "yesterday"
+        ],
+        [
+          "know"
+        ],
+        [
+          "call"
+        ],
+        [
+          "good"
+        ],
+        [
+          "is"
+        ],
+        [
+          "excuse"
+        ],
+        []
+      ]
     },
     {
       "id": "accent-331",
@@ -5409,7 +9915,39 @@
         "Why do you work there?"
       ],
       "number": 227,
-      "trackNumber": 331
+      "trackNumber": 331,
+      "lineTargets": [
+        [
+          "teach"
+        ],
+        [
+          "teach"
+        ],
+        [
+          "movie"
+        ],
+        [
+          "movie"
+        ],
+        [
+          "guy"
+        ],
+        [
+          "guy"
+        ],
+        [
+          "car"
+        ],
+        [
+          "car"
+        ],
+        [
+          "work"
+        ],
+        [
+          "work"
+        ]
+      ]
     },
     {
       "id": "accent-333",
@@ -5428,7 +9966,33 @@
         "I’m going inside, to get something to drink."
       ],
       "number": 228,
-      "trackNumber": 333
+      "trackNumber": 333,
+      "lineTargets": [
+        [
+          "book"
+        ],
+        [
+          "book"
+        ],
+        [
+          "school"
+        ],
+        [
+          "school"
+        ],
+        [
+          "study"
+        ],
+        [
+          "a"
+        ],
+        [
+          "going"
+        ],
+        [
+          "something"
+        ]
+      ]
     },
     {
       "id": "accent-335",
@@ -5445,7 +10009,29 @@
         "By the way, how did you know that?"
       ],
       "number": 229,
-      "trackNumber": 335
+      "trackNumber": 335,
+      "lineTargets": [
+        [
+          "matter",
+          "answer"
+        ],
+        [
+          "great"
+        ],
+        [
+          "good"
+        ],
+        [
+          "opinion"
+        ],
+        [
+          "close",
+          "window"
+        ],
+        [
+          "way"
+        ]
+      ]
     },
     {
       "id": "accent-337",
@@ -5461,7 +10047,27 @@
         "“I learned law so well, the day I graduated I sued the college, won the case, and got my tuition back.”"
       ],
       "number": 230,
-      "trackNumber": 337
+      "trackNumber": 337,
+      "lineTargets": [
+        [
+          "basketball"
+        ],
+        [
+          "biology"
+        ],
+        [
+          "dinner"
+        ],
+        [
+          "apples"
+        ],
+        [
+          "law",
+          "college",
+          "case",
+          "tuition"
+        ]
+      ]
     },
     {
       "id": "accent-338",
@@ -5477,7 +10083,26 @@
         "Do you want the blue one or the black one?"
       ],
       "trackNumber": 338,
-      "number": 231
+      "number": 231,
+      "lineTargets": [
+        [
+          "eat",
+          "in"
+        ],
+        [
+          "birthday"
+        ],
+        [
+          "cantonese"
+        ],
+        [
+          "name"
+        ],
+        [
+          "blue",
+          "one"
+        ]
+      ]
     },
     {
       "id": "accent-341",
@@ -5498,7 +10123,33 @@
         "B: Yeah, really. (angry)"
       ],
       "number": 232,
-      "trackNumber": 341
+      "trackNumber": 341,
+      "lineTargets": [
+        [
+          "did"
+        ],
+        [],
+        [],
+        [],
+        [
+          "not"
+        ],
+        [
+          "know"
+        ],
+        [
+          "know"
+        ],
+        [
+          "know"
+        ],
+        [
+          "really"
+        ],
+        [
+          "really"
+        ]
+      ]
     },
     {
       "id": "accent-342",
@@ -5519,7 +10170,38 @@
       ],
       "number": 233,
       "trackNumber": 342,
-      "showSpeakerLabels": true
+      "showSpeakerLabels": true,
+      "lineTargets": [
+        [
+          "rachel"
+        ],
+        [
+          "emily"
+        ],
+        [
+          "recognize",
+          "weight"
+        ],
+        [
+          "matter"
+        ],
+        [
+          "really"
+        ],
+        [
+          "potato",
+          "candy",
+          "salads",
+          "vegetables"
+        ],
+        [
+          "amazing"
+        ],
+        [
+          "think"
+        ],
+        []
+      ]
     },
     {
       "id": "accent-345",
@@ -5567,7 +10249,40 @@
         "Kind of. I’m kind of hungry."
       ],
       "trackNumber": 346,
-      "number": 235
+      "number": 235,
+      "lineTargets": [
+        [
+          "evening"
+        ],
+        [
+          "minute"
+        ],
+        [
+          "idea"
+        ],
+        [
+          "lot"
+        ],
+        [
+          "english"
+        ],
+        [
+          "coffee"
+        ],
+        [
+          "minute",
+          "minute"
+        ],
+        [
+          "are"
+        ],
+        [
+          "people"
+        ],
+        [
+          "hungry"
+        ]
+      ]
     },
     {
       "id": "accent-348",
@@ -5588,7 +10303,39 @@
         "I’ll be there in an hour."
       ],
       "trackNumber": 348,
-      "number": 236
+      "number": 236,
+      "lineTargets": [
+        [
+          "orange"
+        ],
+        [
+          "iphone"
+        ],
+        [
+          "offer"
+        ],
+        [
+          "accent"
+        ],
+        [
+          "honest"
+        ],
+        [
+          "question"
+        ],
+        [
+          "story"
+        ],
+        [
+          "situation"
+        ],
+        [
+          "apartment"
+        ],
+        [
+          "hour"
+        ]
+      ]
     },
     {
       "id": "accent-350",
@@ -5614,7 +10361,68 @@
         "A: As long as I can remember."
       ],
       "number": 237,
-      "trackNumber": 350
+      "trackNumber": 350,
+      "lineTargets": [
+        [
+          "tonight"
+        ],
+        [
+          "hanging",
+          "out",
+          "friends"
+        ],
+        [
+          "staying",
+          "in",
+          "movie"
+        ],
+        [
+          "shopping"
+        ],
+        [
+          "planning",
+          "on",
+          "car"
+        ],
+        [
+          "car"
+        ],
+        [
+          "hang",
+          "up"
+        ],
+        [
+          "hung",
+          "up"
+        ],
+        [
+          "boyfriend"
+        ],
+        [
+          "kidding"
+        ],
+        [
+          "working",
+          "out"
+        ],
+        [
+          "im",
+          "time",
+          "planning",
+          "on"
+        ],
+        [
+          "more",
+          "lot"
+        ],
+        [
+          "going",
+          "on"
+        ],
+        [
+          "remember"
+        ]
+      ]
     },
     {
       "id": "accent-351",
@@ -5641,7 +10449,59 @@
         "B: We’ve already met."
       ],
       "number": 238,
-      "trackNumber": 351
+      "trackNumber": 351,
+      "lineTargets": [
+        [
+          "come",
+          "in"
+        ],
+        [
+          "door"
+        ],
+        [
+          "leave"
+        ],
+        [
+          "turn"
+        ],
+        [
+          "time"
+        ],
+        [
+          "o’clock"
+        ],
+        [
+          "walk"
+        ],
+        [
+          "idea"
+        ],
+        [
+          "far"
+        ],
+        [
+          "hours"
+        ],
+        [
+          "film"
+        ],
+        [
+          "sold",
+          "out"
+        ],
+        [
+          "headache"
+        ],
+        [
+          "aspirin"
+        ],
+        [
+          "brother-in-law"
+        ],
+        [
+          "met"
+        ]
+      ]
     },
     {
       "id": "accent-352",
@@ -5689,7 +10549,39 @@
         "what time"
       ],
       "number": 240,
-      "trackNumber": 353
+      "trackNumber": 353,
+      "lineTargets": [
+        [
+          "game"
+        ],
+        [
+          "lit"
+        ],
+        [
+          "never"
+        ],
+        [
+          "day"
+        ],
+        [
+          "saturday"
+        ],
+        [
+          "right"
+        ],
+        [
+          "playing"
+        ],
+        [
+          "tom"
+        ],
+        [
+          "book"
+        ],
+        [
+          "time"
+        ]
+      ]
     },
     {
       "id": "accent-354",
@@ -5705,7 +10597,24 @@
         "It was so nice to meet Tom."
       ],
       "number": 241,
-      "trackNumber": 354
+      "trackNumber": 354,
+      "lineTargets": [
+        [
+          "things"
+        ],
+        [
+          "playing"
+        ],
+        [
+          "single"
+        ],
+        [
+          "miserable"
+        ],
+        [
+          "nice"
+        ]
+      ]
     },
     {
       "id": "accent-357",
@@ -5728,7 +10637,43 @@
         "break time"
       ],
       "trackNumber": 357,
-      "number": 242
+      "number": 242,
+      "lineTargets": [
+        [
+          "there"
+        ],
+        [
+          "help"
+        ],
+        [
+          "drop"
+        ],
+        [
+          "beans"
+        ],
+        [
+          "chicken"
+        ],
+        [
+          "music"
+        ],
+        [
+          "day"
+        ],
+        [
+          "deal"
+        ],
+        [
+          "blog"
+        ],
+        [],
+        [
+          "night"
+        ],
+        [
+          "break"
+        ]
+      ]
     },
     {
       "id": "accent-358",
@@ -5770,7 +10715,52 @@
         "B: I’m looking it up right now."
       ],
       "trackNumber": 359,
-      "number": 244
+      "number": 244,
+      "lineTargets": [
+        [
+          "party"
+        ],
+        [
+          "time"
+        ],
+        [
+          "music"
+        ],
+        [
+          "music"
+        ],
+        [
+          "cupcake"
+        ],
+        [
+          "stop"
+        ],
+        [
+          "stop"
+        ],
+        [
+          "think"
+        ],
+        [
+          "driver"
+        ],
+        [
+          "sign"
+        ],
+        [
+          "door"
+        ],
+        [
+          "good"
+        ],
+        [
+          "answer"
+        ],
+        [
+          "looking",
+          "up"
+        ]
+      ]
     },
     {
       "id": "accent-361",
@@ -5789,7 +10779,36 @@
         "He ate out."
       ],
       "number": 245,
-      "trackNumber": 361
+      "trackNumber": 361,
+      "lineTargets": [
+        [
+          "ate",
+          "out"
+        ],
+        [
+          "go"
+        ],
+        [
+          "agree"
+        ],
+        [
+          "know"
+        ],
+        [
+          "come",
+          "in"
+        ],
+        [
+          "awesome"
+        ],
+        [
+          "buy"
+        ],
+        [
+          "ate",
+          "out"
+        ]
+      ]
     },
     {
       "id": "accent-362",
@@ -5807,7 +10826,31 @@
         "Do I need to do it? No, I already did it."
       ],
       "number": 246,
-      "trackNumber": 362
+      "trackNumber": 362,
+      "lineTargets": [
+        [
+          "upset"
+        ],
+        [
+          "not"
+        ],
+        [
+          "is"
+        ],
+        [
+          "announcer"
+        ],
+        [
+          "weather"
+        ],
+        [
+          "find",
+          "out"
+        ],
+        [
+          "need"
+        ]
+      ]
     },
     {
       "id": "accent-365",
@@ -5868,7 +10911,50 @@
         "B: As a matter of fact, yes. Help me find a rich husband!"
       ],
       "number": 248,
-      "trackNumber": 366
+      "trackNumber": 366,
+      "lineTargets": [
+        [
+          "help"
+        ],
+        [
+          "sunglasses"
+        ],
+        [
+          "sunglasses",
+          "counter"
+        ],
+        [
+          "nice"
+        ],
+        [
+          "mirror"
+        ],
+        [
+          "much"
+        ],
+        [
+          "dollars"
+        ],
+        [
+          "lot",
+          "money"
+        ],
+        [
+          "style"
+        ],
+        [
+          "cheaper"
+        ],
+        [
+          "afraid",
+          "anything",
+          "help"
+        ],
+        [
+          "matter",
+          "husband"
+        ]
+      ]
     },
     {
       "id": "accent-367",
@@ -5894,7 +10980,55 @@
         "B: Okay then, I’ll leave too."
       ],
       "number": 249,
-      "trackNumber": 367
+      "trackNumber": 367,
+      "lineTargets": [
+        [
+          "spanish"
+        ],
+        [
+          "course"
+        ],
+        [
+          "sense"
+        ],
+        [
+          "game"
+        ],
+        [
+          "saturday"
+        ],
+        [
+          "think"
+        ],
+        [
+          "hope"
+        ],
+        [
+          "practicing"
+        ],
+        [
+          "right"
+        ],
+        [
+          "love"
+        ],
+        [
+          "suppose"
+        ],
+        [
+          "night",
+          "need"
+        ],
+        [
+          "little"
+        ],
+        [
+          "leave"
+        ],
+        [
+          "leave"
+        ]
+      ]
     },
     {
       "id": "accent-369",
@@ -5917,7 +11051,60 @@
         "I won’t stop practicing."
       ],
       "trackNumber": 369,
-      "number": 250
+      "number": 250,
+      "lineTargets": [
+        [
+          "accent",
+          "while"
+        ],
+        [
+          "track",
+          "rules",
+          "exceptions"
+        ],
+        [
+          "idea",
+          "much"
+        ],
+        [
+          "materials"
+        ],
+        [
+          "easier",
+          "sounds",
+          "difficult",
+          "others"
+        ],
+        [
+          "getting"
+        ],
+        [
+          "things",
+          "syllables",
+          "others"
+        ],
+        [
+          "friends",
+          "difference",
+          "speech"
+        ],
+        [
+          "boss",
+          "progress",
+          "more",
+          "speaker"
+        ],
+        [
+          "clients",
+          "much"
+        ],
+        [
+          "worthwhile"
+        ],
+        [
+          "practicing"
+        ]
+      ]
     },
     {
       "id": "accent-373",
@@ -5947,7 +11134,75 @@
         "Practice with Contractions: has"
       ],
       "number": 251,
-      "underlinePrefix": true
+      "underlinePrefix": true,
+      "lineTargets": [
+        [
+          "happy"
+        ],
+        [
+          "include",
+          "working",
+          "call"
+        ],
+        [
+          "contracted",
+          "follows"
+        ],
+        [
+          "like",
+          "call",
+          "call",
+          "take",
+          "take",
+          "rain",
+          "good",
+          "good",
+          "snow",
+          "snow"
+        ],
+        [
+          "like",
+          "understand",
+          "understand",
+          "like",
+          "see",
+          "see"
+        ],
+        [
+          "note",
+          "contraction",
+          "same",
+          "contraction",
+          "known",
+          "fix",
+          "fix"
+        ],
+        [
+          "eaten",
+          "eaten",
+          "heard",
+          "heard",
+          "told",
+          "told",
+          "seen",
+          "seen",
+          "contract",
+          "verb",
+          "functions",
+          "verb",
+          "example",
+          "verb",
+          "car",
+          "car"
+        ],
+        [
+          "fun",
+          "eaten",
+          "eaten",
+          "film",
+          "film"
+        ]
+      ]
     },
     {
       "id": "accent-374",
@@ -5971,7 +11226,43 @@
         "Word Pairs for Practice"
       ],
       "number": 252,
-      "underlinePrefix": true
+      "underlinePrefix": true,
+      "lineTargets": [
+        [
+          "note",
+          "contraction",
+          "contraction",
+          "teacher",
+          "teacher",
+          "american",
+          "tall",
+          "ready"
+        ],
+        [
+          "fine",
+          "fine"
+        ],
+        [
+          "waiting",
+          "waiting",
+          "sorry",
+          "sorry",
+          "leaving",
+          "leaving",
+          "coming"
+        ],
+        [
+          "cannot",
+          "swim",
+          "swim"
+        ],
+        [
+          "words",
+          "aisle",
+          "wheel",
+          "heel/heal"
+        ]
+      ]
     },
     {
       "id": "accent-375",
@@ -6068,7 +11359,92 @@
         "B: Oh, I must’ve been too busy to look at my calendar. You should’ve told me. We could’ve celebrated together. I would’ve taken you out to dinner. Or I could’ve at least baked you a cake."
       ],
       "number": 254,
-      "trackNumber": 376
+      "trackNumber": 376,
+      "lineTargets": [
+        [
+          "question",
+          "meeting"
+        ],
+        [
+          "start"
+        ],
+        [
+          "great",
+          "glad"
+        ],
+        [
+          "see",
+          "mary",
+          "make",
+          "town"
+        ],
+        [
+          "nick"
+        ],
+        [
+          "make",
+          "known",
+          "earlier"
+        ],
+        [
+          "vivian"
+        ],
+        [
+          "said",
+          "lot",
+          "work"
+        ],
+        [
+          "hour"
+        ],
+        [
+          "want",
+          "home",
+          "o’clock"
+        ],
+        [
+          "looking",
+          "forward"
+        ],
+        [
+          "place"
+        ],
+        [
+          "order"
+        ],
+        [
+          "meat",
+          "c",
+          "folks",
+          "order"
+        ],
+        [
+          "c"
+        ],
+        [
+          "chicken",
+          "steak",
+          "glass",
+          "wine"
+        ],
+        [
+          "c",
+          "ready",
+          "minutes"
+        ],
+        [
+          "weeks"
+        ],
+        [
+          "busy",
+          "calendar",
+          "celebrated",
+          "together",
+          "dinner",
+          "least",
+          "cake"
+        ]
+      ]
     },
     {
       "id": "accent-378",
@@ -6163,7 +11539,49 @@
         "She would not have known if you hadn’t told her."
       ],
       "number": 257,
-      "trackNumber": 380
+      "trackNumber": 380,
+      "lineTargets": [
+        [
+          "birthday",
+          "gotten",
+          "present"
+        ],
+        [
+          "driving",
+          "ticket"
+        ],
+        [
+          "park"
+        ],
+        [
+          "careful",
+          "accident"
+        ],
+        [
+          "test"
+        ],
+        [
+          "canceled",
+          "picnic"
+        ],
+        [
+          "more",
+          "people",
+          "party"
+        ],
+        [
+          "called",
+          "number"
+        ],
+        [
+          "time",
+          "flight"
+        ],
+        [
+          "known",
+          "told"
+        ]
+      ]
     },
     {
       "id": "accent-381",
@@ -6176,7 +11594,20 @@
         "B: If I hadn’t come to the U.S., I would’ve lived with my family, and I wouldn’ve had to study English. I wouldn’ve met my wife. I would’ve married someone else."
       ],
       "number": 258,
-      "trackNumber": 381
+      "trackNumber": 381,
+      "lineTargets": [
+        [
+          "come",
+          "united"
+        ],
+        [
+          "lived",
+          "family",
+          "study",
+          "wife",
+          "someone"
+        ]
+      ]
     },
     {
       "id": "accent-383",
@@ -6241,7 +11672,38 @@
         "B: Okay, lemme know when you’re free again. See ya."
       ],
       "number": 260,
-      "trackNumber": 385
+      "trackNumber": 385,
+      "lineTargets": [
+        [
+          "tonight"
+        ],
+        [
+          "gonna",
+          "home"
+        ],
+        [
+          "movie"
+        ],
+        [
+          "tomorrow"
+        ],
+        [
+          "night"
+        ],
+        [
+          "yeah",
+          "bed",
+          "energy"
+        ],
+        [
+          "cha",
+          "easy",
+          "time"
+        ],
+        [
+          "lemme"
+        ]
+      ]
     },
     {
       "id": "accent-388",

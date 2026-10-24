@@ -5448,6 +5448,19 @@ function App() {
                 })()
               : '';
 
+  // "+ Word" também nos exercícios de Listening e Dictation (pedido do dono, 2026-10-24): salva palavra/expressão
+  // do áudio no My Words sem sair da tela. O rótulo de origem diz de qual exercício veio.
+  // (e na tela Grammar & Vocabulary Exercises, mesmo dia — o rótulo de origem ali é fixo, a seção é estado interno da tela)
+  const isListeningOrDictationExercise = activePage === 'listening-exercise' || activePage === 'dictation-exercise' || activePage === 'grammar-vocab-exercises';
+  const exerciseWordContext = (() => {
+    if (!isListeningOrDictationExercise) return '';
+    if (activePage === 'grammar-vocab-exercises') return 'Grammar & Vocabulary Exercises';
+    const isDictation = activePage === 'dictation-exercise';
+    const source = LISTENING_SOURCES.find((item) => item.id === (isDictation ? selectedDictationSource : selectedListeningSource));
+    const track = (source?.tracks || []).find((item) => item.id === (isDictation ? selectedDictationTrack : selectedListeningTrack));
+    return `${isDictation ? 'Dictation' : 'Listening'}${track ? ` · ${track.title}` : ''}`;
+  })();
+
   return (
     <div
       /* 'grammar-vocab-exercises' saiu desta lista em 2026-08-09: aquela tela
@@ -8088,6 +8101,9 @@ function App() {
           </button>
           <WordQuickAdd contextLabel={studyContextLabel} onAdd={handleAddWord} />
         </>
+      )}
+      {userName && isListeningOrDictationExercise && (
+        <WordQuickAdd contextLabel={exerciseWordContext} onAdd={handleAddWord} />
       )}
       <Toast toast={toast} />
       <ConfirmDialog dialog={confirmDialog} onChoice={handleConfirmDialogChoice} />
@@ -12124,12 +12140,18 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBac
         const all = new Set([...(low.match(/[a-z0-9]+/g) || []), ...low.split(/\s+/).map((w) => w.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, '')).filter(Boolean)]);
         return buildListeningSentenceModel(text, all);
       }
+      // track.lineTargets (só American Accent): palavras FIXAS por linha (nomes, adjetivos, phrasal verbs — escolhidas por script, 2026-10-24),
+      // pra a lacuna não mudar a cada entrada no exercício. Linha sem lista cai no sorteio de sempre.
+      const fixedLineWords = (track.lineTargets || [])[sentenceIndex];
+      if (fixedLineWords && fixedLineWords.length > 0) {
+        return buildListeningSentenceModel(text, new Set(fixedLineWords), true, Boolean(track.showSpeakerLabels), (track.visiblePrefix || [])[sentenceIndex] || '', Boolean(track.underlinePrefix), Boolean(track.keepAfterLabel));
+      }
       return buildListeningSentenceModel(text, targetWordSet, Boolean(track.blankAllTargets), Boolean(track.showSpeakerLabels), (track.visiblePrefix || [])[sentenceIndex] || '', Boolean(track.underlinePrefix), Boolean(track.keepAfterLabel),
         // track.blankCountByWords: { "3": 2 } = frases de 3 palavras ganham 2 lacunas sorteadas (faixa 254)
         (track.blankCountByWords || {})[String(text.trim().split(/\s+/).length)] || 0,
         targetPhraseList, Boolean(targetPhraseList || (isVocabularyTrack && wordMode === 'unitWords' && !track.targetWords)));
     }),
-    [track.id, track.blankAllTargets, track.showSpeakerLabels, track.plainSentences, track.visiblePrefix, track.underlinePrefix, track.keepAfterLabel, track.blankCountByWords, regenerateKey, targetWordSet, wordMode, wordItemSet, targetPhraseList, isVocabularyTrack, track.targetWords]
+    [track.id, track.blankAllTargets, track.showSpeakerLabels, track.plainSentences, track.visiblePrefix, track.underlinePrefix, track.keepAfterLabel, track.blankCountByWords, track.lineTargets, regenerateKey, targetWordSet, wordMode, wordItemSet, targetPhraseList, isVocabularyTrack, track.targetWords]
   );
   // Tentativa anterior deste exercício (null = nunca checado, ou o aluno pediu "Change words"). Só vale enquanto o
   // modo de palavras for o mesmo da época e o aluno não tiver sorteado de novo.

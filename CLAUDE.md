@@ -236,6 +236,16 @@ pras 4 telas acima pegarem sozinhas.
   ou grupos, lidos coluna a coluna): as "Word Pairs for Practice" de frases (12, 20, 22, 25, 30, 36, 41, 43, 46, 51, 54, 56, 122, 141, 160, 163, 181, 207,
   221, 353, 357), 154, 276, os trios da 191 e as já combinadas pelo dono (237-241, 244, 247, 254). Se o dono disser que alguma dessas é par, converter igual.
 
+- **Lacunas FIXAS por linha em todo o American Accent (2026-10-24, pedido do dono: "evitar que a cada entrada tenha uma palavra diferente")**: campo novo `lineTargets` em
+  `listening_american_accent.json` (179 faixas, 1.500 linhas): lista paralela a `sentences`, cada item = palavras que viram lacuna NAQUELA linha (`App.js`, `baseSentenceModels`: usa
+  `buildListeningSentenceModel(text, new Set(palavras), true, ...)`; linha sem lista cai no sorteio de sempre). As 48 faixas que já tinham `targetWords` (fixas por faixa) NÃO foram tocadas, nem a 254
+  (`blankCountByWords`, pedido anterior). Escolha por script (NLTK `averaged_perceptron_tagger`, instalado só na máquina de desenvolvimento, não é dependência do app): mesma quantidade de lacunas do
+  sorteio antigo (1 se < 10 palavras, senão ceil(palavras/6)); prioridade nomes > adjetivos = phrasal verbs (verbo + partícula, as DUAS palavras) > nomes próprios > verbos > advérbios longos > números;
+  NUNCA conectivos/artigos/preposições/pronomes/auxiliares/contrações (it's, should've, can't...) nem texto entre parênteses nem o prefixo `visiblePrefix`; as lacunas são espalhadas (sem vizinhas quando dá).
+  Linhas sem nenhum candidato caem num fallback determinístico (palavra mais longa que não seja have/be/do). **Listas de pares por vírgula** (237-240, 244, 247, 274): TODAS as palavras viram lacuna (274: uma por
+  trecho). Linha de 1 palavra não precisa (a lacuna já é ela). Limite conhecido: a 284 linha 5 ("My class starts at 9:15...") não tem lacuna porque o construtor lê "My class starts at 9:" como rótulo de falante.
+  Para refazer/ajustar uma linha: editar o item de `lineTargets` (palavras em minúsculas, com o apóstrofo curvo como está no texto). Regenerar a faixa inteira sobrescreve ajustes manuais.
+
 ### Ask AI (menu principal, fora dos 4 cursos, 2026-07-25)
 
 Tela de Q&A pra dúvidas sobre a língua inglesa em geral (gramática, vocabulário, pronúncia,
