@@ -8915,7 +8915,13 @@ function DashboardCourseRow({ title, total, tally, unitLabel = 'units', continue
     <div className="dashboard-course-row">
       <div className="dashboard-course-head">
         <h3>{title}</h3>
-        <span className="dashboard-course-count">{total - tally.unvisited}/{total} {unitLabel} started</span>
+        {/* % estudado = (avaliado + dominado) / total previsto — pedido do dono, 2026-10-24: quem tem nota JÁ foi estudado, mesmo que não tenha dado 5★ (5★ é o que tira o item da revisão) */}
+        <div className="dashboard-course-stats">
+          <span className="dashboard-course-count">{total - tally.unvisited}/{total} {unitLabel} started</span>
+          <span className="dashboard-course-percent">
+            {Math.round(((tally.rated + tally.mastered) / safeTotal) * 100)}% studied
+          </span>
+        </div>
       </div>
       <div
         className="dashboard-progress-bar"

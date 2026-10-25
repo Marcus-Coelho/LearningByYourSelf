@@ -1834,6 +1834,20 @@ body {
   color: var(--text-secondary);
 }
 
+/* Contagem + percentuais empilhados à direita do título do curso */
+.dashboard-course-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.dashboard-course-percent {
+  font-size: var(--text-secondary-size);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
 /* Trilha cinza opaca = "not started" implícito (mesma ideia de
    unit-badge-dot--unvisited ser transparente/sem cor própria); os segmentos
    coloridos (visited/rated/mastered, mesmas cores de UnitBadgeDot) cobrem só
