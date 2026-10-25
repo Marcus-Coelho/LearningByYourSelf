@@ -9319,11 +9319,11 @@ const MASK_SKIP_WORDS = new Set([
 // Agora mascara em duas passadas: a expressão inteira primeiro (preserva o
 // caso "mow the lawn") e depois cada palavra significativa dela, aceitando
 // sufixo de flexão (s/es/ed/ing).
-const maskWordInExample = (example, word) => {
+const maskWordInExample = (example, word, maskText = null) => {
   const trimmedWord = (word || '').trim();
   if (!example || !trimmedWord) return example;
   const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const toMask = (match) => '_'.repeat(Math.max(3, match.length));
+  const toMask = (match) => maskText || '_'.repeat(Math.max(3, match.length));
 
   // 1ª passada: a expressão inteira, exatamente como salva.
   let masked = example.replace(new RegExp(`\\b${escapeRe(trimmedWord)}\\b`, 'gi'), toMask);
@@ -9642,7 +9642,12 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
     // NAO tem significado salvo — depois de preenchido, o texto e so uma
     // exibicao estatica, sem parecer link (pedido explicito do usuario).
     if (currentCard.meaning) {
-      return <p className={className}>{currentCard.meaning}</p>;
+      // A definição também entrega a resposta ("A dull knife or blade is not sharp" pra "dull") — antes de virar o card
+      // (ou de errar a digitação) a própria palavra, e suas flexões, aparece como "....." (pedido do dono, 2026-10-25).
+      const shownMeaning = (flipped || spellFeedback)
+        ? currentCard.meaning
+        : maskWordInExample(currentCard.meaning, currentCard.word, '.....');
+      return <p className={className}>{shownMeaning}</p>;
     }
     return (
       <p className={`${className} flashcard-meaning-clickable`} onClick={startEditingMeaning}>

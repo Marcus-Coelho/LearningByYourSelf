@@ -13,7 +13,7 @@ try {
 }
 
 $ok = $false
-for ($i = 0; $i -lt 120; $i++) {
+for ($i = 0; $i -lt 480; $i++) {
     try {
         # 127.0.0.1 (nao "localhost"): nessa maquina, Invoke-WebRequest trava
         # ate dar timeout contra "localhost" (tenta IPv6 antes do IPv4 e nunca
@@ -22,7 +22,7 @@ for ($i = 0; $i -lt 120; $i++) {
         $ok = $true
         break
     } catch {
-        Start-Sleep -Seconds 1
+        Start-Sleep -Milliseconds 250
     }
 }
 if ($ok) {

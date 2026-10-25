@@ -32,7 +32,16 @@ rem "powershell /min" porque /min ainda deixava a janela do PowerShell
 rem visivel em alguns PCs - wscript nunca cria janela nenhuma.
 start "" wscript.exe "%~dp0RunHidden.vbs"
 
-call npm start
+rem Abertura rapida: se o build/ esta em dia com o codigo, serve ele direto (serve-local.js, ~1 s, mesmas rotas de
+rem audio/PDF do setupProxy.js). Build faltando ou desatualizado (ex. depois de um git pull) cai no npm start, que
+rem recompila e sempre reflete o codigo atual. Rodar "npm run build" depois de mexer no codigo mantem o atalho rapido.
+node serve-local.js --check
+if errorlevel 1 (
+  echo Build desatualizado ou ausente - iniciando pelo npm start, aguarde a compilacao...
+  call npm start
+) else (
+  node serve-local.js
+)
 
 echo.
 echo Fechando o servidor (porta %PORT%)...
