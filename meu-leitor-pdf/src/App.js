@@ -511,6 +511,32 @@ const clearBackupFolderHandle = async () => {
 // dentro, em vez de brigar por um nome fixo.
 const backupFileNameFor = (name) => `lets-learn-english-backup-${name.replace(/[^a-z0-9_-]+/gi, '_')}.json`;
 
+// Controle de "quem escreveu por último" na pasta de backup (2026-10-26). Sem isso, o app de OUTRO PC (ou da cópia do
+// pendrive) ligado à mesma pasta reescrevia o arquivo com o progresso ANTIGO dele por cima do arquivo novo copiado, e o
+// avanço "sumia" ao abrir no outro lado. Guardamos, por aparelho e por usuário, o `exportedAt` do último arquivo que ESTE
+// navegador escreveu ou restaurou. Chave sem o prefixo `u:<nome>:` de propósito: é do aparelho, não entra no backup.
+const BACKUP_SYNC_KEY_PREFIX = 'backupLastSyncedAt:';
+const readBackupSyncedAt = (name) => {
+  try {
+    return Number(window.localStorage.getItem(BACKUP_SYNC_KEY_PREFIX + name)) || 0;
+  } catch (error) {
+    return 0;
+  }
+};
+const writeBackupSyncedAt = (name, ms) => {
+  try {
+    window.localStorage.setItem(BACKUP_SYNC_KEY_PREFIX + name, String(ms));
+  } catch (error) {
+    // Armazenamento indisponível — sem o registro, o próximo save só pergunta de novo.
+  }
+};
+const sameBackupData = (a, b) => {
+  const keysA = Object.keys(a || {});
+  const keysB = Object.keys(b || {});
+  if (keysA.length !== keysB.length) return false;
+  return keysA.every((key) => (a || {})[key] === (b || {})[key]);
+};
+
 // Mesmo formato do backup manual (handleExportBackup) — dump 1:1 de todo o
 // namespace "u:<nome>:*" do localStorage. Função pura (não depende de
 // estado do componente) pra poder ser reusada tanto pelo download manual
@@ -2101,6 +2127,12 @@ function App() {
   const [backupFolderHandle, setBackupFolderHandle] = useState(null);
   const [backupFolderNeedsPermission, setBackupFolderNeedsPermission] = useState(false);
   const [lastFolderBackupAt, setLastFolderBackupAt] = useState(null);
+  // Trava contra dois saves simultâneos na pasta + "tem mais um pra fazer"; e o conflito já perguntado (não repetir o
+  // mesmo aviso a cada autosave). saveBackupRef sempre aponta pro handleSaveBackupToFolder do render atual.
+  const backupSavingRef = useRef(false);
+  const backupPendingRef = useRef(false);
+  const backupConflictAskedRef = useRef(0);
+  const saveBackupRef = useRef(null);
   // Notificação estilizada (substitui window.alert/window.confirm nativos,
   // feios e sem cara do app) usada pelo fluxo de Backup & Restore — pedido
   // do dono depois de ver o alert() padrão do navegador ("localhost:3000
@@ -4502,7 +4534,7 @@ function App() {
   // recadastrar o mesmo nome ali, e importar por cima). Escreve direto no
   // localStorage e recarrega a página em vez de tentar sincronizar
   // manualmente cada pedaço de estado React espalhado pelo app.
-  const applyBackupJson = async (text) => {
+  const applyBackupJson = async (text, { skipConfirm = false } = {}) => {
     let parsed;
     try {
       parsed = JSON.parse(text);
@@ -4523,7 +4555,7 @@ function App() {
     const warning = fromDifferentUser
       ? `This backup was exported from "${parsed.userName}". `
       : '';
-    const proceed = await askConfirm(
+    const proceed = skipConfirm || await askConfirm(
       `${warning}Import ${keys.length} saved item(s) into "${userName}"? This will overwrite any matching progress, notes, answers and ratings already saved for this user on this browser. This cannot be undone.`,
       { confirmLabel: 'Import' },
     );
@@ -4532,6 +4564,9 @@ function App() {
       keys.forEach((relativeKey) => {
         window.localStorage.setItem(userKey(userName, relativeKey), parsed.data[relativeKey]);
       });
+      // Este navegador passa a ter o progresso do arquivo: guarda a data dele pra o próximo save na pasta saber o que é novo.
+      const importedAt = Date.parse(parsed.exportedAt);
+      if (importedAt) writeBackupSyncedAt(userName, importedAt);
     } catch (error) {
       showToast('Could not write the backup to this browser (storage may be full or unavailable).', 'error');
       return;
@@ -4615,28 +4650,69 @@ function App() {
   const handleSaveBackupToFolder = async ({ handle, silent = false } = {}) => {
     const targetHandle = handle || backupFolderHandle;
     if (!targetHandle || !userName) return;
-    const payload = buildBackupPayload(userName);
-    if (!payload) {
-      if (!silent) showToast('Nothing to back up yet — no progress saved for this user.', 'error');
+    // Um save por vez: se já tem um em andamento, só marca que falta mais um (pega o que mudou durante a escrita).
+    if (backupSavingRef.current) {
+      backupPendingRef.current = true;
       return;
     }
+    backupSavingRef.current = true;
     try {
+      const payload = buildBackupPayload(userName);
+      if (!payload) {
+        if (!silent) showToast('Nothing to back up yet — no progress saved for this user.', 'error');
+        return;
+      }
       const permission = await targetHandle.queryPermission({ mode: 'readwrite' });
       if (permission !== 'granted') {
         setBackupFolderNeedsPermission(true);
         if (!silent) showToast('This app needs permission to write to the linked folder again — click "Reconnect folder" below.', 'error');
         return;
       }
+      // Trava contra sobrescrever progresso MAIS NOVO vindo de outro PC (ver BACKUP_SYNC_KEY_PREFIX).
+      let existing = null;
+      try {
+        const existingHandle = await targetHandle.getFileHandle(backupFileNameFor(userName));
+        existing = JSON.parse(await (await existingHandle.getFile()).text());
+      } catch (error) {
+        existing = null; // sem arquivo ainda (ou ilegível): pode escrever.
+      }
+      const fileAt = existing ? Date.parse(existing.exportedAt) || 0 : 0;
+      if (existing && existing.data && fileAt > readBackupSyncedAt(userName) + 1000 && !sameBackupData(existing.data, payload.data)) {
+        if (backupConflictAskedRef.current !== fileAt && !confirmResolveRef.current) {
+          backupConflictAskedRef.current = fileAt;
+          const restoreIt = await askConfirm(
+            `The backup file in "${targetHandle.name}" is NEWER (saved ${new Date(fileAt).toLocaleString()}) than the last backup this browser wrote — `
+            + 'probably progress you made on another PC. Restore it into this browser? '
+            + '("Keep this browser\'s" overwrites that file with what is stored here instead.)',
+            { confirmLabel: 'Restore newer file', cancelLabel: "Keep this browser's" },
+          );
+          if (restoreIt) {
+            await applyBackupJson(JSON.stringify(existing), { skipConfirm: true });
+            return;
+          }
+          writeBackupSyncedAt(userName, fileAt); // decisão tomada: daqui pra frente este navegador vale.
+        } else {
+          return; // já perguntado (ou há outro diálogo aberto): NÃO sobrescreve o arquivo mais novo.
+        }
+      }
       const fileHandle = await targetHandle.getFileHandle(backupFileNameFor(userName), { create: true });
       const writable = await fileHandle.createWritable();
       await writable.write(JSON.stringify(payload, null, 2));
       await writable.close();
+      writeBackupSyncedAt(userName, Date.parse(payload.exportedAt));
       setLastFolderBackupAt(Date.now());
       if (!silent) showToast(`Saving your progress to "${targetHandle.name}".`, 'success');
     } catch (error) {
       if (!silent) showToast('Could not save the backup to the linked folder.', 'error');
+    } finally {
+      backupSavingRef.current = false;
+      if (backupPendingRef.current) {
+        backupPendingRef.current = false;
+        setTimeout(() => saveBackupRef.current && saveBackupRef.current({ silent: true }), 500);
+      }
     }
   };
+  saveBackupRef.current = handleSaveBackupToFolder;
 
   // Botão "Save progress now" do Progress Dashboard — mesma ação de "Save
   // backup now" do My Profile, só que acessível de um lugar mais visível
@@ -4759,6 +4835,83 @@ function App() {
     if (!backupFolderHandle || backupFolderNeedsPermission || !userName) return;
     handleSaveBackupToFolder({ silent: true });
   }, [selectedUnit, selectedAmerican1Unit, selectedAmerican1Section, selectedGrammarElemUnit]);
+
+  // Autosave em QUALQUER gravação do progresso (2026-10-26): antes só rodava a cada 5 min e ao trocar de unit de
+  // Vocabulary/American1/Grammar — Listening, Dictation, exercícios, My Words, American Accent e notas ficavam de fora, e o
+  // arquivo copiado pra outro PC saía defasado. Agora toda escrita em `u:<nome>:*` agenda um save 4 s depois da última
+  // (agrupa rajadas), e sair da janela/aba (visibilitychange/pagehide) salva na hora.
+  useEffect(() => {
+    if (!backupFolderHandle || backupFolderNeedsPermission || !userName) return undefined;
+    const prefix = userKey(userName, '');
+    const storageProto = window.Storage && window.Storage.prototype;
+    if (!storageProto) return undefined;
+    const originalSetItem = storageProto.setItem;
+    const originalRemoveItem = storageProto.removeItem;
+    let timer = null;
+    const schedule = (storage, key) => {
+      if (storage !== window.localStorage || typeof key !== 'string' || !key.startsWith(prefix)) return;
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        if (saveBackupRef.current) saveBackupRef.current({ silent: true });
+      }, 4000);
+    };
+    storageProto.setItem = function patchedSetItem(key, value) {
+      const result = originalSetItem.apply(this, arguments);
+      schedule(this, key);
+      return result;
+    };
+    storageProto.removeItem = function patchedRemoveItem(key) {
+      const result = originalRemoveItem.apply(this, arguments);
+      schedule(this, key);
+      return result;
+    };
+    const flush = () => {
+      if (document.visibilityState === 'hidden' || document.visibilityState === undefined) {
+        window.clearTimeout(timer);
+        if (saveBackupRef.current) saveBackupRef.current({ silent: true });
+      }
+    };
+    document.addEventListener('visibilitychange', flush);
+    window.addEventListener('pagehide', flush);
+    return () => {
+      storageProto.setItem = originalSetItem;
+      storageProto.removeItem = originalRemoveItem;
+      document.removeEventListener('visibilitychange', flush);
+      window.removeEventListener('pagehide', flush);
+      window.clearTimeout(timer);
+    };
+  }, [backupFolderHandle, backupFolderNeedsPermission, userName]);
+
+  // Depois de reabrir o navegador a permissão da pasta cai e o autosave PARAVA em silêncio (o arquivo ficava congelado e
+  // ninguém percebia). Agora o primeiro clique/tecla na página pede a permissão de novo (precisa de gesto do usuário) —
+  // o Chrome mostra o pedido dele — e avisa por toast que o backup estava pausado.
+  useEffect(() => {
+    if (!backupFolderHandle || !backupFolderNeedsPermission || !userName) return undefined;
+    showToast('Backup folder paused — click anywhere to allow access again.', 'info');
+    let done = false;
+    const reconnect = async () => {
+      if (done) return;
+      done = true;
+      document.removeEventListener('pointerdown', reconnect, true);
+      document.removeEventListener('keydown', reconnect, true);
+      try {
+        const permission = await backupFolderHandle.requestPermission({ mode: 'readwrite' });
+        if (permission === 'granted') {
+          setBackupFolderNeedsPermission(false);
+          setTimeout(() => saveBackupRef.current && saveBackupRef.current({ silent: true }), 300);
+        }
+      } catch (error) {
+        // Sem permissão: continua pausado; o botão "Reconnect folder" do Progress segue valendo.
+      }
+    };
+    document.addEventListener('pointerdown', reconnect, true);
+    document.addEventListener('keydown', reconnect, true);
+    return () => {
+      done = true;
+      document.removeEventListener('pointerdown', reconnect, true);
+      document.removeEventListener('keydown', reconnect, true);
+    };
+  }, [backupFolderHandle, backupFolderNeedsPermission, userName]);
 
   const handleResetProgress = () => {
     if (!window.confirm('Reset your unit progress? This cannot be undone.')) {
@@ -7884,6 +8037,7 @@ function App() {
               onOpenCourses={handleCourses}
               backupFolderHandle={backupFolderHandle}
               backupFolderNeedsPermission={backupFolderNeedsPermission}
+              lastFolderBackupAt={lastFolderBackupAt}
               onSaveProgressNow={handleSaveProgressFromDashboard}
               onDownloadProgressFile={handleExportBackup}
               onImportProgressFile={handleImportBackupFile}
@@ -8986,6 +9140,7 @@ function DashboardPage({
   onOpenCourses,
   backupFolderHandle,
   backupFolderNeedsPermission,
+  lastFolderBackupAt,
   onSaveProgressNow,
   onDownloadProgressFile,
   onImportProgressFile,
@@ -9030,6 +9185,15 @@ function DashboardPage({
                 ? 'Reconnect folder'
                 : 'Save progress now'}
           </button>
+        )}
+        {isBackupFolderSupported() && backupFolderHandle && (
+          <span className="dashboard-backup-status">
+            {backupFolderNeedsPermission
+              ? '⚠ Autosave paused — click "Reconnect folder"'
+              : lastFolderBackupAt
+                ? `Saved to folder at ${new Date(lastFolderBackupAt).toLocaleTimeString()}`
+                : 'Autosave on — saves a few seconds after every change'}
+          </span>
         )}
         {/* Baixa o mesmo .json do "Export full backup" do My Profile
             (handleExportBackup) — atalho aqui no Progress, pedido do dono
