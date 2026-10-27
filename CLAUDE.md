@@ -1082,6 +1082,10 @@ Estes arquivos **não devem ser editados manualmente** (todos gerados por script
 - `american1_index.json`, `american1_audio_anchors.json`, `american1_references.json`,
   `american1_reference_audio_anchors.json`, `american1_transcriptions_audio_anchors.json`,
   `american1_videos.json` — American English A1
+  **Correção feita À MÃO em `american1_references.json`** (2026-10-27, pedido do dono): unit 5
+  seção C tinha uma referência "communication" apontando pra página 107; o livro remete pra
+  página 108. Trocado só esse número, as outras 4 referências da seção (grammar/vocabulary/
+  communication 103/writing) não mudaram.
 - `grammar_elem_index.json`, `grammar_elem_appendix_index.json`, `grammar_elem_audio.json` —
   Grammar English A1
 - `grammar_vocab_exercises_vocab_similar.json` — units 21-100 são GERADAS por script (units 5-20
