@@ -515,11 +515,11 @@ tela só, entrada pelo menu lateral (ícone `IconQuiz`).
      forma correta/natural de falar a frase. Mesmo mecanismo do item 2 acima resolve: estender
      `DICTATION_EQUIVALENT_FORMS`/`groupDictationEquivalents` com pares de contração (`you're`=
      `you are`, `I'm`=`I am`, `don't`=`do not`, `isn't`=`is not`, `we've`=`we have`, etc.) —
-     ganha Dictation e Speaking de graça, mesma função nos dois. **Decisão pendente do dono antes
-     de implementar**: algumas contrações são ambíguas sozinhas (`it's` = "it is" OU "it has";
-     `he'd` = "he would" OU "he had") — precisa confirmar se a contração conta certa sempre,
-     mesmo quando o gabarito daquela frase especificamente usa a OUTRA expansão da mesma
-     contração ambígua.
+     ganha Dictation e Speaking de graça, mesma função nos dois. **Decidido pelo dono (2026-10-27)**:
+     qualquer contração conta certa sempre, mesmo quando o gabarito daquela frase especificamente
+     usa a OUTRA expansão de uma contração ambígua (`it's` = "it is" OU "it has"; `he'd` =
+     "he would" OU "he had") — não é pra restringir só aos pares sem ambiguidade. Falta só
+     implementar.
 - **Token sem nenhuma letra/dígito (ex.: um "—" solto entre frases) não conta pro score** —
   fica de fora do casamento LCS e renderiza sem cor (`dictation-word-neutral`, nem verde nem
   vermelho) na correção, mas continua aparecendo no texto reconstruído. Antes disso, um "—"
