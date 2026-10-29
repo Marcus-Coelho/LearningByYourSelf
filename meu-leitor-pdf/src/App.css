@@ -1704,13 +1704,18 @@ body {
 .dashboard-hero-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
-  margin: 18px 0 4px;
+  margin: 18px 0 22px;
 }
 
 .dashboard-hero-continue {
   margin: 0;
+}
+
+.dashboard-hero-row > * {
+  align-self: flex-start;
+  margin-top: 0;
 }
 
 .dashboard-save-progress-btn {
@@ -3980,6 +3985,16 @@ a.upload-button:visited {
 .american1-audio-anchor:has(.ap-menu),
 .audio-anchor:has(.ap-menu) {
   z-index: 30;
+}
+
+/* Mesmo problema, um nível acima (bug achado pelo dono em 2026-10-29: a lista
+   de velocidades de um player no pé da página sumia atrás da PÁGINA SEGUINTE
+   do PDF). Cada página do visualizador é um contêiner posicionado próprio
+   (.rpv-core__inner-page), e a seguinte, vindo depois no DOM, pinta por cima
+   de tudo que sai da anterior — o z-index do player só vale dentro da página
+   dele. Quem precisa subir é a página inteira que tem o menu aberto. */
+.rpv-core__inner-page:has(.ap-menu) {
+  z-index: 40;
 }
 
 /* Linha bem fina por padrão (quase invisível) com uma pequena pílula de
@@ -6414,8 +6429,19 @@ a.upload-button:visited {
   opacity: 0.8;
 }
 
+/* O aviso fica solto embaixo do botão (absoluto): assim o texto comprido não
+   alarga o grupo nem empurra os outros botões da linha. */
+.dashboard-save-group {
+  position: relative;
+  display: flex;
+}
+
 .dashboard-backup-status {
-  align-self: center;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 6px;
+  white-space: nowrap;
   font-size: var(--text-secondary-size);
   color: var(--text-secondary);
 }

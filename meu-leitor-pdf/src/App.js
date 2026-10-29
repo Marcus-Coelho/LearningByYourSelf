@@ -9178,22 +9178,24 @@ function DashboardPage({
           </button>
         )}
         {isBackupFolderSupported() && (
-          <button type="button" className="upload-button dashboard-save-progress-btn" onClick={onSaveProgressNow}>
-            {!backupFolderHandle
-              ? 'Set up backup folder'
-              : backupFolderNeedsPermission
-                ? 'Reconnect folder'
-                : 'Save progress now'}
-          </button>
-        )}
-        {isBackupFolderSupported() && backupFolderHandle && (
-          <span className="dashboard-backup-status">
-            {backupFolderNeedsPermission
-              ? '⚠ Autosave paused — click "Reconnect folder"'
-              : lastFolderBackupAt
-                ? `Saved to folder at ${new Date(lastFolderBackupAt).toLocaleTimeString()}`
-                : 'Autosave on — saves a few seconds after every change'}
-          </span>
+          <div className="dashboard-save-group">
+            <button type="button" className="upload-button dashboard-save-progress-btn" onClick={onSaveProgressNow}>
+              {!backupFolderHandle
+                ? 'Set up backup folder'
+                : backupFolderNeedsPermission
+                  ? 'Reconnect folder'
+                  : 'Save progress now'}
+            </button>
+            {backupFolderHandle && (
+              <span className="dashboard-backup-status">
+                {backupFolderNeedsPermission
+                  ? '⚠ Autosave paused — click "Reconnect folder"'
+                  : lastFolderBackupAt
+                    ? `Saved to folder at ${new Date(lastFolderBackupAt).toLocaleTimeString()}`
+                    : 'Autosave on — saves a few seconds after every change'}
+              </span>
+            )}
+          </div>
         )}
         {/* Baixa o mesmo .json do "Export full backup" do My Profile
             (handleExportBackup) — atalho aqui no Progress, pedido do dono
@@ -9780,6 +9782,15 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
     saveMeaningDraft();
   };
 
+  // A palavra só aparece na definição, no exemplo e na origem depois de ACERTAR a digitação ou de
+  // clicar em "Show word" — errar não entrega (pedido do dono, 2026-10-29). Escondida, também corta
+  // o lixo de dicionário colado no texto ("===== [ U ] uk /fʌn/ ...": traz a pronúncia, que é a resposta).
+  const showAnswerText = (text, maskText = null) => {
+    if (flipped || spellFeedback === 'correct') return text;
+    const clean = (text || '').split('=====')[0].trim();
+    return maskWordInExample(clean, currentCard.word, maskText);
+  };
+
   // Bloco do significado no flashcard: texto clicavel (vira input on click)
   // que salva no blur/Enter, ou cancela no Escape. Reaproveitado nos dois
   // layouts do flashcard (com imagem e sem imagem, ver hasImage abaixo).
@@ -9808,9 +9819,7 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
     if (currentCard.meaning) {
       // A definição também entrega a resposta ("A dull knife or blade is not sharp" pra "dull") — antes de virar o card
       // (ou de errar a digitação) a própria palavra, e suas flexões, aparece como "....." (pedido do dono, 2026-10-25).
-      const shownMeaning = (flipped || spellFeedback)
-        ? currentCard.meaning
-        : maskWordInExample(currentCard.meaning, currentCard.word, '.....');
+      const shownMeaning = showAnswerText(currentCard.meaning, '.....');
       return <p className={className}>{shownMeaning}</p>;
     }
     return (
@@ -9904,12 +9913,16 @@ function WordbookPage({ entries, onAdd, onDelete, onGrade, onUpdateMeaning, onUp
                 {renderMeaningBlock('flashcard-meaning--prompt')}
                 {currentCard.example && (
                   <p className="flashcard-example">
-                    “{(flipped || spellFeedback)
-                      ? currentCard.example
-                      : maskWordInExample(currentCard.example, currentCard.word)}”
+                    “{showAnswerText(currentCard.example)}”
                   </p>
                 )}
-                {currentCard.context && <p className="flashcard-context">from {currentCard.context}</p>}
+                {/* O contexto é o texto da unit de onde a palavra veio ("...It's fun I love London"), então
+                    também entrega a resposta: mesma máscara do exemplo e da definição, até virar o card. */}
+                {currentCard.context && (
+                  <p className="flashcard-context">
+                    from {showAnswerText(currentCard.context, '.....')}
+                  </p>
+                )}
                 {flipped ? (
                   <div className="flashcard-back">
                     <p className="flashcard-word flashcard-word-row">
