@@ -1712,12 +1712,34 @@
       "section": "A",
       "page": 1,
       "x": 351.0,
-      "y": 60.0,
+      "y": 50.0,
       "pageWidth": 737.280029296875,
       "pageHeight": 929.280029296875,
       "cd": "cd4",
       "track": 6,
       "audio": "/american1-audio/cd4/06 Track 6.mp3"
+    },
+    {
+      "section": "A",
+      "page": 1,
+      "x": 446.0,
+      "y": 50.0,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd4",
+      "track": 7,
+      "audio": "/american1-audio/cd4/07 Track 7.mp3"
+    },
+    {
+      "section": "A",
+      "page": 1,
+      "x": 541.0,
+      "y": 50.0,
+      "pageWidth": 737.280029296875,
+      "pageHeight": 929.280029296875,
+      "cd": "cd4",
+      "track": 8,
+      "audio": "/american1-audio/cd4/08 Track 8.mp3"
     },
     {
       "section": "A",

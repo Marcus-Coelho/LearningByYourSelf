@@ -118,7 +118,8 @@
   { "unit": 8, "section": "A", "refs": [
     { "type": "grammar", "pages": [138, 139] },
     { "type": "communication", "pages": [104] },
-    { "type": "communication", "pages": [108] }
+    { "type": "communication", "pages": [108] },
+    { "type": "irregular", "pages": [165] }
   ] },
   { "unit": 8, "section": "B", "refs": [
     { "type": "grammar", "pages": [138, 139] },

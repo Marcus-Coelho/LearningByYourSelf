@@ -1238,5 +1238,17 @@
    "track": 4,
    "audio": "/american-accent-audio/004%20Main%20Vowel%20Sounds%20Of%20American%20English.mp3"
   }
+ ],
+ "irregular:165": [
+  {
+   "page": 0,
+   "x": 96,
+   "y": 149,
+   "pageWidth": 737.280029296875,
+   "pageHeight": 929.280029296875,
+   "cd": "cd5",
+   "track": 58,
+   "audio": "/american1-audio/cd5/58 Track 58.mp3"
+  }
  ]
 }

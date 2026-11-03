@@ -99,6 +99,8 @@ module.exports = function (app) {
     sound: { root: american1StudentBookRoot, dir: 'sound_bank', pair: true, naming: 'legacy' },
     communication: { root: american1StudentBookRoot, dir: 'comunication', pair: false, naming: 'legacy' },
     writing: { root: american1StudentBookRoot, dir: 'writing', pair: false, naming: 'legacy' },
+    // Lista de verbos irregulares (p. 165, página única, com o áudio da faixa 58 do CD 5).
+    irregular: { root: american1StudentBookRoot, dir: 'irregular_verbs', pair: false, naming: 'legacy' },
   };
 
   // Resolve o caminho do PDF de uma página de referência, de acordo com a

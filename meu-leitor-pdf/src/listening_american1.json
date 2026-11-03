@@ -791,8 +791,33 @@
       ]
     },
     {
-      "id": "cd4-track14",
+      "id": "cd4-track13",
       "number": 31,
+      "cd": "CD4",
+      "track": 13,
+      "title": "CD4 Track 13",
+      "audio": "/american1-audio/cd4/13%20Track%2013.mp3",
+      "sentences": [
+        "Kim: The yard is wonderful. I love it.",
+        "Leo: Is there a garage?",
+        "Barbara: Oh yes, there's a big garage over there. Let's go inside the house. This is the hall. There are five rooms on this floor: the kitchen, the dining room, the living room, the study, the library...",
+        "Leo: Wow! There's a library, Kim!",
+        "Barbara: This is the living room.",
+        "Leo: I love the furniture—the old sofa, the armchairs, the fireplace...",
+        "Barbara: And this is the kitchen. It's very big, as you can see.",
+        "Kim: Is there a dishwasher?",
+        "Barbara: No, there isn't. It's an old house, you see.",
+        "Leo: Never mind. I think it's nice. Is there a bathroom downstairs?",
+        "Barbara: Yes, there's one downstairs and there are three upstairs.",
+        "Kim: Are there any neighbors with children?",
+        "Barbara: No, there aren't any neighbors near here. But there are some families with children in town.",
+        "Kim: That's great. You lived in this house, is that right, Mrs...?",
+        "Barbara: Call me Barbara, dear. Yes, I lived here. A long time ago. Now I live in town. Let's go upstairs..."
+      ]
+    },
+    {
+      "id": "cd4-track14",
+      "number": 32,
       "cd": "CD4",
       "track": 14,
       "title": "CD4 Track 14",
@@ -819,7 +844,7 @@
     },
     {
       "id": "cd4-track15",
-      "number": 32,
+      "number": 33,
       "cd": "CD4",
       "track": 15,
       "title": "CD4 Track 15",
@@ -860,7 +885,7 @@
     },
     {
       "id": "cd4-track24",
-      "number": 33,
+      "number": 34,
       "cd": "CD4",
       "track": 24,
       "title": "CD4 Track 24",
@@ -875,7 +900,7 @@
     },
     {
       "id": "cd4-track25",
-      "number": 34,
+      "number": 35,
       "cd": "CD4",
       "track": 25,
       "title": "CD4 Track 25",
@@ -894,7 +919,7 @@
     },
     {
       "id": "cd4-track32",
-      "number": 35,
+      "number": 36,
       "cd": "CD4",
       "track": 32,
       "title": "CD4 Track 32",
@@ -909,7 +934,7 @@
     },
     {
       "id": "cd4-track33",
-      "number": 36,
+      "number": 37,
       "cd": "CD4",
       "track": 33,
       "title": "CD4 Track 33",
@@ -924,7 +949,7 @@
     },
     {
       "id": "cd4-track34",
-      "number": 37,
+      "number": 38,
       "cd": "CD4",
       "track": 34,
       "title": "CD4 Track 34",
@@ -942,7 +967,7 @@
     },
     {
       "id": "cd4-track42",
-      "number": 38,
+      "number": 39,
       "cd": "CD4",
       "track": 42,
       "title": "CD4 Track 42",
@@ -963,7 +988,7 @@
     },
     {
       "id": "cd4-track45",
-      "number": 39,
+      "number": 40,
       "cd": "CD4",
       "track": 45,
       "title": "CD4 Track 45",
@@ -977,7 +1002,7 @@
     },
     {
       "id": "cd4-track46",
-      "number": 40,
+      "number": 41,
       "cd": "CD4",
       "track": 46,
       "title": "CD4 Track 46",
@@ -1028,7 +1053,7 @@
     },
     {
       "id": "cd4-track49",
-      "number": 41,
+      "number": 42,
       "cd": "CD4",
       "track": 49,
       "title": "CD4 Track 49",
@@ -1062,7 +1087,7 @@
     },
     {
       "id": "cd4-track55",
-      "number": 42,
+      "number": 43,
       "cd": "CD4",
       "track": 55,
       "title": "CD4 Track 55",
@@ -1101,7 +1126,7 @@
     },
     {
       "id": "cd5-track8",
-      "number": 43,
+      "number": 44,
       "cd": "CD5",
       "track": 8,
       "title": "CD5 Track 8",
@@ -1113,7 +1138,7 @@
     },
     {
       "id": "cd5-track9",
-      "number": 44,
+      "number": 45,
       "cd": "CD5",
       "track": 9,
       "title": "CD5 Track 9",
@@ -1135,7 +1160,7 @@
     },
     {
       "id": "cd5-track15",
-      "number": 45,
+      "number": 46,
       "cd": "CD5",
       "track": 15,
       "title": "CD5 Track 15",
@@ -1146,7 +1171,7 @@
     },
     {
       "id": "cd5-track17",
-      "number": 46,
+      "number": 47,
       "cd": "CD5",
       "track": 17,
       "title": "CD5 Track 17",
@@ -1157,7 +1182,7 @@
     },
     {
       "id": "cd5-track30",
-      "number": 47,
+      "number": 48,
       "cd": "CD5",
       "track": 30,
       "title": "CD5 Track 30",
@@ -1170,7 +1195,7 @@
     },
     {
       "id": "cd5-track36",
-      "number": 48,
+      "number": 49,
       "cd": "CD5",
       "track": 36,
       "title": "CD5 Track 36",
@@ -1190,7 +1215,7 @@
     },
     {
       "id": "cd5-track38",
-      "number": 49,
+      "number": 50,
       "cd": "CD5",
       "track": 38,
       "title": "CD5 Track 38",
@@ -1219,7 +1244,7 @@
     },
     {
       "id": "cd5-track42",
-      "number": 50,
+      "number": 51,
       "cd": "CD5",
       "track": 42,
       "title": "CD5 Track 42",
@@ -1247,7 +1272,7 @@
     },
     {
       "id": "cd5-track49",
-      "number": 51,
+      "number": 52,
       "cd": "CD5",
       "track": 49,
       "title": "CD5 Track 49",
@@ -1260,7 +1285,7 @@
     },
     {
       "id": "cd5-track51",
-      "number": 52,
+      "number": 53,
       "cd": "CD5",
       "track": 51,
       "title": "CD5 Track 51",

@@ -1211,21 +1211,20 @@
       "audioLabel": "22B",
       "sentences": [
         "A shop assistant is serving different customers.",
-        "Can I help you?",
-        "No, I'm being served, thanks.",
-        "Do you need any help?",
-        "Yes, I've just tried on this jacket in a size 12, and it didn't really fit me; it's a bit tight.",
-        "Have you got it in a bigger size?",
-        "We have got a size 14, but not in pink, I'm afraid.",
-        "Oh, that's a shame.",
-        "I'll leave it, thanks.",
-        "I'm sorry about that.",
-        "Yes, I'm looking for a skirt and this looks nice.",
-        "Can I try it on?",
-        "Yes, of course.",
-        "The changing rooms are down there."
+        "Shop assistant: Can I help you?",
+        "Customer 1: No, I'm being served, thanks.",
+        "Shop assistant: Do you need any help?",
+        "Customer 2: Yes, I've just tried on this jacket in a size 12, and it didn't really fit me; it's a bit tight. Have you got it in a bigger size?",
+        "Shop assistant: We have got a size 14, but not in pink, I'm afraid.",
+        "Customer 2: Oh, that's a shame. OK. I'll leave it, thanks.",
+        "Shop assistant: OK. I'm sorry about that. Can I help you?",
+        "Customer 3: Yes, I'm looking for a skirt and this looks nice. Can I try it on?",
+        "Shop assistant: Yes, of course. The changing rooms are down there."
       ],
-      "number": 60
+      "number": 60,
+      "showSpeakerLabels": true,
+      "unitWords": ["size", "fit"],
+      "unitPhrases": ["i'm being served", "that's a shame", "i'll leave it", "i'm looking for", "changing rooms"]
     },
     {
       "id": "unit23-a",

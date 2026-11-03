@@ -111,6 +111,42 @@ const american1TrackUnitLabel = (track) => {
   return isLetterSection ? `Unit ${found.unit}${found.section}` : `Unit ${found.unit} ${found.section || ''}`.trim();
 };
 
+// "Unit 8B: A house with a history" — rótulo da seção + título do livro
+// (american1_index.json), usado nos títulos e na busca do Listening/Dictation/
+// Speaking do American1 (2026-11-02). Seções especiais já trazem o nome no
+// título ("Practical English Episode 2"), então ficam "Unit 3: Practical English
+// Episode 2". Sem entrada no índice, volta ao rótulo simples.
+const american1TrackSectionLabel = (track) => {
+  const found = american1TrackUnitInfo(track);
+  if (!found) return '';
+  const entry = american1Index.find((item) => String(item.unit) === String(found.unit) && item.section === found.section);
+  const isLetterSection = /^[A-C]$/.test(found.section || '');
+  const base = isLetterSection ? `Unit ${found.unit}${found.section}` : `Unit ${found.unit}`;
+  return entry?.title ? `${base}: ${entry.title}` : american1TrackUnitLabel(track);
+};
+
+// "(audio 4-14)" pro American1 (o CD-faixa), "(unit 4A)" etc. nos outros cursos.
+const exerciseAudioLabel = (track) => {
+  const label = listeningTrackLabel(track);
+  return american1TrackUnitInfo(track) && label ? `audio ${label}` : label;
+};
+
+// Texto do título de uma linha das listas de exercícios (Listening/Dictation/Speaking).
+const exerciseListTitle = (kind, track) => `${kind} Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackSectionLabel(track) ? ` ${american1TrackSectionLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (${exerciseAudioLabel(track)})`;
+
+// Tudo o que a busca das 3 listas enxerga numa faixa: rótulo do áudio, "8B",
+// "unit 8b", título da seção, números do exercício e da faixa.
+const exerciseSearchMatches = (track, query) => {
+  const haystack = [
+    listeningTrackLabel(track),
+    american1TrackUnitLabel(track),
+    american1TrackSectionLabel(track),
+    String(track.number),
+    String(track.trackNumber || ''),
+  ].join(' | ').toLowerCase();
+  return haystack.includes(query);
+};
+
 // Link "abrir esta unit em OUTRA ABA" (pedido do dono, 2026-10-15): só no título
 // do Listening/Dictation/Speaking e no "Show unit" da tela Grammar & Vocabulary
 // Exercises — de propósito NÃO nos outros links de unit do app (abrir aba pra
@@ -167,9 +203,13 @@ function UnitNewTabLink({ target, children }) {
 // (American1) e o "(unit 4B)" (Vocabulary) são links pra unit, em outra aba.
 function ExerciseTrackTitle({ kind, track }) {
   const target = trackUnitTarget(track);
-  const american1Label = american1TrackUnitLabel(track);
+  const american1Label = american1TrackSectionLabel(track);
   const head = `${kind} Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}`;
-  const label = listeningTrackLabel(track);
+  const label = exerciseAudioLabel(track);
+  // Só no Listening do Vocabulary (2026-11-02): o nome da unit (unitTable) junto
+  // do rótulo, ex. "(unit 22A - Fashion and buying clothes)" — sem o subtítulo
+  // da seção ("Fashion", "In a clothes shop"). Dictation/Speaking ficam como eram.
+  const unitName = kind === 'Listening' && track.unit ? unitTable[Number(track.unit)] : '';
   return (
     <p className="listening-exercise-title">
       {head}
@@ -182,6 +222,7 @@ function ExerciseTrackTitle({ kind, track }) {
       {track.heading ? ` ${track.heading}` : ''}
       {' ('}
       {target && target.course !== 'american1' ? <UnitNewTabLink target={target}>{label}</UnitNewTabLink> : label}
+      {unitName ? ` - ${unitName}` : ''}
       {')'}
     </p>
   );
@@ -1140,6 +1181,7 @@ const AMERICAN1_REFERENCE_LABELS = {
   sound: 'sound bank',
   communication: 'communication',
   writing: 'writing',
+  irregular: 'irregular verbs',
 };
 
 // Cursos listados na página "Courses". title também é usado no topo do
@@ -3604,6 +3646,19 @@ function App() {
     setActivePage('american1-reference');
   };
 
+  // "Irregular Verbs" no menu principal: mesma ideia do Sound Bank (consulta
+  // avulsa, sem unit) — p. 165 do livro, com o áudio da faixa 58.
+  const handleOpenAmerican1IrregularVerbs = (event) => {
+    event.preventDefault();
+    if (!userName) {
+      setActivePage('register');
+      return;
+    }
+    setSelectedAmerican1Reference({ type: 'irregular', pages: [165] });
+    setShowAmerican1ReferenceAnswers(false);
+    setActivePage('american1-reference');
+  };
+
   const handleGrammarElem = (event) => {
     event.preventDefault();
     setActivePage('grammarElem');
@@ -3799,6 +3854,16 @@ function App() {
     setSelectedListeningTrack(tracks[index + 1].id);
   };
 
+  // "Previous Listening": espelho do "Next Listening", volta pro exercício
+  // anterior da MESMA fonte (2026-11-02).
+  const handlePreviousListeningTrack = () => {
+    const source = LISTENING_SOURCES.find((item) => item.id === selectedListeningSource);
+    const tracks = source?.tracks || [];
+    const index = tracks.findIndex((item) => item.id === selectedListeningTrack);
+    if (index <= 0) return;
+    setSelectedListeningTrack(tracks[index - 1].id);
+  };
+
   const handleBackToListeningHub = () => {
     setActivePage('listening');
     setSelectedListeningSource(null);
@@ -3843,6 +3908,15 @@ function App() {
     const index = tracks.findIndex((item) => item.id === selectedDictationTrack);
     if (index === -1 || index >= tracks.length - 1) return;
     setSelectedDictationTrack(tracks[index + 1].id);
+  };
+
+  // "Previous Dictation": espelho do "Next Dictation" (2026-11-02).
+  const handlePreviousDictationTrack = () => {
+    const source = LISTENING_SOURCES.find((item) => item.id === selectedDictationSource);
+    const tracks = source?.tracks || [];
+    const index = tracks.findIndex((item) => item.id === selectedDictationTrack);
+    if (index <= 0) return;
+    setSelectedDictationTrack(tracks[index - 1].id);
   };
 
   const handleBackToDictationHub = () => {
@@ -5702,6 +5776,7 @@ function App() {
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenDictation(event); setMobileMenuOpen(false); }}><IconText /><span>Dictation</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenSpeaking(event); setMobileMenuOpen(false); }}><IconMic /><span>Speaking</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenAmerican1SoundBank(event); setMobileMenuOpen(false); }}><IconSound /><span>Sound Bank</span></a></li>
+            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenAmerican1IrregularVerbs(event); setMobileMenuOpen(false); }}><IconText /><span>Irregular Verbs</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenGrammarVocabExercises(event); setMobileMenuOpen(false); }}><IconQuiz /><span>Grammar &amp; Vocabulary Exercises</span></a></li>
             <li className="side-drawer-divider" role="separator" />
             <li className="side-drawer-group-label">Tools</li>
@@ -7028,7 +7103,7 @@ function App() {
                     // Aberta direto do menu (Sound Bank), sem vir de uma unit
                     // — não faz sentido um botão "Back to Unit" pra lugar
                     // nenhum, então só identifica a tela.
-                    <span className="reference-standalone-label">Sound Bank</span>
+                    <span className="reference-standalone-label">{ref?.type === 'irregular' ? 'Irregular Verbs' : 'Sound Bank'}</span>
                   )}
                   {ref?.unit && (
                     // Só faz sentido dentro do fluxo da unit — a consulta
@@ -7194,11 +7269,7 @@ function App() {
         const visibleListeningTracks = allListeningTracks.filter(({ track, stats }) => {
           if (hideMasteredListening && stats?.lastScorePercent === 100) return false;
           if (!listeningSearchNormalized) return true;
-          return (
-            listeningTrackLabel(track).toLowerCase().includes(listeningSearchNormalized)
-            || String(track.number).includes(listeningSearchNormalized)
-            || String(track.trackNumber || '').includes(listeningSearchNormalized)
-          );
+          return exerciseSearchMatches(track, listeningSearchNormalized);
         });
         return (
           <main className="landing-page landing-page--courses vocabulary-mode listening-mode listening-tracks-mode">
@@ -7212,7 +7283,7 @@ function App() {
                 <UnitSearchBox
                   value={listeningSearchQuery}
                   onChange={setListeningSearchQuery}
-                  placeholder="Search by unit or exercise number..."
+                  placeholder="Search by unit, section (e.g. 8B), title or exercise number..."
                 />
                 <button
                   type="button"
@@ -7234,7 +7305,7 @@ function App() {
                         href="#0"
                         onClick={(event) => { event.preventDefault(); handleOpenListeningTrack(track); }}
                       >
-                        <span>{`Listening Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (${listeningTrackLabel(track)})`}</span>
+                        <span>{exerciseListTitle('Listening', track)}</span>
                         <small>{track.sentences.length} sentences · fill in the blank</small>
                         {stats && (
                           <small className="listening-track-stats">
@@ -7265,6 +7336,7 @@ function App() {
         const track = tracks.find((item) => item.id === selectedListeningTrack);
         const trackIndex = tracks.findIndex((item) => item.id === selectedListeningTrack);
         const hasNextTrack = trackIndex !== -1 && trackIndex < tracks.length - 1;
+        const hasPreviousTrack = trackIndex > 0;
         return (
           <main className="landing-page landing-page--courses vocabulary-mode listening-mode listening-exercise-sticky-mode">
             <div className="landing-panel course-links-panel listening-panel listening-exercise-panel">
@@ -7289,6 +7361,8 @@ function App() {
                   onPracticed={() => markDailyGoalDone('listening')}
                   onBack={handleBackToListeningTracks}
                   backLabel="‹ Back to Exercises"
+                  onPrevious={hasPreviousTrack ? handlePreviousListeningTrack : undefined}
+                  previousLabel="Previous Listening"
                   onNext={hasNextTrack ? handleNextListeningTrack : undefined}
                   nextLabel="Next Listening"
                 />
@@ -7340,11 +7414,7 @@ function App() {
         const visibleDictationTracks = allDictationTracks.filter(({ track, stats }) => {
           if (hideMasteredDictation && stats?.lastScorePercent === 100) return false;
           if (!dictationSearchNormalized) return true;
-          return (
-            listeningTrackLabel(track).toLowerCase().includes(dictationSearchNormalized)
-            || String(track.number).includes(dictationSearchNormalized)
-            || String(track.trackNumber || '').includes(dictationSearchNormalized)
-          );
+          return exerciseSearchMatches(track, dictationSearchNormalized);
         });
         return (
           <main className="landing-page landing-page--courses vocabulary-mode listening-mode listening-tracks-mode dictation-mode">
@@ -7358,7 +7428,7 @@ function App() {
                 <UnitSearchBox
                   value={dictationSearchQuery}
                   onChange={setDictationSearchQuery}
-                  placeholder="Search by unit or exercise number..."
+                  placeholder="Search by unit, section (e.g. 8B), title or exercise number..."
                 />
                 <button
                   type="button"
@@ -7380,7 +7450,7 @@ function App() {
                         href="#0"
                         onClick={(event) => { event.preventDefault(); handleOpenDictationTrack(track); }}
                       >
-                        <span>{`Dictation Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (${listeningTrackLabel(track)})`}</span>
+                        <span>{exerciseListTitle('Dictation', track)}</span>
                         <small>{track.sentences.length} sentences · type what you hear</small>
                         {stats && (
                           <small className="listening-track-stats">
@@ -7411,6 +7481,7 @@ function App() {
         const track = tracks.find((item) => item.id === selectedDictationTrack);
         const trackIndex = tracks.findIndex((item) => item.id === selectedDictationTrack);
         const hasNextTrack = trackIndex !== -1 && trackIndex < tracks.length - 1;
+        const hasPreviousTrack = trackIndex > 0;
         return (
           <main className="landing-page landing-page--courses vocabulary-mode listening-mode dictation-mode listening-exercise-sticky-mode">
             <div className="landing-panel course-links-panel listening-panel listening-exercise-panel">
@@ -7427,6 +7498,8 @@ function App() {
                   onPracticed={() => markDailyGoalDone('listening')}
                   onBack={handleBackToDictationTracks}
                   backLabel="‹ Back to Exercises"
+                  onPrevious={hasPreviousTrack ? handlePreviousDictationTrack : undefined}
+                  previousLabel="Previous Dictation"
                   onNext={hasNextTrack ? handleNextDictationTrack : undefined}
                   nextLabel="Next Dictation"
                 />
@@ -7574,11 +7647,7 @@ function App() {
         const visibleSpeakingTracks = allSpeakingTracks.filter(({ track, stats }) => {
           if (hideMasteredSpeaking && stats?.lastScorePercent === 100) return false;
           if (!speakingSearchNormalized) return true;
-          return (
-            listeningTrackLabel(track).toLowerCase().includes(speakingSearchNormalized)
-            || String(track.number).includes(speakingSearchNormalized)
-            || String(track.trackNumber || '').includes(speakingSearchNormalized)
-          );
+          return exerciseSearchMatches(track, speakingSearchNormalized);
         });
         return (
           <main className="landing-page landing-page--courses vocabulary-mode listening-mode listening-tracks-mode speaking-mode">
@@ -7592,7 +7661,7 @@ function App() {
                 <UnitSearchBox
                   value={speakingSearchQuery}
                   onChange={setSpeakingSearchQuery}
-                  placeholder="Search by unit or exercise number..."
+                  placeholder="Search by unit, section (e.g. 8B), title or exercise number..."
                 />
                 <button
                   type="button"
@@ -7614,7 +7683,7 @@ function App() {
                         href="#0"
                         onClick={(event) => { event.preventDefault(); handleOpenSpeakingTrack(track); }}
                       >
-                        <span>{`Speaking Exercise n. ${track.number}${track.trackNumber ? ` (Track ${track.trackNumber})` : ''}${american1TrackUnitLabel(track) ? ` ${american1TrackUnitLabel(track)}` : ''}${track.heading ? ` ${track.heading}` : ''} (${listeningTrackLabel(track)})`}</span>
+                        <span>{exerciseListTitle('Speaking', track)}</span>
                         <small>{track.sentences.length} sentences · repeat what you hear</small>
                         {stats && (
                           <small className="listening-track-stats">
@@ -8255,6 +8324,20 @@ function App() {
           </button>
           <WordQuickAdd contextLabel={studyContextLabel} onAdd={handleAddWord} />
         </>
+      )}
+      {/* Grammar & Vocabulary Exercises: a dúvida de gramática/vocabulário nasce aqui,
+          no meio do exercício. Mesmo atalho das telas de curso (selecione um
+          trecho antes de clicar pra já abrir a pergunta preenchida). Sem o +Word. */}
+      {userName && activePage === 'grammar-vocab-exercises' && (
+        <button
+          type="button"
+          className="ask-adele-fab"
+          onClick={handleAskAdeleShortcut}
+          title="Ask Adele about this (select text first to fill in your question)"
+        >
+          <span className="ask-adele-fab-mascot"><AdeleMascot /></span>
+          Ask Adele
+        </button>
       )}
       {userName && isListeningOrDictationExercise && (
         <WordQuickAdd contextLabel={exerciseWordContext} onAdd={handleAddWord} />
@@ -11266,7 +11349,7 @@ function useAudioAutoPause(audioBarRef, trackId, enabled) {
 // juntas) via LCS palavra-a-palavra (ver scoreDictationAnswer) e destaca
 // cada palavra esperada em verde (acertou, apareceu na ordem certa) ou
 // vermelho (errou/faltou), sem nunca alterar nada do ListeningClozeExercise.
-function DictationExercise({ track, userName, onPracticed, onBack, backLabel, onNext, nextLabel }) {
+function DictationExercise({ track, userName, onPracticed, onBack, backLabel, onPrevious, previousLabel, onNext, nextLabel }) {
   const [typedText, setTypedText] = useState('');
   const [checked, setChecked] = useState(false);
   const [result, setResult] = useState(null);
@@ -11412,6 +11495,11 @@ function DictationExercise({ track, userName, onPracticed, onBack, backLabel, on
         {onBack && (
           <button type="button" className="show-answers-btn secondary" onClick={onBack}>
             {backLabel}
+          </button>
+        )}
+        {onPrevious && (
+          <button type="button" className="show-answers-btn secondary" onClick={onPrevious}>
+            {previousLabel}
           </button>
         )}
         {onNext && (
@@ -12286,7 +12374,7 @@ function scoreDictationAnswer(typedText, correctText) {
 // corrigidas todas de uma vez pelo botão "Check answers" no final. A barra de
 // espaço toca/pausa o áudio sempre que o foco não estiver num campo de texto
 // (senão digitar um espaço dentro de uma resposta pausaria o áudio).
-function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBack, backLabel, onNext, nextLabel }) {
+function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBack, backLabel, onPrevious, previousLabel, onNext, nextLabel }) {
   // Só o Vocabulary tem `unit` no track (American1 usa cd/track) — e só o
   // Vocabulary tem palavras-alvo extraídas (vocabulary_target_words.json,
   // negrito do PDF de leitura da unit); American1 ainda não tem esse dado,
@@ -12305,9 +12393,11 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBac
   const targetWordSet = useMemo(() => {
     if (track.targetWords) return new Set(track.targetWords);
     if (!isVocabularyTrack || wordMode !== 'unitWords') return null;
-    const words = vocabularyTargetWords[String(track.unit)];
+    // track.unitWords / track.unitPhrases (só a 22B, 2026-11-02): lista PRÓPRIA da faixa, pra quando as palavras em negrito
+    // dela diferem das da unit inteira (a lista da unit também serve a 22A/22C e não pode ser mexida por uma faixa só).
+    const words = track.unitWords || vocabularyTargetWords[String(track.unit)];
     return words ? new Set(words) : null;
-  }, [isVocabularyTrack, wordMode, track.unit, track.targetWords]);
+  }, [isVocabularyTrack, wordMode, track.unit, track.targetWords, track.unitWords]);
   // `track.wordItems`: as frases que são PALAVRAS SOLTAS que o áudio lê ("Leaves.", "Train driver.") — não
   // existem no texto do livro, então não estão em vocabulary_target_words.json. No "Only Unit Words" elas
   // são SEMPRE lacuna inteira (senão apareciam já escritas, sem nada a preencher).
@@ -12315,9 +12405,9 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBac
   // Expressões em negrito da unit (só "Only Unit Words" do Vocabulary): cada uma vira uma lista de palavras normalizadas.
   const targetPhraseList = useMemo(() => {
     if (!isVocabularyTrack || wordMode !== 'unitWords' || track.targetWords) return null;
-    const phrases = vocabularyTargetPhrases[String(track.unit)];
+    const phrases = track.unitPhrases || vocabularyTargetPhrases[String(track.unit)];
     return phrases ? phrases.map((phrase) => phrase.split(' ')) : null;
-  }, [isVocabularyTrack, wordMode, track.unit, track.targetWords]);
+  }, [isVocabularyTrack, wordMode, track.unit, track.targetWords, track.unitPhrases]);
   const baseSentenceModels = useMemo(
     () => track.sentences.map((text, sentenceIndex) => {
       // track.plainSentences: índices de frases que ficam INTEIRAS na tela, sem nenhuma lacuna (ex. a nota "The th of the pronoun them is silent..." da 314)
@@ -12640,6 +12730,11 @@ function ListeningClozeExercise({ track, userName, onAddWord, onPracticed, onBac
         {onBack && (
           <button type="button" className="show-answers-btn secondary" onClick={onBack}>
             {backLabel}
+          </button>
+        )}
+        {onPrevious && (
+          <button type="button" className="show-answers-btn secondary" onClick={onPrevious}>
+            {previousLabel}
           </button>
         )}
         {onNext && (

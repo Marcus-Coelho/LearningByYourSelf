@@ -243,6 +243,7 @@
 :root[data-theme='dark'] .reference-link-btn--sound { --ref-accent: #a3a7ff; }
 :root[data-theme='dark'] .reference-link-btn--communication { --ref-accent: #8f8aff; }
 :root[data-theme='dark'] .reference-link-btn--writing { --ref-accent: #a7b0c6; }
+:root[data-theme='dark'] .reference-link-btn--irregular { --ref-accent: #a7b0c6; }
 :root[data-theme='dark'] .reference-link-btn--video { --ref-accent: #a49bff; }
 :root[data-theme='dark'] .reference-link-btn--transcriptions { --ref-accent: #9aa6c4; }
 
@@ -4298,6 +4299,7 @@ a.upload-button:visited {
 .reference-link-btn--sound { --ref-accent: #6067f0; }
 .reference-link-btn--communication { --ref-accent: #3a34b8; }
 .reference-link-btn--writing { --ref-accent: #3f4a63; }
+.reference-link-btn--irregular { --ref-accent: #3f4a63; }
 .reference-link-btn--video { --ref-accent: #5b52e6; }
 .reference-link-btn--transcriptions {
   --ref-accent: #2b3550;
