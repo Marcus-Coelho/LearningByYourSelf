@@ -153,10 +153,4 @@ atalho): instale o pacote "termux-api" (pkg install termux-api) e o app
 "Termux:API" (mesma fonte). Sem isso, o atalho funciona igual, so que avisa
 a URL no terminal em vez de abrir o navegador sozinho.
 
-Opcional (tela "Ask AI" / Adele): so funciona se voce criar
-  "$REPO_DIR/meu-leitor-pdf/.env.local"
-com a linha:
-  GEMINI_API_KEY=sua_chave_aqui
-(chave gratuita em https://aistudio.google.com/apikey). Sem isso, so essa
-tela fica indisponivel - o resto do app funciona normal.
 MSG

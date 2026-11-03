@@ -2,7 +2,7 @@
 //
 // Por que existe: `npm start` (react-scripts) recompila o App.js inteiro a cada abertura — ~15 s com o cache quente
 // e minutos com o cache frio (depois de reiniciar o PC, antivírus, OneDrive). Aqui o build JÁ PRONTO (pasta build/)
-// é servido direto, junto com as MESMAS rotas de áudio/PDF/pronúncia/Ask AI de src/setupProxy.js — o abrir cai pra ~1 s.
+// é servido direto, junto com as MESMAS rotas de áudio/PDF/pronúncia de src/setupProxy.js — o abrir cai pra ~1 s.
 //
 //   node serve-local.js --check   -> sai com 0 se o build está em dia, 3 se faltando/desatualizado (StartLearning.bat
 //                                    cai no `npm start`, que sempre reflete o código atual)
@@ -37,13 +37,6 @@ function buildIsFresh() {
 
 if (process.argv.includes('--check')) {
   process.exit(buildIsFresh() ? 0 : 3);
-}
-
-// Mesmo .env.local que o react-scripts carrega no `npm start` (GEMINI_API_KEY da tela Ask AI).
-try {
-  require('dotenv').config({ path: path.join(root, '.env.local') });
-} catch (error) {
-  // dotenv ausente: segue sem chave (só a tela Ask AI responde erro 500, como sempre).
 }
 
 const app = express();

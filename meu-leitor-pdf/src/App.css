@@ -1953,10 +1953,8 @@ body {
 }
 
 /* Título de página ("Listening"/"Dictation"/"Speaking" nos hubs, o nome da
-   fonte nas telas de faixas) — MESMA formatação do "Ask Adele" da tela Ask
-   AI, pedido do dono 2026-08-06. Ver a regra compartilhada
-   ".landing-panel.ask-ai-panel .eyebrow, .landing-panel.listening-panel
-   .eyebrow" mais abaixo neste arquivo: os dois seletores dividem o mesmo
+   fonte nas telas de faixas) — MESMA formatação dos outros títulos de página.
+   Ver a regra compartilhada ".landing-panel.listening-panel .eyebrow" mais abaixo neste arquivo: os dois seletores dividem o mesmo
    bloco justamente pra não poderem divergir de novo.
    ATENÇÃO: isso REVERTE um pedido anterior (o eyebrow daqui era 1.4rem/700
    sem uppercase, aumentado de propósito "pra não ficar pequeno demais perto
@@ -2492,25 +2490,8 @@ body {
   font-size: 15px;
 }
 
-/* ==== Ask AI (Q&A avulso de gramática, via Gemini — ver App.js/setupProxy.js) ==== */
-
-.ask-ai-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  max-width: 640px;
-  text-align: left;
-}
-
-/* .landing-panel base (tema roxo escuro original) deixa .eyebrow/h1/p quase
-   brancos e sem a fonte Quicksand — sem um override ".landing-panel
-   .ask-ai-panel" aqui (mesmo padrão já usado por .listening-panel/
-   .profile-panel/etc.), ".landing-panel p" (classe+tag, mais específico que
-   uma classe sozinha) vence a cascata e o texto fica ilegível sobre o fundo
-   claro. Bug real reportado pelo dono (2026-07-25), mesma causa já
-   documentada em CLAUDE.md pra esse tipo de tela. */
 /* TÍTULO DE PÁGINA — um bloco só pra todas estas telas serem literalmente a
-   mesma formatação (pedido do dono, 2026-08-06): Ask Adele, Listening,
+   mesma formatação (pedido do dono, 2026-08-06): Listening,
    Dictation, Speaking, My Profile, Progress, My Notes e My Words. A tela
    Grammar & Vocabulary Exercises segue o mesmo visual, mas de outro arquivo
    (.gve-source-heading/.gve-page-title em GrammarVocabExercises.css, que não
@@ -2524,7 +2505,6 @@ body {
    Todas as regras ".landing-panel.<painel> .eyebrow" antigas (que só
    ajustavam a cor) ficam ACIMA desta no arquivo e têm a mesma
    especificidade, então esta vence por ordem — não mover pra cima. */
-.landing-panel.ask-ai-panel .eyebrow,
 .landing-panel.listening-panel .eyebrow,
 .landing-panel.profile-panel .eyebrow,
 .landing-panel.dashboard-panel .eyebrow,
@@ -2563,7 +2543,6 @@ body {
    mesmo tamanho deixaria a tela com dois títulos e nenhuma hierarquia.
    My Words não aparece aqui porque não tem subtítulo — só o título e o
    contador de palavras ao lado. */
-.landing-panel.ask-ai-panel h1,
 .landing-panel.listening-panel h1,
 .landing-panel.profile-panel h1,
 .landing-panel.dashboard-panel h1,
@@ -2575,205 +2554,6 @@ body {
   font-size: clamp(1.05rem, 1.5vw, 1.3rem);
   line-height: 1.35;
   margin: 0 0 10px;
-}
-
-.landing-panel.ask-ai-panel p {
-  color: var(--text-secondary);
-  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
-
-/* Render do markdown-lite da resposta (ver renderAdeleMarkdown, App.js) —
-   ".landing-panel.ask-ai-panel p" acima já cobre os <p>, mas h3/ul/li/strong
-   são elementos novos que essa regra não alcança; explícito aqui em vez de
-   confiar em herança, mesmo padrão do resto do arquivo. */
-.landing-panel.ask-ai-panel .ask-ai-answer-body p {
-  color: var(--text-primary);
-  margin: 0 0 8px;
-  font-size: 15.5px;
-  line-height: 1.6;
-}
-
-.landing-panel.ask-ai-panel .ask-ai-answer-body p:last-child {
-  margin-bottom: 0;
-}
-
-.landing-panel.ask-ai-panel .ask-ai-answer-body h3 {
-  margin: 14px 0 6px;
-  color: var(--brand-text);
-  font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.landing-panel.ask-ai-panel .ask-ai-answer-body h3:first-child {
-  margin-top: 0;
-}
-
-.landing-panel.ask-ai-panel .ask-ai-answer-body ul {
-  margin: 0 0 8px;
-  padding-left: 22px;
-}
-
-.landing-panel.ask-ai-panel .ask-ai-answer-body li {
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-
-.landing-panel.ask-ai-panel .ask-ai-answer-body strong {
-  /* Era #171d27 (quase preto), que no tema escuro sumia no fundo — o negrito
-     das respostas da Adele ficava ilegível (relatado pelo dono, 2026-08-09).
-     O token já é o tom mais forte de texto disponível em cada tema, que é
-     justamente o papel deste <strong>. */
-  color: var(--text-primary);
-}
-
-.landing-panel.ask-ai-panel .ask-ai-answer-body .ask-ai-answer-quote {
-  padding-left: 12px;
-  border-left: 3px solid rgba(76, 69, 222, 0.35);
-  font-style: italic;
-  color: var(--text-secondary);
-}
-
-.ask-ai-answer-divider {
-  margin: 14px 0;
-  border: none;
-  border-top: 1px dashed var(--border-strong);
-}
-
-.ask-ai-actions-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.ask-ai-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  text-align: left;
-}
-
-.ask-ai-mascot {
-  flex: 0 0 auto;
-  display: inline-flex;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 2px solid rgba(76, 69, 222, 0.25);
-  box-shadow: 0 4px 14px rgba(35, 43, 58, 0.15);
-}
-
-.ask-ai-mascot svg {
-  width: 100%;
-  height: 100%;
-}
-
-.ask-ai-header h1 {
-  margin: 4px 0 0;
-}
-
-.ask-ai-textarea {
-  min-height: 100px;
-}
-
-.ask-ai-panel .show-answers-btn {
-  align-self: flex-start;
-}
-
-/* "Adele is thinking..." — indicador vivo no lugar do texto estático
-   "Asking…" (as respostas ficaram mais longas/ricas desde que ela ganhou
-   personalidade, a espera passou a ser perceptível — achado de revisão de
-   UX, 2026-07-26). 3 pontos pulsando em sequência, CSS puro. */
-.ask-ai-thinking {
-  display: inline-flex;
-  align-items: center;
-}
-
-.ask-ai-thinking-dots span {
-  display: inline-block;
-  animation: ask-ai-dot-pulse 1.2s infinite;
-  opacity: 0.3;
-}
-
-.ask-ai-thinking-dots span:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.ask-ai-thinking-dots span:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes ask-ai-dot-pulse {
-  0%, 60%, 100% { opacity: 0.3; }
-  30% { opacity: 1; }
-}
-
-.ask-ai-error {
-  margin: 0;
-  color: var(--danger-text);
-  font-size: 14.5px;
-}
-
-/* Anexo de imagem no "Ask Adele" (2026-08-06) — o <input type="file"> real
-   vive escondido DENTRO do <label>, que é quem tem a aparência de botão
-   (clicar no rótulo já abre o seletor do SO, sem ref/click() no JS). */
-.ask-ai-attach-btn {
-  display: inline-flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.ask-ai-attach-input {
-  display: none;
-}
-
-/* Miniatura da imagem anexada, com o "×" de remover no canto. max-height
-   em vh pra uma foto de página em pé não empurrar o botão "Ask" pra fora
-   da tela. */
-.ask-ai-image-preview {
-  position: relative;
-  align-self: flex-start;
-  max-width: 260px;
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-  line-height: 0;
-}
-
-.ask-ai-image-preview img {
-  display: block;
-  width: 100%;
-  max-height: 34vh;
-  object-fit: contain;
-}
-
-.ask-ai-image-remove {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 26px;
-  height: 26px;
-  border: none;
-  border-radius: 999px;
-  background: rgba(35, 43, 58, 0.72);
-  color: #fff;
-  font-size: 17px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.ask-ai-image-remove:hover {
-  background: rgba(35, 43, 58, 0.9);
-}
-
-.ask-ai-answer {
-  padding: 16px 18px;
-  border-radius: 14px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
 }
 
 .speaking-mic-error {
@@ -5905,49 +5685,6 @@ a.upload-button:visited {
 .word-fab:hover {
   background: var(--purple-700);
   transform: translateY(-1px);
-}
-
-/* Atalho pra "Ask Adele" nas telas de leitura (ver handleAskAdeleShortcut,
-   App.js) — empilhado ACIMA do "+ Word" (mesmo right, bottom maior), nunca
-   os dois sobrepostos. */
-.ask-adele-fab {
-  position: fixed;
-  right: 22px;
-  bottom: 78px;
-  z-index: 60;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 20px 8px 8px;
-  border: none;
-  border-radius: 999px;
-  background: var(--surface-0);
-  border: 1px solid rgba(76, 69, 222, 0.3);
-  color: var(--brand-text);
-  font-weight: 800;
-  font-size: 14px;
-  cursor: pointer;
-  box-shadow: 0 14px 36px rgba(35, 43, 58, 0.22);
-  transition: background 140ms, transform 140ms;
-}
-
-.ask-adele-fab:hover {
-  background: rgba(76, 69, 222, 0.08);
-  transform: translateY(-1px);
-}
-
-.ask-adele-fab-mascot {
-  flex: 0 0 auto;
-  display: inline-flex;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  overflow: hidden;
-}
-
-.ask-adele-fab-mascot svg {
-  width: 100%;
-  height: 100%;
 }
 
 .word-quickadd {

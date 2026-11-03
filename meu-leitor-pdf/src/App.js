@@ -385,18 +385,6 @@ const normalizeWordbookWord = (text) => String(text || '')
 const WORDBOOK_IMAGE_MAX_DIMENSION = 640;
 const WORDBOOK_IMAGE_QUALITY = 0.72;
 
-// Imagem anexada no "Ask Adele": bem maior que a do My Words de propósito —
-// aquela é uma mnemônica que só precisa ser reconhecível pra uma PESSOA e
-// ainda cabe no localStorage; esta costuma ser a FOTO DE UMA PÁGINA de
-// livro/exercício, e o modelo precisa conseguir LER o texto nela. Não vai
-// pro localStorage (é enviada e descartada), então não há cota a respeitar,
-// só o limite de corpo da rota (ver express.json em setupProxy.js).
-const ASK_AI_IMAGE_MAX_DIMENSION = 1600;
-const ASK_AI_IMAGE_QUALITY = 0.85;
-
-// maxDimension/quality são parâmetros (com o padrão do My Words) só pra o
-// "Ask Adele" poder pedir uma imagem maior sem duplicar essa função — ver
-// ASK_AI_IMAGE_MAX_DIMENSION acima.
 const resizeImageFileToDataUrl = (
   file,
   maxDimension = WORDBOOK_IMAGE_MAX_DIMENSION,
@@ -1667,101 +1655,6 @@ const IconQuiz = () => (
   </svg>
 );
 
-// Ícone do menu "Ask AI" — balão de conversa.
-const IconChat = () => (
-  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M4 5.5h16v11H9l-4 3.5v-3.5H4z" />
-    <path d="M8 9.5h8" />
-    <path d="M8 13h5" />
-  </svg>
-);
-
-// Mascote da tela "Ask Adele" (ver ask-ai-mode): rosto simples desenhado em
-// SVG, mesmo espírito dos ícones acima (nenhum arquivo de imagem externo —
-// o dono colou uma referência no chat, mas não há como extrair esse anexo
-// pra um arquivo em disco a partir daqui; isso evita depender de um asset
-// externo que precisaria ser salvo manualmente).
-const AdeleMascot = () => (
-  <svg viewBox="0 0 100 100" width="64" height="64" role="img" aria-label="Adele">
-    <circle cx="50" cy="50" r="49" fill="#fdf1e7" />
-    <circle cx="50" cy="48" r="34" fill="#6b4226" />
-    <circle cx="24" cy="55" r="5.5" fill="#f6c9a0" />
-    <circle cx="76" cy="55" r="5.5" fill="#f6c9a0" />
-    <circle cx="50" cy="55" r="26" fill="#f6c9a0" />
-    <path d="M25 47 Q50 22 75 47 Q50 36 25 47 Z" fill="#6b4226" />
-    <path d="M23 43 Q50 21 77 43" stroke="#e05fa0" strokeWidth="6.5" fill="none" strokeLinecap="round" />
-    <path d="M38 53c2.5-2 6-2 8.5 0" stroke="#4a2d17" strokeWidth="2" fill="none" strokeLinecap="round" />
-    <path d="M53.5 53c2.5-2 6-2 8.5 0" stroke="#4a2d17" strokeWidth="2" fill="none" strokeLinecap="round" />
-    <circle cx="42" cy="59" r="4" fill="#3f7d4c" />
-    <circle cx="42.8" cy="58.2" r="1.5" fill="#12130f" />
-    <circle cx="58" cy="59" r="4" fill="#3f7d4c" />
-    <circle cx="58.8" cy="58.2" r="1.5" fill="#12130f" />
-    <circle cx="33" cy="66" r="4.2" fill="#f2a488" opacity="0.55" />
-    <circle cx="67" cy="66" r="4.2" fill="#f2a488" opacity="0.55" />
-    <path d="M41 70q9 8 18 0" stroke="#8a4a2f" strokeWidth="2.4" fill="none" strokeLinecap="round" />
-  </svg>
-);
-
-// Render mínimo do "Markdown-lite" da resposta da Adele. O SYSTEM_INSTRUCTION
-// (geminiGrammarHelper.js) só pede "### heading"/"**bold**"/"- bullet", mas
-// na prática o modelo usa o resto do vocabulário markdown que aprendeu de
-// qualquer jeito (testado ao vivo: "***" como divisor, "> " como bloco de
-// citação, "*itálico*" de um asterisco só) — mais robusto cobrir esses
-// casos comuns aqui do que tentar proibir via prompt (LLM não obedece
-// restrição de formatação com 100% de fidelidade). Escrito à mão (sem
-// depender de nenhuma lib de markdown, mesma filosofia do resto do projeto)
-// e sem dangerouslySetInnerHTML nenhum: monta só elementos React de
-// verdade a partir do texto, então não há risco de XSS mesmo que a
-// resposta do modelo viesse maliciosa.
-const renderAdeleMarkdownInline = (text, keyPrefix) => (
-  text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g).filter(Boolean).map((part, index) => {
-    if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
-      return <strong key={`${keyPrefix}-b${index}`}>{part.slice(2, -2)}</strong>;
-    }
-    if (part.startsWith('*') && part.endsWith('*') && part.length > 2) {
-      return <em key={`${keyPrefix}-i${index}`}>{part.slice(1, -1)}</em>;
-    }
-    return <Fragment key={`${keyPrefix}-t${index}`}>{part}</Fragment>;
-  })
-);
-
-function renderAdeleMarkdown(text) {
-  if (!text) return null;
-  const elements = [];
-  let listItems = [];
-  const flushList = () => {
-    if (listItems.length > 0) {
-      elements.push(<ul key={`ul-${elements.length}`}>{listItems}</ul>);
-      listItems = [];
-    }
-  };
-  text.split('\n').forEach((rawLine, index) => {
-    const line = rawLine.trim();
-    if (!line) {
-      flushList();
-      return;
-    }
-    if (/^(\*{3,}|-{3,})$/.test(line)) {
-      flushList();
-      elements.push(<hr key={`hr-${index}`} className="ask-ai-answer-divider" />);
-    } else if (line.startsWith('### ')) {
-      flushList();
-      elements.push(<h3 key={`h-${index}`}>{renderAdeleMarkdownInline(line.slice(4), `h-${index}`)}</h3>);
-    } else if (line.startsWith('- ') || line.startsWith('* ') || /^\d+\.\s/.test(line)) {
-      const content = line.replace(/^(-|\*|\d+\.)\s/, '');
-      listItems.push(<li key={`li-${index}`}>{renderAdeleMarkdownInline(content, `li-${index}`)}</li>);
-    } else if (line.startsWith('> ')) {
-      flushList();
-      elements.push(<p key={`bq-${index}`} className="ask-ai-answer-quote">{renderAdeleMarkdownInline(line.slice(2), `bq-${index}`)}</p>);
-    } else {
-      flushList();
-      elements.push(<p key={`p-${index}`}>{renderAdeleMarkdownInline(line, `p-${index}`)}</p>);
-    }
-  });
-  flushList();
-  return elements;
-}
-
 // Ícone do menu "My Notes" — documento com canto dobrado + linhas de texto.
 const IconNotes = () => (
   <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -2021,22 +1914,6 @@ function App() {
   const [selectedSpeakingTrack, setSelectedSpeakingTrack] = useState(RESTORED_POSITION?.selectedSpeakingTrack ?? null);
   const [speakingSearchQuery, setSpeakingSearchQuery] = useState('');
   const [hideMasteredSpeaking, setHideMasteredSpeaking] = useState(false);
-  // Tela "Ask AI" (menu principal): Q&A avulso, nada salvo no localStorage.
-  // Backend em setupProxy.js + src/geminiGrammarHelper.js (Gemini API,
-  // chave em .env.local). Tem memória de só o ÚLTIMO turno (askAiLastExchange,
-  // pedido do dono 2026-07-25) — não é um chat de verdade (não cresce, não
-  // persiste), só o suficiente pra Adele poder propor um desafio ("fill in
-  // the blank") e avaliar a resposta na pergunta seguinte, como no exemplo
-  // que ele mostrou de outra IA. "Start a new topic" zera essa memória.
-  const [askAiQuestion, setAskAiQuestion] = useState('');
-  const [askAiAnswer, setAskAiAnswer] = useState('');
-  const [askAiStatus, setAskAiStatus] = useState('idle'); // idle | loading | error
-  const [askAiErrorMessage, setAskAiErrorMessage] = useState('');
-  const [askAiLastExchange, setAskAiLastExchange] = useState(null); // { question, answer } | null
-  // Imagem anexada à pergunta atual (data URL) — some depois de enviar, não
-  // persiste em lugar nenhum. Ver attachAskAiImage/handleAskAiSubmit.
-  const [askAiImage, setAskAiImage] = useState(null);
-  const [askAiImageError, setAskAiImageError] = useState('');
   // Largura inicial = RIGHT_PANEL_WIDTH_RATIO da janela (ver comentário na
   // constante), com piso em MIN_RIGHT_WIDTH e teto no espaço realmente
   // disponível — numa tablet mais estreita (~820px), MIN_CENTER_WIDTH(420) +
@@ -3944,115 +3821,6 @@ function App() {
     setActiveCourseId(null);
   };
 
-  // Tela "Ask AI" do menu principal: Q&A avulso de gramática via Gemini.
-  const handleOpenAskAi = (event) => {
-    event.preventDefault();
-    if (!userName) {
-      setActivePage('register');
-      return;
-    }
-    setActivePage('ask-ai');
-    setActiveCourseId(null);
-  };
-
-  // Atalho pra "Ask Adele" a partir de qualquer tela de leitura (mesmo FAB
-  // do "+ Word", ver render mais abaixo) — antes só dava pra chegar em
-  // Adele pelo menu, sem nenhuma ponte com a leitura de onde a dúvida de
-  // gramática realmente surge (achado de revisão de UX, 2026-07-26). Igual
-  // ao +Word, pré-preenche com o texto selecionado no PDF, se houver.
-  const handleAskAdeleShortcut = (event) => {
-    event.preventDefault();
-    const selection = (window.getSelection?.().toString() || '').trim().replace(/\s+/g, ' ');
-    if (selection) {
-      setAskAiQuestion((current) => current || selection);
-    }
-    setActivePage('ask-ai');
-    setActiveCourseId(null);
-  };
-
-  // Anexo de imagem (2026-08-06): uma foto de página de livro/exercício/
-  // print vai junto da pergunta pro Gemini, que é multimodal (ver
-  // askGrammarQuestion). Reaproveita os mesmos helpers de imagem do My Words
-  // (resizeImageFileToDataUrl/getImageFileFromClipboardEvent), só com um
-  // limite de tamanho maior — o modelo precisa LER o texto da foto.
-  // A imagem NÃO entra em askAiLastExchange: a memória de 1 turno é só
-  // texto (reenviada a cada request), e reenviar a foto a cada pergunta
-  // seguinte gastaria banda/quota à toa sem o usuário pedir.
-  const attachAskAiImage = async (file) => {
-    if (!file || !file.type?.startsWith('image/')) {
-      setAskAiImageError('Please use an image file.');
-      return;
-    }
-    setAskAiImageError('');
-    try {
-      const dataUrl = await resizeImageFileToDataUrl(file, ASK_AI_IMAGE_MAX_DIMENSION, ASK_AI_IMAGE_QUALITY);
-      setAskAiImage(dataUrl);
-    } catch (error) {
-      setAskAiImageError('Could not read that image.');
-    }
-  };
-
-  const handleAskAiPaste = (event) => {
-    const file = getImageFileFromClipboardEvent(event);
-    if (!file) return;
-    event.preventDefault();
-    attachAskAiImage(file);
-  };
-
-  const handleAskAiSubmit = async () => {
-    const question = askAiQuestion.trim();
-    // Com imagem anexada a pergunta escrita pode ser vazia ("o que tem de
-    // errado aqui?" fica implícito) — o servidor manda um texto padrão nesse
-    // caso, ver a rota em setupProxy.js.
-    if ((!question && !askAiImage) || askAiStatus === 'loading') return;
-    setAskAiStatus('loading');
-    setAskAiErrorMessage('');
-    try {
-      const response = await fetch('/api/ask-grammar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question,
-          image: askAiImage || undefined,
-          previousQuestion: askAiLastExchange?.question,
-          previousAnswer: askAiLastExchange?.answer,
-        }),
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(data.error || 'Request failed');
-      }
-      setAskAiAnswer(data.answer || '');
-      setAskAiLastExchange({
-        question: question || '(image attached)',
-        answer: data.answer || '',
-      });
-      setAskAiQuestion('');
-      setAskAiImage(null);
-      setAskAiImageError('');
-      setAskAiStatus('idle');
-    } catch (error) {
-      setAskAiStatus('error');
-      // O servidor manda frase própria pro limite diário (429); o resto fica genérico.
-      setAskAiErrorMessage(error && /daily limit/.test(error.message)
-        ? error.message
-        : 'Could not get an answer right now. Please try again.');
-    }
-  };
-
-  // "Start a new topic": zera a memória do último turno (ver
-  // askAiLastExchange) sem sair da tela, pra perguntar algo sem viés do
-  // contexto anterior.
-  const handleAskAiReset = () => {
-    setAskAiLastExchange(null);
-    setAskAiAnswer('');
-    setAskAiQuestion('');
-    setAskAiStatus('idle');
-    setAskAiErrorMessage('');
-    setAskAiImage(null);
-    setAskAiImageError('');
-  };
-
   const handleOpenSpeakingSource = (source) => {
     setSelectedSpeakingSource(source.id);
     setActivePage('speaking-tracks');
@@ -5782,7 +5550,6 @@ function App() {
             <li className="side-drawer-group-label">Tools</li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenWordbook(event); setMobileMenuOpen(false); }}><IconWords /><span>My Words</span></a></li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenMyNotes(event); setMobileMenuOpen(false); }}><IconNotes /><span>My Notes</span></a></li>
-            <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenAskAi(event); setMobileMenuOpen(false); }}><IconChat /><span>Ask Adele</span></a></li>
             <li className="side-drawer-divider" role="separator" />
             <li className="side-drawer-group-label">Account</li>
             <li className="side-drawer-item"><a href="#0" onClick={(event) => { handleOpenDashboard(event); setMobileMenuOpen(false); }}><IconDashboard /><span>Progress</span></a></li>
@@ -6036,7 +5803,7 @@ function App() {
           <div className="landing-panel course-links-panel">
             {/* Título no alto (pedido do dono, 2026-08-06) — esta era a única
                 tela de conteúdo sem nenhum, começava direto no ReviewCard.
-                Mesmo .eyebrow que titula Listening/Dictation/Ask Adele etc.,
+                Mesmo .eyebrow que titula Listening/Dictation etc.,
                 e entra na mesma regra compartilhada de título no App.css. */}
             <p className="eyebrow">Courses</p>
             <h1>Choose a course to study</h1>
@@ -7547,96 +7314,6 @@ function App() {
             </div>
           </div>
         </main>
-      ) : activePage === 'ask-ai' ? (
-        <main className="landing-page landing-page--courses vocabulary-mode ask-ai-mode">
-          <div className="landing-panel course-links-panel ask-ai-panel">
-            <div className="ask-ai-header">
-              <span className="ask-ai-mascot"><AdeleMascot /></span>
-              <div>
-                <p className="eyebrow">Ask Adele</p>
-                <h1>Ask Adele about everything in English</h1>
-              </div>
-            </div>
-            <p className="listening-instructions">
-              Adele is your American English tutor — ask her anything about grammar,
-              vocabulary, pronunciation, idioms, or usage. If your question itself has a
-              mistake, she'll correct it first. She sometimes ends with a quick challenge for
-              you to try — answer it as your next question and she'll check it. You can also
-              attach a photo or a screenshot (or just paste it here) and ask about it.
-            </p>
-            {/* onPaste no textarea: colar um print (Ctrl+V) já anexa a
-                imagem, sem precisar do botão — mesma conveniência que o
-                formulário do My Words já tinha. */}
-            <textarea
-              className="dictation-textarea ask-ai-textarea"
-              value={askAiQuestion}
-              onChange={(event) => setAskAiQuestion(event.target.value)}
-              onPaste={handleAskAiPaste}
-              placeholder={askAiLastExchange
-                ? 'Your answer, or a new question...'
-                : 'e.g. When do I use "have been" vs "had been"?'}
-              rows={4}
-            />
-            {askAiImage && (
-              <div className="ask-ai-image-preview">
-                <img src={askAiImage} alt="Attached" />
-                <button
-                  type="button"
-                  className="ask-ai-image-remove"
-                  onClick={() => { setAskAiImage(null); setAskAiImageError(''); }}
-                  title="Remove image"
-                >
-                  ×
-                </button>
-              </div>
-            )}
-            {askAiImageError && <p className="ask-ai-error">{askAiImageError}</p>}
-            <div className="ask-ai-actions-row">
-              <button
-                type="button"
-                className="show-answers-btn"
-                onClick={handleAskAiSubmit}
-                disabled={(!askAiQuestion.trim() && !askAiImage) || askAiStatus === 'loading'}
-              >
-                {askAiStatus === 'loading' ? (
-                  <span className="ask-ai-thinking">
-                    Thinking
-                    <span className="ask-ai-thinking-dots"><span>.</span><span>.</span><span>.</span></span>
-                  </span>
-                ) : 'Ask'}
-              </button>
-              {/* <label> em vez de <button>: o input de arquivo fica
-                  escondido dentro dele, então clicar no rótulo já abre o
-                  seletor do SO sem precisar de ref/click() programático. */}
-              <label className="ghost-button ask-ai-attach-btn">
-                {askAiImage ? 'Change image' : '📎 Attach image'}
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="ask-ai-attach-input"
-                  onChange={(event) => {
-                    attachAskAiImage(event.target.files?.[0]);
-                    event.target.value = '';
-                  }}
-                />
-              </label>
-              {askAiLastExchange && (
-                <button type="button" className="ghost-button" onClick={handleAskAiReset}>
-                  Start a new topic
-                </button>
-              )}
-            </div>
-            {askAiStatus === 'error' && (
-              <p className="ask-ai-error">{askAiErrorMessage}</p>
-            )}
-            {askAiAnswer && (
-              <div className="ask-ai-answer">
-                <p className="eyebrow">Answer</p>
-                <div className="ask-ai-answer-body">{renderAdeleMarkdown(askAiAnswer)}</div>
-              </div>
-            )}
-          </div>
-        </main>
       ) : activePage === 'speaking-tracks' ? (() => {
         const source = LISTENING_SOURCES.find((item) => item.id === selectedSpeakingSource);
         const speakingSearchNormalized = speakingSearchQuery.trim().toLowerCase();
@@ -8313,31 +7990,8 @@ function App() {
 
       {userName && insideCourse && (!PAGES_WITH_SIDE_PANEL.includes(activePage) || sidePanelVisible) && (
         <>
-          <button
-            type="button"
-            className="ask-adele-fab"
-            onClick={handleAskAdeleShortcut}
-            title="Ask Adele about this (select text first to fill in your question)"
-          >
-            <span className="ask-adele-fab-mascot"><AdeleMascot /></span>
-            Ask Adele
-          </button>
           <WordQuickAdd contextLabel={studyContextLabel} onAdd={handleAddWord} />
         </>
-      )}
-      {/* Grammar & Vocabulary Exercises: a dúvida de gramática/vocabulário nasce aqui,
-          no meio do exercício. Mesmo atalho das telas de curso (selecione um
-          trecho antes de clicar pra já abrir a pergunta preenchida). Sem o +Word. */}
-      {userName && activePage === 'grammar-vocab-exercises' && (
-        <button
-          type="button"
-          className="ask-adele-fab"
-          onClick={handleAskAdeleShortcut}
-          title="Ask Adele about this (select text first to fill in your question)"
-        >
-          <span className="ask-adele-fab-mascot"><AdeleMascot /></span>
-          Ask Adele
-        </button>
       )}
       {userName && isListeningOrDictationExercise && (
         <WordQuickAdd contextLabel={exerciseWordContext} onAdd={handleAddWord} />

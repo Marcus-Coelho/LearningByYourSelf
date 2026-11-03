@@ -3,7 +3,6 @@ const path = require('path');
 const express = require('express');
 const { PDFDocument } = require('pdf-lib');
 const { getPronunciationAudioPath } = require('./pronunciationTts');
-const { askGrammarQuestion } = require('./geminiGrammarHelper');
 
 // Serves audio and PDFs straight from the source material folder, so they
 // never need to be copied into public/ (and therefore never end up in git).
@@ -553,58 +552,6 @@ module.exports = function (app) {
       res.type('audio/mpeg').sendFile(filePath);
     } catch (error) {
       res.status(502).end();
-    }
-  });
-
-  // Tela "Ask AI" (menu principal): pergunta de gramática (+ imagem
-  // opcional) -> resposta do Gemini (ver App.js, geminiGrammarHelper.js).
-  // Único endpoint deste app que recebe corpo JSON, daí o express.json()
-  // escopado só nele (as outras rotas usam GET com parâmetro de rota, sem
-  // precisar disso). Precisa de `GEMINI_API_KEY` em
-  // meu-leitor-pdf/.env.local (gitignored) — sem ela, responde 500 com uma
-  // mensagem explicando o que falta.
-  //
-  // limit: '12mb' (o padrão do express.json é ~100kb) — a imagem anexada
-  // chega como data URL base64 dentro do próprio JSON, e base64 infla ~33%
-  // sobre o binário. O cliente já reduz a foto pra 1600px/JPEG 85% antes de
-  // enviar (ver ASK_AI_IMAGE_MAX_DIMENSION em App.js), o que normalmente dá
-  // bem menos de 1MB; essa folga é só pra nenhum print grande esbarrar num
-  // "413 Payload Too Large" silencioso.
-  app.post('/api/ask-grammar', express.json({ limit: '12mb' }), async (req, res) => {
-    const question = String(req.body?.question || '').trim();
-    const image = typeof req.body?.image === 'string' ? req.body.image : null;
-    // Pergunta vazia é aceita quando vem imagem (o helper usa um texto
-    // padrão nesse caso) — sem nenhum dos dois, não há o que perguntar.
-    if (!question && !image) {
-      res.status(400).json({ error: 'Missing question' });
-      return;
-    }
-    // Aceita mais de uma chave (outro projeto do Google = cota diária própria):
-    // GEMINI_API_KEY, GEMINI_API_KEY_2, GEMINI_API_KEY_3...
-    const apiKey = ['GEMINI_API_KEY', 'GEMINI_API_KEY_2', 'GEMINI_API_KEY_3']
-      .map((name) => String(process.env[name] || '').trim())
-      .filter(Boolean);
-    if (apiKey.length === 0) {
-      res.status(500).json({ error: 'GEMINI_API_KEY not set — see meu-leitor-pdf/.env.local' });
-      return;
-    }
-    // Memória de só o último turno (ver App.js, askAiLastExchange) — o
-    // cliente reenvia a pergunta/resposta anteriores a cada request, o
-    // servidor não guarda nada entre requisições.
-    const previousExchange = (req.body?.previousQuestion && req.body?.previousAnswer)
-      ? { question: String(req.body.previousQuestion), answer: String(req.body.previousAnswer) }
-      : null;
-    try {
-      const answer = await askGrammarQuestion(question, apiKey, previousExchange, image);
-      res.json({ answer });
-    } catch (error) {
-      // Sem este log o motivo real (chave inválida, cota, rede) sumia: o cliente só vê a frase genérica.
-      console.error('[ask-grammar]', error && error.message);
-      if (error && error.statusCode === 429) {
-        res.status(429).json({ error: 'Adele reached the free daily limit of questions. Try again tomorrow.' });
-        return;
-      }
-      res.status(502).json({ error: 'Could not reach Gemini right now. Please try again.' });
     }
   });
 };

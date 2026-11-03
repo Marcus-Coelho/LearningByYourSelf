@@ -30,8 +30,6 @@ normal.
 
 **Abertura rápida pelo atalho da Área de Trabalho (2026-10-25)**: `StartLearning.bat` agora roda `node serve-local.js --check`; se `build/` está em dia (nenhum arquivo de `src/`/`public/` mais novo que `build/index.html`) sobe `serve-local.js`, que serve o build pronto + as MESMAS rotas do `setupProxy.js` (áudio, PDF, pronúncia, Ask AI com o `.env.local`) em ~3 s; senão cai no `npm start` (compila, ~15 s com cache quente, minutos com cache frio) e sempre reflete o código atual. **Depois de mexer no código, rodar `npm run build` mantém o atalho rápido.** Escuta sem host explícito (IPv4+IPv6): `localhost` abre na hora, sem o atraso de ~2 s. NÃO trocar o endereço aberto pra `127.0.0.1` — origem diferente = localStorage diferente (perde usuários/progresso). `serve-local.js` é só do PC: na cópia do pendrive o `StartLearning.bat`/`server.js`/`package.json` são próprios e nunca se sobrescrevem.
 
-**Opcional — tela "Ask AI"**: precisa de `GEMINI_API_KEY` em `meu-leitor-pdf/.env.local` (copie de `.env.local.example`, chave gratuita em https://aistudio.google.com/apikey). Sem essa chave o resto do app funciona normal, só essa tela responde erro 500 explicando o que falta.
-
 `npm run build` **funciona e compila normalmente** — é usado o tempo todo durante o desenvolvimento pra verificar que uma mudança não quebrou nada (é o jeito padrão de "checar erros de sintaxe/JSX" nesse projeto, sem precisar do dev server rodando). O que **não existe** é hospedagem em produção: o build gerado não seria funcional publicado num servidor, porque `setupProxy.js` (áudio/PDF) só funciona sob `npm start` — ver "Decisões Imutáveis" abaixo.
 
 ---
@@ -248,61 +246,9 @@ pras 4 telas acima pegarem sozinhas.
   trecho). Linha de 1 palavra não precisa (a lacuna já é ela). Limite conhecido: a 284 linha 5 ("My class starts at 9:15...") não tem lacuna porque o construtor lê "My class starts at 9:" como rótulo de falante.
   Para refazer/ajustar uma linha: editar o item de `lineTargets` (palavras em minúsculas, com o apóstrofo curvo como está no texto). Regenerar a faixa inteira sobrescreve ajustes manuais.
 
-### Ask AI (menu principal, fora dos 4 cursos, 2026-07-25)
+### Ask AI / Adele — REMOVIDO (2026-11-03)
 
-Tela de Q&A pra dúvidas sobre a língua inglesa em geral (gramática, vocabulário, pronúncia,
-expressões idiomáticas, uso — não só gramática, ver "Correção 2026-07-25" abaixo): um campo de
-texto, botão "Ask", resposta abaixo. A IA se chama **Adele** (americana, EUA — pedido do dono,
-2026-07-25), mascote desenhado em SVG puro (`AdeleMascot`, `App.js` — sem arquivo de imagem
-externo, mesmo espírito dos ícones do resto do app).
-- **Backend**: `POST /api/ask-grammar` (`setupProxy.js`) chama a API do Gemini
-  (`src/geminiGrammarHelper.js`, modelo `gemini-flash-latest` — alias que a Google sempre
-  aponta pro flash atual, escolhido depois de `gemini-2.5-flash` parar de aceitar contas novas
-  no meio da implementação). Nome da rota/arquivo ficou "grammar" por já existir quando o
-  escopo era mais estreito — não é mais literal, mas renomear não foi pedido.
-  - Único endpoint do projeto que recebe corpo JSON — `express.json()` escopado só nesta rota
-    (as outras usam GET com parâmetro na URL, nunca precisaram de body parser).
-- **`systemInstruction`** (2026-07-25, reescrita depois que o dono mostrou uma resposta de
-  outra IA que ele gostou): tutora completa/didática, não só uma frase curta — confirma o que
-  está certo, explica a regra, dá exemplos, **chama exceções explicitamente**, e às vezes
-  termina com um desafio curto ("fill in the blank"). Também corrige a pergunta do próprio
-  usuário se tiver erro (linha "Corrected: ..." antes de responder, só quando havia erro de
-  verdade).
-- **Memória de só o ÚLTIMO turno** (`askAiLastExchange`, `App.js`, 2026-07-25): não é chat de
-  verdade — não cresce, não persiste no `localStorage`, reseta ao sair da tela. O cliente
-  reenvia `previousQuestion`/`previousAnswer` a cada request; o servidor não guarda nada entre
-  requisições (mesmo padrão stateless de sempre, só que o cliente carrega 1 turno de contexto).
-  Existe especificamente pra Adele poder propor um desafio numa resposta e avaliar a tentativa
-  do usuário na pergunta seguinte — sem isso ela não teria como saber a que uma resposta tipo
-  "He is always tired." se refere. Botão "Start a new topic" zera essa memória na mão.
-- **Render do markdown-lite** (`renderAdeleMarkdown`, `App.js`): a resposta pode vir com
-  `### heading`, `**bold**`, `- bullet` (pedido no prompt) e também `*italic*`/`> quote`/`***`
-  como divisor (o modelo usa esses por conta própria mesmo sem pedir — mais robusto o renderer
-  cobrir do que tentar proibir via prompt, LLM não obedece restrição de formatação com 100% de
-  fidelidade). Parser feito à mão, sem lib de markdown nem `dangerouslySetInnerHTML` — só monta
-  elementos React de verdade a partir do texto, zero risco de XSS mesmo com resposta hostil.
-- **Modelos e chaves em FILA** (2026-10-13): o plano gratuito limita **20 pedidos/dia POR MODELO**
-  (`GenerateRequestsPerDayPerProjectPerModel`) e a Google devolve 503 "high demand" de forma
-  intermitente — a tela dava "Could not get an answer" em ambos os casos. Hoje
-  `geminiGrammarHelper.js` tenta, em ordem, `gemini-flash-latest` → `gemini-3.5-flash-lite` →
-  `gemini-3.1-flash-lite` (ajustável por `GEMINI_MODELS=id1,id2` no `.env.local`; cada modelo tem
-  cota própria, os 2 "lite" foram testados) e, dentro de cada modelo, cada chave
-  (`GEMINI_API_KEY`, `GEMINI_API_KEY_2`, `GEMINI_API_KEY_3` — outro projeto do Google = cota
-  própria). **429 (cota) e 404 (modelo aposentado) passam pra próxima combinação; 500/503/504 e
-  erro de rede repetem até 3x no MESMO modelo; qualquer outro erro (chave inválida) para na
-  hora.** Se tudo estourar, a rota responde 429 e a tela diz "Adele reached the free daily limit
-  of questions. Try again tomorrow." A rota loga o motivo real no terminal (`[ask-grammar]`) — antes
-  o catch engolia tudo. O `server.js` do pendrive NÃO lê o `.env.local`: lá a tela da Adele
-  provavelmente responde 500 (não testado, e `server.js` é intocável).
-- **Chave**: `GEMINI_API_KEY` em `meu-leitor-pdf/.env.local` (gitignored, template em
-  `.env.local.example`). Nome SEM prefixo `REACT_APP_` de propósito — o CRA só expõe pro bundle
-  do navegador variáveis com esse prefixo; sem ele, a chave existe só no processo Node do dev
-  server (onde `setupProxy.js`/`geminiGrammarHelper.js` rodam), nunca chega no cliente. Avaliado
-  contra chamar a API direto do navegador — rejeitado porque exporia a chave no DevTools/aba de
-  rede pra qualquer um roubar.
-- Só funciona sob `npm start`, mesma limitação de sempre (não há servidor de produção). Sem a
-  chave configurada, a rota responde 500 com mensagem explicando o que falta — o resto do app
-  funciona normal.
+Tela, botão flutuante "Ask Adele", rota `/api/ask-grammar`, `geminiGrammarHelper.js`, `.env.local.example` e todo o CSS `ask-ai-*`/`ask-adele-fab` foram apagados a pedido do dono ("não está funcionando, quero remover de TODO o projeto"). Não reintroduzir. O histórico está no git. O `.env.local` (chaves Gemini, ignorado pelo git) pode ser apagado à mão.
 
 ### Grammar & Vocabulary Exercises (menu principal, fora dos 4 cursos)
 
